@@ -111,15 +111,15 @@ export const DataProvider = ({ children }) => {
     );
   };
 
-  const addCost = (costData) => {
-    const newCost = {
-      ...costData,
-      id: Date.now(),
-      createdAt: new Date().toISOString().split("T")[0],
-    };
-    setCosts((prev) => [...prev, newCost]);
-    return newCost;
-  };
+  // const addCost = (costData) => {
+  //   const newCost = {
+  //     ...costData,
+  //     id: Date.now(),
+  //     createdAt: new Date().toISOString().split("T")[0],
+  //   };
+  //   setCosts((prev) => [...prev, newCost]);
+  //   return newCost;
+  // };
 
   const updateCost = (id, updates) => {
     setCosts((prev) =>
@@ -239,7 +239,7 @@ export const DataProvider = ({ children }) => {
     isLoadingTransactions,
     addParticipant,
     removeParticipant,
-    addCost,
+    setCosts,
     updateCost,
     connectPlaid,
   };

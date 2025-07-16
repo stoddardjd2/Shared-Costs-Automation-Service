@@ -25,7 +25,7 @@ const ChargeTypeStep = ({ onChargeTypeSelect }) => {
             <CreditCard className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-3">
-            Choose Charge Type
+            Choose Option
           </h1>
           <p className="text-gray-600 text-lg">
             Track an existing charge or add a new recurring charge
@@ -63,10 +63,10 @@ const ChargeTypeStep = ({ onChargeTypeSelect }) => {
               </div>
               <div className="flex-1">
                 <h3 className="text-xl font-semibold text-gray-900 mb-1">
-                  Add New Recurring Charge
+                  Add New Charge
                 </h3>
                 <p className="text-gray-600">
-                  Set up a new subscription or recurring expense to split
+                  Set up a new charge to split
                 </p>
               </div>
             </div>

@@ -18,7 +18,6 @@ export const useSplitState = () => {
     if (!selectedPeople || selectedPeople.length === 0) return {};
     
     if (splitType === 'equal') {
-      console.log("TOTAL AMOUNT", totalAmount);
       const total = parseFloat(totalAmount) || 0;
       const perPerson = total / selectedPeople.length;
       return selectedPeople.reduce((acc, person) => {
