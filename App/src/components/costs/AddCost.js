@@ -8,6 +8,7 @@ import ChargeTypeStep from "../steps/ChargeTypeStep";
 import ChargeSearchStep from "../steps/ChargeSearchStep";
 import ChargeDetailsStep from "../steps/ChargeDetailsStep";
 import SearchStep from "../steps/SearchStep";
+import SplitStep from "../steps/SplitStep";  // ADD THIS IMPORT
 import AddStep from "../steps/AddStep";
 
 const AddCost = () => {
@@ -27,6 +28,7 @@ const AddCost = () => {
   };
 
   const handleChargeSelect = (charge) => {
+    console.log("setting charge to", charge);
     chargeState.setSelectedCharge(charge);
     setCurrentStep(STEPS.SEARCH);
   };
@@ -48,6 +50,11 @@ const AddCost = () => {
     // }
   };
 
+
+  const handleContinueToSplit = () => {
+    setCurrentStep(STEPS.SPLIT);
+  };
+
   const handleBack = () => {
     switch (currentStep) {
       case STEPS.CHARGE_SEARCH:
@@ -67,9 +74,13 @@ const AddCost = () => {
             : STEPS.CHARGE_DETAILS
         );
         break;
+      case STEPS.SPLIT:  // ADD THIS CASE
+        setCurrentStep(STEPS.SEARCH);
+        break;
       case STEPS.ADD:
         setCurrentStep(STEPS.SEARCH);
         break;
+      
       default:
         setCurrentStep(STEPS.CHARGE_TYPE);
     }
@@ -90,6 +101,8 @@ const AddCost = () => {
             onCreateCharge={handleCreateCharge}
             onBack={handleBack}
             setTotalAmount={splitState.setTotalAmount}
+            setCustomAmounts={splitState.setCustomAmounts}
+            setSplitType={splitState.setSplitType}
           />
         );
 
@@ -115,23 +128,33 @@ const AddCost = () => {
             togglePersonSelection={peopleState.togglePersonSelection}
             onAddContact={handleAddContact}
             onBack={handleBack}
+            onContinue={handleContinueToSplit}  // ADD THIS PROP
             // Charge state
             selectedCharge={chargeState.selectedCharge}
             newChargeDetails={chargeState.newChargeDetails}
-            // Split state
+            // REMOVE ALL SPLIT STATE PROPS - they're not needed anymore
+            // New person form
+            newPerson={peopleState.newPerson}
+            setNewPerson={peopleState.setNewPerson}
+            handleAddNewPerson={peopleState.handleAddNewPerson}
+          />
+        );
+
+      // ADD THIS NEW CASE
+      case STEPS.SPLIT:
+        return (
+          <SplitStep
+            selectedPeople={peopleState.selectedPeople}
+            onBack={handleBack}
+            selectedCharge={chargeState.selectedCharge}
+            newChargeDetails={chargeState.newChargeDetails}
             splitType={splitState.splitType}
             setSplitType={splitState.setSplitType}
             totalAmount={splitState.totalAmount}
             setTotalAmount={splitState.setTotalAmount}
             customAmounts={splitState.customAmounts}
             updateCustomAmount={splitState.updateCustomAmount}
-            showSplitPanel={splitState.showSplitPanel}
-            setShowSplitPanel={splitState.setShowSplitPanel}
             calculateSplitAmounts={splitState.calculateSplitAmounts}
-            // New person form
-            newPerson={peopleState.newPerson}
-            setNewPerson={peopleState.setNewPerson}
-            handleAddNewPerson={peopleState.handleAddNewPerson}
           />
         );
 

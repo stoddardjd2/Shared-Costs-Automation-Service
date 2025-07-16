@@ -9,7 +9,9 @@ const ChargeSearchStep = ({
   onChargeSelect,
   onCreateCharge,
   onBack,
-  setTotalAmount
+  setTotalAmount,
+  setCustomAmounts,
+  setSplitType
 }) => {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -48,9 +50,12 @@ const ChargeSearchStep = ({
               <div
                 key={charge.id}
                 onClick={() => {
-                  console.log("Charge selected:", charge);
                   setTotalAmount(charge.lastAmount);
                   onChargeSelect(charge);
+
+                  // reset charges
+                  setCustomAmounts({})
+                  setSplitType("equal");
                 }}
                 className="p-5 bg-white rounded-xl border-2 border-gray-200 hover:border-gray-300 cursor-pointer transition-all hover:shadow-md"
               >

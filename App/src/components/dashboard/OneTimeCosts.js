@@ -47,13 +47,13 @@ const OneTimeCosts = ({ oneTimeCosts }) => {
                   </p>
                   
                   <div className="flex items-center gap-4 mb-2">
-                    {paidCount > 0 && (
+                    {/* {paidCount > 0 && (
                       <span className="flex items-center gap-1 text-xs text-green-600">
                         <CheckCircle className="w-3 h-3" />
                         {paidCount} paid
                       </span>
                     )}
-                    {pendingCount > 0 && (
+                    {/* {pendingCount > 0 && (
                       <span className="flex items-center gap-1 text-xs text-yellow-600">
                         <Clock className="w-3 h-3" />
                         {pendingCount} pending
@@ -64,7 +64,7 @@ const OneTimeCosts = ({ oneTimeCosts }) => {
                         <XCircle className="w-3 h-3" />
                         {overdueCount} overdue
                       </span>
-                    )}
+                    )} */}
                   </div>
                   
                   <div className="flex items-center gap-2 flex-wrap">
