@@ -22,8 +22,8 @@ const OneTimeCosts = ({ oneTimeCosts }) => {
   return (
     <div className="bg-white rounded-xl shadow-sm border">
       <div className="p-6 border-b">
-        <h2 className="text-xl font-semibold text-gray-900">One-Time Shared Costs</h2>
-        <p className="text-sm text-gray-600 mt-1">Recent expenses and their payment status</p>
+        <h2 className="text-xl font-semibold text-gray-900">One-Time Payment Request</h2>
+        <p className="text-sm text-gray-600 mt-1">Recent requests and their payment status</p>
       </div>
       <div className="divide-y">
         {oneTimeCosts.map(cost => {

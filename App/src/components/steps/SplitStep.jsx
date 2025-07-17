@@ -24,6 +24,7 @@ import { useNavigate } from "react-router-dom";
 
 const SplitStep = ({
   selectedPeople,
+  setSelectedPeople, // Add this prop to allow updating selectedPeople
   onBack,
   selectedCharge,
   newChargeDetails,
@@ -38,6 +39,9 @@ const SplitStep = ({
   // Percentage state - remove defaults to force proper passing
   percentageAmounts,
   updatePercentageAmount,
+  // Edit mode props
+  isEditMode = false,
+  onUpdateCost = null,
 }) => {
   // Context to update costs
   const { setCosts } = useData();
@@ -64,8 +68,8 @@ const SplitStep = ({
   const [customInterval, setCustomInterval] = useState(1);
   const [customUnit, setCustomUnit] = useState("days");
 
-  // State for start timing
-  const [startTiming, setStartTiming] = useState("now");
+  // State for start timing - default based on mode
+  const [startTiming, setStartTiming] = useState(isEditMode ? "next" : "now");
 
   // State for editable total amounts
   const [editableTotalAmount, setEditableTotalAmount] = useState(
@@ -164,6 +168,32 @@ const SplitStep = ({
   };
 
   const handleSendRequest = (totalSplit) => {
+    if (isEditMode && onUpdateCost) {
+      // Update existing cost
+      const updatedCostData = {
+        splitType,
+        amount: editableTotalAmount,
+        customAmounts,
+        percentageAmounts: effectivePercentageAmounts,
+        frequency: recurringType === "none" ? null : recurringType,
+        customInterval: recurringType === "custom" ? customInterval : null,
+        customUnit: recurringType === "custom" ? customUnit : null,
+        startTiming,
+        isDynamicCosts,
+        dynamicCostReason,
+        participants: selectedPeople.map(person => ({
+          userId: person.id,
+          customAmount: customAmounts[person.id],
+          percentage: effectivePercentageAmounts[person.id],
+          status: "pending" // Reset status for updated requests
+        }))
+      };
+      
+      onUpdateCost(updatedCostData);
+      return;
+    }
+
+    // Original flow for new costs
     const costEntry = generateCostEntry({
       selectedCharge,
       newChargeDetails,
@@ -179,6 +209,16 @@ const SplitStep = ({
       isDynamicCosts,
       dynamicCostReason,
     });
+
+    // Ensure participants array matches selectedPeople
+    if (costEntry.participants) {
+      costEntry.participants = selectedPeople.map(person => ({
+        userId: person.id,
+        status: "pending",
+        customAmount: customAmounts[person.id],
+        percentage: effectivePercentageAmounts[person.id]
+      }));
+    }
 
     setCosts((prevCosts) => [...prevCosts, costEntry]);
     navigate("/dashboard");
@@ -250,25 +290,32 @@ const SplitStep = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-lg mx-auto px-6 py-8">
-        <StepIndicator current="split" />
+    <div className={isEditMode ? "relative" : "min-h-screen bg-gray-50"}>
+      <div className={isEditMode ? "" : "max-w-lg mx-auto px-6 py-8"}>
+        {/* Hide step indicator and back button in edit mode since modal has its own header */}
+        {!isEditMode && <StepIndicator current="split" />}
 
-        <div className="flex items-center gap-4 mb-6">
-          <button
-            onClick={onBack}
-            className="p-3 hover:bg-white rounded-xl transition-all hover:shadow-md"
-          >
-            <ArrowLeft className="w-6 h-6 text-gray-700" />
-          </button>
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-900">Split Costs</h1>
-            <p className="text-gray-600">
-              Configure how to split with {selectedPeople.length}{" "}
-              {selectedPeople.length !== 1 ? "people" : "person"}
-            </p>
+        {!isEditMode && (
+          <div className="flex items-center gap-4 mb-6">
+            <button
+              onClick={onBack}
+              className="p-3 hover:bg-white rounded-xl transition-all hover:shadow-md"
+            >
+              <ArrowLeft className="w-6 h-6 text-gray-700" />
+            </button>
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold text-gray-900">
+                {isEditMode ? "Edit Split Configuration" : "Split Costs"}
+              </h1>
+              <p className="text-gray-600">
+                {isEditMode 
+                  ? `Update split settings for ${selectedPeople.length} ${selectedPeople.length !== 1 ? "people" : "person"}`
+                  : `Configure how to split with ${selectedPeople.length} ${selectedPeople.length !== 1 ? "people" : "person"}`
+                }
+              </p>
+            </div>
           </div>
-        </div>
+        )}
 
         <ChargeDisplay
           selectedCharge={selectedCharge}
@@ -284,19 +331,69 @@ const SplitStep = ({
             {selectedPeople.map((person) => (
               <div
                 key={person.id}
-                className="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-lg"
+                className="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-lg group hover:bg-red-50 transition-colors"
               >
                 <div
                   className={`w-6 h-6 rounded ${person.color} flex items-center justify-center text-white font-semibold text-xs`}
                 >
                   {person.avatar}
                 </div>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm font-medium text-gray-900 group-hover:text-red-700 transition-colors">
                   {person.name}
                 </span>
+                <button
+                  onClick={() => {
+                    // Remove person from selectedPeople array
+                    if (setSelectedPeople) {
+                      const updatedPeople = selectedPeople.filter(p => p.id !== person.id);
+                      setSelectedPeople(updatedPeople);
+                    }
+                    
+                    // Clean up any custom amounts or percentages for this person
+                    if (customAmounts[person.id]) {
+                      updateCustomAmount(person.id, "");
+                    }
+                    if (effectivePercentageAmounts[person.id]) {
+                      effectiveUpdatePercentageAmount(person.id, "");
+                    }
+
+                    // Update the costs state to remove this person from participants
+                    if (selectedCharge) {
+                      console.log("REMOVE TIME", person.id)
+                      setCosts(prevCosts => 
+                        prevCosts.map(cost => {
+                          if (cost.id === selectedCharge.id) {
+                            return {
+                              ...cost,
+                              // Only remove from main participants array - preserve payment history
+                              participants: cost.participants.filter(p => p.userId !== person.id)
+                            };
+                          }
+                          return cost;
+                        })
+                      );
+                    }
+                  }}
+                  className="ml-1 p-1 text-gray-400 hover:text-red-600 hover:bg-red-100 rounded-full transition-all opacity-0 group-hover:opacity-100"
+                  title={`Remove ${person.name}`}
+                >
+                  <X className="w-3 h-3" />
+                </button>
               </div>
             ))}
           </div>
+          
+          {selectedPeople.length === 0 && (
+            <div className="text-center py-4">
+              <p className="text-sm text-gray-500">No people selected for splitting</p>
+              <button
+                onClick={onBack}
+                className="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Go back to select people
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Total Amount Input - Always visible at top */}
@@ -679,7 +776,7 @@ const SplitStep = ({
             </button>
 
             {showRecurringOptions && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[60]">
                 <div className="p-2 space-y-1">
                   <button
                     onClick={() => {
@@ -812,20 +909,27 @@ const SplitStep = ({
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <button
-                  onClick={() => setStartTiming("now")}
-                  className={`p-3 rounded-lg border-2 cursor-pointer transition-all flex items-center gap-2 ${
-                    startTiming === "now"
-                      ? "border-blue-600 bg-blue-50"
-                      : "border-gray-200 bg-white hover:border-gray-300"
+                  onClick={() => !isEditMode && setStartTiming("now")}
+                  className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
+                    isEditMode 
+                      ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
+                      : startTiming === "now"
+                      ? "border-blue-600 bg-blue-50 cursor-pointer"
+                      : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
                   }`}
                 >
                   <Play className="w-4 h-4 text-gray-500" />
                   <div className="text-left">
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className={`text-sm font-medium ${isEditMode ? "text-gray-500" : "text-gray-900"}`}>
                       Start Now
+                      {isEditMode && (
+                        <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
+                          Not Available
+                        </span>
+                      )}
                     </div>
-                    <div className="text-xs text-gray-600">
-                      Send first request immediately
+                    <div className={`text-xs ${isEditMode ? "text-gray-400" : "text-gray-600"}`}>
+                      {isEditMode ? "Cannot modify past requests" : "Send first request immediately"}
                     </div>
                   </div>
                 </button>
@@ -844,7 +948,10 @@ const SplitStep = ({
                       Next Request
                     </div>
                     <div className="text-xs text-gray-600">
-                      {getNextPeriodLabel()}
+                      {isEditMode && selectedCharge?.nextDue 
+                        ? new Date(selectedCharge.nextDue).toLocaleDateString()
+                        : getNextPeriodLabel()
+                      }
                     </div>
                   </div>
                 </button>
@@ -946,28 +1053,50 @@ const SplitStep = ({
         </div>
 
         {/* Send Button */}
-        <div className="pb-6">
+        <div className={isEditMode ? "sticky bottom-0 bg-white border-t pt-4 pb-4 px-6 shadow-lg z-50 -mx-6" : "pt-6 pb-6"}>
           <button
             onClick={() => handleSendRequest(totalSplit)}
-            disabled={totalSplit <= 0 || (splitType === "percentage" && totalPercentage > 100)}
+            disabled={
+              selectedPeople.length === 0 || 
+              totalSplit <= 0 || 
+              (splitType === "percentage" && totalPercentage > 100)
+            }
             className="w-full text-white font-semibold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-3 disabled:bg-gray-300 disabled:cursor-not-allowed"
             style={{
-              backgroundColor: (totalSplit > 0 && (splitType !== "percentage" || totalPercentage <= 100)) ? "#2563eb" : "#d1d5db",
+              backgroundColor: (
+                selectedPeople.length > 0 && 
+                totalSplit > 0 && 
+                (splitType !== "percentage" || totalPercentage <= 100)
+              ) ? "#2563eb" : "#d1d5db",
             }}
           >
-            <Send className="w-5 h-5" />
-            {`Send Request${selectedPeople.length === 1 ? "" : `s`}`}
+            {isEditMode ? (
+              <>
+                <Edit3 className="w-5 h-5" />
+                Update Future Requests
+              </>
+            ) : (
+              <>
+                <Send className="w-5 h-5" />
+                {`Send Request${selectedPeople.length === 1 ? "" : `s`}`}
+              </>
+            )}
           </button>
           
           {/* Validation messages */}
+          {selectedPeople.length === 0 && (
+            <p className="text-xs text-red-600 mt-2 text-center">
+              Please select at least one person to split with
+            </p>
+          )}
           {splitType === "percentage" && totalPercentage > 100 && (
             <p className="text-xs text-red-600 mt-2 text-center">
               Total percentage cannot exceed 100%
             </p>
           )}
-          {totalSplit <= 0 && (
+          {selectedPeople.length > 0 && totalSplit <= 0 && (
             <p className="text-xs text-gray-500 mt-2 text-center">
-              Enter amounts to send requests
+              {isEditMode ? "Enter amounts to update future requests" : "Enter amounts to send requests"}
             </p>
           )}
         </div>
