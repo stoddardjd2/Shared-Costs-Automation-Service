@@ -23,7 +23,6 @@ export const detectOvercharge = (currentAmount, historicalAmounts) => {
 };
 
 export const getFrequencyColor = (frequency) => {
-  console.log("FREQUENCY:", frequency);
   switch (frequency) {
     case "daily":
       return "bg-teal-100 text-teal-800";

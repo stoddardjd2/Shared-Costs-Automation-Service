@@ -21,7 +21,6 @@ const Dashboard = () => {
     connectPlaid,
   } = useData();
 
-  console.log("Dashboard costs:", costs);
   const recurringCostsFromBank = () => {
     const costGroups = {};
 
