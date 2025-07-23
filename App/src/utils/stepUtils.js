@@ -28,9 +28,7 @@ export const formatCurrency = (amount) => {
 };
 
 export const validatePhoneNumber = (phone) => {
-  console.log("validatePhoneNumber2323", phone);
   const phoneRegex = /^\+1 \(\d{3}\) \d{3}-\d{4}$/;
-  console.log("test", phoneRegex.test(phone));
 
   return phoneRegex.test(phone);
 };

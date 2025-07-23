@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useData } from "../contexts/DataContext";
+import { ParkingCircle } from "lucide-react";
 
 export const usePeopleState = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -6,6 +8,7 @@ export const usePeopleState = () => {
   const [newPerson, setNewPerson] = useState({ name: "", phone: "" });
   const [newPeople, setNewPeople] = useState([]);
 
+  const { addParticipant, participants } = useData();
   const [people, setPeople] = useState([
     {
       id: 1,
@@ -44,45 +47,52 @@ export const usePeopleState = () => {
     },
   ]);
 
-  const filteredPeople = people.filter(
-    (person) =>
-      person.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      person.phone.includes(searchQuery)
-  );
 
-  const togglePersonSelection = (person) => {
-    setSelectedPeople((prev) =>
-      prev.find((p) => p.id === person.id)
-        ? prev.filter((p) => p.id !== person.id)
-        : [...prev, person]
-    );
-  };
+const normalizePhoneNumber = (phone) => {
+  return phone.replace(/\D/g, "");
+};
+
+// Improved filtering that handles different phone number formats
+const filteredPeople = participants.filter((person) => {
+  // Original name search logic (unchanged)
+  const nameMatch = person.name
+    .toLowerCase()
+    .includes(searchQuery.toLowerCase());
+
+  // Only perform phone search if the search query contains digits
+  const normalizedSearchQuery = normalizePhoneNumber(searchQuery);
+  const phoneMatch = normalizedSearchQuery.length > 0 && 
+    normalizePhoneNumber(person.phone).includes(normalizedSearchQuery);
+
+  return nameMatch || phoneMatch;
+});
+
+const togglePersonSelection = (person) => {
+  setSelectedPeople((prev) =>
+    prev.find((p) => p.id === person.id)
+      ? prev.filter((p) => p.id !== person.id)
+      : [...prev, person]
+  );
+};
 
   const handleAddNewPerson = () => {
-    if (
-      newPerson.name.trim() &&
-      newPerson.phone.trim()
-    ) {
+    if (newPerson.name.trim() && newPerson.phone.trim()) {
       const initials = newPerson.name
         .trim()
         .split(" ")
         .map((n) => n[0])
         .join("")
         .toUpperCase();
-      const colors = [
-        "bg-blue-500",
-        "bg-purple-500",
-        "bg-green-500",
-        "bg-pink-500",
-        "bg-indigo-500",
-      ];
+
       const person = {
-        id: Date.now(),
+        // id: Date.now(),
         name: newPerson.name.trim(),
         phone: newPerson.phone.trim(),
         avatar: initials,
-        color: colors[Math.floor(Math.random() * colors.length)],
+        // color: colors[Math.floor(Math.random() * colors.length)],
       };
+      addParticipant(person);
+
       setSelectedPeople((prev) => [...prev, person]);
 
       // reset input field:

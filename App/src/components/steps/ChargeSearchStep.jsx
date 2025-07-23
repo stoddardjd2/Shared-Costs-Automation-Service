@@ -11,11 +11,12 @@ const ChargeSearchStep = ({
   onBack,
   setTotalAmount,
   setCustomAmounts,
-  setSplitType
+  setSplitType,
+  setIsManualCharge
 }) => {
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-lg mx-auto px-6 py-8">
+      <div className="max-w-lg mx-auto px-6 py-0">
         <StepIndicator current="chargeSearch" />
 
         <div className="flex items-center gap-4 mb-10">
@@ -52,7 +53,7 @@ const ChargeSearchStep = ({
                 onClick={() => {
                   setTotalAmount(charge.lastAmount);
                   onChargeSelect(charge);
-
+                  setIsManualCharge(false)
                   // reset charges
                   setCustomAmounts({})
                   setSplitType("equal");
