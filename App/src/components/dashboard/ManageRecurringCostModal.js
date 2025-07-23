@@ -400,7 +400,7 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
                       // >
                       <div
                         key={payment.id}
-                        className={`border-2 ${statusInfo.borderClass} rounded-xl p-4 bg-white relative`}
+                        className={`border-2  rounded-xl p-4 bg-white relative`}
                       >
                         {/* Status Label */}
                         <div className="absolute top-3 right-3">
@@ -431,9 +431,11 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
                                   ).toLocaleDateString()}
                                 </>
                               )}
-                            </p> */} 
-                            <div className="flex justify-between w-full  border-b-2
-                            ">
+                            </p> */}
+                            <div
+                              className="flex justify-between w-full  border-b-2
+                            "
+                            >
                               {payment.requestDate && (
                                 <div className="flex items-center gap-2 text-gray-600 bg-white backdrop-blur-sm pr-3 py-1.5 rounded-lg w-fit">
                                   {/* <Calendar className="w-4 h-4" /> */}

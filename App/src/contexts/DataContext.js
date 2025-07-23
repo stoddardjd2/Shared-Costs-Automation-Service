@@ -39,7 +39,6 @@ export const DataProvider = ({ children }) => {
       color: "bg-indigo-500",
     },
   ]);
-
   // costs represents requested payments
   const [costs, setCosts] = useState([
     {
