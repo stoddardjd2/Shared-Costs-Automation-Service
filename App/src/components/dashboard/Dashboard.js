@@ -70,9 +70,8 @@ const Dashboard = () => {
 
   return (
     <div className="relative">
-      <Navbar/>
       {/* Main content container with mobile-friendly padding matching SplitStep */}
-      <div className="max-w-lg mx-auto px-6 py-0 pb-24">
+      <div className="mx-auto px-6 py-0 pb-24">
         {/* Header section - matching SplitStep structure */}
         <div className="flex items-center justify-between gap-4 mb-6 mt-8">
           <div className="flex-1 min-w-0">

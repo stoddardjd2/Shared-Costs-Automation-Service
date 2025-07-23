@@ -9,6 +9,9 @@ import PaymentRequests from "./components/payments/PaymentRequests";
 import Navigation from "./components/layout/Navigation";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import AddCost from "./components/costs/AddCost";
+import Navbar from "./components/dashboard/Navbar";
+import Loginv2 from "./components/auth/Loginv2";
+import Signup from "./components/auth/Signup";
 
 const App = () => {
   return (
@@ -16,12 +19,14 @@ const App = () => {
       <AuthProvider>
         <DataProvider>
           <Routes>
-            <Route path="/login" element={<Login />} />
+            <Route path="/login" element={<Loginv2 />} />
+            <Route path="/signup" element={<Signup />} />
+
             <Route
               path="/"
               element={
                 <ProtectedRoute>
-                  <Navigation />
+                  <Navbar />
                   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <Dashboard />
                   </div>
@@ -32,8 +37,9 @@ const App = () => {
               path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <Navigation />
-                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                  <Navbar />
+
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-0">
                     <Dashboard />
                   </div>
                 </ProtectedRoute>
@@ -43,7 +49,7 @@ const App = () => {
               path="/costs/new"
               element={
                 <ProtectedRoute>
-                  <Navigation />
+                  <Navbar />
                   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     {/* <NewCost /> */}
                     <AddCost />
@@ -55,7 +61,7 @@ const App = () => {
               path="/costs/edit/:id"
               element={
                 <ProtectedRoute>
-                  <Navigation />
+                  <Navbar />
                   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <NewCost />
                   </div>
@@ -66,7 +72,7 @@ const App = () => {
               path="/costs/requests/:id?"
               element={
                 <ProtectedRoute>
-                  <Navigation />
+                  <Navbar />
                   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <PaymentRequests />
                   </div>
