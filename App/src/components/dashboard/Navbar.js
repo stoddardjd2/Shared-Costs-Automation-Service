@@ -8,9 +8,11 @@ import {
   Bell,
   Search,
 } from "lucide-react";
-
+import { useNavigate } from "react-router-dom";
 const Navbar = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
+
+  const navigate = useNavigate();
 
   // Demo user data
   const currentUser = {
@@ -37,8 +39,8 @@ const Navbar = () => {
 
   const handleLogout = () => {
     // In a real app, this would handle actual logout
-    alert("Logout functionality would be implemented here");
     setShowUserMenu(false);
+    navigate("/login");
   };
 
   const getPlanColor = (plan) => {
@@ -61,8 +63,8 @@ const Navbar = () => {
 
   return (
     <nav className="bg-white border-b border-slate-200/60 shadow-sm sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="flex px-4 sm:px-8 justify-between items-center h-16">
           {/* Logo/Brand */}
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
@@ -76,7 +78,7 @@ const Navbar = () => {
           </div>
 
           {/* Search Bar */}
-          <div className="hidden md:block flex-1 max-w-lg mx-8">
+          {/* <div className="hidden md:block flex-1 max-w-lg mx-8">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
@@ -85,7 +87,7 @@ const Navbar = () => {
                 className="w-full pl-10 pr-4 py-2 border border-slate-200/60 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-500 bg-gray-50 text-sm"
               />
             </div>
-          </div>
+          </div> */}
 
           {/* Right side - User menu */}
           <div className="flex items-center space-x-4">
@@ -96,14 +98,14 @@ const Navbar = () => {
             </button>
 
             {/* Plan Badge */}
-            <div
+            {/* <div
               className={`px-3 py-1 rounded-full text-white text-xs font-medium flex items-center gap-1 ${getPlanColor(
                 currentUser.plan
               )}`}
             >
               {getPlanIcon(currentUser.plan)}
               {currentUser.plan}
-            </div>
+            </div> */}
 
             {/* User Menu */}
             <div className="relative user-menu">
@@ -223,7 +225,7 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Search */}
-      <div className="md:hidden px-4 pb-3">
+      {/* <div className="md:hidden px-4 pb-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
@@ -232,7 +234,7 @@ const Navbar = () => {
             className="w-full pl-10 pr-4 py-2 border border-slate-200/60 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-500 bg-gray-50 text-sm"
           />
         </div>
-      </div>
+      </div> */}
     </nav>
   );
 };

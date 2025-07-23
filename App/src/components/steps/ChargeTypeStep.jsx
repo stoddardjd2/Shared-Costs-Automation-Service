@@ -22,7 +22,7 @@ const ChargeTypeStep = ({ onChargeTypeSelect }) => {
             <p className="text-gray-600">Track an existing charge or add a new recurring charge</p>
           </div>
         </div>
-
+    
         <div className="space-y-4">
           <div
             onClick={() => onChargeTypeSelect("existing")}
