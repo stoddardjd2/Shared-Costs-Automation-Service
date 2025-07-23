@@ -10,6 +10,7 @@ import OneTimeCosts from "./OneTimeCosts";
 import { detectOvercharge } from "../../utils/helpers";
 import { DataContext } from "../../contexts/DataContext";
 import { useContext } from "react";
+import OverdueAlerts from "./OverDueAlerts";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -143,6 +144,7 @@ const Dashboard = () => {
 
         {/* Main Dashboard Sections */}
         <div className="space-y-6">
+          <OverdueAlerts/>
           <RecurringCostsSection />
           <RecurringCostsFromBank recurringFromBank={recurringFromBank} />
           <OneTimeCosts oneTimeCosts={oneTimeCosts} />
