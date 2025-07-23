@@ -18,6 +18,7 @@ import {
 import { useData } from "../../contexts/DataContext";
 import { getPaymentStatusColor } from "../../utils/helpers";
 import SplitStep from "../steps/SplitStep"; // Import SplitStep component
+import RequestButton from "./RequestButton";
 
 const ManageRecurringCostModal = ({ cost, onClose }) => {
   const { participants, updateCost, sendPaymentRequest, resendPaymentRequest } =
@@ -83,58 +84,74 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
       avatar: avatar.toUpperCase(),
     };
   };
-
-  // Get status color for solid indicator
-  const getStatusColor = (status) => {
+  // Get subtle status indicator color
+  const getStatusIndicatorColor = (status) => {
     switch (status) {
       case "paid":
-        return "bg-emerald-500";
+        return "bg-green-500";
       case "pending":
-        return "bg-amber-500";
+        return "bg-blue-500";
+      case "partial":
+        return "bg-yellow-500"; // Added specific color for partial
       case "overdue":
-        return "bg-red-500";
+        return "bg-red-500"; // Changed from orange to red for more distinction
       default:
-        return null;
+        return "bg-gray-400";
     }
   };
 
-  // Get border color and status info for payment requests
-  const getPaymentStatusBorder = (status) => {
+  // Get subtle payment status styling - much more muted
+  const getPaymentStatusStyling = (status) => {
     switch (status) {
       case "paid":
         return {
-          borderClass: "border-emerald-500",
-          bgClass: "bg-emerald-50",
-          labelClass: "bg-emerald-500 text-white",
+          cardClass: "bg-white border-gray-200",
+          headerClass: "bg-green-50 border-b border-green-100",
+          badgeClass: "bg-green-100 text-green-700 border border-green-200",
+          iconClass: "text-green-600",
+          textClass: "text-green-700",
           label: "Completed",
+          icon: CheckCircle,
         };
       case "pending":
         return {
-          borderClass: "border-yellow-500",
-          bgClass: "bg-yellow-50",
-          labelClass: "bg-yellow-500 text-white",
+          cardClass: "bg-white border-gray-200",
+          headerClass: "bg-blue-50 border-b border-blue-100",
+          badgeClass: "bg-blue-100 text-blue-700 border border-blue-200",
+          iconClass: "text-blue-600",
+          textClass: "text-blue-700",
           label: "Pending",
+          icon: Clock,
         };
       case "partial":
         return {
-          borderClass: "border-amber-500",
-          bgClass: "bg-amber-50",
-          labelClass: "bg-amber-500 text-white",
+          cardClass: "bg-white border-gray-200",
+          headerClass: "bg-yellow-50 border-b border-yellow-100", // Changed from amber to yellow
+          badgeClass: "bg-yellow-100 text-yellow-700 border border-yellow-200",
+          iconClass: "text-yellow-600",
+          textClass: "text-yellow-700",
           label: "Partial",
+          icon: AlertTriangle,
         };
       case "overdue":
         return {
-          borderClass: "border-red-500",
-          bgClass: "bg-red-50",
-          labelClass: "bg-red-500 text-white",
+          cardClass: "bg-white border-gray-200",
+          headerClass: "bg-red-50 border-b border-red-100", // Changed from orange to red
+          badgeClass: "bg-red-100 text-red-700 border border-red-200",
+          iconClass: "text-red-600",
+          textClass: "text-red-700",
           label: "Overdue",
+          icon: XCircle,
         };
       default:
         return {
-          borderClass: "border-gray-200",
-          bgClass: "bg-white",
-          labelClass: "bg-gray-500 text-white",
+          cardClass: "bg-white border-gray-200",
+          headerClass: "bg-gray-50 border-b border-gray-100",
+          badgeClass: "bg-gray-100 text-gray-700 border border-gray-200",
+          iconClass: "text-gray-600",
+          textClass: "text-gray-700",
           label: "Unknown",
+          icon: Clock,
         };
     }
   };
@@ -152,41 +169,21 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
       case "paid":
         return <CheckCircle className="w-4 h-4 text-green-600" />;
       case "pending":
-        return <Clock className="w-4 h-4 text-yellow-600" />;
+        return <Clock className="w-4 h-4 text-blue-600" />;
       case "overdue":
-        return <XCircle className="w-4 h-4 text-red-600" />;
+        return <XCircle className="w-4 h-4 text-orange-600" />;
       default:
         return <Clock className="w-4 h-4 text-gray-400" />;
     }
   };
 
-  const getStatusBadge = (status) => {
-    const baseClasses = "px-2 py-1 text-xs rounded-lg font-medium";
-    switch (status) {
-      case "paid":
-        return `${baseClasses} bg-emerald-500 text-white`;
-      case "pending":
-        return `${baseClasses} bg-yellow-100 text-yellow-800`;
-      case "partial":
-        return `${baseClasses} bg-amber-500 text-white`;
-      case "overdue":
-        return `${baseClasses} bg-red-500 text-white`;
-      default:
-        return `${baseClasses} bg-gray-100 text-gray-800`;
-    }
-  };
-
   const handleResendRequest = (paymentId, userId) => {
-    console.log(
-      `Resending payment request ${paymentId} to user ${userId} for cost ${cost.id}`
-    );
     if (resendPaymentRequest) {
       resendPaymentRequest(cost.id, paymentId, userId);
     }
   };
 
   const handleSendNewRequest = () => {
-    console.log(`Sending new payment request for cost ${cost.id}`);
     if (sendPaymentRequest) {
       sendPaymentRequest(cost.id);
     }
@@ -287,14 +284,7 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
     })
     .filter((person) => person.name !== "Unknown");
 
-  // Create mock charge details for SplitStep
-  const mockChargeDetails = {
-    name: cost.name,
-    lastAmount: cost.amount,
-    frequency: cost.frequency,
-    nextDue: cost.nextDue,
-    plaidMatched: true,
-  };
+  // Create charge details for SplitStep
 
   if (showSplitStep) {
     return (
@@ -304,7 +294,7 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
             <SplitStep
               selectedPeople={selectedPeople}
               onBack={() => setShowSplitStep(false)}
-              selectedCharge={mockChargeDetails}
+              selectedCharge={cost}
               newChargeDetails={null}
               splitType={splitType}
               setSplitType={setSplitType}
@@ -390,157 +380,136 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
               ) : (
                 <div className="space-y-4">
                   {sortedPayments.map((payment) => {
-                    console.log("payment", payment);
-                    const statusInfo = getPaymentStatusBorder(payment.status);
+                    const statusStyling = getPaymentStatusStyling(
+                      payment.status
+                    );
+                    const StatusIcon = statusStyling.icon;
 
                     return (
-                      //  <div
-                      //   key={payment.id}
-                      //   className={`border-2 ${statusInfo.borderClass} rounded-xl p-4 ${statusInfo.bgClass} relative`}
-                      // >
                       <div
                         key={payment.id}
-                        className={`border-2  rounded-xl p-4 bg-white relative`}
+                        className={`border rounded-xl overflow-hidden ${statusStyling.cardClass} shadow-sm`}
                       >
-                        {/* Status Label */}
-                        <div className="absolute top-3 right-3">
-                          <span
-                            className={`px-2 py-1 text-xs rounded-lg font-medium ${statusInfo.labelClass}`}
-                          >
-                            {statusInfo.label}
+                        {/* Subtle Status Header */}
+                        <div
+                          className={`${statusStyling.headerClass} px-4 py-3 flex items-center justify-between`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${statusStyling.badgeClass}`}
+                            >
+                              <StatusIcon
+                                className={`w-4 h-4 ${statusStyling.iconClass}`}
+                              />
+                              <span className="text-sm font-medium">
+                                {statusStyling.label}
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-gray-900 font-semibold text-xl">
+                            ${payment.amount}
                           </span>
                         </div>
 
-                        <div className="flex justify-between items-start mb-4">
-                          <div className="w-full">
-                            <div className="flex items-center gap-2 mb-2 flex-wrap">
-                              <h4 className="font-semibold text-gray-900 text-2xl">
-                                ${payment.amount}
-                              </h4>
-                            </div>
-                            {/* <p className="text-sm text-gray-600">
-                              Sent on{" "}
-                              {new Date(
-                                payment.requestDate
-                              ).toLocaleDateString()}
-                              {payment.dueDate && (
-                                <>
-                                  {" • Due "}
+                        <div className="p-4">
+                          {/* Date Information */}
+                          <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-100">
+                            {payment.requestDate && (
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <Calendar className="w-4 h-4" />
+                                <span className="text-sm">
+                                  Sent:{" "}
+                                  {new Date(
+                                    payment.requestDate
+                                  ).toLocaleDateString()}
+                                </span>
+                              </div>
+                            )}
+
+                            {payment.dueDate && (
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <Clock className="w-4 h-4" />
+                                <span className="text-sm">
+                                  Due:{" "}
                                   {new Date(
                                     payment.dueDate
                                   ).toLocaleDateString()}
-                                </>
-                              )}
-                            </p> */}
-                            <div
-                              className="flex justify-between w-full  border-b-2
-                            "
-                            >
-                              {payment.requestDate && (
-                                <div className="flex items-center gap-2 text-gray-600 bg-white backdrop-blur-sm pr-3 py-1.5 rounded-lg w-fit">
-                                  {/* <Calendar className="w-4 h-4" /> */}
-                                  <span className="text-sm">
-                                    Sent on:{" "}
-                                    {new Date(
-                                      payment.requestDate
-                                    ).toLocaleDateString()}
-                                  </span>
-                                </div>
-                              )}
-
-                              {payment.requestDate && (
-                                <div className="flex items-center gap-2 text-gray-600 bg-white backdrop-blur-sm px-3 py-1.5 rounded-lg w-fit">
-                                  {/* <Calendar className="w-4 h-4" /> */}
-                                  <span className="text-sm">
-                                    Due on:{" "}
-                                    {new Date(
-                                      payment.dueDate
-                                    ).toLocaleDateString()}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          {/* <div className="text-right">
-                            <p className="font-semibold text-gray-900 text-lg">
-                              ${payment.amount}
-                            </p>
-                          </div> */}
-                        </div>
-
-                        {/* Participant Status */}
-                        <div className="space-y-2">
-                          {payment.participants.map((participant) => {
-                            const user = participants.find(
-                              (u) => u.id === participant.userId
-                            );
-                            const { avatar } = getUserAvatar(user);
-                            const statusColor = getStatusColor(
-                              participant.status
-                            );
-                            const canResend =
-                              participant.status === "pending" ||
-                              participant.status === "overdue";
-
-                            return (
-                              <div
-                                key={participant.userId}
-                                className="flex items-center justify-between p-3 pl-0 bg-white/100 rounded-lg"
-                              >
-                                <div className="flex items-center gap-3 flex-1 min-w-0">
-                                  <div className="relative flex-shrink-0">
-                                    <div
-                                      className={`w-8 h-8 rounded-lg ${user?.color} flex items-center justify-center text-white font-semibold text-xs border-2 border-white shadow-sm`}
-                                    >
-                                      {avatar}
-
-                                      {/* Status indicator */}
-                                      {statusColor && (
-                                        <div
-                                          className={`absolute -bottom-0.5 -right-0.5 ${statusColor} rounded-full w-3 h-3 border border-white shadow-sm`}
-                                        ></div>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <div className="flex-1 flex items- min-w-0 justify-between">
-                                    <div className="flex items-baseline mt-[2px] gap-2">
-                                      <span className="font-medium text-lg truncate">
-                                        {user?.name}
-                                      </span>
-                                      <span className="text-sm text-gray-600 flex-shrink-0">
-                                        ${participant.amount}
-                                      </span>
-                                    </div>
-                                    {participant.paidDate && (
-                                      <div className="flex items-center gap-2 text-gray-600 bg-white backdrop-blur-sm px-3 py-1.5 rounded-lg w-fit">
-                                        <Calendar className="w-4 h-4" />
-                                        <span className="text-sm">
-                                          Paid:{" "}
-                                          {new Date(
-                                            participant.paidDate
-                                          ).toLocaleDateString()}
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                                {canResend && (
-                                  <button
-                                    onClick={() =>
-                                      handleResendRequest(
-                                        payment.id,
-                                        participant.userId
-                                      )
-                                    }
-                                    className="bg-blue-600 text-sm text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 flex-shrink-0 ml-2"
-                                  >
-                                    <Send className="w-4 h-4" />
-                                    <span className="">Resend</span>
-                                  </button>
-                                )}
+                                </span>
                               </div>
-                            );
-                          })}
+                            )}
+                          </div>
+
+                          {/* Participant Status */}
+                          <div className="space-y-3">
+                            {payment.participants.map((participant) => {
+                              const user = participants.find(
+                                (u) => u.id === participant.userId
+                              );
+                              const { avatar } = getUserAvatar(user);
+                              const statusIndicatorColor =
+                                getStatusIndicatorColor(participant.status);
+                              const canResend =
+                                participant.status === "pending" ||
+                                participant.status === "overdue";
+
+                              return (
+                                <div
+                                  key={participant.userId}
+                                  className="flex items-center justify-between p-3 rounded-lg border border-gray-100"
+                                >
+                                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                                    <div className="relative flex-shrink-0">
+                                      <div
+                                        className={`w-10 h-10 rounded-lg ${user?.color} flex items-center justify-center text-white font-semibold text-sm border-2 border-white shadow-sm`}
+                                      >
+                                        {avatar}
+                                        {/* Status indicator - small and subtle */}
+                                        <div
+                                          className={`absolute -bottom-0.5 -right-0.5 ${statusIndicatorColor} rounded-full w-3 h-3 border-2 border-white`}
+                                        ></div>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-baseline gap-3">
+                                          <span className="font-semibold text-black text-lg truncate">
+                                            {user?.name}
+                                          </span>
+                                          <span className="text-gray-600 font-medium">
+                                            ${participant.amount}
+                                          </span>
+                                        </div>
+
+                                        {participant.paidDate && (
+                                          <div className="flex items-center text-gray-600 backdrop-blur-sm px-3 py-1.5 rounded-lg w-fit">
+                                            <span className="text-sm text-gray-600  py-1 rounded-md ">
+                                              Paid{" "}
+                                              {new Date(
+                                                participant.paidDate
+                                              ).toLocaleDateString()}
+                                            </span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {canResend && (
+                                    <RequestButton
+                                      costId={cost.id}
+                                      participantUserId={participant.userId}
+                                      className="px-3 py-2 text-sm ml-3 flex-shrink-0"
+                                      loadingText="Sending..."
+                                      successText="Sent!"
+                                    >
+                                      Resend
+                                    </RequestButton>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       </div>
                     );

@@ -70,13 +70,19 @@ const SplitStep = ({
       }));
     });
 
-  // Local state for recurring options
+  // Local state for recurring options - use existing values in edit mode
   const [showRecurringOptions, setShowRecurringOptions] = useState(false);
   const [recurringType, setRecurringType] = useState(
-    selectedCharge?.frequency?.toLowerCase() || "none"
+    isEditMode 
+      ? (selectedCharge?.frequency?.toLowerCase() || "none")
+      : (selectedCharge?.frequency?.toLowerCase() || "none")
   );
-  const [customInterval, setCustomInterval] = useState(1);
-  const [customUnit, setCustomUnit] = useState("days");
+  const [customInterval, setCustomInterval] = useState(
+    isEditMode ? (selectedCharge?.customInterval || 1) : 1
+  );
+  const [customUnit, setCustomUnit] = useState(
+    isEditMode ? (selectedCharge?.customUnit || "days") : "days"
+  );
 
   // State for start timing - default based on mode
   const [startTiming, setStartTiming] = useState(isEditMode ? "next" : "now");
@@ -86,28 +92,46 @@ const SplitStep = ({
     Number((totalAmount || selectedCharge?.lastAmount || 0).toFixed(2))
   );
 
+  // Add state to preserve the last known good amount
+  const [lastKnownGoodAmount, setLastKnownGoodAmount] = useState(
+    Number((totalAmount || selectedCharge?.lastAmount || 0).toFixed(2))
+  );
+
   // Check if dynamic costs should be disabled
   const isDynamicCostsDisabled =
     splitType === "custom" || !selectedCharge?.plaidMatch;
 
-  // State for dynamic costs tracking - default to enabled if allowed
-  const [isDynamic, setIsDynamic] = useState(!isDynamicCostsDisabled);
-  const [dynamicCostReason, setDynamicCostReason] = useState("");
+  // State for dynamic costs tracking - use previous setting in edit mode, otherwise default based on plaidMatch
+  const [isDynamic, setIsDynamic] = useState(
+    isEditMode 
+      ? (selectedCharge?.isDynamic || false) 
+      : (selectedCharge?.plaidMatch || false)
+  );
+  const [dynamicCostReason, setDynamicCostReason] = useState(
+    isEditMode ? (selectedCharge?.dynamicCostReason || "") : ""
+  );
   const [showDynamicInfo, setShowDynamicInfo] = useState(false);
   const [isHoveringDynamicInfo, setIsHoveringDynamicInfo] = useState(false);
 
   // Track previous split type to detect changes from custom
   const prevSplitTypeRef = useRef(splitType);
 
-  // Set dynamic costs to default (enabled) when conditions allow
+  // Initialize last known good amount
   React.useEffect(() => {
-    const shouldBeEnabled = !isDynamicCostsDisabled;
-    
-    // Only update if current state doesn't match what it should be
-    if (isDynamic !== shouldBeEnabled) {
-      setIsDynamic(shouldBeEnabled);
+    const initialAmount = Number((totalAmount || selectedCharge?.lastAmount || 0).toFixed(2));
+    if (initialAmount > 0) {
+      setLastKnownGoodAmount(initialAmount);
     }
-  }, [isDynamicCostsDisabled]);
+  }, [selectedCharge?.lastAmount, totalAmount]);
+
+  // Only disable dynamic costs if conditions don't allow it, but don't auto-enable
+  React.useEffect(() => {
+    // If dynamic costs become disabled (e.g., switching to custom split), turn it off
+    if (isDynamicCostsDisabled && isDynamic) {
+      setIsDynamic(false);
+    }
+    // Don't auto-enable when conditions allow - let user choose
+  }, [isDynamicCostsDisabled, isDynamic]);
 
   // Sync editableTotalAmount with totalAmount prop
   React.useEffect(() => {
@@ -410,21 +434,59 @@ const SplitStep = ({
         )
       : 0;
 
-  // Auto-enable dynamic costs when changing away from custom split method
+  // Auto-enable dynamic costs when switching away from custom split method (when appropriate)
   React.useEffect(() => {
     const prevSplitType = prevSplitTypeRef.current;
 
     // Check if we're changing FROM custom TO another split type
     if (prevSplitType === "custom" && splitType !== "custom") {
-      // Only enable if dynamic costs are allowed (not disabled)
-      if (!isDynamicCostsDisabled) {
+      // Auto-enable dynamic costs if:
+      // 1. Not in edit mode (new cost) and plaidMatch is available, OR
+      // 2. In edit mode and the original charge had dynamic costs enabled
+      const shouldAutoEnable = !isEditMode 
+        ? (selectedCharge?.plaidMatch || false)  // New cost: enable if plaid available
+        : (selectedCharge?.isDynamic || false);  // Edit mode: enable if original was dynamic
+
+      if (shouldAutoEnable && !isDynamicCostsDisabled) {
         setIsDynamic(true);
       }
     }
 
     // Update the ref for next comparison
     prevSplitTypeRef.current = splitType;
-  }, [splitType, isDynamicCostsDisabled]);
+  }, [splitType, isDynamicCostsDisabled, isEditMode, selectedCharge?.plaidMatch, selectedCharge?.isDynamic]);
+
+  // Update last known good amount when we have a valid amount
+  React.useEffect(() => {
+    if (editableTotalAmount > 0 && splitType !== "custom") {
+      setLastKnownGoodAmount(editableTotalAmount);
+    }
+  }, [editableTotalAmount, splitType]);
+
+  // Handle split type changes and preserve/restore amounts
+  React.useEffect(() => {
+    const prevSplitType = prevSplitTypeRef.current;
+    
+    // When switching FROM custom to another split type
+    if (prevSplitType === "custom" && splitType !== "custom") {
+      // Check if custom amounts sum to 0 or are empty
+      const customTotal = customAmounts ? Object.values(customAmounts).reduce(
+        (sum, amount) => sum + (Number(amount) || 0),
+        0
+      ) : 0;
+      
+      // If custom total is 0, restore the last known good amount
+      if (customTotal === 0 && lastKnownGoodAmount > 0) {
+        setEditableTotalAmount(lastKnownGoodAmount);
+        if (setTotalAmount) {
+          setTotalAmount(lastKnownGoodAmount);
+        }
+      }
+    }
+    
+    // Update the ref for next comparison
+    prevSplitTypeRef.current = splitType;
+  }, [splitType, customAmounts, lastKnownGoodAmount, setTotalAmount]);
 
   // Recalculate total amount when split method changes
   React.useEffect(() => {
@@ -447,7 +509,7 @@ const SplitStep = ({
     else if (splitType === "percentage") {
       if (!editableTotalAmount || editableTotalAmount === 0) {
         newTotalAmount = Number(
-          (selectedCharge?.lastAmount || totalAmount || 0).toFixed(2)
+          (selectedCharge?.lastAmount || totalAmount || lastKnownGoodAmount || 0).toFixed(2)
         );
       }
     }
@@ -456,7 +518,7 @@ const SplitStep = ({
     else if (splitType === "equal" || splitType === "equalWithMe") {
       if (!editableTotalAmount || editableTotalAmount === 0) {
         newTotalAmount = Number(
-          (selectedCharge?.lastAmount || totalAmount || 0).toFixed(2)
+          (selectedCharge?.lastAmount || totalAmount || lastKnownGoodAmount || 0).toFixed(2)
         );
       }
     }
@@ -468,9 +530,9 @@ const SplitStep = ({
         setTotalAmount(newTotalAmount);
       }
     }
-  }, [splitType, customAmounts, selectedCharge?.lastAmount, totalAmount]);
+  }, [splitType, customAmounts, selectedCharge?.lastAmount, totalAmount, lastKnownGoodAmount]);
 
-  // Update total when custom amounts change
+  // Update total when custom amounts change (but only when in custom mode)
   React.useEffect(() => {
     if (splitType === "custom" && customAmounts) {
       const customTotal = Object.values(customAmounts).reduce(
@@ -511,6 +573,7 @@ const SplitStep = ({
     if (selectedCharge?.lastAmount) {
       const chargeAmount = Number(selectedCharge.lastAmount.toFixed(2));
       setEditableTotalAmount(chargeAmount);
+      setLastKnownGoodAmount(chargeAmount);
       if (setTotalAmount) {
         setTotalAmount(chargeAmount);
       }
@@ -553,6 +616,7 @@ const SplitStep = ({
         <ChargeDisplay
           selectedCharge={selectedCharge}
           newChargeDetails={newChargeDetails}
+          overrideAmount={editableTotalAmount}
         />
 
         {/* Split Method Selection - Always visible */}
@@ -869,6 +933,10 @@ const SplitStep = ({
                     const newAmount =
                       Number(Number(e.target.value).toFixed(2)) || 0;
                     setEditableTotalAmount(newAmount);
+                    // Update last known good amount if it's a valid positive amount
+                    if (newAmount > 0) {
+                      setLastKnownGoodAmount(newAmount);
+                    }
                     // Also update parent totalAmount if the setter exists
                     if (setTotalAmount) {
                       setTotalAmount(newAmount);

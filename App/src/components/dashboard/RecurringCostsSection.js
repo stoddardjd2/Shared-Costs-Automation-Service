@@ -195,7 +195,7 @@ const RecurringCostsSection = () => {
               }`}
             >
               <RefreshCw className="w-4 h-4" />
-              Recurring Payments
+              Reocurring Payments
             </button>
             <button
               onClick={() => setActiveTab("onetime")}
@@ -309,7 +309,7 @@ const RecurringCostsSection = () => {
           Showing {startIndex + 1}-
           {Math.min(startIndex + itemsPerPage, filteredCosts.length)} of{" "}
           {filteredCosts.length}{" "}
-          {activeTab == "onetime" ? "one-time" : activeTab} payments
+          {activeTab == "onetime" ? "one-time" : "reocurring"} payments
         </div>
 
         {/* Payment Requests Section */}
@@ -325,7 +325,7 @@ const RecurringCostsSection = () => {
               </div>
               <div className="text-left">
                 <h2 className="text-xl font-semibold text-slate-900">
-                  {activeTab === "recurring" ? "Recurring" : "One-time"} Payment
+                  {activeTab === "recurring" ? "Reocurring" : "One-time"} Payment
                   Requests
                 </h2>
                 <p className="text-gray-600 text-sm">
@@ -436,7 +436,7 @@ const RecurringCostsSection = () => {
                                     amounts change between payment cycles
                                   </p>
                                   <p>
-                                    Dynamic costs are useful for any recurring
+                                    Dynamic costs are useful for any reocurring
                                     cost that varies each period, like utilities
                                   </p>
                                   <div className="absolute top-full left-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
@@ -552,7 +552,7 @@ const RecurringCostsSection = () => {
               <div className="flex justify-between items-center">
                 <div className="text-sm text-slate-600">
                   <span className="font-medium">{filteredCosts.length}</span>{" "}
-                  {activeTab == "onetime" ? "one-time" : activeTab}{" "}
+                  {activeTab == "onetime" ? "one-time" : "reocurring"}{" "}
                   {filteredCosts.length === 1
                     ? "payment request"
                     : "payment requests"}

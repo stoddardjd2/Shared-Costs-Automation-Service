@@ -94,7 +94,11 @@ const OverdueAlerts = () => {
 
         {/* Action Buttons - Smaller */}
         <div className="flex gap-2 mt-3">
-          <RequestButton isRequestAll={true} className="px-3 py-1.5 text-sm">
+          <RequestButton
+            isRequestAll={true}
+            className="px-3 py-1.5 text-sm"
+            color="red"
+          >
             Request All Payments
           </RequestButton>
           <button
@@ -207,6 +211,7 @@ const OverdueAlerts = () => {
                           costId={cost.id}
                           participantUserId={participant.userId}
                           className="text-sm px-3 py-2 flex-shrink-0"
+                          color="red"
                         >
                           Resend
                         </RequestButton>
