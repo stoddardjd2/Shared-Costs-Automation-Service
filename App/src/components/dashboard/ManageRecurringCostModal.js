@@ -12,15 +12,16 @@ import {
   Mail,
   MessageCircle,
   ArrowLeft,
+  Settings,
+  Users,
 } from "lucide-react";
 import { useData } from "../../contexts/DataContext";
-import {
-  getPaymentStatusColor,
-} from "../../utils/helpers";
+import { getPaymentStatusColor } from "../../utils/helpers";
 import SplitStep from "../steps/SplitStep"; // Import SplitStep component
 
 const ManageRecurringCostModal = ({ cost, onClose }) => {
-  const { participants, updateCost, sendPaymentRequest, resendPaymentRequest } = useData();
+  const { participants, updateCost, sendPaymentRequest, resendPaymentRequest } =
+    useData();
   const [activeTab, setActiveTab] = useState("requests");
   const [showSplitStep, setShowSplitStep] = useState(false);
   const [costSettings, setCostSettings] = useState({
@@ -31,6 +32,17 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
     participants: cost.participants,
     splitType: cost.splitType,
   });
+
+  // Format the amount per person based on split type (adapted from tray)
+  const formatAmountDisplay = (cost) => {
+    const totalParticipants = cost.participants.length;
+    const amountPerPerson =
+      totalParticipants > 0 ? cost.amount / totalParticipants : cost.amount;
+    return {
+      amount: `$${Number(amountPerPerson).toFixed(2)}`,
+      label: "each",
+    };
+  };
 
   // Split step state
   const [splitType, setSplitType] = useState(cost.splitType || "equal");
@@ -43,8 +55,8 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
     if (cost.participants) {
       const customAmts = {};
       const percentAmts = {};
-      
-      cost.participants.forEach(participant => {
+
+      cost.participants.forEach((participant) => {
         if (participant.customAmount) {
           customAmts[participant.userId] = participant.customAmount;
         }
@@ -52,15 +64,84 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
           percentAmts[participant.userId] = participant.percentage;
         }
       });
-      
+
       setCustomAmounts(customAmts);
       setPercentageAmounts(percentAmts);
     }
   }, [cost]);
 
+  // Helper function to generate avatar for users
+  const getUserAvatar = (user) => {
+    const name = user?.name || "";
+    const nameParts = name.split(" ");
+    const avatar =
+      nameParts.length > 1
+        ? `${nameParts[0][0]}${nameParts[1][0]}`
+        : name.slice(0, 2);
+
+    return {
+      avatar: avatar.toUpperCase(),
+    };
+  };
+
+  // Get status color for solid indicator
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "paid":
+        return "bg-emerald-500";
+      case "pending":
+        return "bg-amber-500";
+      case "overdue":
+        return "bg-red-500";
+      default:
+        return null;
+    }
+  };
+
+  // Get border color and status info for payment requests
+  const getPaymentStatusBorder = (status) => {
+    switch (status) {
+      case "paid":
+        return {
+          borderClass: "border-emerald-500",
+          bgClass: "bg-emerald-50",
+          labelClass: "bg-emerald-500 text-white",
+          label: "Completed",
+        };
+      case "pending":
+        return {
+          borderClass: "border-yellow-500",
+          bgClass: "bg-yellow-50",
+          labelClass: "bg-yellow-500 text-white",
+          label: "Pending",
+        };
+      case "partial":
+        return {
+          borderClass: "border-amber-500",
+          bgClass: "bg-amber-50",
+          labelClass: "bg-amber-500 text-white",
+          label: "Partial",
+        };
+      case "overdue":
+        return {
+          borderClass: "border-red-500",
+          bgClass: "bg-red-50",
+          labelClass: "bg-red-500 text-white",
+          label: "Overdue",
+        };
+      default:
+        return {
+          borderClass: "border-gray-200",
+          bgClass: "bg-white",
+          labelClass: "bg-gray-500 text-white",
+          label: "Unknown",
+        };
+    }
+  };
+
   // Get payment history from the cost object
   const paymentHistory = cost.paymentHistory || [];
-  
+
   // Sort payment history by date (most recent first)
   const sortedPayments = paymentHistory.sort(
     (a, b) => new Date(b.requestDate) - new Date(a.requestDate)
@@ -80,23 +161,25 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
   };
 
   const getStatusBadge = (status) => {
-    const baseClasses = "px-2 py-1 text-xs rounded-full font-medium";
+    const baseClasses = "px-2 py-1 text-xs rounded-lg font-medium";
     switch (status) {
       case "paid":
-        return `${baseClasses} bg-green-100 text-green-800`;
+        return `${baseClasses} bg-emerald-500 text-white`;
       case "pending":
         return `${baseClasses} bg-yellow-100 text-yellow-800`;
       case "partial":
-        return `${baseClasses} bg-blue-100 text-blue-800`;
+        return `${baseClasses} bg-amber-500 text-white`;
       case "overdue":
-        return `${baseClasses} bg-red-100 text-red-800`;
+        return `${baseClasses} bg-red-500 text-white`;
       default:
         return `${baseClasses} bg-gray-100 text-gray-800`;
     }
   };
 
   const handleResendRequest = (paymentId, userId) => {
-    console.log(`Resending payment request ${paymentId} to user ${userId} for cost ${cost.id}`);
+    console.log(
+      `Resending payment request ${paymentId} to user ${userId} for cost ${cost.id}`
+    );
     if (resendPaymentRequest) {
       resendPaymentRequest(cost.id, paymentId, userId);
     }
@@ -121,21 +204,21 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
       startTiming: updatedCostData.startTiming,
       isDynamicCosts: updatedCostData.isDynamicCosts,
       dynamicCostReason: updatedCostData.dynamicCostReason,
-      participants: updatedCostData.participants
+      participants: updatedCostData.participants,
     };
-    
+
     // Update the cost in the context
     updateCost(cost.id, updatedSettings);
-    
+
     // Update local state
     setCostSettings(updatedSettings);
     setSplitType(updatedCostData.splitType);
     setTotalAmount(updatedCostData.amount);
-    
+
     // Update custom and percentage amounts
     const newCustomAmounts = {};
     const newPercentageAmounts = {};
-    updatedCostData.participants.forEach(participant => {
+    updatedCostData.participants.forEach((participant) => {
       if (participant.customAmount) {
         newCustomAmounts[participant.userId] = participant.customAmount;
       }
@@ -145,7 +228,7 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
     });
     setCustomAmounts(newCustomAmounts);
     setPercentageAmounts(newPercentageAmounts);
-    
+
     // Close the split step
     setShowSplitStep(false);
   };
@@ -162,16 +245,16 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
   };
 
   const updateCustomAmount = (personId, value) => {
-    setCustomAmounts(prev => ({
+    setCustomAmounts((prev) => ({
       ...prev,
-      [personId]: value
+      [personId]: value,
     }));
   };
 
   const updatePercentageAmount = (personId, value) => {
-    setPercentageAmounts(prev => ({
+    setPercentageAmounts((prev) => ({
       ...prev,
-      [personId]: value
+      [personId]: value,
     }));
   };
 
@@ -179,12 +262,12 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
     const amounts = {};
     if (splitType === "equal") {
       const amountPerPerson = totalAmount / selectedPeople.length;
-      selectedPeople.forEach(person => {
+      selectedPeople.forEach((person) => {
         amounts[person.id] = amountPerPerson;
       });
     } else if (splitType === "equalWithMe") {
       const amountPerPerson = totalAmount / (selectedPeople.length + 1);
-      selectedPeople.forEach(person => {
+      selectedPeople.forEach((person) => {
         amounts[person.id] = amountPerPerson;
       });
     }
@@ -192,280 +275,274 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
   };
 
   // Convert participants to the format expected by SplitStep
-  const selectedPeople = costSettings.participants.map(participant => {
-    const user = participants.find(p => p.id === participant.userId);
-    return {
-      id: participant.userId,
-      name: user?.name || 'Unknown',
-      avatar: user?.avatar || user?.name?.charAt(0) || 'U',
-      color: user?.color || 'bg-gray-500',
-    };
-  }).filter(person => person.name !== 'Unknown');
+  const selectedPeople = costSettings.participants
+    .map((participant) => {
+      const user = participants.find((p) => p.id === participant.userId);
+      return {
+        id: participant.userId,
+        name: user?.name || "Unknown",
+        avatar: user?.avatar || user?.name?.charAt(0) || "U",
+        color: user?.color || "bg-gray-500",
+      };
+    })
+    .filter((person) => person.name !== "Unknown");
 
   // Create mock charge details for SplitStep
   const mockChargeDetails = {
     name: cost.name,
     lastAmount: cost.amount,
     frequency: cost.frequency,
-    nextDue: cost.nextDue, // Pass the next due date
-    plaidMatched: true, // Assume true for existing costs
+    nextDue: cost.nextDue,
+    plaidMatched: true,
   };
 
   if (showSplitStep) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 !mt-0 p-4">
-        <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full h-[95vh] overflow-hidden flex flex-col">
-          {/* Split Step Header */}
-          <div className="p-4 border-b bg-gray-50 flex items-center gap-4 flex-shrink-0">
-            <button
-              onClick={() => setShowSplitStep(false)}
-              className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-700" />
-            </button>
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">Edit Split Configuration</h2>
-              <p className="text-sm text-gray-600">
-                Update split settings for {selectedPeople.length} {selectedPeople.length !== 1 ? "people" : "person"}
-              </p>
-            </div>
-          </div>
-          
-          {/* Split Step Content - Scrollable */}
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 !mt-0">
+        <div className="bg-white rounded-xl shadow-2xl w-full h-full overflow-hidden flex flex-col">
           <div className="flex-1 overflow-y-auto">
-            <div className="p-6 pb-0">
-              <SplitStep
-                selectedPeople={selectedPeople}
-                onBack={() => setShowSplitStep(false)}
-                selectedCharge={mockChargeDetails}
-                newChargeDetails={null}
-                splitType={splitType}
-                setSplitType={setSplitType}
-                totalAmount={totalAmount}
-                setTotalAmount={setTotalAmount}
-                customAmounts={customAmounts}
-                updateCustomAmount={updateCustomAmount}
-                calculateSplitAmounts={calculateSplitAmounts}
-                percentageAmounts={percentageAmounts}
-                updatePercentageAmount={updatePercentageAmount}
-                // Edit mode props
-                isEditMode={true}
-                onUpdateCost={handleUpdateCost}
-              />
-            </div>
+            <SplitStep
+              selectedPeople={selectedPeople}
+              onBack={() => setShowSplitStep(false)}
+              selectedCharge={mockChargeDetails}
+              newChargeDetails={null}
+              splitType={splitType}
+              setSplitType={setSplitType}
+              totalAmount={totalAmount}
+              setTotalAmount={setTotalAmount}
+              customAmounts={customAmounts}
+              updateCustomAmount={updateCustomAmount}
+              calculateSplitAmounts={calculateSplitAmounts}
+              percentageAmounts={percentageAmounts}
+              updatePercentageAmount={updatePercentageAmount}
+              isEditMode={true}
+              onUpdateCost={handleUpdateCost}
+            />
           </div>
-          
         </div>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 !mt-0 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full h-[95vh] overflow-hidden">
-        {/* Header */}
-        <div className="p-6 border-b bg-gray-50">
-          <div className="flex justify-between items-start">
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                <RefreshCw className="w-5 h-5 text-blue-600" />
-                Manage {cost.name}
-              </h2>
-              <p className="text-sm text-gray-600 mt-1">
-                ${cost.amount} • {cost.frequency || "monthly"} • {cost.participants.length} people
-              </p>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 !mt-0">
+      <div className="bg-gray-50 rounded-xl shadow-2xl w-full h-full overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-y-auto">
+          {/* Main content container with mobile-friendly padding matching SplitStep */}
+          <div className="max-w-lg mx-auto px-6 py-0 pb-24">
+            {/* Header section - matching SplitStep structure */}
+            <div className="flex items-center gap-4 mb-6 mt-8">
+              <button
+                onClick={onClose}
+                className="p-3 hover:bg-white rounded-xl transition-all hover:shadow-md"
+              >
+                <ArrowLeft className="w-6 h-6 text-gray-700" />
+              </button>
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold text-gray-900">
+                  Manage Recurring Cost
+                </h1>
+                <p className="text-gray-600 capitalize">
+                  {cost.name} • {formatAmountDisplay(cost).amount} each •{" "}
+                  {cost.frequency || "monthly"}
+                </p>
+              </div>
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-            >
-              <X className="w-5 h-5 text-gray-500" />
-            </button>
-          </div>
 
-          {/* Tabs */}
-          <div className="flex gap-4 mt-4">
-            <button
-              onClick={() => setActiveTab("requests")}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeTab === "requests"
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              Payment Requests
-            </button>
-            <button
-              onClick={() => setShowSplitStep(true)}
-              className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-2"
-            >
-              <Edit className="w-4 h-4" />
-              Edit Split Configuration
-            </button>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="px-6 pb-6 overflow-y-auto" style={{ height: 'calc(95vh - 200px)' }}>
-          <div>
-            {/* Next Payment Request */}
-            {cost.nextDue && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium text-blue-900 flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      Next Payment Request
-                    </h3>
-                    <p className="text-sm text-blue-700 mt-1">
-                      Scheduled for {new Date(cost.nextDue).toLocaleDateString()}
-                      {isOverdue(cost.nextDue) && (
-                        <span className="text-red-600 font-medium ml-2">
-                          ({getDaysOverdue(cost.nextDue)} days overdue)
-                        </span>
-                      )}
+            {/* Edit Split Button - matching SplitStep button styling */}
+            <div className="mb-6">
+              <button
+                onClick={() => setShowSplitStep(true)}
+                className="w-full p-4 bg-white hover:bg-gray-100 rounded-xl border border-gray-200 transition-all flex items-center justify-between"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
+                    <Settings className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="text-left">
+                    <h4 className="font-semibold text-gray-900">
+                      Edit Request
+                    </h4>
+                    <p className="text-gray-600 text-sm">
+                      Update split method, amounts & schedule
                     </p>
                   </div>
-                  <button 
-                    onClick={handleSendNewRequest}
-                    className="bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1"
-                  >
-                    <Send className="w-3 h-3" />
-                    Send Now
-                  </button>
                 </div>
-              </div>
-            )}
-
-            {/* Current Status Overview */}
-            <div className="bg-gray-50 border rounded-lg p-4 mt-6">
-              <h3 className="font-medium text-gray-900 mb-3">Current Status</h3>
-              <div className="flex flex-wrap gap-2">
-                {cost.participants.map((participant) => {
-                  const user = participants.find((u) => u.id === participant.userId);
-                  return (
-                    <div
-                      key={participant.userId}
-                      className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${getPaymentStatusColor(participant.status)}`}
-                    >
-                      {getPaymentStatusIcon(participant.status)}
-                      <span>{user?.name}</span>
-                      {participant.paidAt && (
-                        <span className="text-xs opacity-75 ml-1">
-                          ({new Date(participant.paidAt).toLocaleDateString()})
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                <ArrowLeft className="w-5 h-5 text-gray-500 rotate-180" />
+              </button>
             </div>
 
-            {/* Payment History */}
-            <div className="mt-6">
-              <h3 className="font-medium text-gray-900 mb-4">Payment History</h3>
+            {/* Payment History Section */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Payment History
+              </h3>
               {sortedPayments.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-12 bg-white rounded-xl border-2 border-gray-200">
                   <Mail className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p>No payment requests sent yet.</p>
+                  <h4 className="font-medium text-gray-900 mb-2">
+                    No payment requests yet
+                  </h4>
+                  <p className="text-gray-600 text-sm">
+                    Payment requests will appear here once sent.
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {sortedPayments.map((payment) => (
-                    <div key={payment.id} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-medium text-gray-900">
-                              Payment Request
-                            </h4>
-                            <span className={getStatusBadge(payment.status)}>
-                              {payment.status}
-                            </span>
-                            {payment.followUpSent && (
-                              <div className="flex items-center gap-1 text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
-                                <AlertTriangle className="w-3 h-3" />
-                                Follow-up sent
-                              </div>
-                            )}
-                          </div>
-                          <p className="text-sm text-gray-600">
-                            Sent on {new Date(payment.requestDate).toLocaleDateString()}
-                            {payment.dueDate && (
-                              <>
-                                {" • Due "}
-                                {new Date(payment.dueDate).toLocaleDateString()}
-                              </>
-                            )}
-                            {payment.lastReminderSent && (
-                              <>
-                                {" • Last reminder "}
-                                {new Date(payment.lastReminderSent).toLocaleDateString()}
-                              </>
-                            )}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-medium text-gray-900">${payment.amount}</p>
-                        </div>
-                      </div>
+                  {sortedPayments.map((payment) => {
+                    console.log("payment", payment);
+                    const statusInfo = getPaymentStatusBorder(payment.status);
 
-                      {/* Participant Status */}
-                      <div className="space-y-2">
-                        {payment.participants.map((participant) => {
-                          const user = participants.find((u) => u.id === participant.userId);
-                          const canResend = participant.status === "pending" || participant.status === "overdue";
-                          
-                          return (
-                            <div
-                              key={participant.userId}
-                              className="flex items-center justify-between p-2 bg-gray-50 rounded"
-                            >
-                              <div className="flex items-center gap-2">
-                                {getPaymentStatusIcon(participant.status)}
-                                <span className="font-medium">{user?.name}</span>
-                                <span className={`px-2 py-1 text-xs rounded ${getPaymentStatusColor(participant.status)}`}>
-                                  {participant.status}
-                                </span>
-                                <span className="text-sm text-gray-600">${participant.amount}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                {participant.paidDate && (
-                                  <span className="text-xs text-gray-600">
-                                    Paid {new Date(participant.paidDate).toLocaleDateString()}
+                    return (
+                      //  <div
+                      //   key={payment.id}
+                      //   className={`border-2 ${statusInfo.borderClass} rounded-xl p-4 ${statusInfo.bgClass} relative`}
+                      // >
+                      <div
+                        key={payment.id}
+                        className={`border-2 ${statusInfo.borderClass} rounded-xl p-4 bg-white relative`}
+                      >
+                        {/* Status Label */}
+                        <div className="absolute top-3 right-3">
+                          <span
+                            className={`px-2 py-1 text-xs rounded-lg font-medium ${statusInfo.labelClass}`}
+                          >
+                            {statusInfo.label}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="w-full">
+                            <div className="flex items-center gap-2 mb-2 flex-wrap">
+                              <h4 className="font-semibold text-gray-900 text-2xl">
+                                ${payment.amount}
+                              </h4>
+                            </div>
+                            {/* <p className="text-sm text-gray-600">
+                              Sent on{" "}
+                              {new Date(
+                                payment.requestDate
+                              ).toLocaleDateString()}
+                              {payment.dueDate && (
+                                <>
+                                  {" • Due "}
+                                  {new Date(
+                                    payment.dueDate
+                                  ).toLocaleDateString()}
+                                </>
+                              )}
+                            </p> */} 
+                            <div className="flex justify-between w-full  border-b-2
+                            ">
+                              {payment.requestDate && (
+                                <div className="flex items-center gap-2 text-gray-600 bg-white backdrop-blur-sm pr-3 py-1.5 rounded-lg w-fit">
+                                  {/* <Calendar className="w-4 h-4" /> */}
+                                  <span className="text-sm">
+                                    Sent on:{" "}
+                                    {new Date(
+                                      payment.requestDate
+                                    ).toLocaleDateString()}
                                   </span>
-                                )}
-                                {participant.status === "overdue" && payment.dueDate && (
-                                  <span className="text-xs text-red-600">
-                                    {getDaysOverdue(payment.dueDate)} days overdue
+                                </div>
+                              )}
+
+                              {payment.requestDate && (
+                                <div className="flex items-center gap-2 text-gray-600 bg-white backdrop-blur-sm px-3 py-1.5 rounded-lg w-fit">
+                                  {/* <Calendar className="w-4 h-4" /> */}
+                                  <span className="text-sm">
+                                    Due on:{" "}
+                                    {new Date(
+                                      payment.dueDate
+                                    ).toLocaleDateString()}
                                   </span>
-                                )}
-                                {participant.remindersSent > 0 && (
-                                  <div className="flex items-center gap-1 text-xs text-gray-500">
-                                    <MessageCircle className="w-3 h-3" />
-                                    {participant.remindersSent} reminder{participant.remindersSent > 1 ? 's' : ''}
-                                    {participant.lastReminderDate && (
-                                      <span className="ml-1">
-                                        (last: {new Date(participant.lastReminderDate).toLocaleDateString()})
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          {/* <div className="text-right">
+                            <p className="font-semibold text-gray-900 text-lg">
+                              ${payment.amount}
+                            </p>
+                          </div> */}
+                        </div>
+
+                        {/* Participant Status */}
+                        <div className="space-y-2">
+                          {payment.participants.map((participant) => {
+                            const user = participants.find(
+                              (u) => u.id === participant.userId
+                            );
+                            const { avatar } = getUserAvatar(user);
+                            const statusColor = getStatusColor(
+                              participant.status
+                            );
+                            const canResend =
+                              participant.status === "pending" ||
+                              participant.status === "overdue";
+
+                            return (
+                              <div
+                                key={participant.userId}
+                                className="flex items-center justify-between p-3 pl-0 bg-white/100 rounded-lg"
+                              >
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                  <div className="relative flex-shrink-0">
+                                    <div
+                                      className={`w-8 h-8 rounded-lg ${user?.color} flex items-center justify-center text-white font-semibold text-xs border-2 border-white shadow-sm`}
+                                    >
+                                      {avatar}
+
+                                      {/* Status indicator */}
+                                      {statusColor && (
+                                        <div
+                                          className={`absolute -bottom-0.5 -right-0.5 ${statusColor} rounded-full w-3 h-3 border border-white shadow-sm`}
+                                        ></div>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="flex-1 flex items- min-w-0 justify-between">
+                                    <div className="flex items-baseline mt-[2px] gap-2">
+                                      <span className="font-medium text-lg truncate">
+                                        {user?.name}
                                       </span>
+                                      <span className="text-sm text-gray-600 flex-shrink-0">
+                                        ${participant.amount}
+                                      </span>
+                                    </div>
+                                    {participant.paidDate && (
+                                      <div className="flex items-center gap-2 text-gray-600 bg-white backdrop-blur-sm px-3 py-1.5 rounded-lg w-fit">
+                                        <Calendar className="w-4 h-4" />
+                                        <span className="text-sm">
+                                          Paid:{" "}
+                                          {new Date(
+                                            participant.paidDate
+                                          ).toLocaleDateString()}
+                                        </span>
+                                      </div>
                                     )}
                                   </div>
-                                )}
+                                </div>
                                 {canResend && (
                                   <button
-                                    onClick={() => handleResendRequest(payment.id, participant.userId)}
-                                    className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 transition-colors"
+                                    onClick={() =>
+                                      handleResendRequest(
+                                        payment.id,
+                                        participant.userId
+                                      )
+                                    }
+                                    className="bg-blue-600 text-sm text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 flex-shrink-0 ml-2"
                                   >
-                                    Resend
+                                    <Send className="w-4 h-4" />
+                                    <span className="">Resend</span>
                                   </button>
                                 )}
                               </div>
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

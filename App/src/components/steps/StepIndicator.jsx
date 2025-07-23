@@ -6,7 +6,7 @@ const StepIndicator = ({ current }) => {
   const currentStepNumber = getStepNumber(current);
   
   return (
-    <div className="flex items-center justify-center mb-8">
+    <div className="hidden md:flex items-center justify-center mb-8">
       <div className="flex items-center space-x-2">
         {Array.from({ length: totalSteps }, (_, index) => (
           <div key={index} className="flex items-center">

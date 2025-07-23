@@ -6,12 +6,12 @@ export const useChargeState = () => {
   const [selectedCharge, setSelectedCharge] = useState(null);
   const [newChargeDetails, setNewChargeDetails] = useState({
     name: "",
-    customName: "",
+    // customName: "",
     lastAmount: "",
     lastDate: "",
-    frequency: "monthly",
+    frequency: "one-time",
   });
-
+  const [isManualCharge, setIsManualCharge] = useState(null);
   const [existingCharges] = useState([
     {
       id: 1,
@@ -66,5 +66,7 @@ export const useChargeState = () => {
     setNewChargeDetails,
     existingCharges,
     filteredCharges,
+    setIsManualCharge,
+    isManualCharge,
   };
 };

@@ -5,13 +5,40 @@ const DataContext = createContext();
 
 export const DataProvider = ({ children }) => {
   const [participants, setParticipants] = useState([
-    { id: 1, name: "John Doe", email: "john@example.com", avatar: "JD" },
-    { id: 2, name: "Jane Smith", email: "jane@example.com", avatar: "JS" },
-    { id: 3, name: "Mike Johnson", email: "mike@example.com", avatar: "MJ" },
-    { id: 4, name: "Sarah Wilson", email: "sarah@example.com", avatar: "SW" },
+    {
+      id: 1,
+      name: "John Doe",
+      email: "john@example.com",
+      phone: "+1 (555) 123-4567",
+      avatar: "JD",
+      color: "bg-sky-500",
+      HELLO: "HELOO!",
+    },
+    {
+      id: 2,
+      name: "Jane Smith",
+      email: "jane@example.com",
+      phone: "+1 (555) 234-5678",
+      avatar: "JS",
+      color: "bg-purple-500",
+    },
+    {
+      id: 3,
+      name: "Mike Johnson",
+      email: "mike@example.com",
+      phone: "+1 (555) 345-6789",
+      avatar: "MJ",
+      color: "bg-pink-500",
+    },
+    {
+      id: 4,
+      name: "Sarah Wilson",
+      email: "sarah@example.com",
+      phone: "+1 (555) 456-7890",
+      avatar: "SW",
+      color: "bg-indigo-500",
+    },
   ]);
-
-
 
   // costs represents requested payments
   const [costs, setCosts] = useState([
@@ -341,6 +368,8 @@ export const DataProvider = ({ children }) => {
       lastMatched: "2025-01-08",
       frequency: "monthly",
       nextDue: "2025-02-08",
+      isDynamic: true,
+
       paymentHistory: [
         {
           id: "payment_701",
@@ -414,9 +443,31 @@ export const DataProvider = ({ children }) => {
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
 
   const addParticipant = (participant) => {
+    const colors = [
+      // "bg-blue-500",
+      "bg-purple-500",
+      // "bg-green-500",
+      "bg-pink-500",
+      "bg-indigo-500",
+      // "bg-red-500",
+      "bg-yellow-500",
+      // "bg-orange-500",
+      "bg-teal-500",
+      "bg-cyan-500",
+      "bg-emerald-500",
+      "bg-rose-500",
+      "bg-violet-500",
+      "bg-amber-500",
+      "bg-lime-500",
+      "bg-sky-500",
+      "bg-fuchsia-500",
+      "bg-slate-500",
+    ];
+
     const newParticipant = {
       ...participant,
       id: Date.now(),
+      color: colors[Math.floor(Math.random() * colors.length)],
       avatar: participant.name
         .split(" ")
         .map((n) => n[0])

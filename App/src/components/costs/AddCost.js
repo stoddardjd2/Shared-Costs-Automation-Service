@@ -8,7 +8,7 @@ import ChargeTypeStep from "../steps/ChargeTypeStep";
 import ChargeSearchStep from "../steps/ChargeSearchStep";
 import ChargeDetailsStep from "../steps/ChargeDetailsStep";
 import SearchStep from "../steps/SearchStep";
-import SplitStep from "../steps/SplitStep";  // ADD THIS IMPORT
+import SplitStep from "../steps/SplitStep";
 import AddStep from "../steps/AddStep";
 
 const AddCost = () => {
@@ -28,7 +28,6 @@ const AddCost = () => {
   };
 
   const handleChargeSelect = (charge) => {
-    console.log("setting charge to", charge);
     chargeState.setSelectedCharge(charge);
     setCurrentStep(STEPS.SEARCH);
   };
@@ -50,7 +49,6 @@ const AddCost = () => {
     // }
   };
 
-
   const handleContinueToSplit = () => {
     setCurrentStep(STEPS.SPLIT);
   };
@@ -68,19 +66,20 @@ const AddCost = () => {
         );
         break;
       case STEPS.SEARCH:
+
         setCurrentStep(
-          chargeState.selectedCharge
+          !chargeState.isManualCharge
             ? STEPS.CHARGE_SEARCH
             : STEPS.CHARGE_DETAILS
         );
         break;
-      case STEPS.SPLIT:  // ADD THIS CASE
+      case STEPS.SPLIT: // ADD THIS CASE
         setCurrentStep(STEPS.SEARCH);
         break;
       case STEPS.ADD:
         setCurrentStep(STEPS.SEARCH);
         break;
-      
+
       default:
         setCurrentStep(STEPS.CHARGE_TYPE);
     }
@@ -97,6 +96,7 @@ const AddCost = () => {
             chargeSearchQuery={chargeState.chargeSearchQuery}
             setChargeSearchQuery={chargeState.setChargeSearchQuery}
             filteredCharges={chargeState.filteredCharges}
+            setIsManualCharge={chargeState.setIsManualCharge}
             onChargeSelect={handleChargeSelect}
             onCreateCharge={handleCreateCharge}
             onBack={handleBack}
@@ -111,7 +111,11 @@ const AddCost = () => {
           <ChargeDetailsStep
             newChargeDetails={chargeState.newChargeDetails}
             setNewChargeDetails={chargeState.setNewChargeDetails}
-            onContinue={() => setCurrentStep(STEPS.SEARCH)}
+            onContinue={() => {
+              chargeState.setSelectedCharge(chargeState.newChargeDetails);
+              chargeState.setIsManualCharge(true);
+              setCurrentStep(STEPS.SEARCH);
+            }}
             onBack={handleBack}
             chargeType={chargeState.chargeType}
           />
@@ -128,7 +132,7 @@ const AddCost = () => {
             togglePersonSelection={peopleState.togglePersonSelection}
             onAddContact={handleAddContact}
             onBack={handleBack}
-            onContinue={handleContinueToSplit}  // ADD THIS PROP
+            onContinue={handleContinueToSplit} // ADD THIS PROP
             // Charge state
             selectedCharge={chargeState.selectedCharge}
             newChargeDetails={chargeState.newChargeDetails}
@@ -142,12 +146,13 @@ const AddCost = () => {
 
       // ADD THIS NEW CASE
       case STEPS.SPLIT:
+        console.log("SPLLIT TIME", chargeState.selectedCharge)
         return (
           <SplitStep
             selectedPeople={peopleState.selectedPeople}
             onBack={handleBack}
             selectedCharge={chargeState.selectedCharge}
-            newChargeDetails={chargeState.newChargeDetails}
+            // newChargeDetails={chargeState.newChargeDetails}
             splitType={splitState.splitType}
             setSplitType={splitState.setSplitType}
             totalAmount={splitState.totalAmount}

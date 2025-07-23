@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   ArrowLeft,
   User,
@@ -7,6 +7,7 @@ import {
   DollarSign,
   Send,
   ChevronDown,
+  ChevronUp,
   Clock,
   Play,
   SkipForward,
@@ -15,16 +16,18 @@ import {
   BarChart3,
   Info,
   Percent,
+  Settings,
+  Calendar,
 } from "lucide-react";
 import StepIndicator from "./StepIndicator";
 import ChargeDisplay from "../costs/ChargeDisplay";
 import { useData } from "../../contexts/DataContext";
 import generateCostEntry from "../../utils/generateCostEntry";
 import { useNavigate } from "react-router-dom";
-
+import ConfirmButtonTray from "./ConfirmButtonTray";
 const SplitStep = ({
   selectedPeople,
-  setSelectedPeople, // Add this prop to allow updating selectedPeople
+  setSelectedPeople,
   onBack,
   selectedCharge,
   newChargeDetails,
@@ -36,7 +39,7 @@ const SplitStep = ({
   customAmounts,
   updateCustomAmount,
   calculateSplitAmounts,
-  // Percentage state - remove defaults to force proper passing
+  // Percentage state
   percentageAmounts,
   updatePercentageAmount,
   // Edit mode props
@@ -47,23 +50,30 @@ const SplitStep = ({
   const { setCosts } = useData();
   const navigate = useNavigate();
 
+  // Advanced options visibility
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+
   // Internal state for percentage amounts if not provided
-  const [internalPercentageAmounts, setInternalPercentageAmounts] = useState({});
-  
+  const [internalPercentageAmounts, setInternalPercentageAmounts] = useState(
+    {}
+  );
+
   // Use internal state if props not provided
-  const effectivePercentageAmounts = percentageAmounts || internalPercentageAmounts;
-  const effectiveUpdatePercentageAmount = updatePercentageAmount || ((personId, value) => {
-    console.log("Using internal percentage state:", personId, value);
-    setInternalPercentageAmounts(prev => ({
-      ...prev,
-      [personId]: value
-    }));
-  });
+  const effectivePercentageAmounts =
+    percentageAmounts || internalPercentageAmounts;
+  const effectiveUpdatePercentageAmount =
+    updatePercentageAmount ||
+    ((personId, value) => {
+      setInternalPercentageAmounts((prev) => ({
+        ...prev,
+        [personId]: value,
+      }));
+    });
 
   // Local state for recurring options
   const [showRecurringOptions, setShowRecurringOptions] = useState(false);
   const [recurringType, setRecurringType] = useState(
-    selectedCharge?.frequency.toLowerCase() || "none"
+    selectedCharge?.frequency?.toLowerCase() || "none"
   );
   const [customInterval, setCustomInterval] = useState(1);
   const [customUnit, setCustomUnit] = useState("days");
@@ -73,14 +83,45 @@ const SplitStep = ({
 
   // State for editable total amounts
   const [editableTotalAmount, setEditableTotalAmount] = useState(
-    selectedCharge?.lastAmount || 0
+    Number((totalAmount || selectedCharge?.lastAmount || 0).toFixed(2))
   );
-  const [isEditingTotal, setIsEditingTotal] = useState(false);
 
-  // State for dynamic costs tracking
-  const [isDynamicCosts, setIsDynamicCosts] = useState(false);
+  // Check if dynamic costs should be disabled
+  const isDynamicCostsDisabled =
+    splitType === "custom" || !selectedCharge?.plaidMatch;
+
+  // State for dynamic costs tracking - default to enabled if allowed
+  const [isDynamic, setIsDynamic] = useState(!isDynamicCostsDisabled);
   const [dynamicCostReason, setDynamicCostReason] = useState("");
   const [showDynamicInfo, setShowDynamicInfo] = useState(false);
+  const [isHoveringDynamicInfo, setIsHoveringDynamicInfo] = useState(false);
+
+  // Track previous split type to detect changes from custom
+  const prevSplitTypeRef = useRef(splitType);
+
+  // Set dynamic costs to default (enabled) when conditions allow
+  React.useEffect(() => {
+    const shouldBeEnabled = !isDynamicCostsDisabled;
+    
+    // Only update if current state doesn't match what it should be
+    if (isDynamic !== shouldBeEnabled) {
+      setIsDynamic(shouldBeEnabled);
+    }
+  }, [isDynamicCostsDisabled]);
+
+  // Sync editableTotalAmount with totalAmount prop
+  React.useEffect(() => {
+    if (totalAmount !== undefined && totalAmount !== editableTotalAmount) {
+      setEditableTotalAmount(Number(totalAmount.toFixed(2)));
+    }
+  }, [totalAmount]);
+
+  // Update parent totalAmount when editableTotalAmount changes
+  React.useEffect(() => {
+    if (setTotalAmount && editableTotalAmount !== totalAmount) {
+      setTotalAmount(Number(editableTotalAmount.toFixed(2)));
+    }
+  }, [editableTotalAmount, setTotalAmount, totalAmount]);
 
   // Close dropdowns when clicking outside
   React.useEffect(() => {
@@ -91,16 +132,23 @@ const SplitStep = ({
       ) {
         setShowRecurringOptions(false);
       }
-      if (showDynamicInfo && !event.target.closest(".dynamic-info-tooltip")) {
-        setShowDynamicInfo(false);
-      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showRecurringOptions, showDynamicInfo]);
+  }, [showRecurringOptions]);
+
+  // Auto-hide tooltip when not hovering
+  React.useEffect(() => {
+    if (!isHoveringDynamicInfo) {
+      const timer = setTimeout(() => {
+        setShowDynamicInfo(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isHoveringDynamicInfo]);
 
   const getRecurringLabel = () => {
     switch (recurringType) {
@@ -162,36 +210,54 @@ const SplitStep = ({
         return "Next month";
       case "yearly":
         return "Next year";
-      default:
-        return "Next occurrence";
+      // default:
+      //   return "Now";
     }
   };
 
   const handleSendRequest = (totalSplit) => {
     if (isEditMode && onUpdateCost) {
-      // Update existing cost
+      // Update existing cost - only include relevant data based on split type
       const updatedCostData = {
         splitType,
-        amount: editableTotalAmount,
-        customAmounts,
-        percentageAmounts: effectivePercentageAmounts,
+        amount: Number(editableTotalAmount.toFixed(2)),
         frequency: recurringType === "none" ? null : recurringType,
         customInterval: recurringType === "custom" ? customInterval : null,
         customUnit: recurringType === "custom" ? customUnit : null,
         startTiming,
-        isDynamicCosts,
+        isDynamic,
         dynamicCostReason,
-        participants: selectedPeople.map(person => ({
+        participants: selectedPeople.map((person) => ({
           userId: person.id,
-          customAmount: customAmounts[person.id],
-          percentage: effectivePercentageAmounts[person.id],
-          status: "pending" // Reset status for updated requests
-        }))
+          status: "pending",
+          ...(splitType === "custom" && {
+            customAmount: customAmounts[person.id],
+          }),
+          ...(splitType === "percentage" && {
+            percentage: effectivePercentageAmounts[person.id],
+          }),
+        })),
       };
-      
+
+      // Only include these fields if using the respective split method
+      if (splitType === "custom") {
+        updatedCostData.customAmounts = customAmounts;
+      }
+      if (splitType === "percentage") {
+        updatedCostData.percentageAmounts = effectivePercentageAmounts;
+      }
+
       onUpdateCost(updatedCostData);
       return;
     }
+
+    // Calculate the actual amount to use based on split type
+    const actualAmount = Number(
+      (splitType === "custom" || splitType === "percentage"
+        ? totalSplit
+        : editableTotalAmount
+      ).toFixed(2)
+    );
 
     // Original flow for new costs
     const costEntry = generateCostEntry({
@@ -199,26 +265,80 @@ const SplitStep = ({
       newChargeDetails,
       selectedPeople,
       splitType,
-      customAmounts,
-      percentageAmounts: effectivePercentageAmounts,
+      ...(splitType === "custom" && { customAmounts }),
+      ...(splitType === "percentage" && {
+        percentageAmounts: effectivePercentageAmounts,
+      }),
       recurringType,
       customInterval,
       customUnit,
       startTiming,
       totalSplit,
-      isDynamicCosts,
+      isDynamic,
       dynamicCostReason,
+      // Pass the actual calculated amount
+      totalAmount: actualAmount,
+      editableTotalAmount,
     });
 
-    // Ensure participants array matches selectedPeople
-    if (costEntry.participants) {
-      costEntry.participants = selectedPeople.map(person => ({
+    // Override cost entry properties with current state values to ensure accuracy
+    costEntry.splitType = splitType;
+    costEntry.amount = actualAmount;
+    costEntry.totalAmount = actualAmount;
+    costEntry.frequency = recurringType === "none" ? null : recurringType;
+    costEntry.customInterval =
+      recurringType === "custom" ? customInterval : null;
+    costEntry.customUnit = recurringType === "custom" ? customUnit : null;
+    costEntry.startTiming = startTiming;
+    costEntry.isDynamic = isDynamic;
+    costEntry.dynamicCostReason = dynamicCostReason;
+
+    // Only include split method specific data
+    if (splitType === "custom") {
+      costEntry.customAmounts = { ...customAmounts };
+    } else {
+      delete costEntry.customAmounts;
+    }
+
+    if (splitType === "percentage") {
+      costEntry.percentageAmounts = { ...effectivePercentageAmounts };
+    } else {
+      delete costEntry.percentageAmounts;
+    }
+
+    // Ensure participants array matches selectedPeople with all current values
+    costEntry.participants = selectedPeople.map((person) => {
+      const baseParticipant = {
         userId: person.id,
         status: "pending",
-        customAmount: customAmounts[person.id],
-        percentage: effectivePercentageAmounts[person.id]
-      }));
-    }
+      };
+
+      // Calculate individual amount based on split type
+      let individualAmount;
+      switch (splitType) {
+        case "equalWithMe":
+          individualAmount = actualAmount / (selectedPeople.length + 1);
+          break;
+        case "equal":
+          individualAmount = actualAmount / selectedPeople.length;
+          break;
+        case "percentage":
+          individualAmount =
+            actualAmount *
+            (Number(effectivePercentageAmounts[person.id] || 0) / 100);
+          baseParticipant.percentage = effectivePercentageAmounts[person.id];
+          break;
+        case "custom":
+          individualAmount = Number(customAmounts[person.id] || 0);
+          baseParticipant.customAmount = customAmounts[person.id];
+          break;
+        default:
+          individualAmount = 0;
+      }
+
+      baseParticipant.amount = Number(individualAmount.toFixed(2));
+      return baseParticipant;
+    });
 
     setCosts((prevCosts) => [...prevCosts, costEntry]);
     navigate("/dashboard");
@@ -230,7 +350,9 @@ const SplitStep = ({
       const percentageSplit = {};
       selectedPeople.forEach((person) => {
         const percentage = Number(effectivePercentageAmounts[person.id] || 0);
-        percentageSplit[person.id] = (Number(editableTotalAmount) * percentage) / 100;
+        percentageSplit[person.id] = Number(
+          ((Number(editableTotalAmount) * percentage) / 100).toFixed(2)
+        );
       });
       return percentageSplit;
     }
@@ -240,63 +362,170 @@ const SplitStep = ({
   // Calculate split amounts
   const splitAmounts = calculateActualSplitAmounts();
   const entries = Object.entries(splitAmounts);
-  const totalAmountValue = editableTotalAmount || selectedCharge?.lastAmount || 0;
+  const totalAmountValue =
+    editableTotalAmount || selectedCharge?.lastAmount || 0;
 
   // Calculate the sum based on split type
-  const totalSplit =
-    splitType === "equalWithMe"
-      ? (Number(editableTotalAmount) / (selectedPeople.length + 1)) *
-        selectedPeople.length
-      : splitType === "equal"
-      ? Number(editableTotalAmount)
-      : splitType === "percentage"
-      ? entries
-          .filter(([key]) => !key.toLowerCase().includes("total"))
-          .reduce((sum, [, amount]) => sum + Number(amount || 0), 0)
-      : entries
+  const totalSplit = React.useMemo(() => {
+    let result;
+    switch (splitType) {
+      case "equalWithMe":
+        result =
+          (Number(editableTotalAmount) / (selectedPeople.length + 1)) *
+          selectedPeople.length;
+        break;
+
+      case "equal":
+        result = Number(editableTotalAmount);
+        break;
+
+      case "percentage":
+        result = entries
           .filter(([key]) => !key.toLowerCase().includes("total"))
           .reduce((sum, [, amount]) => sum + Number(amount || 0), 0);
+        break;
+
+      case "custom":
+        result = entries
+          .filter(([key]) => !key.toLowerCase().includes("total"))
+          .reduce((sum, [, amount]) => sum + Number(amount || 0), 0);
+        break;
+
+      default:
+        result = Number(editableTotalAmount);
+    }
+    return Number(result.toFixed(2));
+  }, [splitType, editableTotalAmount, selectedPeople.length, entries]);
 
   // Calculate the remainder
   const remainder = Number(totalAmountValue) - totalSplit;
 
   // Calculate total percentage for percentage split
-  const totalPercentage = splitType === "percentage" 
-    ? selectedPeople.reduce((sum, person) => sum + Number(effectivePercentageAmounts[person.id] || 0), 0)
-    : 0;
+  const totalPercentage =
+    splitType === "percentage"
+      ? selectedPeople.reduce(
+          (sum, person) =>
+            sum + Number(effectivePercentageAmounts[person.id] || 0),
+          0
+        )
+      : 0;
 
-  // Check if dynamic costs should be disabled
-  const isDynamicCostsDisabled = 
-    splitType === "custom" || 
-    !selectedCharge?.plaidMatched;
-
-  // Reset dynamic costs when switching to custom or when disabled
+  // Auto-enable dynamic costs when changing away from custom split method
   React.useEffect(() => {
-    if (isDynamicCostsDisabled && isDynamicCosts) {
-      setIsDynamicCosts(false);
-    }
-  }, [isDynamicCostsDisabled, isDynamicCosts]);
+    const prevSplitType = prevSplitTypeRef.current;
 
-  // Get the reason why dynamic costs is disabled
-  const getDynamicCostsDisabledReason = () => {
-    const reasons = [];
-    if (!selectedCharge?.plaidMatched) {
-      reasons.push("Plaid Required");
+    // Check if we're changing FROM custom TO another split type
+    if (prevSplitType === "custom" && splitType !== "custom") {
+      // Only enable if dynamic costs are allowed (not disabled)
+      if (!isDynamicCostsDisabled) {
+        setIsDynamic(true);
+      }
     }
+
+    // Update the ref for next comparison
+    prevSplitTypeRef.current = splitType;
+  }, [splitType, isDynamicCostsDisabled]);
+
+  // Recalculate total amount when split method changes
+  React.useEffect(() => {
+    let newTotalAmount = editableTotalAmount;
+
+    // For custom split, calculate total from individual amounts
     if (splitType === "custom") {
-      reasons.push("Not Available for Custom");
+      if (customAmounts && Object.keys(customAmounts).length > 0) {
+        const customTotal = Object.values(customAmounts).reduce(
+          (sum, amount) => sum + (Number(amount) || 0),
+          0
+        );
+        if (customTotal > 0) {
+          newTotalAmount = Number(customTotal.toFixed(2));
+        }
+      }
     }
-    return reasons.join(" & ") || null;
-  };
+
+    // For percentage split, ensure we have a base amount to work with
+    else if (splitType === "percentage") {
+      if (!editableTotalAmount || editableTotalAmount === 0) {
+        newTotalAmount = Number(
+          (selectedCharge?.lastAmount || totalAmount || 0).toFixed(2)
+        );
+      }
+    }
+
+    // For equal splits, use the charge amount or current total
+    else if (splitType === "equal" || splitType === "equalWithMe") {
+      if (!editableTotalAmount || editableTotalAmount === 0) {
+        newTotalAmount = Number(
+          (selectedCharge?.lastAmount || totalAmount || 0).toFixed(2)
+        );
+      }
+    }
+
+    // Update if amount changed and is valid
+    if (newTotalAmount !== editableTotalAmount && newTotalAmount >= 0) {
+      setEditableTotalAmount(newTotalAmount);
+      if (setTotalAmount) {
+        setTotalAmount(newTotalAmount);
+      }
+    }
+  }, [splitType, customAmounts, selectedCharge?.lastAmount, totalAmount]);
+
+  // Update total when custom amounts change
+  React.useEffect(() => {
+    if (splitType === "custom" && customAmounts) {
+      const customTotal = Object.values(customAmounts).reduce(
+        (sum, amount) => sum + (Number(amount) || 0),
+        0
+      );
+      const roundedTotal = Number(customTotal.toFixed(2));
+      if (roundedTotal !== editableTotalAmount) {
+        setEditableTotalAmount(roundedTotal);
+        if (setTotalAmount) {
+          setTotalAmount(roundedTotal);
+        }
+      }
+    }
+  }, [customAmounts, splitType]);
+
+  // Update total calculation when percentage amounts change
+  React.useEffect(() => {
+    if (splitType === "percentage" && effectivePercentageAmounts) {
+      // The total stays the same for percentage, but we might need to trigger recalculation
+      const calculatedTotal = selectedPeople.reduce((sum, person) => {
+        const percentage = Number(effectivePercentageAmounts[person.id] || 0);
+        return sum + (Number(editableTotalAmount) * percentage) / 100;
+      }, 0);
+
+      // For percentage splits, we typically keep the editableTotalAmount as the base
+      // The calculated amounts are shown in the UI but don't change the total
+    }
+  }, [
+    effectivePercentageAmounts,
+    splitType,
+    selectedPeople,
+    editableTotalAmount,
+  ]);
+
+  // Handle changes to selectedCharge (e.g., when a new charge is selected)
+  React.useEffect(() => {
+    if (selectedCharge?.lastAmount) {
+      const chargeAmount = Number(selectedCharge.lastAmount.toFixed(2));
+      setEditableTotalAmount(chargeAmount);
+      if (setTotalAmount) {
+        setTotalAmount(chargeAmount);
+      }
+    }
+  }, [selectedCharge?.id, selectedCharge?.lastAmount, setTotalAmount]);
 
   return (
-    <div className={isEditMode ? "relative" : "min-h-screen bg-gray-50"}>
-      <div className={isEditMode ? "" : "max-w-lg mx-auto px-6 py-8"}>
+    <div className={"relative"}>
+      {/* Main content container with bottom padding to prevent content being hidden behind ConfirmButtonTray */}
+      <div className={`max-w-lg mx-auto px-6 py-0 ${isEditMode ? "pb-52" :"pb-36"} `}>
         {/* Hide step indicator and back button in edit mode since modal has its own header */}
         {!isEditMode && <StepIndicator current="split" />}
 
-        {!isEditMode && (
-          <div className="flex items-center gap-4 mb-6">
+        {(
+          <div className={`flex items-center gap-4 mb-6  ${isEditMode && "mt-8"}`}>
             <button
               onClick={onBack}
               className="p-3 hover:bg-white rounded-xl transition-all hover:shadow-md"
@@ -304,129 +533,34 @@ const SplitStep = ({
               <ArrowLeft className="w-6 h-6 text-gray-700" />
             </button>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-900">
-                {isEditMode ? "Edit Split Configuration" : "Split Costs"}
+              <h1 className={`text-3xl font-bold text-gray-900`}>
+                {isEditMode ? `Edit Requests` :"Split Costs"}
               </h1>
               <p className="text-gray-600">
-                {isEditMode 
-                  ? `Update split settings for ${selectedPeople.length} ${selectedPeople.length !== 1 ? "people" : "person"}`
-                  : `Configure how to split with ${selectedPeople.length} ${selectedPeople.length !== 1 ? "people" : "person"}`
-                }
+                {isEditMode
+                  ? `Configure future requests for ${selectedPeople.length} ${
+                      selectedPeople.length !== 1 ? "people" : "person"
+                    }`
+                  : `Configure how to split with ${selectedPeople.length} ${
+                      selectedPeople.length !== 1 ? "people" : "person"
+                    }`}
               </p>
             </div>
           </div>
         )}
 
+        {/* Charge Display - Always visible and prominent */}
         <ChargeDisplay
           selectedCharge={selectedCharge}
           newChargeDetails={newChargeDetails}
         />
 
-        {/* Selected People Preview */}
-        <div className="mb-6 p-4 bg-white rounded-xl border border-gray-200">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">
-            Splitting with:
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {selectedPeople.map((person) => (
-              <div
-                key={person.id}
-                className="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-lg group hover:bg-red-50 transition-colors"
-              >
-                <div
-                  className={`w-6 h-6 rounded ${person.color} flex items-center justify-center text-white font-semibold text-xs`}
-                >
-                  {person.avatar}
-                </div>
-                <span className="text-sm font-medium text-gray-900 group-hover:text-red-700 transition-colors">
-                  {person.name}
-                </span>
-                <button
-                  onClick={() => {
-                    // Remove person from selectedPeople array
-                    if (setSelectedPeople) {
-                      const updatedPeople = selectedPeople.filter(p => p.id !== person.id);
-                      setSelectedPeople(updatedPeople);
-                    }
-                    
-                    // Clean up any custom amounts or percentages for this person
-                    if (customAmounts[person.id]) {
-                      updateCustomAmount(person.id, "");
-                    }
-                    if (effectivePercentageAmounts[person.id]) {
-                      effectiveUpdatePercentageAmount(person.id, "");
-                    }
-
-                    // Update the costs state to remove this person from participants
-                    if (selectedCharge) {
-                      console.log("REMOVE TIME", person.id)
-                      setCosts(prevCosts => 
-                        prevCosts.map(cost => {
-                          if (cost.id === selectedCharge.id) {
-                            return {
-                              ...cost,
-                              // Only remove from main participants array - preserve payment history
-                              participants: cost.participants.filter(p => p.userId !== person.id)
-                            };
-                          }
-                          return cost;
-                        })
-                      );
-                    }
-                  }}
-                  className="ml-1 p-1 text-gray-400 hover:text-red-600 hover:bg-red-100 rounded-full transition-all opacity-0 group-hover:opacity-100"
-                  title={`Remove ${person.name}`}
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
-          </div>
-          
-          {selectedPeople.length === 0 && (
-            <div className="text-center py-4">
-              <p className="text-sm text-gray-500">No people selected for splitting</p>
-              <button
-                onClick={onBack}
-                className="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Go back to select people
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Total Amount Input - Always visible at top */}
-        <div className="mb-6">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Total Amount to Split
-          </label>
-          <div className="relative">
-            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="number"
-              value={editableTotalAmount}
-              onChange={(e) =>
-                setEditableTotalAmount(Number(e.target.value) || 0)
-              }
-              placeholder="Enter total amount"
-              className="w-full pl-10 pr-12 py-3 border rounded-lg outline-none text-base bg-white focus:ring-2 border-gray-200 focus:ring-blue-600 focus:border-transparent"
-            />
-            <button
-              onClick={() => setIsEditingTotal(!isEditingTotal)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-blue-600 transition-colors"
-            >
-              <Edit3 className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Split Options */}
+        {/* Split Method Selection - Always visible */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Choose Split Method
+            Split Method
           </h3>
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
             <div
               onClick={() => setSplitType("equalWithMe")}
               className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
@@ -435,17 +569,15 @@ const SplitStep = ({
                   : "border-gray-200 bg-white hover:border-gray-300"
               }`}
             >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center">
-                  <User className="w-5 h-5 text-white" />
+              <div className="flex flex-col items-center text-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
+                  <User className="w-4 h-4 text-white" />
                 </div>
-                <div className="flex-1">
+                <div>
                   <h4 className="font-semibold text-gray-900 text-sm">
-                    Split Equally (Including Me)
+                    Equal + Me
                   </h4>
-                  <p className="text-gray-600 text-xs">
-                    Divide total among selected people including you
-                  </p>
+                  <p className="text-gray-600 text-xs">Include yourself</p>
                 </div>
               </div>
             </div>
@@ -458,17 +590,15 @@ const SplitStep = ({
                   : "border-gray-200 bg-white hover:border-gray-300"
               }`}
             >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
-                  <Calculator className="w-5 h-5 text-white" />
+              <div className="flex flex-col items-center text-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-green-500 flex items-center justify-center">
+                  <Calculator className="w-4 h-4 text-white" />
                 </div>
-                <div className="flex-1">
+                <div>
                   <h4 className="font-semibold text-gray-900 text-sm">
-                    Split Equally
+                    Equal Split
                   </h4>
-                  <p className="text-gray-600 text-xs">
-                    Divide total among selected people
-                  </p>
+                  <p className="text-gray-600 text-xs">Divide equally</p>
                 </div>
               </div>
             </div>
@@ -481,17 +611,15 @@ const SplitStep = ({
                   : "border-gray-200 bg-white hover:border-gray-300"
               }`}
             >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-indigo-500 flex items-center justify-center">
-                  <Percent className="w-5 h-5 text-white" />
+              <div className="flex flex-col items-center text-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center">
+                  <Percent className="w-4 h-4 text-white" />
                 </div>
-                <div className="flex-1">
+                <div>
                   <h4 className="font-semibold text-gray-900 text-sm">
-                    Percentage Split
+                    Percentage
                   </h4>
-                  <p className="text-gray-600 text-xs">
-                    Split by percentage of total
-                  </p>
+                  <p className="text-gray-600 text-xs">By percentage</p>
                 </div>
               </div>
             </div>
@@ -504,22 +632,22 @@ const SplitStep = ({
                   : "border-gray-200 bg-white hover:border-gray-300"
               }`}
             >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-purple-500 flex items-center justify-center">
-                  <DollarSign className="w-5 h-5 text-white" />
+              <div className="flex flex-col items-center text-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-purple-500 flex items-center justify-center">
+                  <DollarSign className="w-4 h-4 text-white" />
                 </div>
-                <div className="flex-1">
+                <div>
                   <h4 className="font-semibold text-gray-900 text-sm">
-                    Custom Amounts
+                    Custom
                   </h4>
-                  <p className="text-gray-600 text-xs">Set specific amounts</p>
+                  <p className="text-gray-600 text-xs">Set amounts</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Percentage Split Input */}
+        {/* Percentage Split Input - Visible when percentage selected */}
         {splitType === "percentage" && (
           <div className="mb-6">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -527,8 +655,9 @@ const SplitStep = ({
             </label>
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {selectedPeople.map((person) => {
-                const currentValue = effectivePercentageAmounts[person.id] || "";
-                
+                const currentValue =
+                  effectivePercentageAmounts[person.id] || "";
+
                 return (
                   <div
                     key={person.id}
@@ -547,16 +676,13 @@ const SplitStep = ({
                         type="number"
                         min="0"
                         max="100"
+                        step="0.1"
                         value={currentValue}
                         onChange={(e) => {
-                          const newValue = e.target.value;
-                          console.log("Direct input change:", person.id, newValue);
-                          console.log("Current state before:", effectivePercentageAmounts);
-                          effectiveUpdatePercentageAmount(person.id, newValue);
-                          console.log("Function called with:", person.id, newValue);
-                        }}
-                        onInput={(e) => {
-                          console.log("onInput triggered:", e.target.value);
+                          effectiveUpdatePercentageAmount(
+                            person.id,
+                            e.target.value
+                          );
                         }}
                         placeholder="0"
                         className="w-full pr-6 pl-2 py-2 border rounded text-sm outline-none bg-white focus:ring-2 border-gray-200 focus:ring-blue-600 focus:border-transparent"
@@ -564,41 +690,41 @@ const SplitStep = ({
                       <Percent className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3" />
                     </div>
                     <div className="w-16 text-right text-xs text-gray-500">
-                      ${((Number(editableTotalAmount) * Number(currentValue || 0)) / 100).toFixed(2)}
+                      $
+                      {(
+                        (Number(editableTotalAmount) *
+                          Number(currentValue || 0)) /
+                        100
+                      ).toFixed(2)}
                     </div>
                   </div>
                 );
               })}
             </div>
-            
+
             {/* Total Percentage Indicator */}
             <div className="mt-3 p-3 bg-gray-50 rounded-lg">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-700">Total Percentage:</span>
-                <span className={`text-sm font-bold ${
-                  totalPercentage === 100 
-                    ? "text-green-600" 
-                    : totalPercentage > 100 
-                    ? "text-red-600" 
-                    : "text-orange-600"
-                }`}>
+                <span className="text-sm font-medium text-gray-700">
+                  Total Percentage:
+                </span>
+                <span
+                  className={`text-sm font-bold ${
+                    totalPercentage === 100
+                      ? "text-green-600"
+                      : totalPercentage > 100
+                      ? "text-red-600"
+                      : "text-orange-600"
+                  }`}
+                >
                   {totalPercentage.toFixed(1)}%
                 </span>
               </div>
-              {totalPercentage !== 100 && (
-                <div className="text-xs text-gray-500 mt-1">
-                  {totalPercentage > 100
-                    ? "Percentages exceed 100%"
-                    : totalPercentage < 100
-                    ? `${(100 - totalPercentage).toFixed(1)}% remaining`
-                    : ""}
-                </div>
-              )}
             </div>
           </div>
         )}
 
-        {/* Custom Amount Input */}
+        {/* Custom Amount Input - Visible when custom selected */}
         {splitType === "custom" && (
           <div className="mb-6">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -622,16 +748,13 @@ const SplitStep = ({
                     <DollarSign className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3" />
                     <input
                       type="number"
+                      step="0.01"
                       value={customAmounts[person.id] || ""}
                       onChange={(e) =>
                         updateCustomAmount(person.id, e.target.value)
                       }
                       placeholder="0.00"
-                      className={`w-full pl-6 pr-2 py-2 border rounded text-sm outline-none bg-white focus:ring-2 ${
-                        Number(customAmounts[person.id] || 0) < 0
-                          ? "border-red-500 focus:ring-red-600 focus:border-transparent"
-                          : "border-gray-200 focus:ring-blue-600 focus:border-transparent"
-                      }`}
+                      className="w-full pl-6 pr-2 py-2 border rounded text-sm outline-none bg-white focus:ring-2 border-gray-200 focus:ring-blue-600 focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -640,466 +763,447 @@ const SplitStep = ({
           </div>
         )}
 
-        {/* Cost Tracking Section - Always visible */}
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-3">
-            <label className="text-lg font-semibold text-gray-900">
-              Cost Tracking
-            </label>
-            <div className="relative dynamic-info-tooltip">
+        {/* Start Timing Options - Only show for recurring payments */}
+        {recurringType !== "none" && (
+          <div className="space-y-2 mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Start Time
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
               <button
-                onClick={() => setShowDynamicInfo(!showDynamicInfo)}
-                className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
-              >
-                <Info className="w-4 h-4" />
-              </button>
-              {showDynamicInfo && (
-                <div className="absolute bottom-full left-0 mb-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50">
-                  <p className="mb-2">
-                    <strong>Fixed Amount:</strong> Same amount for all payment cycles
-                  </p>
-                  <p className="mb-2">
-                    <strong>Dynamic Costs:</strong> Track when amounts change between payment cycles
-                  </p>
-                  <p className="mb-2">
-                    Dynamic costs are useful for utilities, subscriptions, or any recurring cost that varies each period.
-                  </p>
-                  <p>
-                    Requires Plaid connection and not available with custom amounts.
-                  </p>
-                  <div className="absolute top-full left-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <div
-              onClick={() => setIsDynamicCosts(false)}
-              className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                !isDynamicCosts
-                  ? "border-blue-600 bg-blue-50"
-                  : "border-gray-200 bg-white hover:border-gray-300"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gray-500 flex items-center justify-center">
-                  <BarChart3 className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-gray-900 text-sm">
-                    Fixed Amount
-                  </h4>
-                  <p className="text-gray-600 text-xs">
-                    Same amount each payment cycle
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div
-              onClick={() => {
-                if (!isDynamicCostsDisabled) {
-                  setIsDynamicCosts(true);
-                }
-              }}
-              className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${
-                isDynamicCostsDisabled
-                  ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
-                  : isDynamicCosts
-                  ? "border-blue-600 bg-blue-50 cursor-pointer"
-                  : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
-              }`}
-            >
-              <div
-                className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  isDynamicCostsDisabled ? "bg-gray-400" : "bg-orange-500"
+                onClick={() => !isEditMode && setStartTiming("now")}
+                className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
+                  isEditMode
+                    ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
+                    : startTiming === "now"
+                    ? "border-blue-600 bg-blue-50 cursor-pointer"
+                    : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
                 }`}
               >
-                <TrendingUp className="w-5 h-5 text-white" />
+                <Play className="w-4 h-4 text-gray-500" />
+                <div className="text-left">
+                  <div
+                    className={`text-sm font-medium ${
+                      isEditMode ? "text-gray-500" : "text-gray-900"
+                    }`}
+                  >
+                    Start Now
+                  </div>
+                  <div
+                    className={`text-xs ${
+                      isEditMode ? "text-gray-400" : "text-gray-600"
+                    }`}
+                  >
+                    {isEditMode ? "Not Available" : "Send first request"}
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setStartTiming("next")}
+                className={`p-3 rounded-lg border-2 cursor-pointer transition-all flex items-center gap-2 ${
+                  startTiming === "next"
+                    ? "border-blue-600 bg-blue-50"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                }`}
+              >
+                <SkipForward className="w-4 h-4 text-gray-500" />
+                <div className="text-left">
+                  <div className="text-sm font-medium text-gray-900">
+                    Next Request
+                  </div>
+
+                  <div className="text-xs text-gray-600">
+                    {isEditMode && selectedCharge?.nextDue
+                      ? new Date(selectedCharge.nextDue).toLocaleDateString()
+                      : getNextPeriodLabel()}
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Advanced Options Toggle */}
+        <div className="mb-6">
+          <button
+            onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+            className="w-full p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition-all flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-gray-600 flex items-center justify-center">
+                <Settings className="w-4 h-4 text-white" />
               </div>
-              <div className="flex-1">
-                <h4
-                  className={`font-semibold text-sm ${
-                    isDynamicCostsDisabled ? "text-gray-500" : "text-gray-900"
-                  }`}
-                >
-                  Dynamic Costs
-                  {isDynamicCostsDisabled && (
-                    <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
-                      {getDynamicCostsDisabledReason()}
-                    </span>
-                  )}
+              <div className="text-left">
+                <h4 className="font-semibold text-gray-900 text-sm">
+                  Advanced Options
                 </h4>
-                <p
-                  className={`text-xs ${
-                    isDynamicCostsDisabled ? "text-gray-400" : "text-gray-600"
-                  }`}
-                >
-                  {isDynamicCostsDisabled 
-                    ? splitType === "custom" && !selectedCharge?.plaidMatched
-                      ? "Requires Plaid connection and not available with custom amounts"
-                      : splitType === "custom"
-                      ? "Not available with custom amounts"
-                      : "Requires Plaid connection to track cost changes"
-                    : "Track cost changes for next payment cycle"
-                  }
+                <p className="text-gray-600 text-xs">
+                  Payment schedule, cost tracking & more
                 </p>
               </div>
             </div>
-          </div>
+            {showAdvancedOptions ? (
+              <ChevronUp className="w-5 h-5 text-gray-500" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-gray-500" />
+            )}
+          </button>
         </div>
 
-        {/* Recurring Options */}
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Payment Schedule
-          </h3>
-
-          {/* Recurring Options Dropdown */}
-          <div className="relative recurring-dropdown mb-4">
-            <button
-              onClick={() => setShowRecurringOptions(!showRecurringOptions)}
-              className="w-full p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition-colors flex items-center justify-between"
-            >
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700">
-                  {getRecurringLabel()}
-                </span>
-              </div>
-              <ChevronDown
-                className={`w-4 h-4 text-gray-500 transition-transform ${
-                  showRecurringOptions ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-
-            {showRecurringOptions && (
-              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[60]">
-                <div className="p-2 space-y-1">
-                  <button
-                    onClick={() => {
-                      setRecurringType("none");
-                      setShowRecurringOptions(false);
-                      setIsDynamicCosts(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                      recurringType === "none"
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    One-time
-                  </button>
-                  <button
-                    onClick={() => {
-                      setRecurringType("daily");
-                      setShowRecurringOptions(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                      recurringType === "daily"
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    Daily
-                  </button>
-                  <button
-                    onClick={() => {
-                      setRecurringType("weekly");
-                      setShowRecurringOptions(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                      recurringType === "weekly"
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    Weekly
-                  </button>
-                  <button
-                    onClick={() => {
-                      setRecurringType("monthly");
-                      setShowRecurringOptions(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                      recurringType === "monthly"
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    Monthly
-                  </button>
-                  <button
-                    onClick={() => {
-                      setRecurringType("yearly");
-                      setShowRecurringOptions(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                      recurringType === "yearly"
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    Yearly
-                  </button>
-                  <button
-                    onClick={() => {
-                      setRecurringType("custom");
-                      setShowRecurringOptions(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                      recurringType === "custom"
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    Custom
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Custom Interval Input */}
-          {recurringType === "custom" && (
-            <div className="flex gap-2 mb-4">
-              <div className="flex-1">
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  Every
-                </label>
+        {/* Advanced Options Content */}
+        {showAdvancedOptions && (
+          <div className="space-y-6 mb-6">
+            {/* Total Amount Input - Always visible */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Total Amount to Split
+              </h3>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="number"
-                  min="1"
-                  value={customInterval}
-                  onChange={(e) =>
-                    setCustomInterval(parseInt(e.target.value) || 1)
-                  }
-                  className={`w-full p-2 border rounded text-sm outline-none focus:ring-2 ${
-                    customInterval < 1
-                      ? "border-red-500 focus:ring-red-600 focus:border-transparent"
-                      : "border-gray-200 focus:ring-blue-600 focus:border-transparent"
-                  }`}
+                  step="0.01"
+                  value={editableTotalAmount}
+                  onChange={(e) => {
+                    const newAmount =
+                      Number(Number(e.target.value).toFixed(2)) || 0;
+                    setEditableTotalAmount(newAmount);
+                    // Also update parent totalAmount if the setter exists
+                    if (setTotalAmount) {
+                      setTotalAmount(newAmount);
+                    }
+                  }}
+                  placeholder="Enter total amount"
+                  className="w-full pl-10 pr-4 py-3 border rounded-lg outline-none text-base bg-white focus:ring-2 border-gray-200 focus:ring-blue-600 focus:border-transparent"
                 />
               </div>
-              <div className="flex-1">
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  Unit
-                </label>
-                <select
-                  value={customUnit}
-                  onChange={(e) => setCustomUnit(e.target.value)}
-                  className="w-full p-2 border border-gray-200 rounded text-sm outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-                >
-                  <option value="days">Days</option>
-                  <option value="weeks">Weeks</option>
-                  <option value="months">Months</option>
-                  <option value="years">Years</option>
-                </select>
-              </div>
             </div>
-          )}
 
-          {/* Start Timing Options - Only show for recurring payments */}
-          {recurringType !== "none" && (
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">
-                Start Date
-              </label>
-              <div className="grid grid-cols-2 gap-2">
+            {/* Payment Schedule */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Payment Schedule
+              </h3>
+
+              {/* Recurring Options Dropdown */}
+              <div className="relative recurring-dropdown mb-4">
                 <button
-                  onClick={() => !isEditMode && setStartTiming("now")}
-                  className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
-                    isEditMode 
-                      ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
-                      : startTiming === "now"
-                      ? "border-blue-600 bg-blue-50 cursor-pointer"
-                      : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
-                  }`}
+                  onClick={() => setShowRecurringOptions(!showRecurringOptions)}
+                  className="w-full p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition-colors flex items-center justify-between"
                 >
-                  <Play className="w-4 h-4 text-gray-500" />
-                  <div className="text-left">
-                    <div className={`text-sm font-medium ${isEditMode ? "text-gray-500" : "text-gray-900"}`}>
-                      Start Now
-                      {isEditMode && (
-                        <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
-                          Not Available
-                        </span>
-                      )}
-                    </div>
-                    <div className={`text-xs ${isEditMode ? "text-gray-400" : "text-gray-600"}`}>
-                      {isEditMode ? "Cannot modify past requests" : "Send first request immediately"}
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm font-medium text-gray-700">
+                      {getRecurringLabel()}
+                    </span>
                   </div>
+                  <ChevronDown
+                    className={`w-4 h-4 text-gray-500 transition-transform ${
+                      showRecurringOptions ? "rotate-180" : ""
+                    }`}
+                  />
                 </button>
 
-                <button
-                  onClick={() => setStartTiming("next")}
-                  className={`p-3 rounded-lg border-2 cursor-pointer transition-all flex items-center gap-2 ${
-                    startTiming === "next"
+                {showRecurringOptions && (
+                  <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[60]">
+                    <div className="p-2 space-y-1">
+                      <button
+                        onClick={() => {
+                          setRecurringType("none");
+                          setShowRecurringOptions(false);
+                          setIsDynamic(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
+                          recurringType === "none"
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        One-time
+                      </button>
+                      <button
+                        onClick={() => {
+                          setRecurringType("daily");
+                          setShowRecurringOptions(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
+                          recurringType === "daily"
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        Daily
+                      </button>
+                      <button
+                        onClick={() => {
+                          setRecurringType("weekly");
+                          setShowRecurringOptions(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
+                          recurringType === "weekly"
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        Weekly
+                      </button>
+                      <button
+                        onClick={() => {
+                          setRecurringType("monthly");
+                          setShowRecurringOptions(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
+                          recurringType === "monthly"
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        Monthly
+                      </button>
+                      <button
+                        onClick={() => {
+                          setRecurringType("yearly");
+                          setShowRecurringOptions(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
+                          recurringType === "yearly"
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        Yearly
+                      </button>
+                      <button
+                        onClick={() => {
+                          setRecurringType("custom");
+                          setShowRecurringOptions(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
+                          recurringType === "custom"
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        Custom
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Custom Interval Input */}
+              {recurringType === "custom" && (
+                <div className="flex gap-2 mb-4">
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Every
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={customInterval}
+                      onChange={(e) =>
+                        setCustomInterval(parseInt(e.target.value) || 1)
+                      }
+                      className="w-full p-2 border border-gray-200 rounded text-sm outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Unit
+                    </label>
+                    <select
+                      value={customUnit}
+                      onChange={(e) => setCustomUnit(e.target.value)}
+                      className="w-full p-2 border border-gray-200 rounded text-sm outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                    >
+                      <option value="days">Days</option>
+                      <option value="weeks">Weeks</option>
+                      <option value="months">Months</option>
+                      <option value="years">Years</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Cost Tracking Section */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <label className="text-lg font-semibold text-gray-900">
+                  Cost Tracking
+                </label>
+                <div className="relative dynamic-info-tooltip">
+                  <button
+                    onClick={() => setShowDynamicInfo(!showDynamicInfo)}
+                    onMouseEnter={() => {
+                      setIsHoveringDynamicInfo(true);
+                      setShowDynamicInfo(true);
+                    }}
+                    onMouseLeave={() => {
+                      setIsHoveringDynamicInfo(false);
+                      // Small delay to allow clicking on the tooltip
+                      setTimeout(() => {
+                        if (!isHoveringDynamicInfo) {
+                          setShowDynamicInfo(false);
+                        }
+                      }, 150);
+                    }}
+                    className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                  >
+                    <Info className="w-4 h-4" />
+                  </button>
+                  {(showDynamicInfo || isHoveringDynamicInfo) && (
+                    <div
+                      className="absolute bottom-full left-0 mb-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50"
+                      onMouseEnter={() => setIsHoveringDynamicInfo(true)}
+                      onMouseLeave={() => {
+                        setIsHoveringDynamicInfo(false);
+                        setShowDynamicInfo(false);
+                      }}
+                    >
+                      <p className="mb-2">
+                        <strong>Fixed Amount:</strong> Same amount for all
+                        payment cycles
+                      </p>
+                      <p className="mb-2">
+                        <strong>Dynamic Costs:</strong> Track when amounts
+                        change between payment cycles
+                      </p>
+                      <p>
+                        Dynamic costs are useful for utilities, subscriptions,
+                        or any recurring cost that varies each period.
+                      </p>
+                      <div className="absolute top-full left-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div
+                  onClick={() => setIsDynamic(false)}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    !isDynamic
                       ? "border-blue-600 bg-blue-50"
                       : "border-gray-200 bg-white hover:border-gray-300"
                   }`}
                 >
-                  <SkipForward className="w-4 h-4 text-gray-500" />
-                  <div className="text-left">
-                    <div className="text-sm font-medium text-gray-900">
-                      Next Request
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-gray-500 flex items-center justify-center">
+                      <BarChart3 className="w-5 h-5 text-white" />
                     </div>
-                    <div className="text-xs text-gray-600">
-                      {isEditMode && selectedCharge?.nextDue 
-                        ? new Date(selectedCharge.nextDue).toLocaleDateString()
-                        : getNextPeriodLabel()
-                      }
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900 text-sm">
+                        Fixed Amount
+                      </h4>
+                      <p className="text-gray-600 text-xs">
+                        Same amount each payment cycle
+                      </p>
                     </div>
                   </div>
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+                </div>
 
-        {/* Live Total Display */}
-        <div className="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-semibold text-gray-900">
-              Total Split
-              {isDynamicCosts && (
-                <span className="ml-1 text-xs text-orange-600 font-medium">
-                  (Dynamic)
-                </span>
-              )}
-            </span>
-            <span className="text-lg font-bold text-blue-600">
-              ${totalSplit.toFixed(2)}
-            </span>
-          </div>
-
-          {/* Show per person amount for equal splits */}
-          {(splitType === "equal" || splitType === "equalWithMe") && (
-            <div className="text-xs text-gray-600">
-              {splitType === "equalWithMe"
-                ? `${(
-                    Number(editableTotalAmount) /
-                    (selectedPeople.length + 1)
-                  ).toFixed(2)} per person`
-                : `${(totalSplit / selectedPeople.length).toFixed(
-                    2
-                  )} per person`}
-            </div>
-          )}
-
-          {/* Show remainder for custom amounts and percentage */}
-          {(splitType === "custom" || splitType === "percentage") && (
-            <div className="mt-2 pt-2 border-t border-blue-200">
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-700">Total Expected:</span>
-                <span className="text-sm font-semibold text-gray-900">
-                  ${Number(totalAmountValue).toFixed(2)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center mt-1">
-                <span className="text-xs text-gray-700">
-                  {splitType === "percentage" ? "Difference:" : "Remainder:"}
-                </span>
-                <span
-                  className={`text-sm font-semibold ${
-                    remainder === 0
-                      ? "text-green-600"
-                      : remainder > 0
-                      ? "text-orange-600"
-                      : "text-red-600"
+                <div
+                  onClick={() => {
+                    if (!isDynamicCostsDisabled) {
+                      setIsDynamic(true);
+                    }
+                  }}
+                  className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${
+                    isDynamicCostsDisabled
+                      ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
+                      : isDynamic
+                      ? "border-blue-600 bg-blue-50 cursor-pointer"
+                      : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
                   }`}
                 >
-                  ${remainder.toFixed(2)}
-                </span>
-              </div>
-              {remainder !== 0 && (
-                <div className="text-xs text-gray-500 mt-1">
-                  {remainder > 0
-                    ? `Total split below charge cost`
-                    : `Total split exceeds charge cost`}
+                  <div
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      isDynamicCostsDisabled ? "bg-gray-400" : "bg-orange-500"
+                    }`}
+                  >
+                    <TrendingUp className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h4
+                      className={`font-semibold text-sm ${
+                        isDynamicCostsDisabled
+                          ? "text-gray-500"
+                          : "text-gray-900"
+                      }`}
+                    >
+                      Dynamic Costs
+                      {isDynamicCostsDisabled && (
+                        <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
+                          {splitType === "custom"
+                            ? "Not Available"
+                            : "Plaid Required"}
+                        </span>
+                      )}
+                    </h4>
+                    <p
+                      className={`text-xs ${
+                        isDynamicCostsDisabled
+                          ? "text-gray-400"
+                          : "text-gray-600"
+                      }`}
+                    >
+                      Track cost changes for next payment cycle
+                    </p>
+                  </div>
                 </div>
-              )}
-            </div>
-          )}
-
-          {/* Percentage validation message */}
-          {splitType === "percentage" && totalPercentage !== 100 && (
-            <div className="mt-2 pt-2 border-t border-blue-200">
-              <div className={`flex items-center gap-2 text-xs ${
-                totalPercentage > 100 ? "text-red-700" : "text-orange-700"
-              }`}>
-                <Info className="w-3 h-3" />
-                <span>
-                  {totalPercentage > 100
-                    ? "Percentages total more than 100%"
-                    : `${(100 - totalPercentage).toFixed(1)}% unallocated`}
-                </span>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Dynamic costs notification */}
-          {isDynamicCosts && (
-            <div className="mt-2 pt-2 border-t border-blue-200">
-              <div className="flex items-center gap-2 text-xs text-orange-700">
-                <TrendingUp className="w-3 h-3" />
-                <span>Amount may change in future cycles</span>
-              </div>
-            </div>
-          )}
-        </div>
+        {/* Live Total Display - Always visible and sticky above send button */}
 
-        {/* Send Button */}
-        <div className={isEditMode ? "sticky bottom-0 bg-white border-t pt-4 pb-4 px-6 shadow-lg z-50 -mx-6" : "pt-6 pb-6"}>
-          <button
-            onClick={() => handleSendRequest(totalSplit)}
-            disabled={
-              selectedPeople.length === 0 || 
-              totalSplit <= 0 || 
-              (splitType === "percentage" && totalPercentage > 100)
-            }
-            className="w-full text-white font-semibold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-3 disabled:bg-gray-300 disabled:cursor-not-allowed"
-            style={{
-              backgroundColor: (
-                selectedPeople.length > 0 && 
-                totalSplit > 0 && 
-                (splitType !== "percentage" || totalPercentage <= 100)
-              ) ? "#2563eb" : "#d1d5db",
-            }}
-          >
-            {isEditMode ? (
+        {/* Send Button - Always visible and sticky */}
+        <ConfirmButtonTray
+          buttonContent={
+            startTiming == "now" ? (
               <>
-                <Edit3 className="w-5 h-5" />
-                Update Future Requests
+                <Send className="w-5 h-5" />
+                Send Request
               </>
             ) : (
               <>
-                <Send className="w-5 h-5" />
-                {`Send Request${selectedPeople.length === 1 ? "" : `s`}`}
+                <Calendar className="w-5 h-5" />
+                Schedule Request
               </>
-            )}
-          </button>
-          
-          {/* Validation messages */}
-          {selectedPeople.length === 0 && (
-            <p className="text-xs text-red-600 mt-2 text-center">
-              Please select at least one person to split with
-            </p>
+            )
+          }
+          selectedPeople={selectedPeople}
+          onConfirm={() => handleSendRequest(totalSplit)}
+          isDynamic={isDynamic}
+          amountPerPerson={
+            splitType === "equalWithMe"
+              ? Number(
+                  (
+                    Number(editableTotalAmount) /
+                    (selectedPeople.length + 1)
+                  ).toFixed(2)
+                )
+              : splitType === "equal"
+              ? Number(
+                  (Number(editableTotalAmount) / selectedPeople.length).toFixed(
+                    2
+                  )
+                )
+              : 0 // For custom/percentage, we'll show total instead
+          }
+          totalAmount={Number(
+            (splitType === "custom" || splitType === "percentage"
+              ? totalSplit
+              : editableTotalAmount
+            ).toFixed(2)
           )}
-          {splitType === "percentage" && totalPercentage > 100 && (
-            <p className="text-xs text-red-600 mt-2 text-center">
-              Total percentage cannot exceed 100%
-            </p>
-          )}
-          {selectedPeople.length > 0 && totalSplit <= 0 && (
-            <p className="text-xs text-gray-500 mt-2 text-center">
-              {isEditMode ? "Enter amounts to update future requests" : "Enter amounts to send requests"}
-            </p>
-          )}
-        </div>
+          billingFrequency={getRecurringLabel()}
+          splitType={splitType}
+        />
       </div>
     </div>
   );
