@@ -11,6 +11,7 @@ import { detectOvercharge } from "../../utils/helpers";
 import { DataContext } from "../../contexts/DataContext";
 import { useContext } from "react";
 import OverdueAlerts from "./OverDueAlerts";
+import Navbar from "./Navbar";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -69,6 +70,7 @@ const Dashboard = () => {
 
   return (
     <div className="relative">
+      <Navbar/>
       {/* Main content container with mobile-friendly padding matching SplitStep */}
       <div className="max-w-lg mx-auto px-6 py-0 pb-24">
         {/* Header section - matching SplitStep structure */}

@@ -1,3 +1,4 @@
+// RequestButton.js
 import React, { useState } from "react";
 import { Send, Loader2, Check } from "lucide-react";
 import { useData } from "../../contexts/DataContext";
@@ -12,6 +13,7 @@ const RequestButton = ({
   className = "",
   disabled = false,
   sentText = "SENT",
+  color = "blue", // new color prop with blue default
   ...props 
 }) => {
   const { costs, setCosts } = useData();
@@ -21,6 +23,19 @@ const RequestButton = ({
   // Helper function to get today's date in YYYY-MM-DD format
   const getTodaysDate = () => {
     return new Date().toISOString().split('T')[0];
+  };
+
+  // Get color classes based on color prop
+  const getColorClasses = (color) => {
+    switch (color) {
+      case "red":
+        return "bg-red-600 hover:bg-red-700";
+      case "green":
+        return "bg-green-600 hover:bg-green-700";
+      case "blue":
+      default:
+        return "bg-blue-600 hover:bg-blue-700";
+    }
   };
 
   // Check if already sent today
@@ -153,12 +168,13 @@ const RequestButton = ({
 
   const sentToday = alreadySentToday();
   const isDisabled = isLoading || isSuccess || disabled || sentToday;
+  const colorClasses = getColorClasses(color);
 
   return (
     <button
       onClick={handleClick}
       disabled={isDisabled}
-      className={`bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2 font-medium ${className}`}
+      className={`${colorClasses} text-white rounded-lg disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2 font-medium ${className}`}
       {...props}
     >
       {sentToday ? (
@@ -186,4 +202,4 @@ const RequestButton = ({
   );
 };
 
-export default RequestButton;
+export default RequestButton
