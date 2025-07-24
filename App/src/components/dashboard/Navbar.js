@@ -7,21 +7,20 @@ import {
   ChevronDown,
   Bell,
   Search,
+  DollarSign,
+  ArrowUpCircle,
+  Send,
+  CreditCard,
+  Inbox,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useAsyncValue, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 const Navbar = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
-
+  const { userData, setUserData } = useAuth();
   const navigate = useNavigate();
 
   // Demo user data
-  const currentUser = {
-    name: "Sarah Johnson",
-    email: "sarah.johnson@example.com",
-    plan: "Free",
-    avatar: "SJ",
-    color: "bg-gradient-to-br from-blue-500 to-blue-600",
-  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -40,6 +39,7 @@ const Navbar = () => {
   const handleLogout = () => {
     // In a real app, this would handle actual logout
     setShowUserMenu(false);
+    localStorage.removeItem("token");
     navigate("/login");
   };
 
@@ -61,6 +61,33 @@ const Navbar = () => {
     return null;
   };
 
+function RequestMoneyIcon({
+    size = 24,
+    color = "currentColor",
+    strokeWidth = 2,
+  }) {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width={size}
+        height={size}
+        fill="none"
+        stroke={color}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-label="Request Money Icon"
+        role="img"
+      >
+        {/* Dollar Sign */}
+        <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h4a3.5 3.5 0 0 1 0 7H7" />
+        {/* Up Arrow (above dollar sign) */}
+        <path d="M12 5l-3 3h6l-3-3z" />
+      </svg>
+    );
+  }
+
   return (
     <nav className="bg-white border-b border-slate-200/60 shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6">
@@ -69,10 +96,11 @@ const Navbar = () => {
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">P</span>
+                {/* <span className="text-white font-bold text-sm">A</span> */}
+                <DollarSign    size={20} color="#ffffff" />
               </div>
               <span className="ml-3 text-xl font-semibold text-slate-900">
-                PaymentApp
+                AutoRequest{" "}
               </span>
             </div>
           </div>
@@ -115,19 +143,17 @@ const Navbar = () => {
               >
                 {/* User Avatar */}
                 <div
-                  className={`w-8 h-8 rounded-lg ${currentUser.color} flex items-center justify-center text-white font-semibold text-sm`}
+                  className={`w-8 h-8 rounded-lg ${userData.color} flex items-center justify-center text-white font-semibold text-sm`}
                 >
-                  {currentUser.avatar}
+                  {userData.avatar}
                 </div>
 
                 {/* User Info */}
                 <div className="hidden sm:block text-left">
                   <div className="text-sm font-medium text-gray-900">
-                    {currentUser.name}
+                    {userData.name}
                   </div>
-                  <div className="text-xs text-gray-600">
-                    {currentUser.email}
-                  </div>
+                  <div className="text-xs text-gray-600">{userData.email}</div>
                 </div>
 
                 <ChevronDown
@@ -144,25 +170,25 @@ const Navbar = () => {
                   <div className="px-4 py-3 border-b border-gray-100">
                     <div className="flex items-center space-x-3">
                       <div
-                        className={`w-10 h-10 rounded-lg ${currentUser.color} flex items-center justify-center text-white font-semibold`}
+                        className={`w-10 h-10 rounded-lg ${userData.color} flex items-center justify-center text-white font-semibold`}
                       >
-                        {currentUser.avatar}
+                        {userData.avatar}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium text-gray-900 truncate">
-                          {currentUser.name}
+                          {userData.name}
                         </div>
                         <div className="text-xs text-gray-600 truncate">
-                          {currentUser.email}
+                          {userData.email}
                         </div>
                         <div className="flex items-center gap-1 mt-1">
                           <div
                             className={`px-2 py-0.5 rounded text-white text-xs font-medium flex items-center gap-1 ${getPlanColor(
-                              currentUser.plan
+                              userData.plan
                             )}`}
                           >
-                            {getPlanIcon(currentUser.plan)}
-                            {currentUser.plan} Plan
+                            {getPlanIcon(userData.plan)}
+                            {userData.plan} Plan
                           </div>
                         </div>
                       </div>
@@ -193,7 +219,7 @@ const Navbar = () => {
                       App Settings
                     </button>
 
-                    {currentUser.plan === "Free" && (
+                    {userData.plan === "Free" && (
                       <button
                         onClick={() => {
                           alert("Upgrade plan modal would open here");

@@ -1,8 +1,18 @@
 import React, { useState } from "react";
-import { Eye, EyeOff, Mail, Lock, ArrowRight, User } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  ArrowRight,
+  User,
+  AlertCircle,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-
+import { loginUser } from "../../queries/auth";
+import ForgotPasswordModal from "./ForgotPasswordModal";
+import { useData } from "../../contexts/DataContext";
 const Loginv2 = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -11,10 +21,11 @@ const Loginv2 = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
-
+  const [loginError, setLoginError] = useState(""); // New state for login errors
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
-
+  const { setUserData, userData } = useData();
   // Email validation regex
   const isValidEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -55,25 +66,54 @@ const Loginv2 = () => {
         [name]: "",
       }));
     }
+
+    // Clear login error when user starts typing
+    if (loginError) {
+      setLoginError("");
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate form before proceeding
     if (!validateForm()) {
       return; // Don't proceed if validation fails
     }
 
     setIsLoading(true);
-    
+    setLoginError(""); // Clear any previous login errors
+
     try {
-      if (login(formData.email, formData.password)) {
+      // Properly await the loginUser function
+      const isSuccessfulLogin = await loginUser({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (isSuccessfulLogin) {
+        // If login is successful, also call the context login
+
         navigate("/dashboard");
+        console.log("LOGIN SUCCESS");
+      } else {
+        // Handle login failure
+        setLoginError("Invalid email or password. Please try again.");
       }
-      console.log("LOGIN");
     } catch (error) {
       console.error("Login error:", error);
+      // Handle different types of errors
+      if (error.message === "Network Error") {
+        setLoginError(
+          "Network error. Please check your connection and try again."
+        );
+      } else if (error.response?.status === 401) {
+        setLoginError("Invalid email or password. Please try again.");
+      } else if (error.response?.status === 429) {
+        setLoginError("Too many login attempts. Please try again later.");
+      } else {
+        setLoginError("An unexpected error occurred. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -97,6 +137,16 @@ const Loginv2 = () => {
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
           <div className="p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Login Error Message */}
+              {loginError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-center">
+                    <AlertCircle className="h-5 w-5 text-red-400 mr-3" />
+                    <p className="text-sm text-red-700">{loginError}</p>
+                  </div>
+                </div>
+              )}
+
               {/* Email Field */}
               <div>
                 <label
@@ -118,7 +168,7 @@ const Loginv2 = () => {
                     value={formData.email}
                     onChange={handleInputChange}
                     className={`block w-full pl-10 pr-3 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-1 transition-all duration-200 ${
-                      errors.email
+                      errors.email || loginError
                         ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                         : "border-slate-200/60 focus:ring-blue-600 focus:border-blue-500"
                     }`}
@@ -151,7 +201,7 @@ const Loginv2 = () => {
                     value={formData.password}
                     onChange={handleInputChange}
                     className={`block w-full pl-10 pr-12 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-1 transition-all duration-200 ${
-                      errors.password
+                      errors.password || loginError
                         ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                         : "border-slate-200/60 focus:ring-blue-600 focus:border-blue-500"
                     }`}
@@ -176,7 +226,7 @@ const Loginv2 = () => {
 
               {/* Remember me and Forgot password */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center">
+                {/* <div className="flex items-center">
                   <input
                     id="remember-me"
                     name="remember-me"
@@ -189,11 +239,12 @@ const Loginv2 = () => {
                   >
                     Remember me
                   </label>
-                </div>
+                </div> */}
 
                 <button
                   type="button"
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                  className="text-sm ml-auto text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                  onClick={() => setShowForgotPasswordModal(true)}
                 >
                   Forgot password?
                 </button>
@@ -221,7 +272,10 @@ const Loginv2 = () => {
           <div className="px-8 py-6 bg-slate-50/30 border-t border-slate-100">
             <p className="text-center text-sm text-gray-600">
               Don't have an account?{" "}
-              <button onClick={()=>navigate('/signup')} className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
+              <button
+                onClick={() => navigate("/signup")}
+                className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
+              >
                 Sign up
               </button>
             </p>
@@ -264,15 +318,21 @@ const Loginv2 = () => {
               <span className="ml-2">Google</span>
             </button>
 
-            {/* <button className="w-full inline-flex justify-center py-3 px-4 border border-slate-200/60 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all duration-200">
+            <button className="w-full inline-flex justify-center py-3 px-4 border border-slate-200/60 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all duration-200">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.097.118.112.221.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.748-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24c6.624 0 11.99-5.367 11.99-12C24.007 5.367 18.641.001 12.017.001z" />
               </svg>
-              <span className="ml-2">GitHub</span>
-            </button> */}
+              <span className="ml-2">Pinterest</span>
+            </button>
           </div>
         </div>
       </div>
+      <ForgotPasswordModal
+        isOpen={showForgotPasswordModal}
+        onClose={() => {
+          setShowForgotPasswordModal(false);
+        }}
+      />
     </div>
   );
 };

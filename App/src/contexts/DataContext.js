@@ -4,6 +4,7 @@ import { plaidAPI } from "../services/plaidService";
 const DataContext = createContext();
 
 export const DataProvider = ({ children }) => {
+
   const [participants, setParticipants] = useState([
     {
       id: 1,

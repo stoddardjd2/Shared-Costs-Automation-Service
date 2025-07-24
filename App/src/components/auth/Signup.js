@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { createUser } from "../../queries/auth";
 import {
   Eye,
   EyeOff,
@@ -8,8 +9,12 @@ import {
   ArrowRight,
   UserPlus,
   Check,
+  AlertCircle,
+  CheckCircle,
+  X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
 const Signup = () => {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -22,8 +27,21 @@ const Signup = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [notification, setNotification] = useState(null);
 
   const navigate = useNavigate();
+
+  const showNotification = (message, type = "error") => {
+    setNotification({ message, type });
+    // Auto-hide success notifications after 5 seconds
+    if (type === "success") {
+      setTimeout(() => setNotification(null), 5000);
+    }
+  };
+
+  const hideNotification = () => {
+    setNotification(null);
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -31,32 +49,118 @@ const Signup = () => {
       ...prev,
       [name]: value,
     }));
+    // Clear notification when user starts typing
+    if (notification) {
+      setNotification(null);
+    }
   };
 
   const handleSubmit = async () => {
+    // Clear any existing notifications
+    setNotification(null);
+
+    // Validation
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords don't match!");
+      showNotification("Passwords don't match!", "error");
       return;
     }
 
-    if (!agreedToTerms) {
-      alert("Please agree to the terms and conditions");
+    if (!formData.firstName.trim() || !formData.lastName.trim()) {
+      showNotification("Please enter your first and last name", "error");
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      showNotification("Please enter your email address", "error");
+      return;
+    }
+
+    if (!formData.password) {
+      showNotification("Please enter a password", "error");
+      return;
+    }
+
+    // Check password requirements
+    const passwordRequirements = {
+      length: formData.password.length >= 8,
+      uppercase: /[A-Z]/.test(formData.password),
+      lowercase: /[a-z]/.test(formData.password),
+      number: /\d/.test(formData.password),
+    };
+
+    const allRequirementsMet =
+      Object.values(passwordRequirements).every(Boolean);
+    if (!allRequirementsMet) {
+      showNotification(
+        "Please ensure your password meets all requirements",
+        "error"
+      );
       return;
     }
 
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const userData = {
+        name: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password,
+      };
+
+      const response = await createUser(userData);
+
+      // Assuming createUser returns a response object
+      if (response && response.success) {
+        showNotification(
+          "Account created successfully! Welcome aboard!",
+          "success"
+        );
+        // Optional: Navigate to login or dashboard after successful signup
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
+      } else {
+        // Handle API error response
+        const errorMessage =
+          response?.message ||
+          response?.error ||
+          "Failed to create account. Please try again.";
+        showNotification(errorMessage, "error");
+      }
+    } catch (error) {
+      // Handle network errors or other exceptions
+      console.error("Signup error:", error);
+
+      if (error.response) {
+        // Server responded with error status
+        const errorMessage =
+          error.response.data?.message ||
+          error.response.data?.error ||
+          `Server error (${error.response.status}). Please try again.`;
+        showNotification(errorMessage, "error");
+      } else if (error.request) {
+        // Network error
+        showNotification(
+          "Network error. Please check your connection and try again.",
+          "error"
+        );
+      } else {
+        // Other error
+        showNotification(
+          "An unexpected error occurred. Please try again.",
+          "error"
+        );
+      }
+    } finally {
       setIsLoading(false);
-      console.log("Signup attempt:", formData);
-    }, 1500);
+    }
   };
 
   const passwordsMatch =
     formData.password &&
     formData.confirmPassword &&
     formData.password === formData.confirmPassword;
+
   const passwordRequirements = {
     length: formData.password.length >= 8,
     uppercase: /[A-Z]/.test(formData.password),
@@ -79,6 +183,42 @@ const Signup = () => {
             Join us and start managing your expenses
           </p>
         </div>
+
+        {/* Notification */}
+        {notification && (
+          <div
+            className={`mb-6 p-4 rounded-lg border transition-all duration-300 ${
+              notification.type === "error"
+                ? "bg-red-50 border-red-200 text-red-800"
+                : "bg-green-50 border-green-200 text-green-800"
+            }`}
+          >
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                {notification.type === "error" ? (
+                  <AlertCircle className="h-5 w-5 text-red-400" />
+                ) : (
+                  <CheckCircle className="h-5 w-5 text-green-400" />
+                )}
+              </div>
+              <div className="ml-3 flex-1">
+                <p className="text-sm font-medium">{notification.message}</p>
+              </div>
+              <div className="ml-auto pl-3">
+                <button
+                  onClick={hideNotification}
+                  className={`inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                    notification.type === "error"
+                      ? "text-red-500 hover:bg-red-100 focus:ring-red-600"
+                      : "text-green-500 hover:bg-green-100 focus:ring-green-600"
+                  }`}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Signup Form */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
@@ -310,36 +450,10 @@ const Signup = () => {
                 )}
               </div>
 
-              {/* Terms and Conditions */}
-              {/* <div className="flex items-start">
-                <div className="flex items-center h-5">
-                  <input
-                    id="terms"
-                    name="terms"
-                    type="checkbox"
-                    checked={agreedToTerms}
-                    onChange={(e) => setAgreedToTerms(e.target.checked)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                </div>
-                <div className="ml-3 text-sm">
-                  <label htmlFor="terms" className="text-gray-700">
-                    I agree to the{" "}
-                    <button className="text-blue-600 hover:text-blue-700 font-medium">
-                      Terms and Conditions
-                    </button>{" "}
-                    and{" "}
-                    <button className="text-blue-600 hover:text-blue-700 font-medium">
-                      Privacy Policy
-                    </button>
-                  </label>
-                </div>
-              </div> */}
-
               {/* Submit Button */}
               <button
                 onClick={handleSubmit}
-                disabled={isLoading || !agreedToTerms}
+                disabled={isLoading}
                 className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:ring-offset-2 transition-all duration-200 transform hover:scale-[1.02] font-medium shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {isLoading ? (
@@ -403,13 +517,6 @@ const Signup = () => {
               </svg>
               <span className="ml-2">Google</span>
             </button>
-{/* 
-            <button className="w-full inline-flex justify-center py-3 px-4 border border-slate-200/60 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all duration-200">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.097.118.112.221.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.748-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24c6.624 0 11.99-5.367 11.99-12C24.007 5.367 18.641.001 12.017.001z" />
-              </svg>
-              <span className="ml-2">GitHub</span>
-            </button> */}
           </div>
         </div>
       </div>

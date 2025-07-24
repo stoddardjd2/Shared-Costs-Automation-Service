@@ -12,6 +12,7 @@ import AddCost from "./components/costs/AddCost";
 import Navbar from "./components/dashboard/Navbar";
 import Loginv2 from "./components/auth/Loginv2";
 import Signup from "./components/auth/Signup";
+import ResetPasswordPage from "./components/auth/ResetPasswordPage";
 
 const App = () => {
   return (
@@ -80,6 +81,10 @@ const App = () => {
               }
             />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route
+              path="/reset-password/:token"
+              element={<ResetPasswordPage />}
+            />
           </Routes>
         </DataProvider>
       </AuthProvider>
