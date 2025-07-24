@@ -25,6 +25,7 @@ import { useData } from "../../contexts/DataContext";
 import generateCostEntry from "../../utils/generateCostEntry";
 import { useNavigate } from "react-router-dom";
 import ConfirmButtonTray from "./ConfirmButtonTray";
+
 const SplitStep = ({
   selectedPeople,
   setSelectedPeople,
@@ -99,7 +100,9 @@ const SplitStep = ({
 
   // Check if dynamic costs should be disabled
   const isDynamicCostsDisabled =
-    splitType === "custom" || !selectedCharge?.plaidMatch;
+    splitType === "custom" || 
+    !selectedCharge?.plaidMatch || 
+    recurringType === "none";
 
   // State for dynamic costs tracking - use previous setting in edit mode, otherwise default based on plaidMatch
   const [isDynamic, setIsDynamic] = useState(
@@ -126,7 +129,7 @@ const SplitStep = ({
 
   // Only disable dynamic costs if conditions don't allow it, but don't auto-enable
   React.useEffect(() => {
-    // If dynamic costs become disabled (e.g., switching to custom split), turn it off
+    // If dynamic costs become disabled (e.g., switching to custom split or one-time), turn it off
     if (isDynamicCostsDisabled && isDynamic) {
       setIsDynamic(false);
     }
@@ -617,6 +620,10 @@ const SplitStep = ({
           selectedCharge={selectedCharge}
           newChargeDetails={newChargeDetails}
           overrideAmount={editableTotalAmount}
+          paymentSchedule={getRecurringLabel()}
+          recurringType={recurringType}
+          customInterval={customInterval}
+          customUnit={customUnit}
         />
 
         {/* Split Method Selection - Always visible */}
@@ -1137,7 +1144,7 @@ const SplitStep = ({
                       </p>
                       <p className="mb-2">
                         <strong>Dynamic Costs:</strong> Track when amounts
-                        change between payment cycles
+                        change between payment cycles (recurring payments only)
                       </p>
                       <p>
                         Dynamic costs are useful for utilities, subscriptions,
@@ -1207,6 +1214,8 @@ const SplitStep = ({
                         <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
                           {splitType === "custom"
                             ? "Not Available"
+                            : recurringType === "none"
+                            ? "Recurring Only"
                             : "Plaid Required"}
                         </span>
                       )}
@@ -1232,7 +1241,12 @@ const SplitStep = ({
         {/* Send Button - Always visible and sticky */}
         <ConfirmButtonTray
           buttonContent={
-            startTiming == "now" ? (
+            isEditMode ? (
+              <>
+                <Edit3 className="w-5 h-5" />
+                Update Future Requests
+              </>
+            ) : startTiming === "now" ? (
               <>
                 <Send className="w-5 h-5" />
                 Send Request

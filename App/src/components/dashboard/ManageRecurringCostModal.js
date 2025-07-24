@@ -284,6 +284,9 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
     })
     .filter((person) => person.name !== "Unknown");
 
+  // Check if this is a recurring cost (not one-time)
+  const isRecurringCost = cost.frequency && cost.frequency.toLowerCase() !== "one-time" && cost.frequency.toLowerCase() !== "onetime";
+
   // Create charge details for SplitStep
 
   if (showSplitStep) {
@@ -339,28 +342,30 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
               </div>
             </div>
 
-            {/* Edit Split Button - matching SplitStep button styling */}
-            <div className="mb-6">
-              <button
-                onClick={() => setShowSplitStep(true)}
-                className="w-full p-4 bg-white hover:bg-gray-100 rounded-xl border border-gray-200 transition-all flex items-center justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
-                    <Settings className="w-4 h-4 text-white" />
+            {/* Update Future Requests Button - only show for recurring costs */}
+            {isRecurringCost && (
+              <div className="mb-6">
+                <button
+                  onClick={() => setShowSplitStep(true)}
+                  className="w-full p-4 bg-white hover:bg-gray-100 rounded-xl border border-gray-200 transition-all flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
+                      <Settings className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="text-left">
+                      <h4 className="font-semibold text-gray-900">
+                        Update Future Requests
+                      </h4>
+                      <p className="text-gray-600 text-sm">
+                        Update split method, amounts & schedule
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-left">
-                    <h4 className="font-semibold text-gray-900">
-                      Edit Request
-                    </h4>
-                    <p className="text-gray-600 text-sm">
-                      Update split method, amounts & schedule
-                    </p>
-                  </div>
-                </div>
-                <ArrowLeft className="w-5 h-5 text-gray-500 rotate-180" />
-              </button>
-            </div>
+                  <ArrowLeft className="w-5 h-5 text-gray-500 rotate-180" />
+                </button>
+              </div>
+            )}
 
             {/* Payment History Section */}
             <div className="mb-6">
@@ -471,26 +476,28 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
                                     </div>
 
                                     <div className="flex-1 min-w-0">
-                                      <div className="flex items-center justify-between">
-                                        <div className="flex items-baseline gap-3">
-                                          <span className="font-semibold text-black text-lg truncate">
-                                            {user?.name}
-                                          </span>
+                                      <div className="flex flex-col">
+                                        <span className="font-semibold text-black text-lg truncate">
+                                          {user?.name}
+                                        </span>
+                                        <div className="flex items-center gap-3 mt-1">
                                           <span className="text-gray-600 font-medium">
                                             ${participant.amount}
-                                          </span>
-                                        </div>
-
-                                        {participant.paidDate && (
-                                          <div className="flex items-center text-gray-600 backdrop-blur-sm px-3 py-1.5 rounded-lg w-fit">
-                                            <span className="text-sm text-gray-600  py-1 rounded-md ">
-                                              Paid{" "}
+                                          </span> 
+                                          
+                                          {participant.paidDate ? (
+                                            <span className="text-sm text-gray-600">
+                                              {" "}Paid{" "}
                                               {new Date(
                                                 participant.paidDate
                                               ).toLocaleDateString()}
                                             </span>
-                                          </div>
-                                        )}
+                                          ) : (
+                                            <span className="text-sm text-gray-600">
+                                              Unpaid
+                                            </span>
+                                          )}
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
