@@ -9,7 +9,10 @@ const {
   loginUser,
   forgotPassword,
   resetPassword,
-  checkTokenExpiry
+  checkTokenExpiry,
+  addContactToUser,
+  removeContactFromUser,
+  getUserData,
 } = require("../controllers/userController");
 
 const { protect, authorize } = require("../middleware/auth");
@@ -66,15 +69,18 @@ const validateUpdate = [
 router.post("/login", validateLogin, loginUser);
 router.post("/", validateUser, createUser);
 
-router.post('/forgot-password', forgotPassword);
-router.put('/reset-password/:token', resetPassword);
-router.post('/check-token', checkTokenExpiry);
-
+router.post("/forgot-password", forgotPassword);
+router.put("/reset-password/:token", resetPassword);
+router.post("/check-token", checkTokenExpiry);
 
 // Protected routes
 router.use(protect); // All routes after this middleware are protected
 
-router.get("/", getUsers);
+router.post("/contact", addContactToUser);
+router.delete("/contact", removeContactFromUser);
+
+router.get("/data", getUserData);
+
 router.get("/:id", getUser);
 router.put("/:id", validateUpdate, updateUser);
 

@@ -1,7 +1,58 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const { Schema, Types } = mongoose;
 
-const userSchema = new mongoose.Schema(
+// Contact sub-schema with a unique contactId
+const contactSchema = new Schema({
+  // contactId: {
+  //   type: Schema.Types.ObjectId,
+  //   default: () => new Types.ObjectId(), // Generates a unique ID
+  // },
+  name: {
+    type: String,
+    required: [true, "Contact name is required"],
+    trim: true,
+  },
+  phone: {
+    type: String,
+    required: [true, "Contact phone number is required"],
+    trim: true,
+  },
+  avatar: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: [2, "Avatar initials should be 2 characters maximum"],
+  },
+
+  color: {
+    type: String,
+    required: true,
+    trim: true,
+    validate: {
+      validator: function (v) {
+        // Validate that it's a valid Tailwind color class
+        const allowedColors = [
+          "bg-purple-500",
+          "bg-green-500",
+          "bg-pink-500",
+          "bg-indigo-500",
+          "bg-teal-500",
+          "bg-cyan-500",
+          "bg-emerald-500",
+          "bg-violet-500",
+          "bg-fuchsia-500",
+          "bg-rose-500",
+          "bg-lime-500",
+        ];
+        return allowedColors.includes(v);
+      },
+      message: "Color must be a valid Tailwind color class",
+    },
+  },
+});
+
+const userSchema = new Schema(
   {
     name: {
       type: String,
@@ -23,7 +74,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters"],
-      select: false, // Don't include password in queries by default
+      select: false,
+    },
+    plan: {
+      type: String,
+      required: true,
     },
     role: {
       type: String,
@@ -46,6 +101,7 @@ const userSchema = new mongoose.Schema(
       location: String,
       website: String,
     },
+    contacts: [contactSchema], // <-- Contacts with unique IDs
     passwordResetToken: String,
     passwordResetExpire: Date,
   },
@@ -56,31 +112,15 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Index for better query performance
+// Indexes
 userSchema.index({ email: 1 });
 userSchema.index({ role: 1, isActive: 1 });
 
-// Virtual for user's full profile
-userSchema.virtual("fullProfile").get(function () {
-  return {
-    id: this._id,
-    name: this.name,
-    email: this.email,
-    role: this.role,
-    isActive: this.isActive,
-    profile: this.profile,
-    createdAt: this.createdAt,
-    lastLogin: this.lastLogin,
-  };
-});
-
-// Pre-save middleware to hash password
+// Password hashing
 userSchema.pre("save", async function (next) {
-  // Only run if password is modified
   if (!this.isModified("password")) return next();
 
   try {
-    // Hash password with salt rounds from env or default to 12
     const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS) || 12;
     this.password = await bcrypt.hash(this.password, saltRounds);
     next();
@@ -89,23 +129,22 @@ userSchema.pre("save", async function (next) {
   }
 });
 
-// Instance method to check password
+// Instance method: password match
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Instance method to update last login
+// Instance method: update login timestamp
 userSchema.methods.updateLastLogin = async function () {
   this.lastLogin = new Date();
   return await this.save({ validateBeforeSave: false });
 };
 
-// Static method to find active users
+// Static methods
 userSchema.statics.findActiveUsers = function () {
   return this.find({ isActive: true });
 };
 
-// Static method to find by email
 userSchema.statics.findByEmail = function (email) {
   return this.findOne({ email: email.toLowerCase() });
 };

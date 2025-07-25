@@ -12,9 +12,108 @@ const generateToken = (id) => {
   });
 };
 
+const getUserData = async (req, res) => {
+  try {
+    const userId = req.user._id; // From auth middleware
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    return res.status(200).json(user);
+  } catch (err) {
+    console.error("Error getting user data:", err);
+    return res
+      .status(500)
+      .json({ message: "Server error while getting user data." });
+  }
+};
+
+const removeContactFromUser = async (req, res) => {
+  try {
+    const userId = req.user._id; // From auth middleware
+    const { contactId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(contactId)) {
+      return res.status(400).json({ message: "Invalid contactId." });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    // Filter out the contact
+    const initialLength = user.contacts.length;
+    user.contacts = user.contacts.filter(
+      (contact) => contact.contactId.toString() !== contactId
+    );
+
+    if (user.contacts.length === initialLength) {
+      return res.status(404).json({ message: "Contact not found." });
+    }
+
+    await user.save();
+
+    return res.status(200).json({ message: "Contact removed successfully." });
+  } catch (err) {
+    console.error("Error removing contact:", err);
+    return res
+      .status(500)
+      .json({ message: "Server error while removing contact." });
+  }
+};
+
+const addContactToUser = async (req, res) => {
+  try {
+    const userId = req.user._id; // From auth middleware
+    const { name, phone, avatar, color } = req.body;
+
+    if (!name || !phone || !avatar || !color) {
+      return res
+        .status(400)
+        .json({ message: "Name, phone, avatar, and color are required." });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    // Check for duplicate phone number
+    const phoneExists = user.contacts.some(
+      (contact) => contact.phone.trim() === phone.trim()
+    );
+
+    if (phoneExists) {
+      return res
+        .status(409)
+        .json({ message: "Contact with this phone number already exists." });
+    }
+
+    // Add new contact
+    const newContact = {
+      name: name.trim(),
+      phone: phone.trim(),
+      avatar: avatar.trim(),
+      color: color.trim(),
+    };
+    user.contacts.push(newContact);
+    await user.save();
+
+    const addedContact = user.contacts[user.contacts.length - 1];
+
+    return res.status(201).json({
+      message: "Contact added successfully.",
+      contact: addedContact,
+    });
+  } catch (err) {
+    console.error("Error adding contact:", err);
+    return res
+      .status(500)
+      .json({ message: "Server error while adding contact." });
+  }
+};
 // @desc    Check if token is expired without validating user
 // @route   POST /api/auth/check-token
 // @access  Public
+
+// USED TO GET USER AND GET REQUESTS
 const checkTokenExpiry = async (req, res) => {
   try {
     const { token } = req.body;
@@ -314,6 +413,7 @@ const createUser = async (req, res) => {
       password,
       role,
       profile,
+      plan: "free",
     });
 
     // Generate token
@@ -331,6 +431,7 @@ const createUser = async (req, res) => {
           role: user.role,
           profile: user.profile,
           createdAt: user.createdAt,
+          plan: user.plan,
         },
         token,
       },
@@ -513,4 +614,7 @@ module.exports = {
   forgotPassword,
   resetPassword: resetPasswordHandler,
   checkTokenExpiry,
+  removeContactFromUser,
+  addContactToUser,
+  getUserData,
 };

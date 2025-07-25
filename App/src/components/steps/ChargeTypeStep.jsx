@@ -2,7 +2,7 @@ import { Search, Plus, CreditCard, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import StepIndicator from "./StepIndicator";
 
-const ChargeTypeStep = ({ onChargeTypeSelect }) => {
+const ChargeTypeStep = ({ onChargeTypeSelect, setIsAddingRequest }) => {
   const navigate = useNavigate();
 
   return (
@@ -12,17 +12,19 @@ const ChargeTypeStep = ({ onChargeTypeSelect }) => {
 
         <div className="flex items-center gap-4 mb-6">
           <button
-            onClick={() => navigate("/dashboard")}
+            onClick={() => setIsAddingRequest(false)}
             className="p-3 hover:bg-white rounded-xl transition-all hover:shadow-md"
           >
             <X className="w-6 h-6 text-gray-700" />
           </button>
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-gray-900">Choose Option</h1>
-            <p className="text-gray-600">Track an existing charge or add a new recurring charge</p>
+            <p className="text-gray-600">
+              Track an existing charge or add a new recurring charge
+            </p>
           </div>
         </div>
-    
+
         <div className="space-y-4">
           <div
             onClick={() => onChargeTypeSelect("existing")}
@@ -37,7 +39,8 @@ const ChargeTypeStep = ({ onChargeTypeSelect }) => {
                   Track Existing Charge
                 </h3>
                 <p className="text-gray-600 mb-2">
-                  Find and split charges that already appear on your bank statement
+                  Find and split charges that already appear on your bank
+                  statement
                 </p>
                 <p className="text-xs text-gray-500">
                   * Requires Bilt account connection
@@ -58,9 +61,7 @@ const ChargeTypeStep = ({ onChargeTypeSelect }) => {
                 <h3 className="text-xl font-semibold text-gray-900 mb-1">
                   Add New Charge
                 </h3>
-                <p className="text-gray-600">
-                  Set up a new charge to split
-                </p>
+                <p className="text-gray-600">Set up a new charge to split</p>
               </div>
             </div>
           </div>

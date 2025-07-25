@@ -13,13 +13,12 @@ import {
   CreditCard,
   Inbox,
 } from "lucide-react";
-import { useAsyncValue, useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
+import {useNavigate } from "react-router-dom";
+import { useData } from "../../contexts/DataContext";
 const Navbar = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const { userData, setUserData } = useAuth();
+  const { userData, setUserData } = useData();
   const navigate = useNavigate();
-
   // Demo user data
 
   // Close dropdown when clicking outside
@@ -61,7 +60,7 @@ const Navbar = () => {
     return null;
   };
 
-function RequestMoneyIcon({
+  function RequestMoneyIcon({
     size = 24,
     color = "currentColor",
     strokeWidth = 2,
@@ -88,6 +87,32 @@ function RequestMoneyIcon({
     );
   }
 
+  const avatar = generateAvatar()
+  function generateAvatar() {
+    // Safety check for userData and name
+    if (!userData || !userData.name) {
+      return "?"; // Default fallback
+    }
+
+    const nameParts = userData.name
+      .trim()
+      .split(" ")
+      .filter((part) => part.length > 0);
+
+    // Handle edge cases
+    if (nameParts.length === 0) {
+      return "?"; // Fallback for empty name
+    }
+
+    const initials =
+      nameParts.length === 1
+        ? nameParts[0][0].toUpperCase()
+        : (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase(); // Fixed: was .toUpper
+
+    return initials;
+  }
+
+
   return (
     <nav className="bg-white border-b border-slate-200/60 shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6">
@@ -97,7 +122,7 @@ function RequestMoneyIcon({
             <div className="flex-shrink-0 flex items-center">
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 {/* <span className="text-white font-bold text-sm">A</span> */}
-                <DollarSign    size={20} color="#ffffff" />
+                <DollarSign size={20} color="#ffffff" />
               </div>
               <span className="ml-3 text-xl font-semibold text-slate-900">
                 AutoRequest{" "}
@@ -143,9 +168,9 @@ function RequestMoneyIcon({
               >
                 {/* User Avatar */}
                 <div
-                  className={`w-8 h-8 rounded-lg ${userData.color} flex items-center justify-center text-white font-semibold text-sm`}
+                  className={`w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-semibold text-sm`}
                 >
-                  {userData.avatar}
+                  {avatar}
                 </div>
 
                 {/* User Info */}
@@ -170,9 +195,9 @@ function RequestMoneyIcon({
                   <div className="px-4 py-3 border-b border-gray-100">
                     <div className="flex items-center space-x-3">
                       <div
-                        className={`w-10 h-10 rounded-lg ${userData.color} flex items-center justify-center text-white font-semibold`}
+                        className={`w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white font-semibold`}
                       >
-                        {userData.avatar}
+                        {avatar}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium text-gray-900 truncate">
@@ -183,7 +208,7 @@ function RequestMoneyIcon({
                         </div>
                         <div className="flex items-center gap-1 mt-1">
                           <div
-                            className={`px-2 py-0.5 rounded text-white text-xs font-medium flex items-center gap-1 ${getPlanColor(
+                            className={`px-2 py-0.5 capitalize rounded text-white text-xs font-medium flex items-center gap-1 ${getPlanColor(
                               userData.plan
                             )}`}
                           >
