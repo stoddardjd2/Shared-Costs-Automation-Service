@@ -24,8 +24,6 @@ const Loginv2 = () => {
   const [loginError, setLoginError] = useState(""); // New state for login errors
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
-  const { setUserData, userData } = useData();
   // Email validation regex
   const isValidEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

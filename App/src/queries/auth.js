@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:3002/api";
+import getAPIUrl from "./config";
+
+const API_URL = getAPIUrl();
 
 // Simple function to create user - call directly from React components
 const createUser = async (userData) => {
@@ -112,7 +114,6 @@ const resetPassword = async (token, newPassword) => {
 };
 
 const verifyToken = async (token) => {
-  console.log("VERIFYT TIME", token);
   try {
     const response = await fetch(`${API_URL}/users/check-token`, {
       method: "POST",

@@ -21,7 +21,6 @@ const SearchStep = ({
   setNewPerson,
   handleAddNewPerson,
 }) => {
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Main content with padding bottom to prevent button tray overlap */}
@@ -37,7 +36,9 @@ const SearchStep = ({
               <ArrowLeft className="w-6 h-6 text-gray-700" />
             </button>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-900">Select People</h1>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Select People
+              </h1>
               <p className="text-gray-600">Choose who to split charges with</p>
             </div>
           </div>
@@ -68,13 +69,18 @@ const SearchStep = ({
 
           <div className="space-y-3 mb-8">
             {filteredPeople.length > 0 ? (
-              filteredPeople.map((person) => (
-                <ContactCard
-                  key={person.id}
-                  person={person}
-                  isSelected={!!selectedPeople.find((p) => p.id === person.id)}
-                  onToggle={togglePersonSelection}
-                />
+              filteredPeople.map((person, index) => (
+                <>
+                {console.log("PERSON", person)}
+                  <ContactCard
+                    key={person._id}
+                    person={person}
+                    isSelected={
+                      !!selectedPeople.find((p) => p._id === person._id)
+                    }
+                    onToggle={togglePersonSelection}
+                  />
+                </>
               ))
             ) : (
               <div className="text-center py-12">
@@ -89,7 +95,7 @@ const SearchStep = ({
           </div>
         </div>
       </div>
-      
+
       <ConfirmButtonTray
         buttonContent={
           <>
@@ -99,7 +105,7 @@ const SearchStep = ({
         }
         selectedPeople={selectedPeople}
         onConfirm={onContinue}
-        hideBillingInfo = {true}
+        hideBillingInfo={true}
       />
     </div>
   );

@@ -9,7 +9,7 @@ const connectDB = require("./config/database");
 
 // Import routes
 const userRoutes = require("./routes/userRoutes");
-
+const requestRoutes = require('./routes/requestRoutes')
 // Import error handler
 const { errorHandler, notFound } = require("./utils/errorHandler");
 
@@ -67,7 +67,7 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/api/users", userRoutes);
-
+app.use("/api/requests", requestRoutes)
 // Error handling middleware
 app.use(notFound);
 app.use(errorHandler);

@@ -25,7 +25,7 @@ import { useData } from "../../contexts/DataContext";
 import generateCostEntry from "../../utils/generateCostEntry";
 import { useNavigate } from "react-router-dom";
 import ConfirmButtonTray from "./ConfirmButtonTray";
-
+import { createRequest } from "../../queries/requests";
 const SplitStep = ({
   selectedPeople,
   setSelectedPeople,
@@ -74,15 +74,15 @@ const SplitStep = ({
   // Local state for recurring options - use existing values in edit mode
   const [showRecurringOptions, setShowRecurringOptions] = useState(false);
   const [recurringType, setRecurringType] = useState(
-    isEditMode 
-      ? (selectedCharge?.frequency?.toLowerCase() || "none")
-      : (selectedCharge?.frequency?.toLowerCase() || "none")
+    isEditMode
+      ? selectedCharge?.frequency?.toLowerCase() || "none"
+      : selectedCharge?.frequency?.toLowerCase() || "none"
   );
   const [customInterval, setCustomInterval] = useState(
-    isEditMode ? (selectedCharge?.customInterval || 1) : 1
+    isEditMode ? selectedCharge?.customInterval || 1 : 1
   );
   const [customUnit, setCustomUnit] = useState(
-    isEditMode ? (selectedCharge?.customUnit || "days") : "days"
+    isEditMode ? selectedCharge?.customUnit || "days" : "days"
   );
 
   // State for start timing - default based on mode
@@ -100,18 +100,18 @@ const SplitStep = ({
 
   // Check if dynamic costs should be disabled
   const isDynamicCostsDisabled =
-    splitType === "custom" || 
-    !selectedCharge?.plaidMatch || 
+    splitType === "custom" ||
+    !selectedCharge?.plaidMatch ||
     recurringType === "none";
 
   // State for dynamic costs tracking - use previous setting in edit mode, otherwise default based on plaidMatch
   const [isDynamic, setIsDynamic] = useState(
-    isEditMode 
-      ? (selectedCharge?.isDynamic || false) 
-      : (selectedCharge?.plaidMatch || false)
+    isEditMode
+      ? selectedCharge?.isDynamic || false
+      : selectedCharge?.plaidMatch || false
   );
   const [dynamicCostReason, setDynamicCostReason] = useState(
-    isEditMode ? (selectedCharge?.dynamicCostReason || "") : ""
+    isEditMode ? selectedCharge?.dynamicCostReason || "" : ""
   );
   const [showDynamicInfo, setShowDynamicInfo] = useState(false);
   const [isHoveringDynamicInfo, setIsHoveringDynamicInfo] = useState(false);
@@ -121,7 +121,9 @@ const SplitStep = ({
 
   // Initialize last known good amount
   React.useEffect(() => {
-    const initialAmount = Number((totalAmount || selectedCharge?.lastAmount || 0).toFixed(2));
+    const initialAmount = Number(
+      (totalAmount || selectedCharge?.lastAmount || 0).toFixed(2)
+    );
     if (initialAmount > 0) {
       setLastKnownGoodAmount(initialAmount);
     }
@@ -302,9 +304,9 @@ const SplitStep = ({
       startTiming,
       totalSplit,
       isDynamic,
-      dynamicCostReason,
+      // dynamicCostReason,
       // Pass the actual calculated amount
-      totalAmount: actualAmount,
+      // totalAmount: actualAmount,
       editableTotalAmount,
     });
 
@@ -368,6 +370,8 @@ const SplitStep = ({
     });
 
     setCosts((prevCosts) => [...prevCosts, costEntry]);
+    // update db with new request:
+    // createRequest(costEntry);
     navigate("/dashboard");
   };
 
@@ -446,9 +450,9 @@ const SplitStep = ({
       // Auto-enable dynamic costs if:
       // 1. Not in edit mode (new cost) and plaidMatch is available, OR
       // 2. In edit mode and the original charge had dynamic costs enabled
-      const shouldAutoEnable = !isEditMode 
-        ? (selectedCharge?.plaidMatch || false)  // New cost: enable if plaid available
-        : (selectedCharge?.isDynamic || false);  // Edit mode: enable if original was dynamic
+      const shouldAutoEnable = !isEditMode
+        ? selectedCharge?.plaidMatch || false // New cost: enable if plaid available
+        : selectedCharge?.isDynamic || false; // Edit mode: enable if original was dynamic
 
       if (shouldAutoEnable && !isDynamicCostsDisabled) {
         setIsDynamic(true);
@@ -457,7 +461,13 @@ const SplitStep = ({
 
     // Update the ref for next comparison
     prevSplitTypeRef.current = splitType;
-  }, [splitType, isDynamicCostsDisabled, isEditMode, selectedCharge?.plaidMatch, selectedCharge?.isDynamic]);
+  }, [
+    splitType,
+    isDynamicCostsDisabled,
+    isEditMode,
+    selectedCharge?.plaidMatch,
+    selectedCharge?.isDynamic,
+  ]);
 
   // Update last known good amount when we have a valid amount
   React.useEffect(() => {
@@ -469,15 +479,17 @@ const SplitStep = ({
   // Handle split type changes and preserve/restore amounts
   React.useEffect(() => {
     const prevSplitType = prevSplitTypeRef.current;
-    
+
     // When switching FROM custom to another split type
     if (prevSplitType === "custom" && splitType !== "custom") {
       // Check if custom amounts sum to 0 or are empty
-      const customTotal = customAmounts ? Object.values(customAmounts).reduce(
-        (sum, amount) => sum + (Number(amount) || 0),
-        0
-      ) : 0;
-      
+      const customTotal = customAmounts
+        ? Object.values(customAmounts).reduce(
+            (sum, amount) => sum + (Number(amount) || 0),
+            0
+          )
+        : 0;
+
       // If custom total is 0, restore the last known good amount
       if (customTotal === 0 && lastKnownGoodAmount > 0) {
         setEditableTotalAmount(lastKnownGoodAmount);
@@ -486,7 +498,7 @@ const SplitStep = ({
         }
       }
     }
-    
+
     // Update the ref for next comparison
     prevSplitTypeRef.current = splitType;
   }, [splitType, customAmounts, lastKnownGoodAmount, setTotalAmount]);
@@ -512,7 +524,12 @@ const SplitStep = ({
     else if (splitType === "percentage") {
       if (!editableTotalAmount || editableTotalAmount === 0) {
         newTotalAmount = Number(
-          (selectedCharge?.lastAmount || totalAmount || lastKnownGoodAmount || 0).toFixed(2)
+          (
+            selectedCharge?.lastAmount ||
+            totalAmount ||
+            lastKnownGoodAmount ||
+            0
+          ).toFixed(2)
         );
       }
     }
@@ -521,7 +538,12 @@ const SplitStep = ({
     else if (splitType === "equal" || splitType === "equalWithMe") {
       if (!editableTotalAmount || editableTotalAmount === 0) {
         newTotalAmount = Number(
-          (selectedCharge?.lastAmount || totalAmount || lastKnownGoodAmount || 0).toFixed(2)
+          (
+            selectedCharge?.lastAmount ||
+            totalAmount ||
+            lastKnownGoodAmount ||
+            0
+          ).toFixed(2)
         );
       }
     }
@@ -533,7 +555,13 @@ const SplitStep = ({
         setTotalAmount(newTotalAmount);
       }
     }
-  }, [splitType, customAmounts, selectedCharge?.lastAmount, totalAmount, lastKnownGoodAmount]);
+  }, [
+    splitType,
+    customAmounts,
+    selectedCharge?.lastAmount,
+    totalAmount,
+    lastKnownGoodAmount,
+  ]);
 
   // Update total when custom amounts change (but only when in custom mode)
   React.useEffect(() => {
@@ -586,12 +614,18 @@ const SplitStep = ({
   return (
     <div className={"relative"}>
       {/* Main content container with bottom padding to prevent content being hidden behind ConfirmButtonTray */}
-      <div className={`max-w-lg mx-auto px-6 py-0 ${isEditMode ? "pb-52" :"pb-36"} `}>
+      <div
+        className={`max-w-lg mx-auto px-6 py-0 ${
+          isEditMode ? "pb-52" : "pb-36"
+        } `}
+      >
         {/* Hide step indicator and back button in edit mode since modal has its own header */}
         {!isEditMode && <StepIndicator current="split" />}
 
-        {(
-          <div className={`flex items-center gap-4 mb-6  ${isEditMode && "mt-8"}`}>
+        {
+          <div
+            className={`flex items-center gap-4 mb-6  ${isEditMode && "mt-8"}`}
+          >
             <button
               onClick={onBack}
               className="p-3 hover:bg-white rounded-xl transition-all hover:shadow-md"
@@ -600,7 +634,7 @@ const SplitStep = ({
             </button>
             <div className="flex-1">
               <h1 className={`text-3xl font-bold text-gray-900`}>
-                {isEditMode ? `Edit Requests` :"Split Costs"}
+                {isEditMode ? `Edit Requests` : "Split Costs"}
               </h1>
               <p className="text-gray-600">
                 {isEditMode
@@ -613,7 +647,7 @@ const SplitStep = ({
               </p>
             </div>
           </div>
-        )}
+        }
 
         {/* Charge Display - Always visible and prominent */}
         <ChargeDisplay
