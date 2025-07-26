@@ -134,14 +134,16 @@ export default function generateCostEntry({
 
   const currentDate = new Date().toISOString().split("T")[0];
 
+
+  console.log("recurringType", recurringType)
   return {
     name: chargeName,
     amount: chargeAmount,
-    isRecurring: recurringType !== "none",
+    isRecurring: (recurringType == "one-time") ? false : true,
     plaidMatch: selectedCharge?.plaidMatch || null,
     participants: participants,
     splitType: splitType,
-    customSplits: generateCustomSplits(),
+    // customSplits: generateCustomSplits(),
     createdAt: currentDate,
     lastMatched: selectedCharge?.lastMatched || currentDate,
     frequency: getFrequency(),
@@ -170,7 +172,7 @@ export default function generateCostEntry({
     //   },
     // ],
 
-    
+
     // Additional metadata that might be useful
     // metadata: {
     //   recurringType,

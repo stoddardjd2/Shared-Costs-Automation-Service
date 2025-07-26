@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { validatePhoneNumber } from "../../utils/stepUtils";
 import "../../styles/index.css";
 import ContactCard from "../costs/ContactCard";
-
 const AddStep = ({
   newPerson,
   newPeople,
@@ -145,16 +144,17 @@ const AddStep = ({
               <p className="text-sm font-semibold text-gray-700 mb-2">
                 Added People:
               </p>
-
-              {newPeople.map((person, index) => {
-                return (
-                  <ContactCard
-                    addMode={true}
-                    key={person.id}
-                    person={person}
-                  />
-                );
-              })}
+              <div className="flex-col gap-3 flex">
+                {newPeople.map((person, index) => {
+                  return (
+                    <ContactCard
+                      addMode={true}
+                      key={person.id}
+                      person={person}
+                    />
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>

@@ -65,7 +65,7 @@ const Dashboard = () => {
             {/* Main Dashboard Sections */}
             <div className="space-y-6">
               <OverdueAlerts />
-              <RecurringCostsSection />
+              <RecurringCostsSection setIsAddingRequest={setIsAddingRequest} />
 
               {/* <RecurringCostsFromBank recurringFromBank={recurringFromBank} /> */}
               {/* <OneTimeCosts oneTimeCosts={oneTimeCosts} /> */}

@@ -11,7 +11,7 @@ import SearchStep from "../steps/SearchStep";
 import SplitStep from "../steps/SplitStep";
 import AddStep from "../steps/AddStep";
 
-const AddCost = ({setIsAddingRequest}) => {
+const AddCost = ({ setIsAddingRequest }) => {
   const [currentStep, setCurrentStep] = useState(STEPS.CHARGE_TYPE);
 
   const chargeState = useChargeState();
@@ -87,7 +87,12 @@ const AddCost = ({setIsAddingRequest}) => {
   const renderCurrentStep = () => {
     switch (currentStep) {
       case STEPS.CHARGE_TYPE:
-        return <ChargeTypeStep onChargeTypeSelect={handleChargeTypeSelect} setIsAddingRequest={setIsAddingRequest}/>;
+        return (
+          <ChargeTypeStep
+            onChargeTypeSelect={handleChargeTypeSelect}
+            setIsAddingRequest={setIsAddingRequest}
+          />
+        );
 
       case STEPS.CHARGE_SEARCH:
         return (
@@ -102,10 +107,13 @@ const AddCost = ({setIsAddingRequest}) => {
             setTotalAmount={splitState.setTotalAmount}
             setCustomAmounts={splitState.setCustomAmounts}
             setSplitType={splitState.setSplitType}
+            percentageAmounts={splitState.percentageAmounts}
+            setPercentageAmounts={splitState.setPercentageAmounts}
           />
         );
 
       case STEPS.CHARGE_DETAILS:
+        console.log()
         return (
           <ChargeDetailsStep
             newChargeDetails={chargeState.newChargeDetails}
@@ -145,7 +153,6 @@ const AddCost = ({setIsAddingRequest}) => {
 
       // ADD THIS NEW CASE
       case STEPS.SPLIT:
-        console.log("SPLLIT TIME", chargeState.selectedCharge);
         return (
           <SplitStep
             selectedPeople={peopleState.selectedPeople}
@@ -159,6 +166,9 @@ const AddCost = ({setIsAddingRequest}) => {
             customAmounts={splitState.customAmounts}
             updateCustomAmount={splitState.updateCustomAmount}
             calculateSplitAmounts={splitState.calculateSplitAmounts}
+            setIsAddingRequest={setIsAddingRequest}
+            percentageAmounts={splitState.percentageAmounts}
+            setPercentageAmounts={splitState.setPercentageAmounts}
           />
         );
 
