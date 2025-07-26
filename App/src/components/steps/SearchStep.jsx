@@ -46,6 +46,11 @@ const SearchStep = ({
           <ChargeDisplay
             selectedCharge={selectedCharge}
             newChargeDetails={newChargeDetails}
+            recurringType={
+              newChargeDetails
+                ? newChargeDetails.frequency
+                : selectedCharge.frequency
+            }
           />
 
           <div className="relative mb-8">
@@ -70,17 +75,14 @@ const SearchStep = ({
           <div className="space-y-3 mb-8">
             {filteredPeople.length > 0 ? (
               filteredPeople.map((person, index) => (
-                <>
-                {console.log("PERSON", person)}
-                  <ContactCard
-                    key={person._id}
-                    person={person}
-                    isSelected={
-                      !!selectedPeople.find((p) => p._id === person._id)
-                    }
-                    onToggle={togglePersonSelection}
-                  />
-                </>
+                <ContactCard
+                  key={person._id}
+                  person={person}
+                  isSelected={
+                    !!selectedPeople.find((p) => p._id === person._id)
+                  }
+                  onToggle={togglePersonSelection}
+                />
               ))
             ) : (
               <div className="text-center py-12">

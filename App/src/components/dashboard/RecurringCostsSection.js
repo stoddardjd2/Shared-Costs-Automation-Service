@@ -24,7 +24,7 @@ import { useData } from "../../contexts/DataContext";
 import { getFrequencyColor, getNextDueStatus } from "../../utils/helpers";
 import ManageRecurringCostModal from "./ManageRecurringCostModal";
 
-const RecurringCostsSection = () => {
+const RecurringCostsSection = ({ setIsAddingRequest }) => {
   const { costs, participants, updateCost } = useData();
   const navigate = useNavigate();
 
@@ -75,11 +75,12 @@ const RecurringCostsSection = () => {
     startIndex,
     startIndex + itemsPerPage
   );
-
-  // Reset pagination when filters change
-  React.useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, statusFilter, activeTab]);
+  -(
+    // Reset pagination when filters change
+    React.useEffect(() => {
+      setCurrentPage(1);
+    }, [searchTerm, statusFilter, activeTab])
+  );
 
   // Close dropdowns when clicking outside
   React.useEffect(() => {
@@ -114,27 +115,52 @@ const RecurringCostsSection = () => {
     const totalParticipants = cost.participants.length;
     const amountPerPerson =
       totalParticipants > 0 ? cost.amount / totalParticipants : cost.amount;
-    return {
-      amount: `$${Number(amountPerPerson).toFixed(2)}`,
-      label: "each",
-    };
+    if (cost.splitType == "custom" || cost.splitType == "percentage") {
+      return {
+        amount: `$${Number(cost.amount).toFixed(2)}`,
+        label: "total",
+      };
+    } else {
+      return {
+        amount: `$${Number(amountPerPerson).toFixed(2)}`,
+        label: "each",
+      };
+    }
   };
 
   // Format billing frequency for display
-  const formatBillingFrequency = (frequency) => {
+  const formatBillingFrequency = (cost) => {
+    const frequency = cost.frequency;
+    const customInterval = cost.customInterval;
+    const customUnit = cost.customUnit;
     if (!frequency || frequency === "monthly") {
       return "Monthly requests";
     }
     if (frequency === "weekly") {
       return "Weekly requests";
     }
-    if (frequency === "quarterly") {
-      return "Quarterly requests";
-    }
     if (frequency === "yearly") {
       return "Yearly requests";
     }
-    return `${frequency} requests`;
+    if (frequency === "daily") {
+      return "Daily requests";
+    }
+    if (frequency === "custom") {
+      // Handle pluralization for time units
+      const getSingularUnit = (unit) => {
+        const singularMap = {
+          months: "month",
+          days: "day",
+          weeks: "week",
+          years: "year",
+        };
+        return singularMap[unit] || unit;
+      };
+
+      const unit =
+        customInterval === 1 ? getSingularUnit(customUnit) : customUnit;
+      return `Requests every ${customInterval} ${unit}`;
+    }
   };
 
   // Get status color for solid indicator
@@ -195,7 +221,7 @@ const RecurringCostsSection = () => {
               }`}
             >
               <RefreshCw className="w-4 h-4" />
-              Reocurring Payments
+              Reoccurring Payments
             </button>
             <button
               onClick={() => setActiveTab("onetime")}
@@ -309,7 +335,7 @@ const RecurringCostsSection = () => {
           Showing {startIndex + 1}-
           {Math.min(startIndex + itemsPerPage, filteredCosts.length)} of{" "}
           {filteredCosts.length}{" "}
-          {activeTab == "onetime" ? "one-time" : "reocurring"} payments
+          {activeTab == "onetime" ? "one-time" : "reoccurring"} payments
         </div>
 
         {/* Payment Requests Section */}
@@ -325,8 +351,8 @@ const RecurringCostsSection = () => {
               </div>
               <div className="text-left">
                 <h2 className="text-xl font-semibold text-slate-900">
-                  {activeTab === "recurring" ? "Reocurring" : "One-time"} Payment
-                  Requests
+                  {activeTab === "recurring" ? "Reoccurring" : "One-time"}{" "}
+                  Payment Requests
                 </h2>
                 <p className="text-gray-600 text-sm">
                   {activeTab === "recurring"
@@ -373,21 +399,17 @@ const RecurringCostsSection = () => {
 
                 return (
                   <div
-                    key={cost.id}
+                    key={cost._id}
                     className="p-6 hover:bg-slate-50/50 transition-all duration-200 group"
                   >
                     {/* Header line with cost name and manage button */}
                     <div className="flex items-center justify-between gap-3 mb-3">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        {cost.isDynamic ? (
-                          <h3 className="text-lg font-semibold border-l-4 border-blue-600 pl-3 bg-gradient-to-r from-orange-300 via-orange-600 to-orange-600 bg-clip-text text-transparent animate-gradient">
+               
+                          <h3 className={`text-lg font-semibold border-l-4 border-blue-600 pl-3`}>
                             {cost.name}
                           </h3>
-                        ) : (
-                          <h3 className="text-lg font-semibold border-l-4 border-blue-600 pl-3">
-                            {cost.name}
-                          </h3>
-                        )}
+                      
                       </div>
 
                       {/* Manage button */}
@@ -407,10 +429,10 @@ const RecurringCostsSection = () => {
                         <div className="flex items-center gap-3 mb-2">
                           <div>
                             <div className="flex items-baseline gap-2">
-                              <span className="text-lg font-bold text-gray-900">
+                              <span className={`text-lg font-bold text-gray-900 ${cost.isDynamic && "bg-gradient-to-r from-orange-300 via-orange-600 to-orange-600 bg-clip-text text-transparent animate-gradient"}`}>
                                 {formatAmountDisplay(cost).amount}
                               </span>
-                              <span className="text-sm font-medium text-gray-500">
+                              <span className={`text-sm font-medium text-gray-500 ${cost.isDynamic && "bg-gradient-to-r from-orange-300 via-orange-600 to-orange-600 bg-clip-text text-transparent animate-gradient"}`}>
                                 {formatAmountDisplay(cost).label}
                               </span>
                             </div>
@@ -421,7 +443,7 @@ const RecurringCostsSection = () => {
                             <div className="relative">
                               <div
                                 className="flex items-center justify-center bg-gray-100 px-2 py-1 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer relative"
-                                onMouseEnter={() => setHoveredCostId(cost.id)}
+                                onMouseEnter={() => setHoveredCostId(cost._id)}
                                 onMouseLeave={() => setHoveredCostId(null)}
                               >
                                 <TrendingUp className="w-6 h-6 text-orange-500" />
@@ -429,14 +451,14 @@ const RecurringCostsSection = () => {
                               </div>
 
                               {/* Tooltip - only show for the specific hovered cost */}
-                              {hoveredCostId === cost.id && (
+                              {hoveredCostId === cost._id && (
                                 <div className="absolute bottom-full left-0 mb-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50">
                                   <p className="mb-2">
                                     <strong>Dynamic Costs:</strong> Track when
                                     amounts change between payment cycles
                                   </p>
                                   <p>
-                                    Dynamic costs are useful for any reocurring
+                                    Dynamic costs are useful for any reoccurring
                                     cost that varies each period, like utilities
                                   </p>
                                   <div className="absolute top-full left-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
@@ -450,9 +472,7 @@ const RecurringCostsSection = () => {
                           {cost.isRecurring ? (
                             <>
                               <RotateCcw className="w-3 h-3 text-blue-500" />
-                              <span>
-                                {formatBillingFrequency(cost.frequency)}
-                              </span>
+                              <span>{formatBillingFrequency(cost)}</span>
                             </>
                           ) : (
                             <>
@@ -485,16 +505,15 @@ const RecurringCostsSection = () => {
                             .slice(0, 5)
                             .map((participant, index) => {
                               const user = participants.find(
-                                (u) => u.id === participant.userId
+                                (u) => u._id === participant._id
                               );
                               const { avatar } = getUserAvatar(user);
                               const statusColor = getStatusColor(
                                 participant.status
                               );
-
                               return (
                                 <div
-                                  key={participant.userId}
+                                  key={user._id}
                                   className={`w-9 h-9 rounded-xl ${user?.color} flex items-center justify-center text-white font-semibold text-xs border-2 border-white shadow-sm relative group/avatar hover:translate-x-1 transition-transform duration-200`}
                                   style={{
                                     zIndex: cost.participants.length - index,
@@ -552,13 +571,13 @@ const RecurringCostsSection = () => {
               <div className="flex justify-between items-center">
                 <div className="text-sm text-slate-600">
                   <span className="font-medium">{filteredCosts.length}</span>{" "}
-                  {activeTab == "onetime" ? "one-time" : "reocurring"}{" "}
+                  {activeTab == "onetime" ? "one-time" : "reoccurring"}{" "}
                   {filteredCosts.length === 1
                     ? "payment request"
                     : "payment requests"}
                 </div>
                 <button
-                  onClick={() => navigate("/costs/new")}
+                  onClick={() => setIsAddingRequest(true)}
                   className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all duration-200"
                 >
                   <Plus className="w-4 h-4" />

@@ -56,7 +56,6 @@ const ChargeSearchStep = ({
                   setIsManualCharge(false)
                   // reset charges
                   setCustomAmounts({})
-                  setSplitType("equal");
                 }}
                 className="p-5 bg-white rounded-xl border-2 border-gray-200 hover:border-gray-300 cursor-pointer transition-all hover:shadow-md"
               >

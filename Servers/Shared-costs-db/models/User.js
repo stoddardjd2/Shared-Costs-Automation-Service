@@ -54,6 +54,12 @@ const contactSchema = new Schema({
 
 const userSchema = new Schema(
   {
+    requests: [
+      {
+        type: Schema.Types.ObjectId,
+        required: false,
+      },
+    ],
     name: {
       type: String,
       required: [true, "Name is required"],

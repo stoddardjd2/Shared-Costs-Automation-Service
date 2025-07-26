@@ -1,33 +1,36 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 export const useSplitState = () => {
-  const [splitType, setSplitType] = useState('equal');
-  const [totalAmount, setTotalAmount] = useState('');
+  const [splitType, setSplitType] = useState("equalWithMe");
+  const [totalAmount, setTotalAmount] = useState("");
   const [customAmounts, setCustomAmounts] = useState({});
   const [showSplitPanel, setShowSplitPanel] = useState(false);
-
+  const [percentageAmounts, setPercentageAmounts] = useState({});
   const updateCustomAmount = (personId, amount) => {
-    console.log("Updating custom amount for person:", personId, "Amount:", amount);
-    setCustomAmounts(prev => ({
+
+    setCustomAmounts((prev) => ({
       ...prev,
-      [personId]: amount
+      [personId]: amount,
     }));
   };
 
   const calculateSplitAmounts = (selectedPeople) => {
     if (!selectedPeople || selectedPeople.length === 0) return {};
-    
-    if (splitType === 'equal') {
+
+    if (splitType === "equal") {
       const total = parseFloat(totalAmount) || 0;
       const perPerson = total / selectedPeople.length;
       return selectedPeople.reduce((acc, person) => {
         acc[person.id] = perPerson;
         return acc;
       }, {});
-    } else if (splitType === 'custom') {
+    } else if (splitType === "custom") {
       return customAmounts;
-    } else if (splitType === 'customTotal') {
-      const customTotal = Object.values(customAmounts).reduce((sum, amount) => sum + (parseFloat(amount) || 0), 0);
+    } else if (splitType === "customTotal") {
+      const customTotal = Object.values(customAmounts).reduce(
+        (sum, amount) => sum + (parseFloat(amount) || 0),
+        0
+      );
       const perPerson = customTotal / selectedPeople.length;
       return selectedPeople.reduce((acc, person) => {
         acc[person.id] = perPerson;
@@ -47,6 +50,8 @@ export const useSplitState = () => {
     showSplitPanel,
     setShowSplitPanel,
     updateCustomAmount,
-    calculateSplitAmounts
+    calculateSplitAmounts,
+    percentageAmounts,
+    setPercentageAmounts
   };
 };

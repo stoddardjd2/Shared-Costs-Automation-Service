@@ -19,20 +19,28 @@ import { useData } from "../../contexts/DataContext";
 import { getPaymentStatusColor } from "../../utils/helpers";
 import SplitStep from "../steps/SplitStep"; // Import SplitStep component
 import RequestButton from "./RequestButton";
+import { usePeopleState } from "../../hooks/usePeopleState";
+import { useSplitState } from "../../hooks/useSplitState";
+import { useChargeState } from "../../hooks/useChargeState";
 
 const ManageRecurringCostModal = ({ cost, onClose }) => {
   const { participants, updateCost, sendPaymentRequest, resendPaymentRequest } =
     useData();
   const [activeTab, setActiveTab] = useState("requests");
   const [showSplitStep, setShowSplitStep] = useState(false);
-  const [costSettings, setCostSettings] = useState({
-    name: cost.name,
-    amount: cost.amount,
-    frequency: cost.frequency,
-    nextDue: cost.nextDue,
-    participants: cost.participants,
-    splitType: cost.splitType,
-  });
+  const peopleState = usePeopleState();
+  const splitState = useSplitState();
+  const chargeState = useChargeState();
+
+  useEffect(() => {
+    // update
+    chargeState.setSelectedCharge(cost);
+    peopleState.setSelectedPeople(cost.participants);
+    splitState.setSplitType(cost.splitType);
+    splitState.setTotalAmount(cost.amount);
+    splitState.setPercentageAmounts(cost.percentageAmounts);
+    splitState.setCustomAmounts(cost.customAmounts);
+  }, []);
 
   // Format the amount per person based on split type (adapted from tray)
   const formatAmountDisplay = (cost) => {
@@ -45,47 +53,25 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
     };
   };
 
-  // Split step state
-  const [splitType, setSplitType] = useState(cost.splitType || "equal");
-  const [totalAmount, setTotalAmount] = useState(cost.amount || 0);
-  const [customAmounts, setCustomAmounts] = useState({});
-  const [percentageAmounts, setPercentageAmounts] = useState({});
-
-  // Initialize custom and percentage amounts from cost data
-  useEffect(() => {
-    if (cost.participants) {
-      const customAmts = {};
-      const percentAmts = {};
-
-      cost.participants.forEach((participant) => {
-        if (participant.customAmount) {
-          customAmts[participant.userId] = participant.customAmount;
-        }
-        if (participant.percentage) {
-          percentAmts[participant.userId] = participant.percentage;
-        }
-      });
-
-      setCustomAmounts(customAmts);
-      setPercentageAmounts(percentAmts);
+  const getParticipantStatus = (participant, payment) => {
+    if (participant.status === "paid") {
+      return "paid";
     }
-  }, [cost]);
 
-  // Helper function to generate avatar for users
-  const getUserAvatar = (user) => {
-    const name = user?.name || "";
-    const nameParts = name.split(" ");
-    const avatar =
-      nameParts.length > 1
-        ? `${nameParts[0][0]}${nameParts[1][0]}`
-        : name.slice(0, 2);
+    // Check if overdue
+    const dueDate = new Date(payment.dueDate);
+    const today = new Date();
 
-    return {
-      avatar: avatar.toUpperCase(),
-    };
+    // Set both dates to start of day for accurate comparison
+    dueDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    return dueDate < today ? "overdue" : "pending";
   };
+
   // Get subtle status indicator color
-  const getStatusIndicatorColor = (status) => {
+  const getStatusIndicatorColor = (participant, payment) => {
+    const status = getParticipantStatus(participant, payment);
     switch (status) {
       case "paid":
         return "bg-green-500";
@@ -100,8 +86,67 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
     }
   };
 
-  // Get subtle payment status styling - much more muted
-  const getPaymentStatusStyling = (status) => {
+  const getStatusLabel = (participant, payment) => {
+    const status = getParticipantStatus(participant, payment);
+    switch (status) {
+      case "overdue":
+        return "Overdue";
+      case "pending":
+        return "Pending";
+      case "paid":
+        const paymentDate = participant.paidDate
+          ? new Date(participant.paidDate).toLocaleDateString()
+          : "N/A";
+
+        return `Paid on ${paymentDate}`;
+    }
+  };
+
+  // Function to determine overall payment status from all participants
+  const getOverallPaymentStatus = (payment) => {
+    const { participants, dueDate } = payment;
+
+    if (!participants || participants.length === 0) {
+      return "unknown";
+    }
+
+    // Check if payment is overdue
+    const currentDate = new Date();
+    const due = new Date(dueDate.$date);
+    const isOverdue = currentDate > due;
+
+    // Count participant statuses
+    const statusCounts = participants.reduce((acc, participant) => {
+      const status = participant.status;
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {});
+
+    const totalParticipants = participants.length;
+    const paidCount = statusCounts.paid || 0;
+    const pendingCount = statusCounts.pending || 0;
+
+    // Determine overall status
+    if (paidCount === totalParticipants) {
+      return "paid";
+    } else if (paidCount > 0 && paidCount < totalParticipants) {
+      return "partial";
+    } else if (pendingCount === totalParticipants && isOverdue) {
+      return "overdue";
+    } else if (pendingCount === totalParticipants) {
+      return "pending";
+    } else {
+      return "unknown";
+    }
+  };
+
+  // Fixed version of your styling function (note: was using undefined 'status' variable)
+  const getPaymentStatusStyling = (payment) => {
+    // Get the overall status first
+    const status = getOverallPaymentStatus(payment);
+
+    console.log("STATUS!!", status);
+
     switch (status) {
       case "paid":
         return {
@@ -126,7 +171,7 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
       case "partial":
         return {
           cardClass: "bg-white border-gray-200",
-          headerClass: "bg-yellow-50 border-b border-yellow-100", // Changed from amber to yellow
+          headerClass: "bg-yellow-50 border-b border-yellow-100",
           badgeClass: "bg-yellow-100 text-yellow-700 border border-yellow-200",
           iconClass: "text-yellow-600",
           textClass: "text-yellow-700",
@@ -136,7 +181,7 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
       case "overdue":
         return {
           cardClass: "bg-white border-gray-200",
-          headerClass: "bg-red-50 border-b border-red-100", // Changed from orange to red
+          headerClass: "bg-red-50 border-b border-red-100",
           badgeClass: "bg-red-100 text-red-700 border border-red-200",
           iconClass: "text-red-600",
           textClass: "text-red-700",
@@ -158,7 +203,7 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
 
   // Get payment history from the cost object
   const paymentHistory = cost.paymentHistory || [];
-
+  console.log("TEST@", cost.paymentHistory);
   // Sort payment history by date (most recent first)
   const sortedPayments = paymentHistory.sort(
     (a, b) => new Date(b.requestDate) - new Date(a.requestDate)
@@ -177,139 +222,38 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
     }
   };
 
-  const handleResendRequest = (paymentId, userId) => {
-    if (resendPaymentRequest) {
-      resendPaymentRequest(cost.id, paymentId, userId);
-    }
-  };
-
-  const handleSendNewRequest = () => {
-    if (sendPaymentRequest) {
-      sendPaymentRequest(cost.id);
-    }
-  };
-
-  const handleUpdateCost = (updatedCostData) => {
-    // Update cost settings with the new split configuration
-    const updatedSettings = {
-      ...costSettings,
-      splitType: updatedCostData.splitType,
-      amount: updatedCostData.amount,
-      frequency: updatedCostData.frequency,
-      customInterval: updatedCostData.customInterval,
-      customUnit: updatedCostData.customUnit,
-      startTiming: updatedCostData.startTiming,
-      isDynamicCosts: updatedCostData.isDynamicCosts,
-      dynamicCostReason: updatedCostData.dynamicCostReason,
-      participants: updatedCostData.participants,
-    };
-
-    // Update the cost in the context
-    updateCost(cost.id, updatedSettings);
-
-    // Update local state
-    setCostSettings(updatedSettings);
-    setSplitType(updatedCostData.splitType);
-    setTotalAmount(updatedCostData.amount);
-
-    // Update custom and percentage amounts
-    const newCustomAmounts = {};
-    const newPercentageAmounts = {};
-    updatedCostData.participants.forEach((participant) => {
-      if (participant.customAmount) {
-        newCustomAmounts[participant.userId] = participant.customAmount;
-      }
-      if (participant.percentage) {
-        newPercentageAmounts[participant.userId] = participant.percentage;
-      }
-    });
-    setCustomAmounts(newCustomAmounts);
-    setPercentageAmounts(newPercentageAmounts);
-
-    // Close the split step
-    setShowSplitStep(false);
-  };
-
-  const isOverdue = (dueDate) => {
-    return new Date(dueDate) < new Date();
-  };
-
-  const getDaysOverdue = (dueDate) => {
-    const today = new Date();
-    const due = new Date(dueDate);
-    const diffTime = today - due;
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  };
-
-  const updateCustomAmount = (personId, value) => {
-    setCustomAmounts((prev) => ({
-      ...prev,
-      [personId]: value,
-    }));
-  };
-
-  const updatePercentageAmount = (personId, value) => {
-    setPercentageAmounts((prev) => ({
-      ...prev,
-      [personId]: value,
-    }));
-  };
-
-  const calculateSplitAmounts = (selectedPeople) => {
-    const amounts = {};
-    if (splitType === "equal") {
-      const amountPerPerson = totalAmount / selectedPeople.length;
-      selectedPeople.forEach((person) => {
-        amounts[person.id] = amountPerPerson;
-      });
-    } else if (splitType === "equalWithMe") {
-      const amountPerPerson = totalAmount / (selectedPeople.length + 1);
-      selectedPeople.forEach((person) => {
-        amounts[person.id] = amountPerPerson;
-      });
-    }
-    return amounts;
-  };
-
-  // Convert participants to the format expected by SplitStep
-  const selectedPeople = costSettings.participants
-    .map((participant) => {
-      const user = participants.find((p) => p.id === participant.userId);
-      return {
-        id: participant.userId,
-        name: user?.name || "Unknown",
-        avatar: user?.avatar || user?.name?.charAt(0) || "U",
-        color: user?.color || "bg-gray-500",
-      };
-    })
-    .filter((person) => person.name !== "Unknown");
-
   // Check if this is a recurring cost (not one-time)
-  const isRecurringCost = cost.frequency && cost.frequency.toLowerCase() !== "one-time" && cost.frequency.toLowerCase() !== "onetime";
+  const isRecurringCost =
+    cost.frequency &&
+    cost.frequency.toLowerCase() !== "one-time" &&
+    cost.frequency.toLowerCase() !== "onetime";
 
   // Create charge details for SplitStep
-
+  {
+    console.log("splitState.percentageAmounts", splitState.percentageAmounts);
+  }
   if (showSplitStep) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 !mt-0">
         <div className="bg-white rounded-xl shadow-2xl w-full h-full overflow-hidden flex flex-col">
           <div className="flex-1 overflow-y-auto">
             <SplitStep
-              selectedPeople={selectedPeople}
-              onBack={() => setShowSplitStep(false)}
-              selectedCharge={cost}
+              selectedPeople={peopleState.selectedPeople}
+              setSelectedPeople={peopleState.setSelectedPeople}
+              onBack={() => onClose()}
+              selectedCharge={chargeState.selectedCharge}
+              setSelectedCharge={chargeState.setSelectedCharge}
               newChargeDetails={null}
-              splitType={splitType}
-              setSplitType={setSplitType}
-              totalAmount={totalAmount}
-              setTotalAmount={setTotalAmount}
-              customAmounts={customAmounts}
-              updateCustomAmount={updateCustomAmount}
-              calculateSplitAmounts={calculateSplitAmounts}
-              percentageAmounts={percentageAmounts}
-              updatePercentageAmount={updatePercentageAmount}
+              splitType={splitState.splitType}
+              setSplitType={splitState.setSplitType}
+              totalAmount={splitState.totalAmount}
+              setTotalAmount={splitState.setTotalAmount}
+              customAmounts={splitState.customAmounts}
+              updateCustomAmount={splitState.updateCustomAmount}
+              calculateSplitAmounts={splitState.calculateSplitAmounts}
               isEditMode={true}
-              onUpdateCost={handleUpdateCost}
+              percentageAmounts={splitState.percentageAmounts}
+              setPercentageAmounts={splitState.setPercentageAmounts}
             />
           </div>
         </div>
@@ -385,14 +329,13 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
               ) : (
                 <div className="space-y-4">
                   {sortedPayments.map((payment) => {
-                    const statusStyling = getPaymentStatusStyling(
-                      payment.status
-                    );
+                    console.log("TEST!", payment);
+                    const statusStyling = getPaymentStatusStyling(payment);
                     const StatusIcon = statusStyling.icon;
 
                     return (
                       <div
-                        key={payment.id}
+                        key={payment._id}
                         className={`border rounded-xl overflow-hidden ${statusStyling.cardClass} shadow-sm`}
                       >
                         {/* Subtle Status Header */}
@@ -448,64 +391,51 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
                           <div className="space-y-3">
                             {payment.participants.map((participant) => {
                               const user = participants.find(
-                                (u) => u.id === participant.userId
+                                (u) => u._id === participant._id
                               );
-                              const { avatar } = getUserAvatar(user);
                               const statusIndicatorColor =
-                                getStatusIndicatorColor(participant.status);
+                                getStatusIndicatorColor(participant, payment);
                               const canResend =
                                 participant.status === "pending" ||
                                 participant.status === "overdue";
 
                               return (
                                 <div
-                                  key={participant.userId}
+                                  key={participant._id}
                                   className="flex items-center justify-between p-3 rounded-lg border border-gray-100"
                                 >
                                   <div className="flex items-center gap-3 flex-1 min-w-0">
                                     <div className="relative flex-shrink-0">
                                       <div
-                                        className={`w-10 h-10 rounded-lg ${user?.color} flex items-center justify-center text-white font-semibold text-sm border-2 border-white shadow-sm`}
+                                        className={`w-12 h-12 rounded-lg ${user?.color} flex items-center justify-center text-white font-semibold text-sm border-2 border-white shadow-sm`}
                                       >
-                                        {avatar}
+                                        {user.avatar}
                                         {/* Status indicator - small and subtle */}
                                         <div
-                                          className={`absolute -bottom-0.5 -right-0.5 ${statusIndicatorColor} rounded-full w-3 h-3 border-2 border-white`}
+                                          className={`absolute -bottom-0.5 -right-0.5 ${statusIndicatorColor} rounded-full w-4 h-4 border-2 border-white`}
                                         ></div>
                                       </div>
                                     </div>
 
                                     <div className="flex-1 min-w-0">
                                       <div className="flex flex-col">
-                                        <span className="font-semibold text-black text-lg truncate">
+                                        <span className="font-semibold text-black text-sm truncate">
                                           {user?.name}
                                         </span>
-                                        <div className="flex items-center gap-3 mt-1">
-                                          <span className="text-gray-600 font-medium">
-                                            ${participant.amount}
-                                          </span> 
-                                          
-                                          {participant.paidDate ? (
-                                            <span className="text-sm text-gray-600">
-                                              {" "}Paid{" "}
-                                              {new Date(
-                                                participant.paidDate
-                                              ).toLocaleDateString()}
-                                            </span>
-                                          ) : (
-                                            <span className="text-sm text-gray-600">
-                                              Unpaid
-                                            </span>
-                                          )}
-                                        </div>
+                                        <span className="text-gray-600 font-medium text-xs">
+                                          ${participant.amount}
+                                        </span>
+                                        <span className="text-xs text-gray-600">
+                                          {getStatusLabel(participant, payment)}
+                                        </span>
                                       </div>
                                     </div>
                                   </div>
 
                                   {canResend && (
                                     <RequestButton
-                                      costId={cost.id}
-                                      participantUserId={participant.userId}
+                                      costId={cost._id}
+                                      participantUserId={participant._id}
                                       className="px-3 py-2 text-sm ml-3 flex-shrink-0"
                                       loadingText="Sending..."
                                       successText="Sent!"

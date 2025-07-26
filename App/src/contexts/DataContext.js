@@ -16,31 +16,30 @@ export const useData = () => {
 
 // Loading component - you can customize this
 const LoadingSpinner = () => (
-  <div style={{ 
-    display: 'flex', 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    height: '100vh',
-    fontSize: '18px'
-  }}>
-    Loading your data...
+  <div className="flex justify-center items-center h-screen w-full">
+    <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent"></div>
   </div>
 );
 
 // Error component - you can customize this
 const ErrorComponent = ({ error, onRetry }) => (
-  <div style={{ 
-    display: 'flex', 
-    flexDirection: 'column',
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    height: '100vh',
-    padding: '20px',
-    textAlign: 'center'
-  }}>
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center",
+      height: "100vh",
+      padding: "20px",
+      textAlign: "center",
+    }}
+  >
     <h2>Something went wrong</h2>
     <p>{error.message}</p>
-    <button onClick={onRetry} style={{ marginTop: '10px', padding: '10px 20px' }}>
+    <button
+      onClick={onRetry}
+      style={{ marginTop: "10px", padding: "10px 20px" }}
+    >
       Try Again
     </button>
   </div>
@@ -66,14 +65,13 @@ export const DataProvider = ({ children }) => {
       // Load both user data and requests in parallel
       const [userDataResult, userRequestsResult] = await Promise.all([
         getUserData(),
-        // getRequests()
+        getRequests(),
       ]);
 
       // Set all the data
       setUserData(userDataResult);
       setParticipants(userDataResult.contacts || []);
       setCosts(userRequestsResult || []);
-
       // Mark as loaded
       setIsContextLoaded(true);
     } catch (error) {
@@ -96,20 +94,16 @@ export const DataProvider = ({ children }) => {
     );
   };
 
-  const addCost = (costData) => {
-    const newCost = {
-      ...costData,
-      id: Date.now(),
-      createdAt: new Date().toISOString().split("T")[0],
-    };
+  const addCost = (newCost) => {
     setCosts((prev) => [...prev, newCost]);
-    return newCost;
   };
 
-  const updateCost = (id, updates) => {
-    console.log("Updating cost with ID:", id, "Updates:", updates);
-    setCosts((prev) =>
-      prev.map((cost) => (cost.id === id ? { ...cost, ...updates } : cost))
+  const updateCost = (updatedCost) => {
+    console.log("UPDATING", updatedCost);
+    setCosts((prevCosts) =>
+      prevCosts.map((cost) =>
+        cost._id === updatedCost._id ? updatedCost : cost
+      )
     );
   };
 
@@ -123,7 +117,7 @@ export const DataProvider = ({ children }) => {
 
   //     await plaidAPI.refreshTransactions(accessToken);
   //     const transactions = await plaidAPI.getTransactions(accessToken);
-      
+
   //     const formattedTransactions = transactions.map((transaction) => ({
   //       id: transaction.transaction_id,
   //       description: transaction.name,

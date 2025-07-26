@@ -39,12 +39,11 @@ const ChargeTypeStep = ({ onChargeTypeSelect, setIsAddingRequest }) => {
                   Track Existing Charge
                 </h3>
                 <p className="text-gray-600 mb-2">
-                  Find and split charges that already appear on your bank
-                  statement
+                  Find charges directly from your bank
                 </p>
-                <p className="text-xs text-gray-500">
+                {/* <p className="text-xs text-gray-500">
                   * Requires Bilt account connection
-                </p>
+                </p> */}
               </div>
             </div>
           </div>
