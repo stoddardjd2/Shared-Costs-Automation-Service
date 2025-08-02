@@ -10,6 +10,7 @@ const connectDB = require("./config/database");
 // Import routes
 const userRoutes = require("./routes/userRoutes");
 const requestRoutes = require('./routes/requestRoutes')
+const supportRoutes = require('./routes/supportRoutes')
 // Import error handler
 const { errorHandler, notFound } = require("./utils/errorHandler");
 
@@ -36,7 +37,7 @@ app.use(
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 30, // limit each IP to 100 requests per windowMs
   message: "Too many requests from this IP, please try again later.",
 });
 app.use(limiter);
@@ -68,9 +69,14 @@ app.get("/health", (req, res) => {
 
 app.use("/api/users", userRoutes);
 app.use("/api/requests", requestRoutes)
+app.use('/api/support', supportRoutes)
+// manual routes for support email
+
+
 // Error handling middleware
 app.use(notFound);
 app.use(errorHandler);
+
 
 // Start server
 const PORT = process.env.PORT || 3000;

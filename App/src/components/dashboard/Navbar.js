@@ -125,7 +125,7 @@ const Navbar = () => {
                 <DollarSign size={20} color="#ffffff" />
               </div>
               <span className="ml-3 text-xl font-semibold text-slate-900">
-                AutoRequest{" "}
+                SmartSplit{" "}
               </span>
             </div>
           </div>
