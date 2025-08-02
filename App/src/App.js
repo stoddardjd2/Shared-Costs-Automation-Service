@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 // import { DataProvider } from "./contexts/DataContext";
 import Login from "./components/auth/Login";
@@ -14,7 +14,16 @@ import Loginv2 from "./components/auth/Loginv2";
 import Signup from "./components/auth/Signup";
 import ResetPasswordPage from "./components/auth/ResetPasswordPage";
 import { DataProvider } from "./contexts/DataContext";
+import PaymentPage from "./payment-components/PaymentPage";
+import GlobalNavbar from "./components/global/GlobalNavbar";
+import LandingPage from "./components/global/landing-pages/Claude/LandingPage";
+import LandingPage2 from "./components/global/landing-pages/Claude/LandingPage2";
+import LandingPage3 from "./components/global/landing-pages/GPT/LandingPage3.jsx";
+import LandingPage4 from "./components/global/landing-pages/GPT/LandingPage4.jsx";
+import GlobalFooter from "./components/global/GlobalFooter.jsx";
+import { useNavigate } from "react-router-dom";
 const App = () => {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-gray-50">
       <AuthProvider>
@@ -28,18 +37,7 @@ const App = () => {
           />
 
           {/* Protected routes */}
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Navbar />
-
-                <div className="max-w-7xl mx-auto py-8">
-                  <Dashboard />
-                </div>
-              </ProtectedRoute>
-            }
-          />
+          {/* <Route path="/" element={<div>{navigate("/landing")}</div>} /> */}
           <Route
             path="/dashboard"
             element={
@@ -90,6 +88,37 @@ const App = () => {
 
           {/* Fallback route - must be last */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route
+            path="/payment"
+            element={
+              <div>
+                <GlobalNavbar />
+                <PaymentPage />
+              </div>
+            }
+          />
+          <Route
+            path="/landing"
+            element={
+              <>
+                <GlobalNavbar
+                  options={{
+                    features: true,
+                    security: true,
+                    pricing: true,
+                    createFreeAccount: true,
+                  }}
+                />
+                <Outlet />
+                <GlobalFooter />
+              </>
+            }
+          >
+            <Route index element={<LandingPage />} />
+            <Route path="2" element={<LandingPage2 />} />
+            <Route path="3" element={<LandingPage3 />} />
+            <Route path="4" element={<LandingPage4 />} />
+          </Route>
         </Routes>
       </AuthProvider>
     </div>
