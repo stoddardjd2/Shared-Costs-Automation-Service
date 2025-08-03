@@ -17,28 +17,29 @@ const participantSchema = new Schema({
 // Sub-schema for participants inside each payment history entry
 const paymentParticipantSchema = new Schema({
   _id: { type: Schema.Types.ObjectId, required: true },
-  status: {
-    type: String,
-    enum: ["paid", "pending", "overdue"],
-    default: "pending",
-  },
-  paymentAmount: {type:Boolean},
+  // status: {
+  //   type: String,
+  //   enum: ["paid", "pending", "overdue"],
+  //   default: "pending",
+  // },
+  paymentAmount: { type: Number },
   paidDate: { type: Date },
   amount: { type: Number },
   reminderSent: { type: Boolean },
-  lastReminderDate: { type: Date },
+  reminderSentDate: { type: Date },
 });
 
 // Sub-schema for payment history entries
 const paymentHistorySchema = new Schema({
   requestDate: { type: Date },
   dueDate: { type: Date },
+  nextReminderDate: { type: Date },
   amount: { type: Number },
-//   status: {
-//     type: String,
-//     enum: ["paid", "pending", "overdue", "partial"],
-//     default: "pending",
-//   },
+  //   status: {
+  //     type: String,
+  //     enum: ["paid", "pending", "overdue", "partial"],
+  //     default: "pending",
+  //   },
   participants: [paymentParticipantSchema],
 });
 
@@ -46,24 +47,33 @@ const requestSchema = new Schema({
   owner: { type: Schema.Types.ObjectId, required: true },
   name: { type: String, required: true },
   amount: { type: Number, required: true },
-//   totalAmount: { type: Number },
+  //   totalAmount: { type: Number },
   isRecurring: { type: Boolean, default: false },
   plaidMatch: { type: String },
-  splitType: { type: String, enum: ["equal", "equalWithMe", "custom", "percentage"], default: "equal" },
+  splitType: {
+    type: String,
+    enum: ["equal", "equalWithMe", "custom", "percentage"],
+    default: "equal",
+  },
   participants: [participantSchema],
-//   customSplits: { type: Map, of: Number },
+  //   customSplits: { type: Map, of: Number },
   customAmounts: { type: Map, of: String },
-  percentageAmounts: { type: Map, of: String},
+  percentageAmounts: { type: Map, of: String },
   createdAt: { type: Date, default: Date.now },
   lastMatched: { type: Date },
   frequency: { type: String }, // weekly, monthly, custom
-  nextDue: { type: Date },
+  // nextDue: { type: Date },
   customInterval: { type: Number },
   customUnit: { type: String }, // days, weeks, months
   startTiming: { type: String, enum: ["now", "next"], default: "now" },
   startDate: { type: Date }, // for when startTiming is "later"
   isDynamic: { type: Boolean, default: false },
   dynamicCostReason: { type: String },
+  reminderFrequency: {
+    type: String,
+    enum: ["daily", "weekly", "monthly", "none"],
+    default: "weekly",
+  },
   paymentHistory: [paymentHistorySchema],
 });
 

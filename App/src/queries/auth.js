@@ -2,7 +2,6 @@ import getAPIUrl from "./config";
 
 const API_URL = getAPIUrl();
 
-// Simple function to create user - call directly from React components
 const createUser = async (userData) => {
   try {
     const response = await fetch(`${API_URL}/users`, {
@@ -23,7 +22,6 @@ const createUser = async (userData) => {
     // Store token in localStorage if registration is successful
     if (data.success && data.data.token) {
       localStorage.setItem("token", data.data.token);
-      localStorage.setItem("user", JSON.stringify(data.data.user));
     }
 
     return data;
@@ -33,7 +31,6 @@ const createUser = async (userData) => {
   }
 };
 
-// Login function (bonus)
 const loginUser = async (credentials) => {
   try {
     const response = await fetch(`${API_URL}/users/login`, {
@@ -55,7 +52,6 @@ const loginUser = async (credentials) => {
     // Store token in localStorage if login is successful
     if (data.success && data.data.token) {
       localStorage.setItem("token", data.data.token);
-      localStorage.setItem("user", JSON.stringify(data.data.user));
     }
 
     return data;
@@ -124,7 +120,6 @@ const verifyToken = async (token) => {
     });
 
     const data = await response.json();
-
     if (!response.ok) {
       console.log("verification failed", data.message);
       return false;
@@ -136,7 +131,9 @@ const verifyToken = async (token) => {
       localStorage.removeItem("token");
       return false;
     }
-    return data.data.user;
+
+
+    return data.data.valid;
   } catch (error) {
     console.error("Error logging in:", error);
     throw error;

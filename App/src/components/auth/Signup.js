@@ -117,7 +117,7 @@ const Signup = () => {
         );
         // Optional: Navigate to login or dashboard after successful signup
         setTimeout(() => {
-          navigate("/login");
+          navigate("/dashboard");
         }, 2000);
       } else {
         // Handle API error response
