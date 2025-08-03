@@ -7,7 +7,7 @@ export default function generateCostEntry({
   recurringType,
   customInterval,
   customUnit,
-  totalSplit
+  totalSplit,
 }) {
   // Helper function to get frequency from recurring type
   const getFrequency = () => {
@@ -45,10 +45,10 @@ export default function generateCostEntry({
   // Helper function to calculate next due date
   const getNextDueDate = () => {
     if (recurringType === "none") return null;
-    
+
     const now = new Date();
     const nextDue = new Date(now);
-    
+
     switch (recurringType) {
       case "daily":
         nextDue.setDate(now.getDate() + 1);
@@ -68,7 +68,7 @@ export default function generateCostEntry({
             nextDue.setDate(now.getDate() + customInterval);
             break;
           case "weeks":
-            nextDue.setDate(now.getDate() + (customInterval * 7));
+            nextDue.setDate(now.getDate() + customInterval * 7);
             break;
           case "months":
             nextDue.setMonth(now.getMonth() + customInterval);
@@ -81,17 +81,17 @@ export default function generateCostEntry({
       default:
         return null;
     }
-    
-    return nextDue.toISOString().split('T')[0];
+
+    return nextDue.toISOString().split("T")[0];
   };
 
   // Generate custom splits object based on split type
   const generateCustomSplits = () => {
     const splits = {};
-    
+
     if (splitType === "custom") {
       // Custom amounts for each person
-      selectedPeople.forEach(person => {
+      selectedPeople.forEach((person) => {
         const amount = customAmounts[person.id] || 0;
         splits[person.id] = Number(amount);
       });
@@ -99,59 +99,87 @@ export default function generateCostEntry({
       // Custom total split equally
       const totalAmount = Number(customAmounts["total"] || 0);
       const perPersonAmount = totalAmount / selectedPeople.length;
-      selectedPeople.forEach(person => {
+      selectedPeople.forEach((person) => {
         splits[person.id] = perPersonAmount;
       });
     } else {
       // Equal split
       const perPersonAmount = totalSplit / selectedPeople.length;
-      selectedPeople.forEach(person => {
+      selectedPeople.forEach((person) => {
         splits[person.id] = perPersonAmount;
       });
     }
-    
+
     return splits;
   };
 
   // Generate participants array
-  const participants = selectedPeople.map(person => ({
+  const participants = selectedPeople.map((person) => ({
     userId: person.id,
     status: "pending", // Default status for new requests
     // paidAt will be added when status changes to "paid"
   }));
 
   // Get charge details
-  const chargeName = selectedCharge?.name || 
-                     newChargeDetails?.customName || 
-                     newChargeDetails?.name || 
-                     "Untitled Charge";
+  const chargeName =
+    selectedCharge?.name ||
+    newChargeDetails?.customName ||
+    newChargeDetails?.name ||
+    "Untitled Charge";
 
-  const chargeAmount = splitType === "customTotal" 
-    ? Number(customAmounts["total"] || 0)
-    : (selectedCharge?.lastAmount || totalSplit || 0);
+  const chargeAmount =
+    splitType === "customTotal"
+      ? Number(customAmounts["total"] || 0)
+      : selectedCharge?.lastAmount || totalSplit || 0;
 
-  const currentDate = new Date().toISOString().split('T')[0];
+  const currentDate = new Date().toISOString().split("T")[0];
 
+
+  console.log("recurringType", recurringType)
   return {
-    id: Date.now(), // Generate unique ID (in real app, this would come from backend)
     name: chargeName,
     amount: chargeAmount,
-    isRecurring: recurringType !== "none",
+    isRecurring: (recurringType == "one-time") ? false : true,
     plaidMatch: selectedCharge?.plaidMatch || null,
     participants: participants,
     splitType: splitType,
-    customSplits: generateCustomSplits(),
+    // customSplits: generateCustomSplits(),
     createdAt: currentDate,
     lastMatched: selectedCharge?.lastMatched || currentDate,
     frequency: getFrequency(),
     nextDue: getNextDueDate(),
+
+    // paymentHistory: [
+    //   {
+    //     id: "payment_101",
+    //     requestDate: "2025-01-15",
+    //     dueDate: "2025-01-22",
+    //     amount: 15.99,
+    //     status: "partial", // paid, pending, overdue, partial
+    //     followUpSent: false,
+    //     lastReminderSent: null,
+    //     participants: [
+    //       { userId: 1, status: "paid", paidDate: "2025-01-16", amount: 5.33 },
+    //       {
+    //         userId: 2,
+    //         status: "pending",
+    //         amount: 5.33,
+    //         remindersSent: 1,
+    //         lastReminderDate: "2025-01-20",
+    //       },
+    //       { userId: 3, status: "paid", paidDate: "2025-01-17", amount: 5.33 },
+    //     ],
+    //   },
+    // ],
+
+
     // Additional metadata that might be useful
-    metadata: {
-      recurringType,
-      customInterval: recurringType === "custom" ? customInterval : null,
-      customUnit: recurringType === "custom" ? customUnit : null,
-      totalSplit,
-      originalChargeAmount: selectedCharge?.lastAmount || 0,
-    }
+    // metadata: {
+    //   recurringType,
+    //   customInterval: recurringType === "custom" ? customInterval : null,
+    //   customUnit: recurringType === "custom" ? customUnit : null,
+    //   totalSplit,
+    //   originalChargeAmount: selectedCharge?.lastAmount || 0,
+    // }
   };
 }

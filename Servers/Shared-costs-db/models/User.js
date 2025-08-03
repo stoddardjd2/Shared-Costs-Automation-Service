@@ -1,0 +1,158 @@
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+const { Schema, Types } = mongoose;
+
+// Contact sub-schema with a unique contactId
+const contactSchema = new Schema({
+  // contactId: {
+  //   type: Schema.Types.ObjectId,
+  //   default: () => new Types.ObjectId(), // Generates a unique ID
+  // },
+  name: {
+    type: String,
+    required: [true, "Contact name is required"],
+    trim: true,
+  },
+  phone: {
+    type: String,
+    required: [true, "Contact phone number is required"],
+    trim: true,
+  },
+  avatar: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: [2, "Avatar initials should be 2 characters maximum"],
+  },
+
+  color: {
+    type: String,
+    required: true,
+    trim: true,
+    validate: {
+      validator: function (v) {
+        // Validate that it's a valid Tailwind color class
+        const allowedColors = [
+          "bg-purple-500",
+          "bg-green-500",
+          "bg-pink-500",
+          "bg-indigo-500",
+          "bg-teal-500",
+          "bg-cyan-500",
+          "bg-emerald-500",
+          "bg-violet-500",
+          "bg-fuchsia-500",
+          "bg-rose-500",
+          "bg-lime-500",
+        ];
+        return allowedColors.includes(v);
+      },
+      message: "Color must be a valid Tailwind color class",
+    },
+  },
+});
+
+const userSchema = new Schema(
+  {
+    requests: [
+      {
+        type: Schema.Types.ObjectId,
+        required: false,
+      },
+    ],
+    name: {
+      type: String,
+      required: [true, "Name is required"],
+      trim: true,
+      maxlength: [50, "Name cannot exceed 50 characters"],
+    },
+    email: {
+      type: String,
+      required: [true, "Email is required"],
+      unique: true,
+      lowercase: true,
+      match: [
+        /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+        "Please enter a valid email",
+      ],
+    },
+    password: {
+      type: String,
+      required: [true, "Password is required"],
+      minlength: [6, "Password must be at least 6 characters"],
+      select: false,
+    },
+    plan: {
+      type: String,
+      required: true,
+    },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    lastLogin: {
+      type: Date,
+    },
+    profile: {
+      avatar: String,
+      bio: {
+        type: String,
+        maxlength: [500, "Bio cannot exceed 500 characters"],
+      },
+      location: String,
+      website: String,
+    },
+    contacts: [contactSchema], // <-- Contacts with unique IDs
+    passwordResetToken: String,
+    passwordResetExpire: Date,
+  },
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
+);
+
+// Indexes
+userSchema.index({ email: 1 });
+userSchema.index({ role: 1, isActive: 1 });
+
+// Password hashing
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+
+  try {
+    const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS) || 12;
+    this.password = await bcrypt.hash(this.password, saltRounds);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Instance method: password match
+userSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+
+// Instance method: update login timestamp
+userSchema.methods.updateLastLogin = async function () {
+  this.lastLogin = new Date();
+  return await this.save({ validateBeforeSave: false });
+};
+
+// Static methods
+userSchema.statics.findActiveUsers = function () {
+  return this.find({ isActive: true });
+};
+
+userSchema.statics.findByEmail = function (email) {
+  return this.findOne({ email: email.toLowerCase() });
+};
+
+module.exports = mongoose.model("User", userSchema);

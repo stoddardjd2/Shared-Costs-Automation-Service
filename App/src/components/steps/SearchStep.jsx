@@ -21,7 +21,6 @@ const SearchStep = ({
   setNewPerson,
   handleAddNewPerson,
 }) => {
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Main content with padding bottom to prevent button tray overlap */}
@@ -37,7 +36,9 @@ const SearchStep = ({
               <ArrowLeft className="w-6 h-6 text-gray-700" />
             </button>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-900">Select People</h1>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Select People
+              </h1>
               <p className="text-gray-600">Choose who to split charges with</p>
             </div>
           </div>
@@ -45,6 +46,11 @@ const SearchStep = ({
           <ChargeDisplay
             selectedCharge={selectedCharge}
             newChargeDetails={newChargeDetails}
+            recurringType={
+              newChargeDetails
+                ? newChargeDetails.frequency
+                : selectedCharge.frequency
+            }
           />
 
           <div className="relative mb-8">
@@ -68,11 +74,13 @@ const SearchStep = ({
 
           <div className="space-y-3 mb-8">
             {filteredPeople.length > 0 ? (
-              filteredPeople.map((person) => (
+              filteredPeople.map((person, index) => (
                 <ContactCard
-                  key={person.id}
+                  key={person._id}
                   person={person}
-                  isSelected={!!selectedPeople.find((p) => p.id === person.id)}
+                  isSelected={
+                    !!selectedPeople.find((p) => p._id === person._id)
+                  }
                   onToggle={togglePersonSelection}
                 />
               ))
@@ -89,7 +97,7 @@ const SearchStep = ({
           </div>
         </div>
       </div>
-      
+
       <ConfirmButtonTray
         buttonContent={
           <>
@@ -99,7 +107,7 @@ const SearchStep = ({
         }
         selectedPeople={selectedPeople}
         onConfirm={onContinue}
-        hideBillingInfo = {true}
+        hideBillingInfo={true}
       />
     </div>
   );

@@ -1,17 +1,38 @@
-import { ArrowLeft, User, Phone } from "lucide-react";
+import { ArrowLeft, User, Phone, AlertCircle } from "lucide-react";
 import StepIndicator from "./StepIndicator";
 import PhoneInput from "../common/PhoneInput";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 // import '../styles/react-international-phone-input.css';
 import { validatePhoneNumber } from "../../utils/stepUtils";
 import "../../styles/index.css";
+import ContactCard from "../costs/ContactCard";
 const AddStep = ({
   newPerson,
   newPeople,
   setNewPerson,
   onAddPerson,
   onBack,
+  setIsPhoneInUse,
+  isPhoneInUse,
 }) => {
+  function formatPhoneNumber(phone) {
+    // Remove any non-digit characters
+    const digits = phone.replace(/\D/g, "");
+
+    // Ensure it has at least 11 digits (e.g., country code + number)
+    if (digits.length !== 11) {
+      return "Invalid phone number";
+    }
+
+    const country = digits[0];
+    const area = digits.slice(1, 4);
+    const middle = digits.slice(4, 7);
+    const last = digits.slice(7);
+
+    return `+${country} (${area})-${middle}-${last}`;
+  }
+
+  const [phoneError, setPhoneError] = useState("");
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-lg mx-auto px-6 py-8">
@@ -38,9 +59,9 @@ const AddStep = ({
             <input
               type="text"
               value={newPerson.name}
-              onChange={(e) =>
-                setNewPerson((prev) => ({ ...prev, name: e.target.value }))
-              }
+              onChange={(e) => {
+                setNewPerson((prev) => ({ ...prev, name: e.target.value }));
+              }}
               placeholder="Enter full name"
               className="w-full p-4 border border-gray-200 rounded-xl outline-none text-base bg-white shadow-sm transition-all hover:shadow-md focus:ring-2 focus:ring-blue-600 focus:border-transparent"
             />
@@ -55,33 +76,57 @@ const AddStep = ({
             <PhoneInput
               value={newPerson.phone}
               onChange={(e) => {
+                setIsPhoneInUse(false); // Reset phone in use error when user types
                 setNewPerson((prev) => ({ ...prev, phone: e.target.value }));
-                // Reset border color on change to remove possible red border(error state)
+                // Reset border color and error message on change
                 const phoneInput =
                   document.getElementById("phone-number-input");
 
                 phoneInput.style.borderColor =
                   "rgb(229 231 235 / var(--tw-border-opacity, 1))";
+                setPhoneError(""); // Clear any existing error
               }}
             />
+
+            {/* Error message display */}
+            {/* Error message display */}
+            {(phoneError || isPhoneInUse) && (
+              <div className="mt-2 flex items-center gap-2 text-red-600">
+                <AlertCircle className="w-4 h-4" />
+                <span className="text-sm">
+                  {isPhoneInUse
+                    ? "This phone number is already in use"
+                    : phoneError}
+                </span>
+              </div>
+            )}
           </div>
 
           <button
             onClick={() => {
               const isValidPhoneNumber = validatePhoneNumber(newPerson.phone);
-              // if invalid number, show red border
               const phoneInput = document.getElementById("phone-number-input");
 
-              if (isValidPhoneNumber) {
-                onAddPerson();
-
-                phoneInput.style.borderColor =
-                  "rgb(229 231 235 / var(--tw-border-opacity, 1))";
-              } else {
+              if (!isValidPhoneNumber) {
+                // Invalid phone number format
                 phoneInput.style.borderColor = "red";
+                setPhoneError("Please enter a valid phone number");
+                return;
               }
+
+              if (isPhoneInUse) {
+                // Phone number is already in use
+                phoneInput.style.borderColor = "red";
+                setPhoneError("This phone number is already in use");
+                return;
+              }
+
+              // Phone number is valid and not in use
+              phoneInput.style.borderColor =
+                "rgb(229 231 235 / var(--tw-border-opacity, 1))";
+              onAddPerson();
             }}
-            class="w-full text-white font-semibold py-4 rounded-xl shadow-lg transition-all disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
+            className="w-full text-white font-semibold py-4 rounded-xl shadow-lg transition-all disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
             style={{
               backgroundColor:
                 !newPerson.name.trim() || !newPerson.phone.trim()
@@ -94,36 +139,22 @@ const AddStep = ({
           </button>
 
           {/* Added people preview */}
-          {/* {(newPerson.name || newPerson.phone) && ( */}
           {!newPeople.length == 0 && (
             <div className="p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
               <p className="text-sm font-semibold text-gray-700 mb-2">
                 Added People:
               </p>
-
-              {newPeople.map((person, index) => {
-                return (
-                  <div className="flex items-center gap-3 mb-3" key={index}>
-                    <div
-                      className={`w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold text-sm ${person.color}`}
-                    >
-                      {person.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .toUpperCase() || "?"}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900">
-                        {person.name || "Name"}
-                      </p>
-                      <p className="text-gray-600 text-sm">
-                        {person.phone || "Phone number"}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
+              <div className="flex-col gap-3 flex">
+                {newPeople.map((person, index) => {
+                  return (
+                    <ContactCard
+                      addMode={true}
+                      key={person._id}
+                      person={person}
+                    />
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
