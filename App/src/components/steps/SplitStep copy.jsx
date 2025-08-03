@@ -17,19 +17,20 @@ import {
   Info,
   Percent,
   Settings,
-  Calendar
+  Calendar,
 } from "lucide-react";
 import StepIndicator from "./StepIndicator";
 import ChargeDisplay from "../costs/ChargeDisplay";
 import { useData } from "../../contexts/DataContext";
 import generateCostEntry from "../../utils/generateCostEntry";
-import { useNavigate } from "react-router-dom";
 import ConfirmButtonTray from "./ConfirmButtonTray";
+import { createRequest, updateRequest } from "../../queries/requests";
+
 const SplitStep = ({
-  selectedPeople,
   setSelectedPeople,
   onBack,
   selectedCharge,
+  selectedPeople,
   newChargeDetails,
   // Split state
   splitType,
@@ -42,16 +43,16 @@ const SplitStep = ({
   // Percentage state
   percentageAmounts,
   updatePercentageAmount,
+  setIsAddingRequest,
   // Edit mode props
   isEditMode = false,
-  onUpdateCost = null,
 }) => {
   // Context to update costs
-  const { setCosts } = useData();
-  const navigate = useNavigate();
-
+  const { updateCost, addCost, participants } = useData();
   // Advanced options visibility
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+
+  const [isSendingRequest, setIsSendingRequest] = useState(false);
 
   // Internal state for percentage amounts if not provided
   const [internalPercentageAmounts, setInternalPercentageAmounts] = useState(
@@ -70,35 +71,85 @@ const SplitStep = ({
       }));
     });
 
-  // Local state for recurring options
+  // Local state for recurring options - use existing values in edit mode
   const [showRecurringOptions, setShowRecurringOptions] = useState(false);
-  const [recurringType, setRecurringType] = useState(
-    selectedCharge?.frequency?.toLowerCase() || "none"
+  const [recurringType, setRecurringType] = useState(selectedCharge.frequency.toLowerCase());
+  const [originalFrequency, setOriginalFrequency] = useState(
+    selectedCharge.frequency.toLowerCase()
   );
-  const [customInterval, setCustomInterval] = useState(1);
-  const [customUnit, setCustomUnit] = useState("days");
+
+  const [customInterval, setCustomInterval] = useState(
+    isEditMode ? selectedCharge?.customInterval || 1 : 1
+  );
+  const [customUnit, setCustomUnit] = useState(
+    isEditMode ? selectedCharge?.customUnit || "days" : "days"
+  );
 
   // State for start timing - default based on mode
   const [startTiming, setStartTiming] = useState(isEditMode ? "next" : "now");
 
   // State for editable total amounts
   const [editableTotalAmount, setEditableTotalAmount] = useState(
-    Number((totalAmount || selectedCharge?.lastAmount || 0).toFixed(2))
+    Number(
+      (Number(totalAmount) || Number(selectedCharge?.lastAmount) || 0).toFixed(
+        2
+      )
+    )
   );
 
-  // State for dynamic costs tracking
-  const [isDynamicCosts, setIsDynamicCosts] = useState(false);
-  const [dynamicCostReason, setDynamicCostReason] = useState("");
+  // Add state to preserve the last known good amount
+  const [lastKnownGoodAmount, setLastKnownGoodAmount] = useState(
+    Number(
+      (Number(totalAmount) || Number(selectedCharge?.lastAmount) || 0).toFixed(
+        2
+      )
+    )
+  );
+
+  // Check if dynamic costs should be disabled
+  const isDynamicCostsDisabled =
+    splitType === "custom" ||
+    !selectedCharge?.plaidMatch ||
+    recurringType === "none";
+
+  // State for dynamic costs tracking - use previous setting in edit mode, otherwise default based on plaidMatch
+  const [isDynamic, setIsDynamic] = useState(
+    isEditMode
+      ? selectedCharge?.isDynamic || false
+      : (selectedCharge?.plaidMatch && true) || false
+  );
+
   const [showDynamicInfo, setShowDynamicInfo] = useState(false);
   const [isHoveringDynamicInfo, setIsHoveringDynamicInfo] = useState(false);
 
   // Track previous split type to detect changes from custom
   const prevSplitTypeRef = useRef(splitType);
 
+  // Initialize last known good amount
+  React.useEffect(() => {
+    const initialAmount = Number(
+      (Number(totalAmount) || Number(selectedCharge?.lastAmount) || 0).toFixed(
+        2
+      )
+    );
+    if (initialAmount > 0) {
+      setLastKnownGoodAmount(initialAmount);
+    }
+  }, [selectedCharge?.lastAmount, totalAmount]);
+
+  // Only disable dynamic costs if conditions don't allow it, but don't auto-enable
+  React.useEffect(() => {
+    // If dynamic costs become disabled (e.g., switching to custom split or one-time), turn it off
+    if (isDynamicCostsDisabled && isDynamic) {
+      setIsDynamic(false);
+    }
+    // Don't auto-enable when conditions allow - let user choose
+  }, [isDynamicCostsDisabled, isDynamic]);
+
   // Sync editableTotalAmount with totalAmount prop
   React.useEffect(() => {
     if (totalAmount !== undefined && totalAmount !== editableTotalAmount) {
-      setEditableTotalAmount(Number(totalAmount.toFixed(2)));
+      setEditableTotalAmount(Number(Number(totalAmount).toFixed(2)));
     }
   }, [totalAmount]);
 
@@ -201,43 +252,14 @@ const SplitStep = ({
     }
   };
 
-  const handleSendRequest = (totalSplit) => {
-    if (isEditMode && onUpdateCost) {
-      // Update existing cost - only include relevant data based on split type
-      const updatedCostData = {
-        splitType,
-        amount: Number(editableTotalAmount.toFixed(2)),
-        frequency: recurringType === "none" ? null : recurringType,
-        customInterval: recurringType === "custom" ? customInterval : null,
-        customUnit: recurringType === "custom" ? customUnit : null,
-        startTiming,
-        isDynamicCosts,
-        dynamicCostReason,
-        participants: selectedPeople.map((person) => ({
-          userId: person.id,
-          status: "pending",
-          ...(splitType === "custom" && { customAmount: customAmounts[person.id] }),
-          ...(splitType === "percentage" && { percentage: effectivePercentageAmounts[person.id] }),
-        })),
-      };
-
-      // Only include these fields if using the respective split method
-      if (splitType === "custom") {
-        updatedCostData.customAmounts = customAmounts;
-      }
-      if (splitType === "percentage") {
-        updatedCostData.percentageAmounts = effectivePercentageAmounts;
-      }
-
-      onUpdateCost(updatedCostData);
-      return;
-    }
-
+  function getCostEntry() {
     // Calculate the actual amount to use based on split type
-    const actualAmount = Number((splitType === "custom" || splitType === "percentage" 
-      ? totalSplit 
-      : editableTotalAmount).toFixed(2));
-
+    const actualAmount = Number(
+      (splitType === "custom" || splitType === "percentage"
+        ? totalSplit
+        : editableTotalAmount
+      ).toFixed(2)
+    );
     // Original flow for new costs
     const costEntry = generateCostEntry({
       selectedCharge,
@@ -245,30 +267,38 @@ const SplitStep = ({
       selectedPeople,
       splitType,
       ...(splitType === "custom" && { customAmounts }),
-      ...(splitType === "percentage" && { percentageAmounts: effectivePercentageAmounts }),
+      ...(splitType === "percentage" && {
+        percentageAmounts: effectivePercentageAmounts,
+      }),
       recurringType,
       customInterval,
       customUnit,
       startTiming,
       totalSplit,
-      isDynamicCosts,
-      dynamicCostReason,
+      // isDynamic,
+      // dynamicCostReason,
       // Pass the actual calculated amount
-      totalAmount: actualAmount,
+      // totalAmount: actualAmount,
       editableTotalAmount,
     });
 
     // Override cost entry properties with current state values to ensure accuracy
     costEntry.splitType = splitType;
     costEntry.amount = actualAmount;
-    costEntry.totalAmount = actualAmount;
+    // costEntry.totalAmount = actualAmount;
     costEntry.frequency = recurringType === "none" ? null : recurringType;
-    costEntry.customInterval = recurringType === "custom" ? customInterval : null;
+    costEntry.customInterval =
+      recurringType === "custom" ? customInterval : null;
     costEntry.customUnit = recurringType === "custom" ? customUnit : null;
     costEntry.startTiming = startTiming;
-    costEntry.isDynamicCosts = isDynamicCosts;
-    costEntry.dynamicCostReason = dynamicCostReason;
+    costEntry.isDynamic = isDynamic;
 
+    // save id to entry for edit mode, used to identify which cost to update in DB
+    if (isEditMode) {
+      costEntry._id = selectedCharge._id;
+    }
+
+    // costEntry.dynamicCostReason = dynamicCostReason;
     // Only include split method specific data
     if (splitType === "custom") {
       costEntry.customAmounts = { ...customAmounts };
@@ -285,8 +315,7 @@ const SplitStep = ({
     // Ensure participants array matches selectedPeople with all current values
     costEntry.participants = selectedPeople.map((person) => {
       const baseParticipant = {
-        userId: person.id,
-        status: "pending",
+        ...person,
       };
 
       // Calculate individual amount based on split type
@@ -299,12 +328,14 @@ const SplitStep = ({
           individualAmount = actualAmount / selectedPeople.length;
           break;
         case "percentage":
-          individualAmount = (actualAmount * (Number(effectivePercentageAmounts[person.id] || 0) / 100));
+          individualAmount =
+            actualAmount *
+            (Number(effectivePercentageAmounts[person._id] || 0) / 100);
           baseParticipant.percentage = effectivePercentageAmounts[person.id];
           break;
         case "custom":
-          individualAmount = Number(customAmounts[person.id] || 0);
-          baseParticipant.customAmount = customAmounts[person.id];
+          individualAmount = Number(customAmounts[person._id] || 0);
+          baseParticipant.customAmount = customAmounts[person._id];
           break;
         default:
           individualAmount = 0;
@@ -313,9 +344,35 @@ const SplitStep = ({
       baseParticipant.amount = Number(individualAmount.toFixed(2));
       return baseParticipant;
     });
+    return costEntry;
+  }
 
-    setCosts((prevCosts) => [...prevCosts, costEntry]);
-    navigate("/dashboard");
+  const handleSendRequest = () => {
+    const costEntry = getCostEntry();
+    setIsSendingRequest(true);
+    if (isEditMode) {
+      const handleUpdateRequest = async () => {
+        const UpdatedCostFromDB = await updateRequest(costEntry._id, costEntry);
+        console.log("UpdatedCostFromDB", UpdatedCostFromDB);
+        if (UpdatedCostFromDB) {
+          updateCost(UpdatedCostFromDB);
+          onBack();
+          setIsSendingRequest(false);
+        }
+      };
+      handleUpdateRequest(); // Call the function
+    } else {
+      // query db with new request:
+      const handleCreateRequest = async () => {
+        const newCostFromDB = await createRequest(costEntry);
+        if (newCostFromDB) {
+          addCost(newCostFromDB);
+          setIsAddingRequest(false);
+          setIsSendingRequest(false);
+        }
+      };
+      handleCreateRequest(); // Call the function
+    }
   };
 
   // Calculate split amounts based on split type
@@ -323,8 +380,8 @@ const SplitStep = ({
     if (splitType === "percentage") {
       const percentageSplit = {};
       selectedPeople.forEach((person) => {
-        const percentage = Number(effectivePercentageAmounts[person.id] || 0);
-        percentageSplit[person.id] = Number(
+        const percentage = Number(effectivePercentageAmounts[person._id] || 0);
+        percentageSplit[person._id] = Number(
           ((Number(editableTotalAmount) * percentage) / 100).toFixed(2)
         );
       });
@@ -344,25 +401,27 @@ const SplitStep = ({
     let result;
     switch (splitType) {
       case "equalWithMe":
-        result = (Number(editableTotalAmount) / (selectedPeople.length + 1)) * selectedPeople.length;
+        result =
+          (Number(editableTotalAmount) / (selectedPeople.length + 1)) *
+          selectedPeople.length;
         break;
-      
+
       case "equal":
         result = Number(editableTotalAmount);
         break;
-      
+
       case "percentage":
         result = entries
           .filter(([key]) => !key.toLowerCase().includes("total"))
           .reduce((sum, [, amount]) => sum + Number(amount || 0), 0);
         break;
-      
+
       case "custom":
         result = entries
           .filter(([key]) => !key.toLowerCase().includes("total"))
           .reduce((sum, [, amount]) => sum + Number(amount || 0), 0);
         break;
-      
+
       default:
         result = Number(editableTotalAmount);
     }
@@ -377,37 +436,72 @@ const SplitStep = ({
     splitType === "percentage"
       ? selectedPeople.reduce(
           (sum, person) =>
-            sum + Number(effectivePercentageAmounts[person.id] || 0),
+            sum + Number(effectivePercentageAmounts[person._id] || 0),
           0
         )
       : 0;
 
-  // Check if dynamic costs should be disabled
-  const isDynamicCostsDisabled =
-    splitType === "custom" || !selectedCharge?.plaidMatch;
-
-  // Reset dynamic costs when switching to custom or when disabled
-  React.useEffect(() => {
-    if (isDynamicCostsDisabled && isDynamicCosts) {
-      setIsDynamicCosts(false);
-    }
-  }, [isDynamicCostsDisabled, isDynamicCosts]);
-
-  // Auto-enable dynamic costs when changing away from custom split method
+  // Auto-enable dynamic costs when switching away from custom split method (when appropriate)
   React.useEffect(() => {
     const prevSplitType = prevSplitTypeRef.current;
-    
+
     // Check if we're changing FROM custom TO another split type
     if (prevSplitType === "custom" && splitType !== "custom") {
-      // Only enable if dynamic costs are allowed (not disabled)
-      if (!isDynamicCostsDisabled) {
-        setIsDynamicCosts(true);
+      // Auto-enable dynamic costs if:
+      // 1. Not in edit mode (new cost) and plaidMatch is available, OR
+      // 2. In edit mode and the original charge had dynamic costs enabled
+      const shouldAutoEnable = !isEditMode
+        ? selectedCharge?.plaidMatch || false // New cost: enable if plaid available
+        : selectedCharge?.isDynamic || false; // Edit mode: enable if original was dynamic
+
+      if (shouldAutoEnable && !isDynamicCostsDisabled) {
+        setIsDynamic(true);
       }
     }
-    
+
     // Update the ref for next comparison
     prevSplitTypeRef.current = splitType;
-  }, [splitType, isDynamicCostsDisabled]);
+  }, [
+    splitType,
+    isDynamicCostsDisabled,
+    isEditMode,
+    selectedCharge?.plaidMatch,
+    selectedCharge?.isDynamic,
+  ]);
+
+  // Update last known good amount when we have a valid amount
+  React.useEffect(() => {
+    if (editableTotalAmount > 0 && splitType !== "custom") {
+      setLastKnownGoodAmount(editableTotalAmount);
+    }
+  }, [editableTotalAmount, splitType]);
+
+  // Handle split type changes and preserve/restore amounts
+  React.useEffect(() => {
+    const prevSplitType = prevSplitTypeRef.current;
+
+    // When switching FROM custom to another split type
+    if (prevSplitType === "custom" && splitType !== "custom") {
+      // Check if custom amounts sum to 0 or are empty
+      const customTotal = customAmounts
+        ? Object.values(customAmounts).reduce(
+            (sum, amount) => sum + (Number(amount) || 0),
+            0
+          )
+        : 0;
+
+      // If custom total is 0, restore the last known good amount
+      if (customTotal === 0 && lastKnownGoodAmount > 0) {
+        setEditableTotalAmount(lastKnownGoodAmount);
+        if (setTotalAmount) {
+          setTotalAmount(lastKnownGoodAmount);
+        }
+      }
+    }
+
+    // Update the ref for next comparison
+    prevSplitTypeRef.current = splitType;
+  }, [splitType, customAmounts, lastKnownGoodAmount, setTotalAmount]);
 
   // Recalculate total amount when split method changes
   React.useEffect(() => {
@@ -417,7 +511,7 @@ const SplitStep = ({
     if (splitType === "custom") {
       if (customAmounts && Object.keys(customAmounts).length > 0) {
         const customTotal = Object.values(customAmounts).reduce(
-          (sum, amount) => sum + (Number(amount) || 0), 
+          (sum, amount) => sum + (Number(amount) || 0),
           0
         );
         if (customTotal > 0) {
@@ -425,18 +519,32 @@ const SplitStep = ({
         }
       }
     }
-    
+
     // For percentage split, ensure we have a base amount to work with
     else if (splitType === "percentage") {
       if (!editableTotalAmount || editableTotalAmount === 0) {
-        newTotalAmount = Number((selectedCharge?.lastAmount || totalAmount || 0).toFixed(2));
+        newTotalAmount = Number(
+          (
+            selectedCharge?.lastAmount ||
+            totalAmount ||
+            lastKnownGoodAmount ||
+            0
+          ).toFixed(2)
+        );
       }
     }
-    
+
     // For equal splits, use the charge amount or current total
     else if (splitType === "equal" || splitType === "equalWithMe") {
       if (!editableTotalAmount || editableTotalAmount === 0) {
-        newTotalAmount = Number((selectedCharge?.lastAmount || totalAmount || 0).toFixed(2));
+        newTotalAmount = Number(
+          (
+            selectedCharge?.lastAmount ||
+            totalAmount ||
+            lastKnownGoodAmount ||
+            0
+          ).toFixed(2)
+        );
       }
     }
 
@@ -447,13 +555,19 @@ const SplitStep = ({
         setTotalAmount(newTotalAmount);
       }
     }
-  }, [splitType, customAmounts, selectedCharge?.lastAmount, totalAmount]);
+  }, [
+    splitType,
+    customAmounts,
+    selectedCharge?.lastAmount,
+    totalAmount,
+    lastKnownGoodAmount,
+  ]);
 
-  // Update total when custom amounts change
+  // Update total when custom amounts change (but only when in custom mode)
   React.useEffect(() => {
     if (splitType === "custom" && customAmounts) {
       const customTotal = Object.values(customAmounts).reduce(
-        (sum, amount) => sum + (Number(amount) || 0), 
+        (sum, amount) => sum + (Number(amount) || 0),
         0
       );
       const roundedTotal = Number(customTotal.toFixed(2));
@@ -471,37 +585,43 @@ const SplitStep = ({
     if (splitType === "percentage" && effectivePercentageAmounts) {
       // The total stays the same for percentage, but we might need to trigger recalculation
       const calculatedTotal = selectedPeople.reduce((sum, person) => {
-        const percentage = Number(effectivePercentageAmounts[person.id] || 0);
-        return sum + ((Number(editableTotalAmount) * percentage) / 100);
+        const percentage = Number(effectivePercentageAmounts[person._id] || 0);
+        return sum + (Number(editableTotalAmount) * percentage) / 100;
       }, 0);
-      
+
       // For percentage splits, we typically keep the editableTotalAmount as the base
       // The calculated amounts are shown in the UI but don't change the total
     }
-  }, [effectivePercentageAmounts, splitType, selectedPeople, editableTotalAmount]);
+  }, [
+    effectivePercentageAmounts,
+    splitType,
+    selectedPeople,
+    editableTotalAmount,
+  ]);
 
   // Handle changes to selectedCharge (e.g., when a new charge is selected)
   React.useEffect(() => {
     if (selectedCharge?.lastAmount) {
-      const chargeAmount = Number(selectedCharge.lastAmount.toFixed(2));
+      const chargeAmount = Number(Number(selectedCharge.lastAmount).toFixed(2));
       setEditableTotalAmount(chargeAmount);
+      setLastKnownGoodAmount(chargeAmount);
       if (setTotalAmount) {
         setTotalAmount(chargeAmount);
       }
     }
-  }, [selectedCharge?.id, selectedCharge?.lastAmount, setTotalAmount]);
+  }, [selectedCharge?._id, selectedCharge?.lastAmount, setTotalAmount]);
 
   return (
-    <div className={isEditMode ? "relative" : "bg-gray-50"}>
+    <div className={"relative"}>
       {/* Main content container with bottom padding to prevent content being hidden behind ConfirmButtonTray */}
-      <div
-        className={isEditMode ? "pb-24" : "max-w-lg mx-auto px-6 py-0 pb-36"}
-      >
+      <div className={`max-w-lg mx-auto px-6 py-0 pb-48 `}>
         {/* Hide step indicator and back button in edit mode since modal has its own header */}
         {!isEditMode && <StepIndicator current="split" />}
 
-        {!isEditMode && (
-          <div className="flex items-center gap-4 mb-6">
+        {
+          <div
+            className={`flex items-center gap-4 mb-6  ${isEditMode && "mt-8"}`}
+          >
             <button
               onClick={onBack}
               className="p-3 hover:bg-white rounded-xl transition-all hover:shadow-md"
@@ -509,12 +629,12 @@ const SplitStep = ({
               <ArrowLeft className="w-6 h-6 text-gray-700" />
             </button>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-900">
-                {isEditMode ? "Edit Split Configuration" : "Split Costs"}
+              <h1 className={`text-3xl font-bold text-gray-900`}>
+                {isEditMode ? `Edit Requests` : "Split Costs"}
               </h1>
               <p className="text-gray-600">
                 {isEditMode
-                  ? `Update split settings for ${selectedPeople.length} ${
+                  ? `Configure future requests for ${selectedPeople.length} ${
                       selectedPeople.length !== 1 ? "people" : "person"
                     }`
                   : `Configure how to split with ${selectedPeople.length} ${
@@ -523,12 +643,18 @@ const SplitStep = ({
               </p>
             </div>
           </div>
-        )}
+        }
 
         {/* Charge Display - Always visible and prominent */}
         <ChargeDisplay
           selectedCharge={selectedCharge}
           newChargeDetails={newChargeDetails}
+          overrideAmount={editableTotalAmount}
+          paymentSchedule={getRecurringLabel()}
+          recurringType={recurringType}
+          customInterval={customInterval}
+          customUnit={customUnit}
+          originalFrequency={originalFrequency}
         />
 
         {/* Split Method Selection - Always visible */}
@@ -631,21 +757,22 @@ const SplitStep = ({
             </label>
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {selectedPeople.map((person) => {
-                const currentValue =
-                  effectivePercentageAmounts[person.id] || "";
+                const user = participants.find((u) => u._id === person._id);
+
+                const currentValue = effectivePercentageAmounts[user._id] || "";
 
                 return (
                   <div
-                    key={person.id}
+                    key={person._id}
                     className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200"
                   >
                     <div
-                      className={`w-8 h-8 rounded ${person.color} flex items-center justify-center text-white font-semibold text-sm`}
+                      className={`w-8 h-8 rounded ${user.color} flex items-center justify-center text-white font-semibold text-sm`}
                     >
-                      {person.avatar}
+                      {user.avatar}
                     </div>
                     <span className="text-sm font-medium text-gray-900 flex-1">
-                      {person.name}
+                      {user.name}
                     </span>
                     <div className="relative w-20">
                       <input
@@ -656,7 +783,7 @@ const SplitStep = ({
                         value={currentValue}
                         onChange={(e) => {
                           effectiveUpdatePercentageAmount(
-                            person.id,
+                            user._id,
                             e.target.value
                           );
                         }}
@@ -693,7 +820,7 @@ const SplitStep = ({
                       : "text-orange-600"
                   }`}
                 >
-                  {totalPercentage.toFixed(1)}%
+                  {Number(totalPercentage).toFixed(1)}%
                 </span>
               </div>
             </div>
@@ -707,34 +834,38 @@ const SplitStep = ({
               Individual Amounts
             </label>
             <div className="space-y-2 max-h-48 overflow-y-auto">
-              {selectedPeople.map((person) => (
-                <div
-                  key={person.id}
-                  className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200"
-                >
+              {selectedPeople.map((person) => {
+                const user = participants.find((u) => u._id === person._id);
+                return (
                   <div
-                    className={`w-8 h-8 rounded ${person.color} flex items-center justify-center text-white font-semibold text-sm`}
+                    key={user._id}
+                    className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200"
                   >
-                    {person.avatar}
+                    <div
+                      className={`w-8 h-8 rounded ${user.color} flex items-center justify-center text-white font-semibold text-sm`}
+                    >
+                      {user.avatar}
+                    </div>
+                    <span className="text-sm font-medium text-gray-900 flex-1">
+                      {user.name}
+                    </span>
+                    <div className="relative w-24">
+                      <DollarSign className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3" />
+                     
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={customAmounts[user._id] || ""}
+                        onChange={(e) =>
+                          updateCustomAmount(user._id, e.target.value)
+                        }
+                        placeholder="0.00"
+                        className="w-full pl-6 pr-2 py-2 border rounded text-sm outline-none bg-white focus:ring-2 border-gray-200 focus:ring-blue-600 focus:border-transparent"
+                      />
+                    </div>
                   </div>
-                  <span className="text-sm font-medium text-gray-900 flex-1">
-                    {person.name}
-                  </span>
-                  <div className="relative w-24">
-                    <DollarSign className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3" />
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={customAmounts[person.id] || ""}
-                      onChange={(e) =>
-                        updateCustomAmount(person.id, e.target.value)
-                      }
-                      placeholder="0.00"
-                      className="w-full pl-6 pr-2 py-2 border rounded text-sm outline-none bg-white focus:ring-2 border-gray-200 focus:ring-blue-600 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -842,8 +973,13 @@ const SplitStep = ({
                   step="0.01"
                   value={editableTotalAmount}
                   onChange={(e) => {
-                    const newAmount = Number(Number(e.target.value).toFixed(2)) || 0;
+                    const newAmount =
+                      Number(Number(e.target.value).toFixed(2)) || 0;
                     setEditableTotalAmount(newAmount);
+                    // Update last known good amount if it's a valid positive amount
+                    if (newAmount > 0) {
+                      setLastKnownGoodAmount(newAmount);
+                    }
                     // Also update parent totalAmount if the setter exists
                     if (setTotalAmount) {
                       setTotalAmount(newAmount);
@@ -887,7 +1023,7 @@ const SplitStep = ({
                         onClick={() => {
                           setRecurringType("none");
                           setShowRecurringOptions(false);
-                          setIsDynamicCosts(false);
+                          setIsDynamic(false);
                         }}
                         className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
                           recurringType === "none"
@@ -993,7 +1129,16 @@ const SplitStep = ({
                       onChange={(e) => setCustomUnit(e.target.value)}
                       className="w-full p-2 border border-gray-200 rounded text-sm outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
                     >
-                      <option value="days">Days</option>
+                      <option
+                        className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
+                          customUnit === "days"
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-700"
+                        }`}
+                        value="days"
+                      >
+                        Days
+                      </option>
                       <option value="weeks">Weeks</option>
                       <option value="months">Months</option>
                       <option value="years">Years</option>
@@ -1030,7 +1175,7 @@ const SplitStep = ({
                     <Info className="w-4 h-4" />
                   </button>
                   {(showDynamicInfo || isHoveringDynamicInfo) && (
-                    <div 
+                    <div
                       className="absolute bottom-full left-0 mb-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50"
                       onMouseEnter={() => setIsHoveringDynamicInfo(true)}
                       onMouseLeave={() => {
@@ -1044,7 +1189,7 @@ const SplitStep = ({
                       </p>
                       <p className="mb-2">
                         <strong>Dynamic Costs:</strong> Track when amounts
-                        change between payment cycles
+                        change between payment cycles (recurring payments only)
                       </p>
                       <p>
                         Dynamic costs are useful for utilities, subscriptions,
@@ -1058,9 +1203,9 @@ const SplitStep = ({
 
               <div className="space-y-3">
                 <div
-                  onClick={() => setIsDynamicCosts(false)}
+                  onClick={() => setIsDynamic(false)}
                   className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                    !isDynamicCosts
+                    !isDynamic
                       ? "border-blue-600 bg-blue-50"
                       : "border-gray-200 bg-white hover:border-gray-300"
                   }`}
@@ -1083,13 +1228,13 @@ const SplitStep = ({
                 <div
                   onClick={() => {
                     if (!isDynamicCostsDisabled) {
-                      setIsDynamicCosts(true);
+                      setIsDynamic(true);
                     }
                   }}
                   className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${
                     isDynamicCostsDisabled
                       ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
-                      : isDynamicCosts
+                      : isDynamic
                       ? "border-blue-600 bg-blue-50 cursor-pointer"
                       : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
                   }`}
@@ -1114,6 +1259,8 @@ const SplitStep = ({
                         <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
                           {splitType === "custom"
                             ? "Not Available"
+                            : recurringType === "none"
+                            ? "Recurring Only"
                             : "Plaid Required"}
                         </span>
                       )}
@@ -1138,8 +1285,14 @@ const SplitStep = ({
 
         {/* Send Button - Always visible and sticky */}
         <ConfirmButtonTray
+          isSendingRequest={isSendingRequest}
           buttonContent={
-            startTiming == "now" ? (
+            isEditMode ? (
+              <>
+                <Edit3 className="w-5 h-5" />
+                Update Future Requests
+              </>
+            ) : startTiming === "now" ? (
               <>
                 <Send className="w-5 h-5" />
                 Send Request
@@ -1153,15 +1306,29 @@ const SplitStep = ({
           }
           selectedPeople={selectedPeople}
           onConfirm={() => handleSendRequest(totalSplit)}
-          isDynamicCosts={isDynamicCosts}
+          isDynamic={isDynamic}
           amountPerPerson={
-            splitType === "equalWithMe" 
-              ? Number((Number(editableTotalAmount) / (selectedPeople.length + 1)).toFixed(2))
-              : splitType === "equal" 
-              ? Number((Number(editableTotalAmount) / selectedPeople.length).toFixed(2))
+            splitType === "equalWithMe"
+              ? Number(
+                  (
+                    Number(editableTotalAmount) /
+                    (selectedPeople.length + 1)
+                  ).toFixed(2)
+                )
+              : splitType === "equal"
+              ? Number(
+                  (Number(editableTotalAmount) / selectedPeople.length).toFixed(
+                    2
+                  )
+                )
               : 0 // For custom/percentage, we'll show total instead
           }
-          totalAmount={Number((splitType === "custom" || splitType === "percentage" ? totalSplit : editableTotalAmount).toFixed(2))}
+          totalAmount={Number(
+            (splitType === "custom" || splitType === "percentage"
+              ? totalSplit
+              : editableTotalAmount
+            ).toFixed(2)
+          )}
           billingFrequency={getRecurringLabel()}
           splitType={splitType}
         />

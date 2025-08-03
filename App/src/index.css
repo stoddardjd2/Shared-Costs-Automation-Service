@@ -20,7 +20,11 @@ body {
     background-position: 100% 50%;
   }
 }
-
+#root,
+html,
+body {
+  height: 100%;
+}
 .animate-gradient {
   background-size: 200% 200%;
   animation: gradient 2s ease-in-out infinite;

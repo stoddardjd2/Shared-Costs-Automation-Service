@@ -1,33 +1,50 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
-
+import React, { useState, useEffect, createContext, useContext } from "react";
+import { verifyToken } from "../queries/auth";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isValidToken, setIsValidToken] = useState(null);
+  // const [userData, setUserData] = useState(null);
+  // const [requests, setRequests] = useState(null);
 
   useEffect(() => {
-    const savedUser = window.tempUser;
-    if (savedUser) {
-      setUser(savedUser);
-    }
-    setLoading(false);
+    // check token and get user data and requests for user
+    const checkToken = async () => {
+      const token = localStorage.getItem("token");
+
+      if (token && token !== "undefined") {
+        try {
+          const isValidToken = await verifyToken(token);
+          if (isValidToken) {
+            setIsValidToken(true);
+            // setUserData(userData);
+          } else {
+            console.log("token expired!");
+            setIsValidToken(false);
+          }
+        } catch (err) {
+          console.error("Error verifying token:", err);
+          setIsValidToken(false);
+        }
+      } else {
+        setIsValidToken(false);
+      }
+
+      setLoading(false);
+    };
+
+    checkToken();
   }, []);
 
-  const login = (email, password) => {
-    const mockUser = { id: 1, name: 'Current User', email };
-    setUser(mockUser);
-    window.tempUser = mockUser;
-    return true;
-  };
-
-  const logout = () => {
-    setUser(null);
-    window.tempUser = null;
-  };
-
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{
+        isValidToken,
+        loading,
+        // , userData, setUserData
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -36,7 +53,7 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

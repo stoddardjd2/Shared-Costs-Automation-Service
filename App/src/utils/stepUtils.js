@@ -3,7 +3,7 @@ export const getStepNumber = (step) => {
     chargeType: 1,
     chargeSearch: 2,
     chargeDetails: 2,
-    split:4,
+    split: 4,
     search: 3,
     add: 3,
   };
@@ -26,9 +26,8 @@ export const formatCurrency = (amount) => {
     currency: "USD",
   }).format(amount);
 };
-
 export const validatePhoneNumber = (phone) => {
-  const phoneRegex = /^\+1 \(\d{3}\) \d{3}-\d{4}$/;
+  const phoneRegex = /^\+1 \(\d{3}\)-\d{3}-\d{4}$/;
 
   return phoneRegex.test(phone);
 };

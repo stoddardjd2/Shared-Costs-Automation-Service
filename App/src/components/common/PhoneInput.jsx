@@ -7,8 +7,8 @@ function formatUSPhoneNumber(value) {
   const match = digits.match(/^(\d{0,3})(\d{0,3})(\d{0,4})$/);
   const [, a, b, c] = match || [];
 
-  if (c) return `${PREFIX}(${a}) ${b}-${c}`;
-  if (b) return `${PREFIX}(${a}) ${b}`;
+  if (c) return `${PREFIX}(${a})-${b}-${c}`;
+  if (b) return `${PREFIX}(${a})-${b}`;
   if (a) return `${PREFIX}(${a}`;
   return PREFIX;
 }
@@ -29,7 +29,6 @@ export default function PhoneInput({ value, onChange }) {
     const input = raw.slice(PREFIX.length);
     const formatted = formatUSPhoneNumber(input);
 
-    // Call parent onChange with updated value
     onChange({
       target: {
         value: formatted,
@@ -39,13 +38,13 @@ export default function PhoneInput({ value, onChange }) {
 
   return (
     <input
-    id="phone-number-input"
+      id="phone-number-input"
       type="tel"
       value={value || PREFIX}
       onChange={handleChange}
       onClick={enforceCursor}
       onFocus={enforceCursor}
-      placeholder="+1 (555) 123-4567"
+      placeholder="+1 (555)-123-4567"
       className="w-full p-4 border border-gray-200 rounded-xl outline-none text-base bg-white shadow-sm transition-all hover:shadow-md focus:ring-2 focus:ring-blue-600 focus:border-transparent"
     />
   );

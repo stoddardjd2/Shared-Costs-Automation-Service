@@ -1,6 +1,6 @@
-import { Users, RotateCcw, TrendingUp, Info } from "lucide-react";
+import { Users, RotateCcw, TrendingUp, Info, Loader2 } from "lucide-react";
 import { useState } from "react";
-
+import { useData } from "../../contexts/DataContext";
 export default function ConfirmButtonTray({
   selectedPeople,
   onConfirm,
@@ -11,17 +11,10 @@ export default function ConfirmButtonTray({
   billingFrequency,
   splitType,
   hideBillingInfo = false,
+  isSendingRequest,
 }) {
+  const { participants } = useData();
   const [showCostTooltip, setShowCostTooltip] = useState(false);
-
-  // Demo data for preview
-  const demoData = [
-    { id: 1, name: "Alice Johnson", avatar: "AJ", color: "bg-blue-500" },
-    { id: 2, name: "Bob Smith", avatar: "BS", color: "bg-green-500" },
-    { id: 3, name: "Carol Davis", avatar: "CD", color: "bg-purple-500" },
-  ];
-
-  const displayData = selectedPeople.length > 0 ? selectedPeople : demoData;
 
   // Format the amount per person based on split type
   const formatAmountDisplay = () => {
@@ -101,8 +94,8 @@ export default function ConfirmButtonTray({
                               </p>
                               <p>
                                 Dynamic costs are useful for utilities,
-                                subscriptions, or any recurring cost that
-                                varies each period.
+                                subscriptions, or any recurring cost that varies
+                                each period.
                               </p>
                               <div className="absolute top-full left-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
                             </div>
@@ -128,27 +121,35 @@ export default function ConfirmButtonTray({
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex -space-x-3">
-                      {displayData.slice(0, 5).map((person, index) => (
-                        <div
-                          key={person.id}
-                          className={`w-10 h-10 rounded-xl ${person.color} flex items-center justify-center text-white font-semibold text-sm border-3 border-white shadow-md relative group/avatar hover:translate-x-2 transition-transform duration-200`}
-                          style={{ zIndex: displayData.length - index }}
-                        >
-                          {person.avatar}
-                          {/* Tooltip */}
-                          <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs py-2 px-3 rounded-lg opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                            {person.name}
-                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
+                      {selectedPeople.slice(0, 5).map((person, index) => {
+                        const user = participants.find(
+                          (u) => u._id === person._id
+                        );
+
+                        return (
+                          <div
+                            key={user._id}
+                            className={`w-10 h-10 rounded-xl ${user.color} flex items-center justify-center text-white font-semibold text-sm border-3 border-white shadow-md relative group/avatar hover:translate-x-2 transition-transform duration-200`}
+                            style={{ zIndex: selectedPeople.length - index }}
+                          >
+                            {user.avatar}
+                            {/* Tooltip */}
+                            <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs py-2 px-3 rounded-lg opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                              {user.name}
+                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                      {displayData.length > 5 && (
+                        );
+                      })}
+                      {selectedPeople.length > 5 && (
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center text-white font-semibold text-xs border-3 border-white shadow-md relative group/avatar hover:translate-x-2 transition-transform duration-200">
-                          +{displayData.length - 5}
+                          +{selectedPeople.length - 5}
                           {/* Tooltip for overflow count */}
                           <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs py-2 px-3 rounded-lg opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                            {displayData.length - 5} more{" "}
-                            {displayData.length - 5 === 1 ? "person" : "people"}
+                            {selectedPeople.length - 5} more{" "}
+                            {selectedPeople.length - 5 === 1
+                              ? "person"
+                              : "people"}
                             <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
                           </div>
                         </div>
@@ -158,7 +159,9 @@ export default function ConfirmButtonTray({
                     {/* People count indicator */}
                     <div className="flex items-center gap-1 text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded-lg">
                       <Users className="w-4 h-4" />
-                      <span className="font-medium">{displayData.length}</span>
+                      <span className="font-medium">
+                        {selectedPeople.length}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -167,9 +170,21 @@ export default function ConfirmButtonTray({
               {/* Confirm Button */}
               <button
                 onClick={onConfirm}
-                className="w-full text-white font-semibold py-4 rounded-xl shadow-lg transition-all hover:shadow-xl bg-blue-600 hover:bg-blue-700 flex items-center justify-center gap-3"
+                disabled={isSendingRequest}
+                className={`w-full text-white font-semibold py-4 rounded-xl shadow-lg transition-all hover:shadow-xl flex items-center justify-center gap-3 ${
+                  isSendingRequest
+                    ? "bg-blue-500 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }`}
               >
-                {buttonContent || "Continue"}
+                {isSendingRequest ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  buttonContent || "Continue"
+                )}
               </button>
             </div>
           </div>

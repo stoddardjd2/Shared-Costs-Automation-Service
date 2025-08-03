@@ -9,7 +9,7 @@ export const useChargeState = () => {
     // customName: "",
     lastAmount: "",
     lastDate: "",
-    frequency: "one-time",
+    frequency: "monthly",
   });
   const [isManualCharge, setIsManualCharge] = useState(null);
   const [existingCharges] = useState([

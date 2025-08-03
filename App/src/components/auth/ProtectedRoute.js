@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { isValidToken, loading } = useAuth();
   const navigate = useNavigate();
   
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !isValidToken) {
       navigate('/login');
     }
-  }, [user, loading, navigate]);
+  }, [isValidToken, loading, navigate]);
 
   if (loading) {
     return (
@@ -20,7 +20,7 @@ const ProtectedRoute = ({ children }) => {
     );
   }
   
-  return user ? children : null;
+  return isValidToken ? children : null;
 };
 
 export default ProtectedRoute;
