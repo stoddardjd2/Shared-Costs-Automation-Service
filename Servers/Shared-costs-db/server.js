@@ -6,85 +6,141 @@ require("dotenv").config();
 
 // Import database connection
 const connectDB = require("./config/database");
+const {
+  startScheduler,
+  startSchedulerWithFrequentChecks,
+  stopScheduler,
+  runSchedulerNow,
+  getSchedulerStatus,
+} = require("./reminder-scheduler/reminderScheduler");
 
 // Import routes
 const userRoutes = require("./routes/userRoutes");
-const requestRoutes = require('./routes/requestRoutes')
-const supportRoutes = require('./routes/supportRoutes')
+const requestRoutes = require("./routes/requestRoutes");
+const supportRoutes = require("./routes/supportRoutes");
 // Import error handler
 const { errorHandler, notFound } = require("./utils/errorHandler");
 
 // Initialize Express app
 const app = express();
 
-// Connect to MongoDB
-connectDB();
+async function startServer() {
+  // Connect to MongoDB
+  try {
+    await connectDB();
+    console.log("✅ Database connected successfully");
 
-// Security middleware
-app.use(helmet());
-app.use(
-  cors({
-    origin: [
-      process.env.CLIENT_URL,
-      "http://localhost:3000",
-      "http://localhost:3001", // Alternative React port
-      "http://127.0.0.1:3000", // Alternative localhost format
-    ],
-    credentials: true,
-  })
-);
+    // FOR REMINDERSCHULEDULER, start after db connection
+    // Option 1: Daily at 2 PM + startup check (recommended)
+    startScheduler();
+    // Option 2: Every hour (more resilient, higher resource usage)
+    // startSchedulerWithFrequentChecks();
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 30, // limit each IP to 100 requests per windowMs
-  message: "Too many requests from this IP, please try again later.",
-});
-app.use(limiter);
+    // Security middleware
+    app.use(helmet());
+    app.use(
+      cors({
+        origin: [
+          process.env.CLIENT_URL,
+          "http://localhost:3000",
+          "http://localhost:3001", // Alternative React port
+          "http://127.0.0.1:3000", // Alternative localhost format
+        ],
+        credentials: true,
+      })
+    );
 
-// Body parsing middleware
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+    // Rate limiting
+    const limiter = rateLimit({
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 100, // limit each IP to 100 requests per windowMs
+      message: "Too many requests from this IP, please try again later.",
+    });
+    app.use(limiter);
 
-// Routes
-app.get("/", (req, res) => {
-  res.json({
-    message: "Welcome to MongoDB Express MVC API",
-    version: "1.0.0",
-    status: "Active",
-    endpoints: {
-      users: "/api/users",
-      health: "/health",
-    },
-  });
-});
+    // Body parsing middleware
+    app.use(express.json({ limit: "10mb" }));
+    app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-app.get("/health", (req, res) => {
-  res.status(200).json({
-    status: "OK",
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-  });
-});
+    // Routes
+    app.get("/", (req, res) => {
+      res.json({
+        message: "Welcome to MongoDB Express MVC API",
+        version: "1.0.0",
+        status: "Active",
+        endpoints: {
+          users: "/api/users",
+          health: "/health",
+        },
+      });
+    });
 
-app.use("/api/users", userRoutes);
-app.use("/api/requests", requestRoutes)
-app.use('/api/support', supportRoutes)
-// manual routes for support email
+    app.get("/health", (req, res) => {
+      res.status(200).json({
+        status: "OK",
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+      });
+    });
 
+    app.use("/api/users", userRoutes);
+    app.use("/api/requests", requestRoutes);
+    app.use("/api/support", supportRoutes);
 
-// Error handling middleware
-app.use(notFound);
-app.use(errorHandler);
+    // FOR REMINDER SCHEDULER
+    // Admin endpoint to check scheduler status
+    app.get("/admin/scheduler-status", async (req, res) => {
+      try {
+        const status = await getSchedulerStatus();
+        res.json(status);
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+    // Manual trigger endpoint
+    app.post("/admin/trigger-reminders", async (req, res) => {
+      try {
+        console.log("🔧 Manual reminder trigger requested");
+        await runSchedulerNow();
 
+        const status = await getSchedulerStatus();
+        res.json({
+          success: true,
+          message: "Reminders processed successfully",
+          timestamp: new Date().toISOString(),
+          status,
+        });
+      } catch (error) {
+        console.error("❌ Manual reminder trigger failed:", error);
+        res.status(500).json({
+          success: false,
+          message: "Failed to process reminders",
+          error: error.message,
+        });
+      }
+    });
 
-// Start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(
-    `🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`
-  );
-  console.log(`📡 API documentation available at http://localhost:${PORT}`);
-});
+    // Error handling middleware
+    app.use(notFound);
+    app.use(errorHandler);
+
+    // Start server
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(
+        `🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`
+      );
+      console.log(`📡 API documentation available at http://localhost:${PORT}`);
+    });
+
+    // run daily checks for sending payment request messages
+    // Recurring, one-time, follow up
+  } catch (error) {
+    console.error("❌ Failed to start server:", error);
+    process.exit(1);
+  }
+}
+
+startServer();
 
 module.exports = app;

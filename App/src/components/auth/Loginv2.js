@@ -91,9 +91,9 @@ const Loginv2 = () => {
 
       if (isSuccessfulLogin) {
         // If login is successful, also call the context login
-
-        navigate("/dashboard");
         console.log("LOGIN SUCCESS");
+        navigate("/dashboard");
+        // window.location.href = "/dashboard"; // Redirect to dashboard
       } else {
         // Handle login failure
         setLoginError("Invalid email or password. Please try again.");

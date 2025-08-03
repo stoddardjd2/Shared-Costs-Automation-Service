@@ -149,7 +149,7 @@ const AddStep = ({
                   return (
                     <ContactCard
                       addMode={true}
-                      key={person.id}
+                      key={person._id}
                       person={person}
                     />
                   );

@@ -1,7 +1,10 @@
 // controllers/requestController.js
 const Request = require("../models/Request");
 const User = require("../models/User");
-
+const {
+  calculateNextReminderDate,
+  calculateDueDate,
+} = require("../utils/requestHelpers");
 // const createRequest = () => {};
 
 const getRequests = async (req, res) => {
@@ -15,40 +18,43 @@ const getRequests = async (req, res) => {
 };
 
 const createRequest = async (req, res) => {
+  console.log("Creating request with data:", req.body);
   try {
     const userId = req.user._id; // From auth middleware
-    const { dueInDays, ...requestData } = req.body;
+    const { dueInDays = 7, reminderFrequency = "weekly", ...requestData } = req.body;
+    // reminder frequency can be daily, weekly, monthly, or none
 
-    // Calculate due date - default to 7 days if not specified
-    let calculatedDueDate = requestData.dueDate;
-    if (!calculatedDueDate) {
-      const now = new Date();
-      const daysToAdd =
-        dueInDays && typeof dueInDays === "number" ? dueInDays : 7;
-      calculatedDueDate = new Date(
-        now.getTime() + daysToAdd * 24 * 60 * 60 * 1000
-      );
-    }
+    // Calculate due date - accepts starting date param
+    const dueDate = calculateDueDate(dueInDays);
+
+    // Calculate next reminder date based on frequency
+    const nextReminderDate = calculateNextReminderDate(
+      dueDate,
+      reminderFrequency
+    );
 
     // Create initial payment history entry
     const initialHistory = {
       requestDate: new Date(),
-      dueDate: calculatedDueDate,
+      dueDate: dueDate,
       amount: requestData.amount,
-      status: "pending",
+      nextReminderDate: nextReminderDate,
+      // status: "pending",
       participants: (requestData.participants || []).map((participant) => ({
         ...participant,
         reminderSent: false,
-        lastReminderDate: null,
+        reminderSentDate: null,
         paymentAmount: null,
+        paidDate: null,
+        amount: null,
       })),
     };
 
     // Create request in DB with initial history entry
     const request = await Request.create({
       ...requestData,
-      dueDate: calculatedDueDate,
       owner: userId,
+      reminderFrequency: reminderFrequency,
       paymentHistory: [initialHistory], // Add initial history as subdocument
     });
 

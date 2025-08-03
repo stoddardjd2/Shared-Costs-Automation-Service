@@ -129,15 +129,16 @@ const checkTokenExpiry = async (req, res) => {
       // Just verify the token structure and expiry
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      const user = await User.findById(decoded.id);
+      // const user = await User.findById(decoded.id);
 
+      console.log("Token decoded:", new Date(decoded.exp * 1000));
       res.status(200).json({
         success: true,
         message: "Token is valid",
         data: {
           valid: true,
           userId: decoded.id,
-          user: user,
+          // user: user,
           issuedAt: new Date(decoded.iat * 1000),
           expiresAt: new Date(decoded.exp * 1000),
           timeUntilExpiry: decoded.exp * 1000 - Date.now(),
