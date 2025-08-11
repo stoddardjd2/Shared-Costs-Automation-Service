@@ -7,8 +7,8 @@ function formatUSPhoneNumber(value) {
   const match = digits.match(/^(\d{0,3})(\d{0,3})(\d{0,4})$/);
   const [, a, b, c] = match || [];
 
-  if (c) return `${PREFIX}(${a})-${b}-${c}`;
-  if (b) return `${PREFIX}(${a})-${b}`;
+  if (c) return `${PREFIX}(${a}) ${b} ${c}`;
+  if (b) return `${PREFIX}(${a}) ${b}`;
   if (a) return `${PREFIX}(${a}`;
   return PREFIX;
 }

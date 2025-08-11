@@ -4,6 +4,8 @@ const User = require("../models/User");
 const {
   calculateNextReminderDate,
   calculateDueDate,
+  checkTextMessagePermissions,
+  emailNonApprovedParticipants,
 } = require("../utils/requestHelpers");
 // const createRequest = () => {};
 
@@ -21,7 +23,11 @@ const createRequest = async (req, res) => {
   console.log("Creating request with data:", req.body);
   try {
     const userId = req.user._id; // From auth middleware
-    const { dueInDays = 7, reminderFrequency = "weekly", ...requestData } = req.body;
+    const {
+      dueInDays = 7,
+      reminderFrequency = "weekly",
+      ...requestData
+    } = req.body;
     // reminder frequency can be daily, weekly, monthly, or none
 
     // Calculate due date - accepts starting date param
@@ -63,6 +69,21 @@ const createRequest = async (req, res) => {
       userId,
       { $push: { requests: request._id } },
       { new: true }
+    );
+
+    // upon success, send out emails to all participants to opt in for text messaging,
+    // if already opted in, then ignore
+
+    // this process could be improved:
+    const participantsTextPermissions = await checkTextMessagePermissions(
+      requestData.participants
+    );
+
+    const mailingResults = await emailNonApprovedParticipants(
+      participantsTextPermissions,
+      (requesterId = req.user._id), // or whatever identifies the sender
+      (requesterName = req.user.name),
+      requestData
     );
 
     res.status(201).json(request);

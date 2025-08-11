@@ -10,7 +10,7 @@ const participantSchema = new Schema({
     enum: ["pending", "paid", "overdue"],
     default: "pending",
   },
-  customAmount: { type: String },
+  // customAmount: { type: String },
   amount: { type: Number },
 });
 

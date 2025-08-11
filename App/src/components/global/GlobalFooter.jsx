@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { HOST } from "../../configure";
+import getAPIUrl from "../../config";
 export default function GlobalFooter() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -17,7 +17,7 @@ export default function GlobalFooter() {
     setTimeout(() => setStatus(null), 3000);
 
     console.log("Sending support email:", JSON.stringify({ email, message }));
-    fetch(`${HOST}/api/support/email`, {
+    fetch(`${getAPIUrl}/api/support/email`, {
       method: "POST",
       body: JSON.stringify({ email, message }),
       headers: {

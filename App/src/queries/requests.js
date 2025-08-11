@@ -1,4 +1,4 @@
-import getAPIUrl from "./config";
+import getAPIUrl from "../config";
 
 const API_URL = getAPIUrl();
 

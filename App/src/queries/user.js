@@ -1,4 +1,4 @@
-import getAPIUrl from "./config";
+import getAPIUrl from "../config";
 
 const API_URL = getAPIUrl();
 
@@ -25,11 +25,11 @@ const apiRequest = async (endpoint, options = {}) => {
   try {
     const response = await fetch(`${API_URL}${endpoint}`, config);
     const data = await response.json();
-
     if (!response.ok) {
-      throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      throw new Error(
+        data.message || data.error || `HTTP error! status: ${response.status}`
+      );
     }
-
     return data;
   } catch (error) {
     console.error("API request failed:", error);
@@ -37,20 +37,25 @@ const apiRequest = async (endpoint, options = {}) => {
   }
 };
 
-export const addContact = async (body = {}, queryParams = {}) => {
-  console.log("BOXDY", body);
-  const query = new URLSearchParams(queryParams).toString();
-  const endpoint = `/users/contact${query ? `?${query}` : ""}`;
+export const addContact = async (body = {}) => {
+  const endpoint = `/users/contact`;
   return apiRequest(endpoint, {
     method: "POST",
     body,
   });
 };
 
-export const getUserData = async (body = {}, queryParams = {}) => {
-  const query = new URLSearchParams(queryParams).toString();
-  const endpoint = `/users/data${query ? `?${query}` : ""}`;
+export const getUserData = async () => {
+  const endpoint = `/users/data`;
   return apiRequest(endpoint, {
     method: "GET",
+  });
+};
+
+export const smsOptIn = async (userId, rawPhone, isAllowed) => {
+  const endpoint = `/users/sms/user-consent/${userId}`;
+  return await apiRequest(endpoint, {
+    method: "PATCH",
+    body: { phone: rawPhone, isAllowed },
   });
 };

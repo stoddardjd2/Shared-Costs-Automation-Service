@@ -38,15 +38,14 @@ const GlobalNavbar = ({
           >
             <SmartSplitLogo className="w-8 h-8" />
             <div className="text-2xl font-bold text-blue-600">
-              <span>Smart</span>
-              <span className="font-bold">Split</span>
+              Splitify
             </div>
           </div>
 
           {/* Desktop Navigation */}
           {showOptions && (
             <div className="hidden md:block">
-              <div className="ml-10 flex items-baseline space-x-4">
+              <div className="ml-10 flex items-center space-x-4">
                 {/* {options.login && (
                   <button
                     onClick={() => {
@@ -96,7 +95,7 @@ const GlobalNavbar = ({
                     onClick={() => {
                       navigate("/signup");
                     }}
-                    className="flex items-center px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors duration-200"
+                    className="flex items-center  px-6 py-2 rounded-lg text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors duration-200"
                   >
                     <User className="w-4 h-4 mr-2" />
                     Signup or Login

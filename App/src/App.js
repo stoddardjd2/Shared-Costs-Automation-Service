@@ -24,6 +24,7 @@ import GlobalFooter from "./components/global/GlobalFooter.jsx";
 import LandingPage5 from "./components/global/landing-pages/Claude/LandingPage5";
 import LandingPage6 from "./components/global/landing-pages/GPT/LandingPage6.jsx";
 import { useNavigate } from "react-router-dom";
+import SmsOptInPage from "./components/global/opt-in-pages/SmsOptInPage.jsx";
 const App = () => {
   const navigate = useNavigate();
   return (
@@ -89,6 +90,25 @@ const App = () => {
           <Route path="6" element={<LandingPage6 />} />
           {/* Fallback route - must be last */}
         </Route>
+
+        <Route
+          path="/smsOptIn"
+          element={
+            <>
+              <GlobalNavbar
+                options={{
+                  features: false,
+                  security: false,
+                  pricing: false,
+                  createFreeAccount: true,
+                  // login:true,
+                  signup: true,
+                }}
+              />
+              <SmsOptInPage />
+            </>
+          }
+        />
         {/* <Route path="/" element={<Navigate to="/dashboard" replace />} /> */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
