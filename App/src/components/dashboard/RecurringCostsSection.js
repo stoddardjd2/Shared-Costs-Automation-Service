@@ -511,6 +511,7 @@ const RecurringCostsSection = ({ setIsAddingRequest }) => {
                               const statusColor = getStatusColor(
                                 participant.status
                               );
+
                               return (
                                 <div
                                   key={user._id}

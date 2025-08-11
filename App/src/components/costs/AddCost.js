@@ -113,7 +113,7 @@ const AddCost = ({ setIsAddingRequest }) => {
         );
 
       case STEPS.CHARGE_DETAILS:
-        console.log()
+        console.log();
         return (
           <ChargeDetailsStep
             newChargeDetails={chargeState.newChargeDetails}
@@ -180,8 +180,10 @@ const AddCost = ({ setIsAddingRequest }) => {
             onAddPerson={handleAddPerson}
             onBack={handleBack}
             newPeople={peopleState.newPeople}
-            isPhoneInUse={peopleState.isPhoneInUse}
-            setIsPhoneInUse={peopleState.setIsPhoneInUse}
+            // isPhoneInUse={peopleState.isPhoneInUse}
+            // setIsPhoneInUse={peopleState.setIsPhoneInUse}
+            setEmailError={peopleState.setEmailError}
+            emailError={peopleState.emailError}
           />
         );
 

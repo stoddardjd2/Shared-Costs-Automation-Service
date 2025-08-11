@@ -13,9 +13,16 @@ const contactSchema = new Schema({
     required: [true, "Contact name is required"],
     trim: true,
   },
+  email: {
+    type: String,
+    required: [true, "Email is required"],
+    trim: true,
+  },
+
+  // no longer required
   phone: {
     type: String,
-    required: [true, "Contact phone number is required"],
+    // required: [false, "Contact phone number is required"],
     trim: true,
   },
   avatar: {
@@ -52,6 +59,46 @@ const contactSchema = new Schema({
   },
 });
 
+const RequesterNodeSchema = new Schema(
+  {
+    lastSentAt: { type: Date, default: null },
+    count: { type: Number, default: 0 },
+  },
+  { _id: false }
+);
+
+const TextConsentSchema = new Schema(
+  {
+    // Current consent state
+    isAllowed: { type: Boolean, default: false },
+    allowedAt: { type: Date, default: null },
+
+    // Latest consent event metadata (single, lightweight)
+    lastConsentMeta: {
+      ip: { type: String },
+      userAgent: { type: String },
+      at: { type: Date },
+      method: { type: String, default: "web" }, // "web" | "sms" | "api" | etc.
+    },
+
+    // Outreach / approval request tracking
+    approval: {
+      // Global (any requester)
+      isSent: { type: Boolean, default: false },
+      lastSentAt: { type: Date, default: null },
+      count: { type: Number, default: 0 },
+
+      // Per-requester throttle info
+      byRequester: {
+        type: Map,
+        of: RequesterNodeSchema, // keys are requesterId strings
+        default: () => ({}),
+      },
+    },
+  },
+  { _id: false }
+);
+
 const userSchema = new Schema(
   {
     requests: [
@@ -62,29 +109,33 @@ const userSchema = new Schema(
     ],
     name: {
       type: String,
-      required: [true, "Name is required"],
+      // required: [true, "Name is required"],
       trim: true,
       maxlength: [50, "Name cannot exceed 50 characters"],
     },
     email: {
       type: String,
       required: [true, "Email is required"],
-      unique: true,
       lowercase: true,
       match: [
         /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
         "Please enter a valid email",
       ],
     },
+    phone: {
+      type: String,
+      // required: [false, "Contact phone number is required"],
+      trim: true,
+    },
     password: {
       type: String,
-      required: [true, "Password is required"],
+      // required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters"],
       select: false,
     },
     plan: {
       type: String,
-      required: true,
+      // required: true,
     },
     role: {
       type: String,
@@ -108,9 +159,11 @@ const userSchema = new Schema(
       website: String,
     },
     contacts: [contactSchema], // <-- Contacts with unique IDs
+    textMessagesAllowed: { type: TextConsentSchema, default: () => ({}) },
     passwordResetToken: String,
     passwordResetExpire: Date,
   },
+
   {
     timestamps: true,
     toJSON: { virtuals: true },

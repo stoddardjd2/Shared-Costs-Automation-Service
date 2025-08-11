@@ -18,6 +18,7 @@ const {
 const userRoutes = require("./routes/userRoutes");
 const requestRoutes = require("./routes/requestRoutes");
 const supportRoutes = require("./routes/supportRoutes");
+const stripeRoutes = require("./routes/stripeRoutes");
 // Import error handler
 const { errorHandler, notFound } = require("./utils/errorHandler");
 
@@ -60,6 +61,22 @@ async function startServer() {
 
     // Body parsing middleware
     app.use(express.json({ limit: "10mb" }));
+
+    // Custom body parser for Stripe webhooks
+    app.use(
+      express.json({
+        limit: "10mb",
+        verify: (req, res, buf) => {
+          // Look for the stripe-signature header and the specific path
+          if (
+            req.headers["stripe-signature"] &&
+            req.originalUrl === "api/stripe/webhooks"
+          ) {
+            req.rawBody = buf;
+          }
+        },
+      })
+    );
     app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
     // Routes
@@ -86,6 +103,7 @@ async function startServer() {
     app.use("/api/users", userRoutes);
     app.use("/api/requests", requestRoutes);
     app.use("/api/support", supportRoutes);
+    app.use("/api/stripe", stripeRoutes);
 
     // FOR REMINDER SCHEDULER
     // Admin endpoint to check scheduler status
@@ -118,6 +136,22 @@ async function startServer() {
           error: error.message,
         });
       }
+    });
+
+    // FOR STRIPE
+    app.get("/connect/standard", (req, res) => {
+      const state = req.session.id; // CSRF protection
+      const origin = process.env.SERVER_URL;
+      const params = new URLSearchParams({
+        response_type: "code",
+        client_id: process.env.STRIPE_CLIENT_ID,
+        scope: "read_write",
+        redirect_uri: `${origin}/connect/standard/callback`,
+        state,
+      });
+      res.redirect(
+        `https://connect.stripe.com/oauth/authorize?${params.toString()}`
+      );
     });
 
     // Error handling middleware

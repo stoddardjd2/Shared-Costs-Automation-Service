@@ -106,7 +106,7 @@ async function processRequestReminders(request) {
     if (!paymentEntry.nextReminderDate || paymentEntry.nextReminderDate > now) {
       continue;
     }
-
+ 
     // Get participants who need reminders
     const participantsToRemind = getParticipantsNeedingReminders(
       paymentEntry,

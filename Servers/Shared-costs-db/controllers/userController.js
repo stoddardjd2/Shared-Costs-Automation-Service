@@ -5,6 +5,8 @@ const { validationResult } = require("express-validator");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 
+const {normalizePhone} = require("../utils/general");
+
 // Generate JWT Token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -64,9 +66,15 @@ const removeContactFromUser = async (req, res) => {
 const addContactToUser = async (req, res) => {
   try {
     const userId = req.user._id; // From auth middleware
-    const { name, phone, avatar, color } = req.body;
+    const { name, phone, avatar, color, email } = req.body;
 
-    if (!name || !phone || !avatar || !color) {
+    // prevent adding self
+    if (email == req.user.email) {
+      return res.status(404).json({ message: "Cannot add self" });
+    }
+
+    // phone is not required
+    if (!name || !email || !avatar || !color) {
       return res
         .status(400)
         .json({ message: "Name, phone, avatar, and color are required." });
@@ -75,10 +83,13 @@ const addContactToUser = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found." });
 
-    // Check for duplicate phone number
-    const phoneExists = user.contacts.some(
-      (contact) => contact.phone.trim() === phone.trim()
-    );
+    // Check for duplicate phone number if phone number given
+    let phoneExists;
+    if (phone) {
+      phoneExists = user.contacts.some(
+        (contact) => contact.phone.trim() === phone.trim()
+      );
+    }
 
     if (phoneExists) {
       return res
@@ -86,12 +97,34 @@ const addContactToUser = async (req, res) => {
         .json({ message: "Contact with this phone number already exists." });
     }
 
+    // check for duplicate email
+    const emailExists = user.contacts.some(
+      (contact) => contact.email.trim() === email.trim()
+    );
+
+    if (emailExists) {
+      return res
+        .status(409)
+        .json({ message: "Contact with this email already exists." });
+    }
+
+    // Add new contact as new User in DB if not added yet
+    const prevUser = await User.findOne({ email: email.trim().toLowerCase() });
+    let newUser;
+    if (!prevUser) {
+      newUser = new User({ email: email.trim(), name: name });
+      await newUser.save();
+    }
+
     // Add new contact
     const newContact = {
       name: name.trim(),
-      phone: phone.trim(),
       avatar: avatar.trim(),
       color: color.trim(),
+      email: email.trim(),
+      // Add user Id (either newly created or one found)
+      _id: prevUser ? prevUser._id : newUser._id,
+      ...(phone ? phone.trim : {}),
     };
     user.contacts.push(newContact);
     await user.save();
@@ -112,7 +145,6 @@ const addContactToUser = async (req, res) => {
 // @desc    Check if token is expired without validating user
 // @route   POST /api/auth/check-token
 // @access  Public
-
 // USED TO GET USER AND GET REQUESTS
 const checkTokenExpiry = async (req, res) => {
   try {
@@ -605,6 +637,68 @@ const loginUser = async (req, res) => {
   }
 };
 
+async function approveSmsMessages(req, res) {
+  try {
+    const { userId } = req.params;
+    const isAllowed = req.body?.isAllowed ?? true;
+    const method = req.body?.method || "web";
+    const normalizedPhone = req.body?.phone
+      ? normalizePhone(req.body.phone)
+      : null;
+
+ 
+      
+    if (req.body?.phone && !normalizedPhone) {
+      return res.status(400).json({ ok: false, error: "Invalid phone format" });
+    }
+
+    // Light audit
+    const ip =
+      (req.headers["x-forwarded-for"] || "").split(",")[0].trim() ||
+      req.socket?.remoteAddress ||
+      null;
+    const userAgent = req.get("user-agent") || null;
+
+    // Build $set payload
+    const set = {
+      "textMessagesAllowed.isAllowed": !!isAllowed,
+      "textMessagesAllowed.allowedAt": isAllowed ? new Date() : null,
+      "textMessagesAllowed.lastConsentMeta": {
+        ip,
+        userAgent,
+        at: new Date(),
+        method,
+      },
+    };
+
+    if (normalizedPhone) set.phone = normalizedPhone; // <— top-level field
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $set: set },
+      {
+        new: true,
+        runValidators: true,
+        projection: { name: 1, email: 1, phone: 1, textMessagesAllowed: 1 },
+      }
+    ).lean();
+
+    if (!user) {
+      return res.status(404).json({ ok: false, error: "User not found" });
+    }
+
+    return res.json({ ok: true, user });
+  } catch (err) {
+    // If you have a unique index on phone, surface dup-key cleanly
+    if (err?.code === 11000 && err?.keyPattern?.phone) {
+      return res
+        .status(409)
+        .json({ ok: false, error: "Phone number already in use" });
+    }
+    console.error("approveSmsConsent error:", err);
+    return res.status(500).json({ ok: false, error: "Server error" });
+  }
+}
 module.exports = {
   getUsers,
   getUser,
@@ -618,4 +712,5 @@ module.exports = {
   removeContactFromUser,
   addContactToUser,
   getUserData,
+  approveSmsMessages,
 };
