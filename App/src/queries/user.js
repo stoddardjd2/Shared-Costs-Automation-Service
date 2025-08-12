@@ -59,3 +59,12 @@ export const smsOptIn = async (userId, rawPhone, isAllowed) => {
     body: { phone: rawPhone, isAllowed },
   });
 };
+
+export const addPaymentMethod = async (paymentMethod, paymentAddress) => {
+  console.log("SENDING TO BACKEND WITH", paymentAddress, paymentMethod)
+  const endpoint = `/users/addPaymentMethod`;
+  return await apiRequest(endpoint, {
+    method: "POST",
+    body: {paymentMethod, paymentAddress},
+  });
+};

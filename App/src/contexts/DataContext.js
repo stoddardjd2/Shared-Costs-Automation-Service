@@ -56,7 +56,9 @@ export const DataProvider = ({ children }) => {
 
   const [isContextLoaded, setIsContextLoaded] = useState(false);
   const [loadingError, setLoadingError] = useState(null);
+  const [paymentMethods, setPaymentMethods] = useState(null);
 
+  console.log("COSTS", costs)
   const loadInitialData = async () => {
     try {
       setIsContextLoaded(false);
@@ -70,8 +72,9 @@ export const DataProvider = ({ children }) => {
 
       // Set all the data
       setUserData(userDataResult);
-      setParticipants(userDataResult.contacts || []);
+      setParticipants(userDataResult?.contacts || []);
       setCosts(userRequestsResult || []);
+      setPaymentMethods(userDataResult?.paymentMethods || {});
       // Mark as loaded
       setIsContextLoaded(true);
     } catch (error) {
@@ -150,7 +153,9 @@ export const DataProvider = ({ children }) => {
     setParticipants,
     userData,
     setUserData,
-    addCost, // You had this function but it wasn't in the value object
+    addCost,
+    setPaymentMethods,
+    paymentMethods,
   };
 
   // Show loading spinner while data is loading

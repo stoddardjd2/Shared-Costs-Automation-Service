@@ -3,7 +3,6 @@ import PhoneInput from "../../common/PhoneInput";
 // Route example:
 //   /sms/opt-in?userID=...&userName=...&requesterName=...&paymentName=...&paymentAmount=...
 import { smsOptIn } from "../../../queries/user";
-
 export default function SmsOptInPage() {
   const params = useMemo(() => new URLSearchParams(window.location.search), []);
 
@@ -17,7 +16,7 @@ export default function SmsOptInPage() {
   };
 
   const [phone, setPhone] = useState("");
-  const [consent, setConsent] = useState(true);
+  const [consent, setConsent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
   const [isConfirmed, setIsConfirmed] = useState(false);
@@ -167,7 +166,10 @@ export default function SmsOptInPage() {
                       label="Requested by"
                       value={initial.requesterName || "—"}
                     />
-                    <Info label="Charge Name" value={initial.paymentName || "—"} />
+                    <Info
+                      label="Charge Name"
+                      value={initial.paymentName || "—"}
+                    />
                     <Info
                       label="Amount"
                       value={
@@ -307,8 +309,16 @@ export default function SmsOptInPage() {
                     className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                   <label htmlFor="consent" className="text-sm text-gray-700">
-                    I agree to receive text messages about my payments. Message & data
-                    rates may apply. Reply STOP to opt out anytime.
+                    I agree to receive text messages from Splitify about my
+                    payments. Message & data rates may apply. Message frequency
+                    may vary. Reply STOP to opt out anytime. By enabling text
+                    messages you agree to our
+                    <a className="text-[#1865f2]" href="/about/termsAndConditions">
+                      {" "}
+                      Terms and Conditions
+                    </a>{" "}
+                    and our
+                    <a className="text-[#1865f2]" href="/about/privacyPolicy"> Privacy Policy.</a>
                   </label>
                 </div>
 

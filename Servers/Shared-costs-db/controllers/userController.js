@@ -5,7 +5,7 @@ const { validationResult } = require("express-validator");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 
-const {normalizePhone} = require("../utils/general");
+const { normalizePhone } = require("../utils/general");
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -646,8 +646,6 @@ async function approveSmsMessages(req, res) {
       ? normalizePhone(req.body.phone)
       : null;
 
- 
-      
     if (req.body?.phone && !normalizedPhone) {
       return res.status(400).json({ ok: false, error: "Invalid phone format" });
     }
@@ -699,6 +697,163 @@ async function approveSmsMessages(req, res) {
     return res.status(500).json({ ok: false, error: "Server error" });
   }
 }
+
+const updatePaymentMethod = async (req, res) => {
+  try {
+    const { type, tag, username, phone } = req.body;
+    const userId = req.user?.id || req.params.userId; // Assuming user ID from auth middleware or params
+
+    // Validate required fields
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required",
+      });
+    }
+
+    if (!type || !["cashapp", "venmo"].includes(type)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid payment method type. Must be "cashapp" or "venmo"',
+      });
+    }
+
+    // Validate type-specific required fields
+    if (type === "cashapp" && !tag) {
+      return res.status(400).json({
+        success: false,
+        message: "Cash App tag is required",
+      });
+    }
+
+    if (type === "venmo" && !username) {
+      return res.status(400).json({
+        success: false,
+        message: "Venmo username is required",
+      });
+    }
+
+    // Prepare the payment method value
+    let paymentValue;
+    if (type === "cashapp") {
+      // Store just the tag for cashapp
+      paymentValue = tag;
+    } else if (type === "venmo") {
+      // Store just the username for venmo
+      paymentValue = username;
+    }
+
+    // Create update object using dynamic field path
+    const updateQuery = {
+      $set: {
+        [`paymentMethods.${type}`]: paymentValue,
+      },
+    };
+
+    // Update user's payment method
+    const updatedUser = await User.findByIdAndUpdate(userId, updateQuery, {
+      new: true, // Return updated document
+      runValidators: true, // Run schema validators
+      select: "paymentMethods", // Only return payment methods in response
+    });
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Success response
+    res.status(200).json({
+      success: true,
+      message: `${
+        type === "cashapp" ? "Cash App" : "Venmo"
+      } payment method updated successfully`,
+      data: {
+        paymentMethods: updatedUser.paymentMethods,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating payment method:", error);
+
+    // Handle validation errors
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        success: false,
+        message: "Validation error",
+        errors: Object.values(error.errors).map((err) => err.message),
+      });
+    }
+
+    // Handle cast errors (invalid ObjectId)
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID format",
+      });
+    }
+
+    // Generic server error
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+const addPaymentMethod = async (req, res) => {
+  try {
+    const { paymentMethod, paymentAddress} = req.body;
+    const userId = req.user?.id; // Assuming user ID from auth middleware
+
+    // Basic validation
+    if (!paymentMethod || !["cashapp", "venmo"].includes(paymentMethod)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid payment method type",
+      });
+    }
+
+    // Get the payment value based on type
+
+    if (!paymentMethod) {
+      return res.status(400).json({
+        success: false,
+        message: `${
+          paymentMethod === "cashapp" ? "Cash App tag" : "Venmo username"
+        } is required`,
+      });
+    }
+
+    // Update user's payment method
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: { [`paymentMethods.${paymentMethod}`]: paymentAddress } },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `${
+        paymentMethod === "cashapp" ? "Cash App" : "Venmo"
+      } payment method added successfully`,
+    });
+  } catch (error) {
+    console.error("Error adding payment method:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
 module.exports = {
   getUsers,
   getUser,
@@ -713,4 +868,5 @@ module.exports = {
   addContactToUser,
   getUserData,
   approveSmsMessages,
+  addPaymentMethod,
 };

@@ -221,7 +221,7 @@ const RecurringCostsSection = ({ setIsAddingRequest }) => {
               }`}
             >
               <RefreshCw className="w-4 h-4" />
-              Reoccurring Payments
+              Recurring Payments
             </button>
             <button
               onClick={() => setActiveTab("onetime")}
@@ -335,7 +335,7 @@ const RecurringCostsSection = ({ setIsAddingRequest }) => {
           Showing {startIndex + 1}-
           {Math.min(startIndex + itemsPerPage, filteredCosts.length)} of{" "}
           {filteredCosts.length}{" "}
-          {activeTab == "onetime" ? "one-time" : "reoccurring"} payments
+          {activeTab == "onetime" ? "one-time" : "recurring"} payments
         </div>
 
         {/* Payment Requests Section */}
@@ -351,7 +351,7 @@ const RecurringCostsSection = ({ setIsAddingRequest }) => {
               </div>
               <div className="text-left">
                 <h2 className="text-xl font-semibold text-slate-900">
-                  {activeTab === "recurring" ? "Reoccurring" : "One-time"}{" "}
+                  {activeTab === "recurring" ? "Recurring" : "One-time"}{" "}
                   Payment Requests
                 </h2>
                 <p className="text-gray-600 text-sm">
@@ -458,7 +458,7 @@ const RecurringCostsSection = ({ setIsAddingRequest }) => {
                                     amounts change between payment cycles
                                   </p>
                                   <p>
-                                    Dynamic costs are useful for any reoccurring
+                                    Dynamic costs are useful for any recurring
                                     cost that varies each period, like utilities
                                   </p>
                                   <div className="absolute top-full left-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
@@ -525,7 +525,7 @@ const RecurringCostsSection = ({ setIsAddingRequest }) => {
                                   {/* Solid color status indicator */}
                                   {statusColor && (
                                     <div
-                                      className={`absolute -bottom-0.5 -right-0.5 ${statusColor} rounded-full w-3 h-3 border border-white shadow-sm`}
+                                      className={`absolute -bottom-0.5 -right-0.5 ${statusColor} rounded-full w-2.5 h-2.5 border border-white shadow-sm`}
                                     ></div>
                                   )}
 
@@ -572,7 +572,7 @@ const RecurringCostsSection = ({ setIsAddingRequest }) => {
               <div className="flex justify-between items-center">
                 <div className="text-sm text-slate-600">
                   <span className="font-medium">{filteredCosts.length}</span>{" "}
-                  {activeTab == "onetime" ? "one-time" : "reoccurring"}{" "}
+                  {activeTab == "onetime" ? "one-time" : "recurring"}{" "}
                   {filteredCosts.length === 1
                     ? "payment request"
                     : "payment requests"}

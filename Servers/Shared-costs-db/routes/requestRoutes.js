@@ -6,6 +6,7 @@ const {
   createRequest,
   getRequests,
   updateRequest,
+  handleSendReminder,
 } = require("../controllers/requestController");
 
 const { protect, authorize } = require("../middleware/auth");
@@ -19,5 +20,11 @@ router.use(protect);
 router.post("/", createRequest);
 router.get("/", getRequests);
 router.put("/:id", updateRequest);
+
+router.patch(
+  "/reminder/:requestId/:paymentHistoryId/:userId",
+  handleSendReminder
+);
+router.patch("/reminder/all");
 
 module.exports = router;

@@ -25,6 +25,9 @@ import LandingPage5 from "./components/global/landing-pages/Claude/LandingPage5"
 import LandingPage6 from "./components/global/landing-pages/GPT/LandingPage6.jsx";
 import { useNavigate } from "react-router-dom";
 import SmsOptInPage from "./components/global/opt-in-pages/SmsOptInPage.jsx";
+import PrivacyPolicy from "./components/global/about/PrivacyPolicy.jsx";
+import TermsAndConditions from "./components/global/about/TermsAndConditions.jsx";
+import PaymentPortal from "./components/global/PaymentPortal.jsx";
 const App = () => {
   const navigate = useNavigate();
   return (
@@ -109,6 +112,50 @@ const App = () => {
             </>
           }
         />
+        <Route
+          path="/about"
+          element={
+            <>
+              <GlobalNavbar
+                options={{
+                  features: false,
+                  security: false,
+                  pricing: false,
+                  createFreeAccount: true,
+                  // login:true,
+                  signup: true,
+                }}
+              />
+              <Outlet />
+              <GlobalFooter />
+            </>
+          }
+        >
+          <Route path="privacyPolicy" element={<PrivacyPolicy />}></Route>
+          <Route
+            path="termsAndConditions"
+            element={<TermsAndConditions />}
+          ></Route>
+        </Route>
+        <Route
+          path="/PaymentPortal"
+          element={
+            <>
+              <GlobalNavbar
+                options={{
+                  features: false,
+                  security: false,
+                  pricing: false,
+                  createFreeAccount: true,
+                  // login:true,
+                  signup: true,
+                }}
+              />
+              <PaymentPortal />
+            </>
+          }
+        ></Route>
+
         {/* <Route path="/" element={<Navigate to="/dashboard" replace />} /> */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
