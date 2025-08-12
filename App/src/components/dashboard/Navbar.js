@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { ReactComponent as SmartSplitLogo } from "../../assets/SmartSplitLogo.svg?react";
+
 import {
   User,
   LogOut,
@@ -13,7 +15,7 @@ import {
   CreditCard,
   Inbox,
 } from "lucide-react";
-import {useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useData } from "../../contexts/DataContext";
 const Navbar = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -87,7 +89,7 @@ const Navbar = () => {
     );
   }
 
-  const avatar = generateAvatar()
+  const avatar = generateAvatar();
   function generateAvatar() {
     // Safety check for userData and name
     if (!userData || !userData.name) {
@@ -112,22 +114,19 @@ const Navbar = () => {
     return initials;
   }
 
-
   return (
     <nav className="bg-white border-b border-slate-200/60 shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex px-4 sm:px-8 justify-between items-center h-16">
           {/* Logo/Brand */}
-          <div className="flex items-center">
-            <div className="flex-shrink-0 flex items-center">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                {/* <span className="text-white font-bold text-sm">A</span> */}
-                <DollarSign size={20} color="#ffffff" />
-              </div>
-              <span className="ml-3 text-xl font-semibold text-slate-900">
-                SmartSplit{" "}
-              </span>
-            </div>
+          <div
+            onClick={() => {
+              navigate("/");
+            }}
+            className="flex-shrink-0 flex items-center space-x-3 cursor-pointer"
+          >
+            <SmartSplitLogo className="w-8 h-8" />
+            <div className="text-2xl font-bold text-blue-600">Splitify</div>
           </div>
 
           {/* Search Bar */}

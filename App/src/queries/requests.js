@@ -119,7 +119,6 @@ export const createRequest = async (requestData) => {
   }
 };
 
-
 export const updateRequest = async (requestId, requestData) => {
   const result = await apiRequest(`/requests/${requestId}`, {
     method: "PUT",
@@ -163,6 +162,12 @@ export const markParticipantPaid = async (
   );
 };
 
-export const createPaymentCycle = async (requestId) => {
-  return apiRequest(`/requests/${requestId}/payment-cycle`, { method: "POST" });
+export const sendReminder = async (requestId, paymentHistoryId, userId) => {
+  console.log("SENDING REMINDER", requestId, paymentHistoryId, userId)
+  return await apiRequest(
+    `/requests/reminder/${requestId}/${paymentHistoryId}/${userId}`,
+    {
+      method: "PATCH",
+    }
+  );
 };

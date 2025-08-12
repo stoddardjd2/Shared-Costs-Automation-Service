@@ -13,7 +13,8 @@ const {
   addContactToUser,
   removeContactFromUser,
   getUserData,
-  approveSmsMessages
+  approveSmsMessages,
+  addPaymentMethod,
 } = require("../controllers/userController");
 
 const { protect, authorize } = require("../middleware/auth");
@@ -74,6 +75,7 @@ router.post("/forgot-password", forgotPassword);
 router.put("/reset-password/:token", resetPassword);
 router.post("/check-token", checkTokenExpiry);
 
+router.patch("/sms/user-consent/:userId", approveSmsMessages);
 // Protected routes
 router.use(protect); // All routes after this middleware are protected
 
@@ -85,7 +87,8 @@ router.get("/data", getUserData);
 router.get("/:id", getUser);
 router.put("/:id", validateUpdate, updateUser);
 
-router.patch("/sms/user-consent/:userId", approveSmsMessages)
+router.post("/addPaymentMethod", addPaymentMethod);
+
 // Admin only routes
 router.delete("/:id", authorize("admin"), deleteUser);
 

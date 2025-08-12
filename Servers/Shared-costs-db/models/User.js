@@ -149,6 +149,10 @@ const userSchema = new Schema(
     lastLogin: {
       type: Date,
     },
+    paymentMethods: {
+      cashapp: String,
+      venmo: String,
+    },
     profile: {
       avatar: String,
       bio: {

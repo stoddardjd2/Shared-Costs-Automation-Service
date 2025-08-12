@@ -1,6 +1,8 @@
 // controllers/requestController.js
 const Request = require("../models/Request");
 const User = require("../models/User");
+const { ObjectId } = require("mongodb");
+const { sendReminder } = require("../reminder-scheduler/reminderScheduler");
 const {
   calculateNextReminderDate,
   calculateDueDate,
@@ -71,6 +73,20 @@ const createRequest = async (req, res) => {
       { new: true }
     );
 
+    // Add request to each participant's user document
+    if (requestData.participants && requestData.participants.length > 0) {
+      const participantUpdates = requestData.participants.map(
+        async (participant) => {
+          // If participant user exists, add request to their requests array
+          await User.findByIdAndUpdate(
+            participant._id,
+            { $push: { requests: request._id } },
+            { new: true }
+          );
+        }
+      );
+    }
+
     // upon success, send out emails to all participants to opt in for text messaging,
     // if already opted in, then ignore
 
@@ -126,8 +142,170 @@ const updateRequest = async (req, res) => {
   }
 };
 
+const handleSendReminder = async (req, res) => {
+  // restrict to only 1 reminder per day per participant
+  // const REMINDER_INTERVAL_DAYS = 1;
+  const REMINDER_INTERVAL_DAYS = 1;
+
+  try {
+    const { requestId, paymentHistoryId, userId } = req.params;
+    const senderId = req.user._id;
+
+    // 1) Load the request & auth
+    const existingRequest = await Request.findById(requestId);
+    if (!existingRequest)
+      return res.status(404).json({ error: "Request not found" });
+    if (existingRequest.owner.toString() !== senderId.toString()) {
+      return res.status(403).json({ error: "Not authorized for this request" });
+    }
+
+    // 2) Locate the specific paymentHistory entry & participant in-app
+    const ph = existingRequest.paymentHistory.find(
+      (ph) => ph._id.toString() === paymentHistoryId
+    );
+    if (!ph)
+      return res.status(404).json({ error: "Payment history item not found" });
+
+    const participant = ph.participants.find(
+      (p) => p._id.toString() === userId
+    );
+    if (!participant)
+      return res.status(404).json({ error: "Participant not found" });
+
+    // 3) Enforce interval at the app level
+    const now = Date.now();
+    const intervalMs = REMINDER_INTERVAL_DAYS * 24 * 60 * 60 * 1000;
+    const lastSent = participant.reminderSentDate
+      ? new Date(participant.reminderSentDate).getTime()
+      : null;
+
+    const eligible = !lastSent || now - lastSent >= intervalMs;
+
+    if (!eligible) {
+      const msLeft = intervalMs - (now - lastSent);
+      const hoursLeft = Math.ceil(msLeft / (60 * 60 * 1000));
+      return res.status(429).json({
+        throttled: true,
+        error: `Reminder throttled. Try again in ~${hoursLeft} hour(s).`,
+        nextAllowedAt: new Date(lastSent + intervalMs),
+      });
+    }
+
+    // 4) fetch owner/contact display info
+    const owner = await User.findById(new ObjectId(req.user._id));
+    const matchingContact = owner?.contacts?.find(
+      (c) => c._id.toString() === userId
+    );
+
+    // 5) Gather extra info for the reminder (amount + dueDate)
+    const extra = await Request.aggregate([
+      {
+        $match: {
+          _id: new ObjectId(requestId),
+          "paymentHistory._id": new ObjectId(paymentHistoryId),
+          "paymentHistory.participants._id": new ObjectId(userId),
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          paymentHistory: {
+            $map: {
+              input: {
+                $filter: {
+                  input: "$paymentHistory",
+                  as: "ph",
+                  cond: { $eq: ["$$ph._id", new ObjectId(paymentHistoryId)] },
+                },
+              },
+              as: "ph",
+              in: {
+                dueDate: "$$ph.dueDate",
+                amount: {
+                  $arrayElemAt: [
+                    {
+                      $map: {
+                        input: {
+                          $filter: {
+                            input: "$$ph.participants",
+                            as: "p",
+                            cond: { $eq: ["$$p._id", new ObjectId(userId)] },
+                          },
+                        },
+                        as: "p",
+                        in: "$$p.amount",
+                      },
+                    },
+                    0,
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
+    ]);
+
+    const info = extra?.[0]?.paymentHistory?.[0];
+    if (!info)
+      return res
+        .status(404)
+        .json({ error: "Could not resolve amount/dueDate" });
+
+    // 6) Send the reminder (only now that we know it's eligible)
+    await sendReminder({
+      requestId: existingRequest._id,
+      requestName: existingRequest.name,
+      requestOwner: owner?.name,
+      requestOwnerPaymentMethods: owner?.paymentMethods || {},
+      participantId: userId,
+      participantName: matchingContact?.name,
+      stillOwes: info.amount,
+      dueDate: info.dueDate,
+      requestData: existingRequest,
+    });
+
+    // 7) Persist reminderSent + reminderSentDate (+ nextReminderDate if you want)
+    const nowDate = new Date();
+    const nextReminderDate = new Date(now + intervalMs); // configurable interval
+
+    const updateResult = await Request.findOneAndUpdate(
+      {
+        _id: new ObjectId(requestId),
+        "paymentHistory._id": new ObjectId(paymentHistoryId),
+        "paymentHistory.participants._id": new ObjectId(userId),
+      },
+      {
+        $set: {
+          "paymentHistory.$[p].participants.$[u].reminderSent": true,
+          "paymentHistory.$[p].participants.$[u].reminderSentDate": nowDate,
+          "paymentHistory.$[p].nextReminderDate": nextReminderDate,
+        },
+      },
+      {
+        arrayFilters: [
+          { "p._id": new ObjectId(paymentHistoryId) },
+          { "u._id": new ObjectId(userId) },
+        ],
+        returnDocument: "after", // Returns the document after the update
+        // Alternative: returnOriginal: false (for older MongoDB drivers)
+      }
+    );
+
+    return res.json({
+      message: "Reminder sent",
+      nextReminderDate,
+      updateResult: updateResult,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createRequest,
   getRequests,
   updateRequest,
+  handleSendReminder,
 };

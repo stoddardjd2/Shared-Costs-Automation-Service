@@ -1,10 +1,11 @@
 // scheduler/reminderScheduler.js
 const cron = require("node-cron");
 const mongoose = require("mongoose");
+const { ObjectId } = require("mongodb");
 
 // Import your Request model - adjust path as needed
 const Request = require("../models/Request");
-
+const User = require("../models/User");
 // Global state
 let isJobRunning = false;
 let cronJob = null;
@@ -78,13 +79,53 @@ function getParticipantsNeedingReminders(
  */
 async function sendReminder(reminderData) {
   // TODO: Implement your SMS/Email sending logic here
-  console.log("📱 Sending reminder:", {
-    requestName: reminderData.requestName,
-    participantId: reminderData.participantId,
-    stillOwes: reminderData.stillOwes,
-    dueDate: reminderData.dueDate,
-  });
+  //Generate payment URL
+  function getFrequency(requestData) {
+    const { frequency, customInterval, customUnit } = requestData;
+    if (frequency !== "custom") {
+      return frequency;
+    } else {
+      if (frequency === "custom") {
+        // Handle pluralization for time units
+        const getSingularUnit = (unit) => {
+          const singularMap = {
+            months: "month",
+            days: "day",
+            weeks: "week",
+            years: "year",
+          };
+          return singularMap[unit] || unit;
+        };
 
+        const unit =
+          customInterval === 1 ? getSingularUnit(customUnit) : customUnit;
+        return `Every ${customInterval} ${unit}`;
+      }
+    }
+  }
+
+  const urlBase = `${process.env.CLIENT_URL}/paymentPortal`;
+  const userId = reminderData.participantId;
+  const name = reminderData.participantName;
+  const amount = reminderData.stillOwes;
+  const frequency = getFrequency(reminderData.requestData);
+  const requester = reminderData.requestOwner;
+  const chargeName = reminderData.requestName;
+  const cashapp = reminderData.requestOwnerPaymentMethods?.cashapp || null;
+  const venmo = reminderData.requestOwnerPaymentMethods?.venmo || null;
+
+  const url = new URL(urlBase);
+  url.searchParams.set("userId", userId);
+  url.searchParams.set("name", name);
+  url.searchParams.set("amount", amount);
+  url.searchParams.set("frequency", frequency);
+  url.searchParams.set("requester", requester);
+  url.searchParams.set("chargeName", chargeName);
+  url.searchParams.set("cashapp", cashapp);
+  url.searchParams.set("venmo", venmo);
+
+  const finalUrl = url.toString();
+  console.log(`URL FOR ${name}!`, finalUrl);
   // Example implementation:
   // await sendSMS(reminderData.participantId, message);
   // await sendEmail(reminderData.participantId, subject, message);
@@ -103,10 +144,11 @@ async function processRequestReminders(request) {
     const paymentEntry = request.paymentHistory[i];
 
     // Skip if no reminder date set or not yet due
+    // FLIP for dev
     if (!paymentEntry.nextReminderDate || paymentEntry.nextReminderDate > now) {
       continue;
     }
- 
+
     // Get participants who need reminders
     const participantsToRemind = getParticipantsNeedingReminders(
       paymentEntry,
@@ -129,14 +171,25 @@ async function processRequestReminders(request) {
     for (const participant of participantsToRemind) {
       try {
         // Call your reminder sending function here
+        // get requests owner info:
+        const owner = await User.findById(new ObjectId(request.owner));
+        // get participant name:
+        const partcipantInfo = await User.findById(
+          new ObjectId(participant.participantId)
+        );
+
         await sendReminder({
           requestId: request._id,
           requestName: request.name,
+          requestOwner: owner.name,
+          requestOwnerPaymentMethods: owner?.paymentMethods || {},
           participantId: participant.participantId,
-          expectedAmount: participant.expectedAmount,
-          paidAmount: participant.paidAmount,
+          participantName: partcipantInfo.name,
+          // expectedAmount: participant.expectedAmount,
+          // paidAmount: participant.paidAmount,
           stillOwes: participant.stillOwes,
           dueDate: paymentEntry.dueDate,
+          requestData: request,
         });
 
         // Update the participant's reminder status
@@ -204,6 +257,7 @@ async function processReminders() {
     // Find all active requests that have reminders due
     const requests = await Request.find({
       isCompleted: { $ne: true }, // Not completed
+      // FLIP for dev
       "paymentHistory.nextReminderDate": { $lte: now }, // Has reminders due
     });
 
@@ -334,8 +388,8 @@ module.exports = {
   runSchedulerNow,
   processReminders,
   sendReminder,
-//   sendSMS,
-//   sendEmail,
+  //   sendSMS,
+  //   sendEmail,
   calculateNextReminderDate,
   getParticipantsNeedingReminders,
   processRequestReminders,

@@ -9,6 +9,7 @@ import { getUserData } from "../../queries/user";
 import { getRequests } from "../../queries/requests";
 import { useData } from "../../contexts/DataContext";
 import AddCost from "../costs/AddCost";
+import PaymentMethodPrompt from "./PaymentMethodPrompt";
 const Dashboard = () => {
   const navigate = useNavigate();
   const {
@@ -19,6 +20,8 @@ const Dashboard = () => {
     isLoadingTransactions,
     connectPlaid,
     setCosts,
+    userData,
+    paymentMethods,
   } = useData();
 
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
@@ -38,6 +41,8 @@ const Dashboard = () => {
 
   return (
     <LoadingWrapper loading={isLoadingDashboard}>
+      {/* prompt for payment methods upon login if not given yet */}
+
       {/* <Navbar /> */}
       <div className="relative">
         {/* Main content container with mobile-friendly padding matching SplitStep */}
@@ -64,9 +69,14 @@ const Dashboard = () => {
 
             {/* Main Dashboard Sections */}
             <div className="space-y-6">
-              <OverdueAlerts />
-              <RecurringCostsSection setIsAddingRequest={setIsAddingRequest} />
+              {paymentMethods?.cashapp && paymentMethods?.venmo ? (
+                ""
+              ) : (
+                <PaymentMethodPrompt />
+              )}
 
+              {costs.length !== 0 && <OverdueAlerts />}
+              <RecurringCostsSection setIsAddingRequest={setIsAddingRequest} />
               {/* <RecurringCostsFromBank recurringFromBank={recurringFromBank} /> */}
               {/* <OneTimeCosts oneTimeCosts={oneTimeCosts} /> */}
             </div>
