@@ -17,8 +17,10 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useData } from "../../contexts/DataContext";
+import PaymentMethodPrompt from "./PaymentMethodPrompt";
 const Navbar = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showPaymentMethodPrompt, setShowPaymentMethodPrompt] = useState(false);
   const { userData, setUserData } = useData();
   const navigate = useNavigate();
   // Demo user data
@@ -54,6 +56,31 @@ const Navbar = () => {
         return "bg-gradient-to-r from-gray-500 to-gray-600";
     }
   };
+
+  function CreditCardIcon() {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6 text-white">
+        <path
+          d="M21 8.5C21 7.11929 19.8807 6 18.5 6H5.5C4.11929 6 3 7.11929 3 8.5V15.5C3 16.8807 4.11929 18 5.5 18H18.5C19.8807 18 21 16.8807 21 15.5V8.5Z"
+          stroke="currentColor"
+          strokeWidth="2"
+        />
+        <path
+          d="M7 12H7.01"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <path
+          d="M11 12H15"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <path d="M3 9L21 9" stroke="currentColor" strokeWidth="2" />
+      </svg>
+    );
+  }
 
   const getPlanIcon = (plan) => {
     if (plan.toLowerCase() !== "free") {
@@ -221,7 +248,7 @@ const Navbar = () => {
 
                   {/* Menu Items */}
                   <div className="py-2">
-                    <button
+                    {/* <button
                       onClick={() => {
                         alert("Profile settings would open here");
                         setShowUserMenu(false);
@@ -230,9 +257,9 @@ const Navbar = () => {
                     >
                       <User className="w-4 h-4 mr-3" />
                       Profile Settings
-                    </button>
+                    </button> */}
 
-                    <button
+                    {/* <button
                       onClick={() => {
                         alert("App settings would open here");
                         setShowUserMenu(false);
@@ -241,6 +268,18 @@ const Navbar = () => {
                     >
                       <Settings className="w-4 h-4 mr-3" />
                       App Settings
+                    </button> */}
+
+                    <button
+                      onClick={() => {
+                        // alert("App settings would open here");
+                        setShowPaymentMethodPrompt(true);
+                        setShowUserMenu(false);
+                      }}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      <Settings className="w-4 h-4 mr-3" />
+                      Edit Payment Methods
                     </button>
 
                     {userData.plan === "Free" && (
@@ -285,8 +324,45 @@ const Navbar = () => {
           />
         </div>
       </div> */}
+      <FullscreenModal
+        isOpen={showPaymentMethodPrompt}
+        onClose={() => setShowPaymentMethodPrompt(false)}
+      >
+        <PaymentMethodPrompt
+          setShowPaymentMethodPrompt={setShowPaymentMethodPrompt}
+          isEditingFromSettings={true}
+        />
+      </FullscreenModal>
     </nav>
   );
 };
+
+// SEPERATE COMPONENT
+
+function FullscreenModal({ isOpen, onClose, children }) {
+  // Close on ESC key
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === "Escape") onClose?.();
+    };
+    document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, [onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed p-2 inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()} // Prevent closing on inside click
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
 
 export default Navbar;

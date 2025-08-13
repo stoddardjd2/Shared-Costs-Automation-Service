@@ -72,7 +72,7 @@ const TextConsentSchema = new Schema(
     // Current consent state
     isAllowed: { type: Boolean, default: false },
     allowedAt: { type: Date, default: null },
-
+    setCount: { type: Number, default: 0 },
     // Latest consent event metadata (single, lightweight)
     lastConsentMeta: {
       ip: { type: String },
@@ -166,6 +166,21 @@ const userSchema = new Schema(
     textMessagesAllowed: { type: TextConsentSchema, default: () => ({}) },
     passwordResetToken: String,
     passwordResetExpire: Date,
+    paymentHistory: [
+      {
+        requestId: Schema.Types.ObjectId,
+        paymentHistoryId: Schema.Types.ObjectId,
+        originalAmount: Number,
+        amountPaid: Number,
+        amountOwed: Number,
+        paidDate: Date,
+        requestName: String,
+        isFullyPaid: Boolean,
+      },
+    ],
+    totalPaymentsMade: Number,
+    totalAmountPaid: Number,
+    lastPaymentDate: Date,
   },
 
   {

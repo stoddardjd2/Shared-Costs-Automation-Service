@@ -1,11 +1,12 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
-
+const { sendReminder } = require("../reminder-scheduler/reminderScheduler");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
-
+const Request = require("../models/Request");
 const { normalizePhone } = require("../utils/general");
+const { ObjectId } = require("mongodb");
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -640,17 +641,18 @@ const loginUser = async (req, res) => {
 async function approveSmsMessages(req, res) {
   try {
     const { userId } = req.params;
-    const isAllowed = req.body?.isAllowed ?? true;
+    const isAllowed = req.body.isAllowed;
     const method = req.body?.method || "web";
-    const normalizedPhone = req.body?.phone
+    const normalizedPhone = req.body.phone
       ? normalizePhone(req.body.phone)
       : null;
+    const userName = req.body.userName;
 
     if (req.body?.phone && !normalizedPhone) {
       return res.status(400).json({ ok: false, error: "Invalid phone format" });
     }
 
-    // Light audit
+    // Light audit (no read)
     const ip =
       (req.headers["x-forwarded-for"] || "").split(",")[0].trim() ||
       req.socket?.remoteAddress ||
@@ -668,32 +670,104 @@ async function approveSmsMessages(req, res) {
         method,
       },
     };
+    if (normalizedPhone) set.phone = normalizedPhone; // top-level phone
 
-    if (normalizedPhone) set.phone = normalizedPhone; // <— top-level field
-
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { $set: set },
+    // Increment setCount and get updated count in one atomic operation
+    const oldUser = await User.findOneAndUpdate(
+      { _id: userId },
       {
-        new: true,
-        runValidators: true,
-        projection: { name: 1, email: 1, phone: 1, textMessagesAllowed: 1 },
-      }
+        $set: set,
+        $inc: { "textMessagesAllowed.setCount": 1 },
+      },
+      { new: false }
     ).lean();
 
-    if (!user) {
-      return res.status(404).json({ ok: false, error: "User not found" });
+    // Store current count as variable for use later
+    const currentSetCount = oldUser?.textMessagesAllowed?.setCount || 0;
+
+    const candidateRequests = await Request.find({
+      paymentHistory: {
+        $elemMatch: {
+          participants: {
+            $elemMatch: {
+              _id: userId,
+              paidDate: null,
+            },
+          },
+        },
+      },
+    }).lean();
+
+    let sentCount = 0;
+
+    for (const reqDoc of candidateRequests) {
+      const histories = Array.isArray(reqDoc.paymentHistory)
+        ? [...reqDoc.paymentHistory]
+        : [];
+      histories.sort((a, b) => new Date(b.dueDate) - new Date(a.dueDate));
+
+      const history = histories.find(
+        (h) =>
+          Array.isArray(h.participants) &&
+          h.participants.some(
+            (p) => String(p._id) === String(userId) && !p.paidDate
+          )
+      );
+      if (!history) continue;
+
+      const participant =
+        history.participants.find((p) => String(p._id) === String(userId)) ||
+        {};
+
+      const owner = await User.findById(new ObjectId(reqDoc.owner));
+
+      function isPastOrOnDate(date) {
+        if (!(date instanceof Date)) {
+          date = new Date(date);
+        }
+        if (isNaN(date)) throw new Error("Invalid date provided");
+        const now = new Date();
+        return now.getTime() >= date.getTime();
+      }
+
+      if (reqDoc.startTiming == "now" || isPastOrOnDate(reqDoc.startTiming)) {
+        if (participant.paymentAmount < participant.amount) {
+          // LIMIT SENDING TEXTS AGAIN TO 3 TIMES TO REDUCE USER ABUSE IF THEY -
+          // RESUBMIT FORM MULTIPLE TIMES:
+          if (currentSetCount <= 3) {
+            // do not send again if same number:
+            if (oldUser.phone !== normalizedPhone) {
+              sendReminder({
+                requestId: reqDoc._id,
+                paymentHistoryId: history._id,
+                requestName: reqDoc.name,
+                requestOwner: owner.name,
+                requestOwnerPaymentMethods: owner.paymentMethods || {},
+                participantId: participant._id,
+                participantName: userName,
+                stillOwes: participant.amount,
+                dueDate: history.dueDate,
+                requestData: reqDoc,
+              });
+              sentCount++;
+            }
+          }
+        }
+      }
     }
 
-    return res.json({ ok: true, user });
+    return res.json({
+      ok: true,
+      remindersSent: sentCount,
+      setCount: currentSetCount, // expose count in response
+    });
   } catch (err) {
-    // If you have a unique index on phone, surface dup-key cleanly
     if (err?.code === 11000 && err?.keyPattern?.phone) {
       return res
         .status(409)
         .json({ ok: false, error: "Phone number already in use" });
     }
-    console.error("approveSmsConsent error:", err);
+    console.error("approveSmsMessages error:", err);
     return res.status(500).json({ ok: false, error: "Server error" });
   }
 }
@@ -804,7 +878,7 @@ const updatePaymentMethod = async (req, res) => {
 
 const addPaymentMethod = async (req, res) => {
   try {
-    const { paymentMethod, paymentAddress} = req.body;
+    const { paymentMethod, paymentAddress } = req.body;
     const userId = req.user?.id; // Assuming user ID from auth middleware
 
     // Basic validation

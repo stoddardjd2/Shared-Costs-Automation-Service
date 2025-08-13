@@ -65,8 +65,9 @@ const requestSchema = new Schema({
   // nextDue: { type: Date },
   customInterval: { type: Number },
   customUnit: { type: String }, // days, weeks, months
-  startTiming: { type: String, enum: ["now", "next"], default: "now" },
+  startTiming: { type: Schema.Types.Mixed, default: "now" },
   startDate: { type: Date }, // for when startTiming is "later"
+  lastSent: { type: Date },
   isDynamic: { type: Boolean, default: false },
   dynamicCostReason: { type: String },
   reminderFrequency: {

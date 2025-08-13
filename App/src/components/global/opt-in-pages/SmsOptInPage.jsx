@@ -67,7 +67,7 @@ export default function SmsOptInPage() {
     setLoading(true);
 
     try {
-      await smsOptIn(initial.userID, rawPhone, consent);
+      await smsOptIn(initial.userID, rawPhone, consent, initial.userName);
       setMessage({
         type: "success",
         text: "You're all set! Text notifications are now enabled.",

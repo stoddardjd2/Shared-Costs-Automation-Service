@@ -7,13 +7,18 @@ require("dotenv").config();
 // Import database connection
 const connectDB = require("./config/database");
 const {
-  startScheduler,
+  startReminderScheduler,
   startSchedulerWithFrequentChecks,
   stopScheduler,
   runSchedulerNow,
   getSchedulerStatus,
 } = require("./reminder-scheduler/reminderScheduler");
 
+const {
+  startRecurringRequestsCron,
+  getRequestSchedulerStatus,
+  runRecurringRequestsNow,
+} = require("./payment-request-scheduler/paymentRequestScheduler");
 // Import routes
 const userRoutes = require("./routes/userRoutes");
 const requestRoutes = require("./routes/requestRoutes");
@@ -34,9 +39,13 @@ async function startServer() {
 
     // FOR REMINDERSCHULEDULER, start after db connection
     // Option 1: Daily at 2 PM + startup check (recommended)
-    startScheduler();
+    // for reminders
+    startReminderScheduler();
     // Option 2: Every hour (more resilient, higher resource usage)
     // startSchedulerWithFrequentChecks();
+
+    // start payment scheduler:
+    startRecurringRequestsCron();
 
     // Security middleware
     app.use(helmet());
@@ -134,6 +143,36 @@ async function startServer() {
         res.status(500).json({
           success: false,
           message: "Failed to process reminders",
+          error: error.message,
+        });
+      }
+    });
+
+    // Manual trigger endpoint
+    app.get("/admin/request-scheduler-status", async (req, res) => {
+      try {
+        const status = getRequestSchedulerStatus();
+        res.json(status);
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    app.post("/admin/trigger-request-scheduler", async (req, res) => {
+      try {
+        console.log("🔧 Manual requests scheduler trigger requested");
+        const status = await runRecurringRequestsNow();
+        res.json({
+          success: true,
+          message: "requests scheduler processed successfully",
+          timestamp: new Date().toISOString(),
+          status,
+        });
+      } catch (error) {
+        console.error("❌ Manual request scheduler trigger failed:", error);
+        res.status(500).json({
+          success: false,
+          message: "Failed to process requests",
           error: error.message,
         });
       }

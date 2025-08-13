@@ -30,6 +30,7 @@ import generateCostEntry from "../../utils/generateCostEntry";
 import ConfirmButtonTray from "./ConfirmButtonTray";
 import { createRequest, updateRequest } from "../../queries/requests";
 import EditPeople from "../dashboard/EditPeople";
+import DatePicker from "./DatePicker";
 const SplitStep = ({
   setSelectedPeople,
   onBack,
@@ -908,8 +909,8 @@ const SplitStep = ({
           </div>
         )}
 
-        {/* Start Timing Options - Only show for recurring payments */}
-        {recurringType !== "none" && (
+        {/* Start Timing Options - Only show for recurring payments and when making initial request */}
+        {recurringType !== "none" && !isEditMode &&(
           <div className="space-y-2 mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Start Time
@@ -944,27 +945,10 @@ const SplitStep = ({
                 </div>
               </button>
 
-              <button
-                onClick={() => setStartTiming("next")}
-                className={`p-3 rounded-lg border-2 cursor-pointer transition-all flex items-center gap-2 ${
-                  startTiming === "next"
-                    ? "border-blue-600 bg-blue-50"
-                    : "border-gray-200 bg-white hover:border-gray-300"
-                }`}
-              >
-                <SkipForward className="w-4 h-4 text-gray-500" />
-                <div className="text-left">
-                  <div className="text-sm font-medium text-gray-900">
-                    Next Request
-                  </div>
-
-                  <div className="text-xs text-gray-600">
-                    {isEditMode && selectedCharge?.nextDue
-                      ? new Date(selectedCharge.nextDue).toLocaleDateString()
-                      : getNextPeriodLabel()}
-                  </div>
-                </div>
-              </button>
+              <DatePicker
+                setStartTiming={setStartTiming}
+                startTiming={startTiming}
+              />
             </div>
           </div>
         )}
@@ -1011,7 +995,6 @@ const SplitStep = ({
                   step="0.01"
                   value={editableTotalAmount}
                   onChange={(e) => {
-
                     const newAmount =
                       Number(Number(e.target.value).toFixed(2)) || 0;
                     setEditableTotalAmount(newAmount);
