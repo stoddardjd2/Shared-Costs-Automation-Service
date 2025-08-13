@@ -7,13 +7,17 @@ import { useData } from "../../contexts/DataContext";
  * - Prefix is visual only (@ or $)
  * - One Modal component reused for both types
  */
-export default function PaymentMethodPrompt() {
+export default function PaymentMethodPrompt({
+  setShowPaymentMethodPrompt,
+  isEditingFromSettings,
+}) {
+  // setShowPaymentMethodPrompt for editing from settings
+
   const [bannerVisible, setBannerVisible] = useState(true);
   const [modalType, setModalType] = useState(null); // 'venmo' | 'cashapp' | null
   const [submitting, setSubmitting] = useState(false);
 
   const { setPaymentMethods, paymentMethods } = useData();
-  console.log("PAYTMENT METHODS", paymentMethods);
   // Raw values only (no symbols)
   const [values, setValues] = useState({
     venmo: "",
@@ -27,10 +31,17 @@ export default function PaymentMethodPrompt() {
 
   const closeModal = useCallback(() => {
     setModalType(null);
+
     document.body.style.overflow = "auto";
   }, []);
 
-  const dismissBanner = useCallback(() => setBannerVisible(false), []);
+  const dismissBanner = useCallback(() => {
+    setBannerVisible(false);
+    // for editing from settings
+    if (isEditingFromSettings && setShowPaymentMethodPrompt) {
+      setShowPaymentMethodPrompt(false);
+    }
+  }, []);
 
   const setValue = useCallback((type, v) => {
     // strip a single leading symbol if user types it, but keep everything else
@@ -66,7 +77,7 @@ export default function PaymentMethodPrompt() {
   if (!bannerVisible) return null;
 
   return (
-    <div className="font-inter bg-slate-50">
+    <div className="bg-slate-50 rounded-2xl">
       <div className="relative bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-5 text-white overflow-hidden shadow-[0_10px_25px_rgba(37,99,235,0.2)] mx-auto">
         <button
           onClick={dismissBanner}
@@ -78,7 +89,7 @@ export default function PaymentMethodPrompt() {
 
         <div className="relative z-[2]">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
+            <div className="w-12 h-12 flex-shrink-0 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
               <CreditCardIcon />
             </div>
             <div>
@@ -91,14 +102,15 @@ export default function PaymentMethodPrompt() {
           </div>
 
           <div className="flex gap-3 flex-wrap">
-            {!paymentMethods?.venmo && (
+            {console.log("isEditingFromSettings", isEditingFromSettings)}
+            {(!paymentMethods?.venmo || isEditingFromSettings) && (
               <PaymentButton
                 onClick={() => openModal("venmo")}
                 icon={<VenmoIcon />}
                 label="Add Venmo"
               />
             )}
-            {!paymentMethods?.cashapp && (
+            {(!paymentMethods?.cashapp || isEditingFromSettings) && (
               <PaymentButton
                 onClick={() => openModal("cashapp")}
                 icon={<CashappIcon />}

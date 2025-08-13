@@ -7,11 +7,15 @@ const {
   getRequests,
   updateRequest,
   handleSendReminder,
+  handlePayment,
 } = require("../controllers/requestController");
 
 const { protect, authorize } = require("../middleware/auth");
 
 const router = express.Router();
+
+// public payment route
+router.patch("/payment/:requestId/:paymentHistoryId/:userId", handlePayment);
 
 // All routes require authentication
 router.use(protect);

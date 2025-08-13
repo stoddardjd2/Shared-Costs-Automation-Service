@@ -30,7 +30,6 @@ const calculateNextReminderDate = (nextDueDate, reminderFrequency) => {
   }
 };
 
-// JavaScript Implementation
 function calculateDueDate(daysFromNow, startDate = new Date()) {
   const dueDate = new Date(startDate);
   dueDate.setDate(dueDate.getDate() + daysFromNow);

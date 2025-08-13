@@ -52,19 +52,18 @@ export const getUserData = async () => {
   });
 };
 
-export const smsOptIn = async (userId, rawPhone, isAllowed) => {
+export const smsOptIn = async (userId, rawPhone, isAllowed, userName) => {
   const endpoint = `/users/sms/user-consent/${userId}`;
   return await apiRequest(endpoint, {
     method: "PATCH",
-    body: { phone: rawPhone, isAllowed },
+    body: { phone: rawPhone, isAllowed, userName },
   });
 };
 
 export const addPaymentMethod = async (paymentMethod, paymentAddress) => {
-  console.log("SENDING TO BACKEND WITH", paymentAddress, paymentMethod)
   const endpoint = `/users/addPaymentMethod`;
   return await apiRequest(endpoint, {
     method: "POST",
-    body: {paymentMethod, paymentAddress},
+    body: { paymentMethod, paymentAddress },
   });
 };

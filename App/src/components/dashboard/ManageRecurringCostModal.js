@@ -14,6 +14,7 @@ import {
   ArrowLeft,
   Settings,
   Users,
+  ParkingCircle,
 } from "lucide-react";
 import { useData } from "../../contexts/DataContext";
 import { getPaymentStatusColor } from "../../utils/helpers";
@@ -54,7 +55,8 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
   };
 
   const getParticipantStatus = (participant, payment) => {
-    if (participant.status === "paid") {
+    // check if paid full balance or greater
+    if (participant.paymentAmount >= participant.amount) {
       return "paid";
     }
 
@@ -88,6 +90,7 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
 
   const getStatusLabel = (participant, payment) => {
     const status = getParticipantStatus(participant, payment);
+    console.log("LABEL", status);
     switch (status) {
       case "overdue":
         return "Overdue";
@@ -103,107 +106,111 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
   };
 
   // Function to determine overall payment status from all participants
-  const getOverallPaymentStatus = (payment) => {
-    const { participants, dueDate } = payment;
+  // const getOverallPaymentStatus = (payment) => {
+  //   const { participants, dueDate } = payment;
+  //   if (!participants || participants.length === 0) {
+  //     return "unknown";
+  //   }
 
-    if (!participants || participants.length === 0) {
-      return "unknown";
-    }
+  //   // Check if payment is overdue
+  //   const currentDate = new Date();
+  //   const due = new Date(dueDate.$date);
+  //   const isOverdue = currentDate > due;
 
-    // Check if payment is overdue
-    const currentDate = new Date();
-    const due = new Date(dueDate.$date);
-    const isOverdue = currentDate > due;
+  //   // Count participant statuses
+  //   const statusCounts = participants.reduce((acc, participant) => {
+  //     console.log("participant!!", participant);
 
-    // Count participant statuses
-    const statusCounts = participants.reduce((acc, participant) => {
-      const status = participant.status;
-      acc[status] = (acc[status] || 0) + 1;
-      return acc;
-    }, {});
+  //     // check if payment is greater than or equal to amount owed to determine if paid
+  //     let status;
+  //     if (participant.paymentAmount >= participant.amount) {
+  //       status = "paid";
+  //     }else()
+  //     acc[status] = (acc[status] || 0) + 1;
+  //     return acc;
+  //   }, {});
 
-    const totalParticipants = participants.length;
-    const paidCount = statusCounts.paid || 0;
-    const pendingCount = statusCounts.pending || 0;
+  //   console.log("statusCounts", statusCounts);
+  //   const totalParticipants = participants.length;
+  //   const paidCount = statusCounts.paid || 0;
+  //   const pendingCount = statusCounts.pending || 0;
 
-    // Determine overall status
-    if (paidCount === totalParticipants) {
-      return "paid";
-    } else if (paidCount > 0 && paidCount < totalParticipants) {
-      return "partial";
-    } else if (pendingCount === totalParticipants && isOverdue) {
-      return "overdue";
-    } else if (pendingCount === totalParticipants) {
-      return "pending";
-    } else {
-      return "unknown";
-    }
-  };
+  //   // Determine overall status
+  //   if (paidCount === totalParticipants) {
+  //     return "paid";
+  //   } else if (paidCount > 0 && paidCount < totalParticipants) {
+  //     return "partial";
+  //   } else if (pendingCount === totalParticipants && isOverdue) {
+  //     return "overdue";
+  //   } else if (pendingCount === totalParticipants) {
+  //     return "pending";
+  //   } else {
+  //     return "unknown";
+  //   }
+  // };
 
   // Fixed version of your styling function (note: was using undefined 'status' variable)
-  const getPaymentStatusStyling = (payment) => {
-    // Get the overall status first
-    const status = getOverallPaymentStatus(payment);
+  // const getPaymentStatusStyling = (payment) => {
+  // Get the overall status first
+  // const status = getOverallPaymentStatus(payment);
 
-    console.log("STATUS!!", status);
-
-    switch (status) {
-      case "paid":
-        return {
-          cardClass: "bg-white border-gray-200",
-          headerClass: "bg-green-50 border-b border-green-100",
-          badgeClass: "bg-green-100 text-green-700 border border-green-200",
-          iconClass: "text-green-600",
-          textClass: "text-green-700",
-          label: "Completed",
-          icon: CheckCircle,
-        };
-      case "pending":
-        return {
-          cardClass: "bg-white border-gray-200",
-          headerClass: "bg-blue-50 border-b border-blue-100",
-          badgeClass: "bg-blue-100 text-blue-700 border border-blue-200",
-          iconClass: "text-blue-600",
-          textClass: "text-blue-700",
-          label: "Pending",
-          icon: Clock,
-        };
-      case "partial":
-        return {
-          cardClass: "bg-white border-gray-200",
-          headerClass: "bg-yellow-50 border-b border-yellow-100",
-          badgeClass: "bg-yellow-100 text-yellow-700 border border-yellow-200",
-          iconClass: "text-yellow-600",
-          textClass: "text-yellow-700",
-          label: "Partial",
-          icon: AlertTriangle,
-        };
-      case "overdue":
-        return {
-          cardClass: "bg-white border-gray-200",
-          headerClass: "bg-red-50 border-b border-red-100",
-          badgeClass: "bg-red-100 text-red-700 border border-red-200",
-          iconClass: "text-red-600",
-          textClass: "text-red-700",
-          label: "Overdue",
-          icon: XCircle,
-        };
-      default:
-        return {
-          cardClass: "bg-white border-gray-200",
-          headerClass: "bg-gray-50 border-b border-gray-100",
-          badgeClass: "bg-gray-100 text-gray-700 border border-gray-200",
-          iconClass: "text-gray-600",
-          textClass: "text-gray-700",
-          label: "Unknown",
-          icon: Clock,
-        };
-    }
-  };
+  //   console.log("status", status);
+  //   switch (status) {
+  //     case "paid":
+  //       return {
+  //         cardClass: "bg-white border-gray-200",
+  //         headerClass: "bg-green-50 border-b border-green-100",
+  //         badgeClass: "bg-green-100 text-green-700 border border-green-200",
+  //         iconClass: "text-green-600",
+  //         textClass: "text-green-700",
+  //         label: "Completed",
+  //         icon: CheckCircle,
+  //       };
+  //     case "pending":
+  //       return {
+  //         cardClass: "bg-white border-gray-200",
+  //         headerClass: "bg-blue-50 border-b border-blue-100",
+  //         badgeClass: "bg-blue-100 text-blue-700 border border-blue-200",
+  //         iconClass: "text-blue-600",
+  //         textClass: "text-blue-700",
+  //         label: "Pending",
+  //         icon: Clock,
+  //       };
+  //     case "partial":
+  //       return {
+  //         cardClass: "bg-white border-gray-200",
+  //         headerClass: "bg-yellow-50 border-b border-yellow-100",
+  //         badgeClass: "bg-yellow-100 text-yellow-700 border border-yellow-200",
+  //         iconClass: "text-yellow-600",
+  //         textClass: "text-yellow-700",
+  //         label: "Partial",
+  //         icon: AlertTriangle,
+  //       };
+  //     case "overdue":
+  //       return {
+  //         cardClass: "bg-white border-gray-200",
+  //         headerClass: "bg-red-50 border-b border-red-100",
+  //         badgeClass: "bg-red-100 text-red-700 border border-red-200",
+  //         iconClass: "text-red-600",
+  //         textClass: "text-red-700",
+  //         label: "Overdue",
+  //         icon: XCircle,
+  //       };
+  //     default:
+  //       return {
+  //         cardClass: "bg-white border-gray-200",
+  //         headerClass: "bg-gray-50 border-b border-gray-100",
+  //         badgeClass: "bg-gray-100 text-gray-700 border border-gray-200",
+  //         iconClass: "text-gray-600",
+  //         textClass: "text-gray-700",
+  //         label: "Unknown",
+  //         icon: Clock,
+  //       };
+  //   }
+  // };
 
   // Get payment history from the cost object
   const paymentHistory = cost.paymentHistory || [];
-  console.log("TEST@", cost.paymentHistory);
   // Sort payment history by date (most recent first)
   const sortedPayments = paymentHistory.sort(
     (a, b) => new Date(b.requestDate) - new Date(a.requestDate)
@@ -229,9 +236,6 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
     cost.frequency.toLowerCase() !== "onetime";
 
   // Create charge details for SplitStep
-  {
-    console.log("splitState.percentageAmounts", splitState.percentageAmounts);
-  }
   if (showSplitStep) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 !mt-0">
@@ -329,29 +333,34 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
               ) : (
                 <div className="space-y-4">
                   {sortedPayments.map((payment) => {
-                    console.log("TEST!", payment);
-                    const statusStyling = getPaymentStatusStyling(payment);
-                    const StatusIcon = statusStyling.icon;
+                    // const statusStyling = getPaymentStatusStyling(payment);
+                    // const StatusIcon = statusStyling.icon;
 
                     return (
                       <div
                         key={payment._id}
-                        className={`border rounded-xl overflow-hidden ${statusStyling.cardClass} shadow-sm`}
+                        className={`border rounded-xl overflow-hidden shadow-sm`}
                       >
                         {/* Subtle Status Header */}
                         <div
-                          className={`${statusStyling.headerClass} px-4 py-3 flex items-center justify-between`}
+                          className={` px-4 pt-3 flex items-center justify-between`}
                         >
                           <div className="flex items-center gap-3">
                             <div
-                              className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${statusStyling.badgeClass}`}
+                              className={`inline-flex items-center gap-2 px-3 py-1 rounded-full `}
                             >
-                              <StatusIcon
-                                className={`w-4 h-4 ${statusStyling.iconClass}`}
-                              />
-                              <span className="text-sm font-medium">
-                                {statusStyling.label}
-                              </span>
+                              {payment.dueDate && (
+                                <div className="flex items-center font-semibold  gap-2">
+                                  <Clock className="w-5 h-5" />
+                                  <span className="text-lg">
+                                    Due:{" "}
+                                    {new Date(
+                                      payment.dueDate
+                                    ).toLocaleDateString()}
+                                  </span>
+                                </div>
+                              )}
+                              <span className="text-sm font-medium"></span>
                             </div>
                           </div>
                           <span className="text-gray-900 font-semibold text-xl">
@@ -363,24 +372,12 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
                           {/* Date Information */}
                           <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-100">
                             {payment.requestDate && (
-                              <div className="flex items-center gap-2 text-gray-600">
+                              <div className="flex items-center gap-2 text-gray-600 px-3">
                                 <Calendar className="w-4 h-4" />
                                 <span className="text-sm">
-                                  Sent:{" "}
+                                  Requested:{" "}
                                   {new Date(
                                     payment.requestDate
-                                  ).toLocaleDateString()}
-                                </span>
-                              </div>
-                            )}
-
-                            {payment.dueDate && (
-                              <div className="flex items-center gap-2 text-gray-600">
-                                <Clock className="w-4 h-4" />
-                                <span className="text-sm">
-                                  Due:{" "}
-                                  {new Date(
-                                    payment.dueDate
                                   ).toLocaleDateString()}
                                 </span>
                               </div>

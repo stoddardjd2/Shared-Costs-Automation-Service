@@ -106,6 +106,9 @@ async function sendReminder(reminderData) {
 
   const urlBase = `${process.env.CLIENT_URL}/paymentPortal`;
   const userId = reminderData.participantId;
+  const paymentHistoryId = reminderData.paymentHistoryId;
+  const requestId = reminderData.requestId;
+  const dueDate = reminderData.dueDate;
   const name = reminderData.participantName;
   const amount = reminderData.stillOwes;
   const frequency = getFrequency(reminderData.requestData);
@@ -116,6 +119,9 @@ async function sendReminder(reminderData) {
 
   const url = new URL(urlBase);
   url.searchParams.set("userId", userId);
+  url.searchParams.set("paymentHistoryId", paymentHistoryId);
+  url.searchParams.set("requestId", requestId);
+  url.searchParams.set("dueDate", dueDate);
   url.searchParams.set("name", name);
   url.searchParams.set("amount", amount);
   url.searchParams.set("frequency", frequency);
@@ -144,7 +150,6 @@ async function processRequestReminders(request) {
     const paymentEntry = request.paymentHistory[i];
 
     // Skip if no reminder date set or not yet due
-    // FLIP for dev
     if (!paymentEntry.nextReminderDate || paymentEntry.nextReminderDate > now) {
       continue;
     }
@@ -170,10 +175,10 @@ async function processRequestReminders(request) {
     // Send reminders to participants who need them
     for (const participant of participantsToRemind) {
       try {
-        // Call your reminder sending function here
-        // get requests owner info:
+        // Get request's owner info
         const owner = await User.findById(new ObjectId(request.owner));
-        // get participant name:
+
+        // Get participant name from User collection
         const partcipantInfo = await User.findById(
           new ObjectId(participant.participantId)
         );
@@ -185,6 +190,7 @@ async function processRequestReminders(request) {
           requestOwnerPaymentMethods: owner?.paymentMethods || {},
           participantId: participant.participantId,
           participantName: partcipantInfo.name,
+          paymentHistoryId: paymentEntry._id,
           // expectedAmount: participant.expectedAmount,
           // paidAmount: participant.paidAmount,
           stillOwes: participant.stillOwes,
@@ -192,7 +198,7 @@ async function processRequestReminders(request) {
           requestData: request,
         });
 
-        // Update the participant's reminder status
+        // Update the participant's reminder status in paymentHistory
         const historyParticipant = paymentEntry.participants.find(
           (p) => p._id.toString() === participant.participantId.toString()
         );
@@ -214,24 +220,22 @@ async function processRequestReminders(request) {
       }
     }
 
-    // Update next reminder date
+    // Update next reminder date or mark as complete
     if (request.isRecurring) {
-      // For recurring requests, schedule next reminder
       paymentEntry.nextReminderDate = calculateNextReminderDate(
         now,
         request.reminderFrequency
       );
       updatedRequest = true;
     } else {
-      // For one-time requests, mark as completed
       request.isCompleted = true;
-      paymentEntry.nextReminderDate = null; // Clear next reminder
+      paymentEntry.nextReminderDate = null;
       updatedRequest = true;
       console.log(`📝 One-time request "${request.name}" marked as completed`);
     }
   }
 
-  // Save changes if any updates were made
+  // Save changes if needed
   if (updatedRequest) {
     await request.save();
   }
@@ -288,7 +292,7 @@ async function processReminders() {
 /**
  * Start the cron job - runs daily at 2 PM server time
  */
-function startScheduler() {
+function startReminderScheduler() {
   // Run every day at 2 PM (14:00)
   cronJob = cron.schedule(
     "0 14 * * *",
@@ -296,7 +300,7 @@ function startScheduler() {
       processReminders();
     },
     {
-      timezone: process.env.REMINDER_TIMEZONE || "America/New_York", // Adjust to your server timezone
+      timezone: "America/Los_Angeles", // Adjust to your server timezone
     }
   );
 
@@ -383,7 +387,7 @@ async function getSchedulerStatus() {
 }
 
 module.exports = {
-  startScheduler,
+  startReminderScheduler,
   stopScheduler,
   runSchedulerNow,
   processReminders,

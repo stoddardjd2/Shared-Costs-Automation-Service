@@ -32,6 +32,14 @@ const createRequest = async (req, res) => {
     } = req.body;
     // reminder frequency can be daily, weekly, monthly, or none
 
+    function calculateStartingDate(startTiming) {
+      // request date represents when first request should be sent
+      if (startTiming == "now") {
+        return new Date();
+      } else {
+        return new Date(startTiming);
+      }
+    }
     // Calculate due date - accepts starting date param
     const dueDate = calculateDueDate(dueInDays);
 
@@ -41,30 +49,42 @@ const createRequest = async (req, res) => {
       reminderFrequency
     );
 
-    // Create initial payment history entry
-    const initialHistory = {
-      requestDate: new Date(),
-      dueDate: dueDate,
-      amount: requestData.amount,
-      nextReminderDate: nextReminderDate,
-      // status: "pending",
-      participants: (requestData.participants || []).map((participant) => ({
-        ...participant,
-        reminderSent: false,
-        reminderSentDate: null,
-        paymentAmount: null,
-        paidDate: null,
-        amount: null,
-      })),
-    };
+    let request;
 
-    // Create request in DB with initial history entry
-    const request = await Request.create({
-      ...requestData,
-      owner: userId,
-      reminderFrequency: reminderFrequency,
-      paymentHistory: [initialHistory], // Add initial history as subdocument
-    });
+    // Create initial payment history entry if startTiming is now
+    if (requestData.startTiming == "now") {
+      const initialHistory = {
+        requestDate: calculateStartingDate(requestData.startTiming),
+        dueDate: dueDate,
+        amount: requestData.amount,
+        nextReminderDate: nextReminderDate,
+        // status: "pending",
+        participants: (requestData.participants || []).map((participant) => ({
+          reminderSent: false,
+          reminderSentDate: null,
+          paymentAmount: null,
+          paidDate: null,
+          amount: participant.amount,
+          _id: new ObjectId(participant._id),
+        })),
+      };
+
+      // Create request in DB with initial history entry
+      request = await Request.create({
+        ...requestData,
+        owner: userId,
+        reminderFrequency: reminderFrequency,
+        paymentHistory: [initialHistory], // Add initial history as subdocument
+        lastSent: new Date()
+      });
+    } else {
+      // for future payment, do not add history yet as has not sent request
+      request = await Request.create({
+        ...requestData,
+        owner: userId,
+        reminderFrequency: reminderFrequency,
+      });
+    }
 
     // Now save request ID to user to associate with account
     await User.findByIdAndUpdate(
@@ -101,6 +121,43 @@ const createRequest = async (req, res) => {
       (requesterName = req.user.name),
       requestData
     );
+
+    // send initial payment request to those approved for text messages or send after user opts in
+    // Using send reminder function as intial request even though it is not a reminder
+    //only send now if startTiming = "now"
+    if (request.startTiming == "now") {
+      const owner = await User.findById(new ObjectId(req.user._id));
+      participantsTextPermissions.forEach((participant) => {
+        if (participant.canText) {
+          sendReminder({
+            requestId: request._id,
+            paymentHistoryId: request.paymentHistory[0]._id,
+            requestName: request.name,
+            requestOwner: owner.name,
+            requestOwnerPaymentMethods: owner.paymentMethods || {},
+            participantId: participant._id,
+            participantName: participant.name,
+            stillOwes: participant.amount || request.amount,
+            dueDate: request.paymentHistory[0].dueDate,
+            requestData: request,
+          });
+        }
+      });
+    }
+
+    // sendReminder({
+    //   requestId: existingRequest._id,
+    //   paymentHistoryId: paymentHistoryId,
+    //   requestId: requestId,
+    //   requestName: existingRequest.name,
+    //   requestOwner: owner?.name,
+    //   requestOwnerPaymentMethods: owner?.paymentMethods || {},
+    //   participantId: userId,
+    //   participantName: matchingContact?.name,
+    //   stillOwes: info.amount,
+    //   dueDate: info.dueDate,
+    //   requestData: existingRequest,
+    // });
 
     res.status(201).json(request);
   } catch (error) {
@@ -255,6 +312,8 @@ const handleSendReminder = async (req, res) => {
     // 6) Send the reminder (only now that we know it's eligible)
     await sendReminder({
       requestId: existingRequest._id,
+      paymentHistoryId: paymentHistoryId,
+      requestId: requestId,
       requestName: existingRequest.name,
       requestOwner: owner?.name,
       requestOwnerPaymentMethods: owner?.paymentMethods || {},
@@ -303,9 +362,150 @@ const handleSendReminder = async (req, res) => {
   }
 };
 
+// Alternative simpler approach using positional operators
+const handlePayment = async (req, res) => {
+  try {
+    const { paymentAmount } = req.body;
+    const { requestId, paymentHistoryId, userId } = req.params;
+
+    // First, fetch the current document to check payment status
+    const currentRequest = await Request.findOne({
+      _id: new ObjectId(requestId),
+      "paymentHistory._id": new ObjectId(paymentHistoryId),
+      "paymentHistory.participants._id": new ObjectId(userId),
+    });
+
+    if (!currentRequest) {
+      return res.status(404).json({
+        error:
+          "Payment request not found or user not authorized for this payment",
+      });
+    }
+
+    // Find the specific payment history entry and participant
+    const paymentEntry = currentRequest.paymentHistory.find(
+      (payment) => payment._id.toString() === paymentHistoryId
+    );
+
+    const participant = paymentEntry.participants.find(
+      (p) => p._id.toString() === userId
+    );
+
+    const originalAmount = participant.amount;
+    const currentPaymentAmount = participant.paymentAmount || 0;
+    const paidDate = participant.paidDate;
+
+    // Check if payment has already been made in full or overpaid
+    if (currentPaymentAmount >= originalAmount) {
+      return res.status(400).json({
+        success: false,
+        error: "Payment has already been made in full or overpaid",
+        data: {
+          originalAmount: originalAmount,
+          currentPaymentAmount: currentPaymentAmount,
+          isAlreadyPaid: true,
+          paidDate: paidDate,
+        },
+      });
+    }
+
+    // Check if the new payment amount would exceed the original amount
+    if (paymentAmount > originalAmount) {
+      return res.status(400).json({
+        success: false,
+        error: `Payment amount ($${paymentAmount}) exceeds the original amount owed ($${originalAmount})`,
+        data: {
+          originalAmount: originalAmount,
+          requestedPayment: paymentAmount,
+          maxAllowedPayment: originalAmount,
+          paidDate: paidDate,
+          alreadyPaid: true,
+        },
+      });
+    }
+
+    // Proceed with the update if checks pass
+    const result = await Request.findOneAndUpdate(
+      {
+        _id: new ObjectId(requestId),
+        "paymentHistory._id": new ObjectId(paymentHistoryId),
+        "paymentHistory.participants._id": new ObjectId(userId),
+      },
+      {
+        $set: {
+          "paymentHistory.$[payment].participants.$[participant].paymentAmount":
+            paymentAmount,
+          "paymentHistory.$[payment].participants.$[participant].paidDate":
+            new Date(),
+        },
+      },
+      {
+        arrayFilters: [
+          { "payment._id": new ObjectId(paymentHistoryId) },
+          { "participant._id": new ObjectId(userId) },
+        ],
+        new: true,
+      }
+    );
+
+    const amountOwed = originalAmount - paymentAmount;
+
+    // Update User model to track this payment
+    const userUpdate = await User.findByIdAndUpdate(
+      userId,
+      {
+        $push: {
+          paymentHistory: {
+            requestId: new ObjectId(requestId),
+            paymentHistoryId: new ObjectId(paymentHistoryId),
+            originalAmount: originalAmount,
+            amountPaid: paymentAmount,
+            amountOwed: amountOwed,
+            paidDate: new Date(),
+            requestName: currentRequest.name,
+            isFullyPaid: amountOwed <= 0,
+          },
+        },
+        $inc: {
+          totalPaymentsMade: 1,
+          totalAmountPaid: paymentAmount,
+        },
+        $set: {
+          lastPaymentDate: new Date(),
+        },
+      },
+      {
+        upsert: true,
+        new: true,
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Payment updated successfully",
+      data: {
+        request: result,
+        paymentSummary: {
+          originalAmount: originalAmount,
+          amountPaid: paymentAmount,
+          amountOwed: amountOwed,
+          isFullyPaid: amountOwed <= 0,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Error updating payment:", error);
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createRequest,
   getRequests,
   updateRequest,
   handleSendReminder,
+  handlePayment,
 };

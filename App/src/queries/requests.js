@@ -16,6 +16,11 @@ const apiRequest = async (endpoint, options = {}) => {
     ...options,
   };
 
+  // Automatically stringify the body if it exists and isn't already a string
+  if (config.body && typeof config.body !== "string") {
+    config.body = JSON.stringify(config.body);
+  }
+
   try {
     const response = await fetch(`${API_URL}${endpoint}`, config);
 
@@ -65,7 +70,6 @@ const apiRequest = async (endpoint, options = {}) => {
     };
   }
 };
-
 // Enhanced API functions
 
 export const getRequests = async () => {
@@ -104,7 +108,7 @@ export const getRequest = async (requestId) => {
 export const createRequest = async (requestData) => {
   const result = await apiRequest("/requests", {
     method: "POST",
-    body: JSON.stringify(requestData),
+    body: requestData,
   });
 
   if (result.success) {
@@ -122,7 +126,7 @@ export const createRequest = async (requestData) => {
 export const updateRequest = async (requestId, requestData) => {
   const result = await apiRequest(`/requests/${requestId}`, {
     method: "PUT",
-    body: JSON.stringify(requestData),
+    body: requestData,
   });
 
   if (result.success) {
@@ -140,7 +144,7 @@ export const updateRequest = async (requestId, requestData) => {
 export const updateDynamicCost = async (requestId, amount, reason = "") => {
   return apiRequest(`/requests/${requestId}/dynamic-cost`, {
     method: "PUT",
-    body: JSON.stringify({ amount, reason }),
+    body: { amount, reason },
   });
 };
 
@@ -157,17 +161,31 @@ export const markParticipantPaid = async (
     `/requests/${requestId}/participants/${participantId}/paid`,
     {
       method: "PUT",
-      body: JSON.stringify({ paymentHistoryId }),
+      body: { paymentHistoryId },
     }
   );
 };
 
 export const sendReminder = async (requestId, paymentHistoryId, userId) => {
-  console.log("SENDING REMINDER", requestId, paymentHistoryId, userId)
   return await apiRequest(
     `/requests/reminder/${requestId}/${paymentHistoryId}/${userId}`,
     {
       method: "PATCH",
+    }
+  );
+};
+
+export const handlePayment = async (
+  requestId,
+  paymentHistoryId,
+  userId,
+  paymentAmount
+) => {
+  return await apiRequest(
+    `/requests/payment/${requestId}/${paymentHistoryId}/${userId}`,
+    {
+      method: "PATCH",
+      body: { paymentAmount },
     }
   );
 };
