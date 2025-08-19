@@ -8,7 +8,7 @@ const ChargeDisplay = ({
   recurringType,
   originalFrequency = "none",
 }) => {
-  if (!selectedCharge && !newChargeDetails?.name) return null;
+  // if (!selectedCharge && !newChargeDetails?.name) return null;
 
   // Helper function to get amount with fallback logic
   const getAmount = (charge) => {
@@ -35,7 +35,7 @@ const ChargeDisplay = ({
           <p className="font-semibold text-gray-900">
             {selectedCharge?.name ||
               newChargeDetails?.customName ||
-              newChargeDetails?.name}
+              newChargeDetails?.name || "Your Charge"}
           </p>
           <div className="flex items-center gap-2 text-sm">
             {/* Amount Display */}

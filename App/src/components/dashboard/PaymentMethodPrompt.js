@@ -88,11 +88,11 @@ export default function PaymentMethodPrompt({
         </button>
 
         <div className="relative z-[2]">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 flex-shrink-0 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
+          <div className="flex sm:items-center items-start gap-4 mb-4 ">
+            <div className="w-12 h-12 mt-2 hidden sm:flex sm:mt-0 flex-shrink-0 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
               <CreditCardIcon />
             </div>
-            <div>
+            <div >
               <div className="text-2xl font-bold ">Set up payments</div>
               <div className="text-base opacity-90 leading-relaxed ">
                 Add your payment methods to receive money. Choose from the
@@ -146,7 +146,7 @@ function PaymentButton({ onClick, icon, label }) {
   return (
     <button
       onClick={onClick}
-      className="bg-white/15 hover:bg-white/25 border border-white/30 text-white px-6 py-3 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-300 flex items-center gap-2 backdrop-blur-md translate-y-0 hover:-translate-y-0.5 shadow-none hover:shadow-lg hover:shadow-black/10"
+      className="bg-white/15 hover:bg-white/25 border border-white/30 text-white px-2 py-2 sm:px-6 sm:py-3 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-300 flex items-center gap-2 backdrop-blur-md translate-y-0 hover:-translate-y-0.5 shadow-none hover:shadow-lg hover:shadow-black/10"
     >
       {icon}
       {label}

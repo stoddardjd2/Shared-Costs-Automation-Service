@@ -31,7 +31,6 @@ const createRequest = async (req, res) => {
       ...requestData
     } = req.body;
     // reminder frequency can be daily, weekly, monthly, or none
-
     function calculateStartingDate(startTiming) {
       // request date represents when first request should be sent
       if (startTiming == "now") {

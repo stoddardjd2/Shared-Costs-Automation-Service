@@ -1,21 +1,33 @@
 import { useState } from "react";
 import { useData } from "../contexts/DataContext";
 import { ParkingCircle } from "lucide-react";
-import { addContact } from "../queries/user";
-
+import { addContact, updateContactName } from "../queries/user";
+import { deleteContact } from "../queries/user";
 export const usePeopleState = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPeople, setSelectedPeople] = useState([]);
-  const [newPerson, setNewPerson] = useState({ name: "", phone: "", email: "" });
+  const [newPerson, setNewPerson] = useState({
+    name: "",
+    phone: "",
+    email: "",
+  });
   const [newPeople, setNewPeople] = useState([]);
   // const [isPhoneInUse, setIsPhoneInUse] = useState(false); // kept for backward-compat
-  const [emailError, setEmailError] = useState(false)
+  const [emailError, setEmailError] = useState(false);
   // Tailwind colors
   const allowedColors = [
-    "bg紫-500","bg-green-500","bg-pink-500","bg-indigo-500","bg-teal-500",
-    "bg-cyan-500","bg-emerald-500","bg-violet-500","bg-fuchsia-500",
-    "bg-rose-500","bg-lime-500",
-  ].map(c => c.replace("bg紫","bg-purple")); // in case editor autoconverts
+    "bg紫-500",
+    "bg-green-500",
+    "bg-pink-500",
+    "bg-indigo-500",
+    "bg-teal-500",
+    "bg-cyan-500",
+    "bg-emerald-500",
+    "bg-violet-500",
+    "bg-fuchsia-500",
+    "bg-rose-500",
+    "bg-lime-500",
+  ].map((c) => c.replace("bg紫", "bg-purple")); // in case editor autoconverts
 
   const { setParticipants, participants } = useData();
   const [people, setPeople] = useState([]);
@@ -64,7 +76,9 @@ export const usePeopleState = () => {
     const initials =
       nameParts.length === 1
         ? nameParts[0][0]?.toUpperCase() || "?"
-        : ((nameParts[0][0] || "") + (nameParts[nameParts.length - 1][0] || "")).toUpperCase();
+        : (
+            (nameParts[0][0] || "") + (nameParts[nameParts.length - 1][0] || "")
+          ).toUpperCase();
 
     // Build contact with only provided fields
     const person = {
@@ -97,6 +111,49 @@ export const usePeopleState = () => {
     return false;
   };
 
+  async function handleDeletePerson(contactId) {
+    const res = await deleteContact(contactId);
+    if (res) {
+      setParticipants((prev) =>
+        prev.filter((person) => person._id !== contactId)
+      );
+      setSelectedPeople((prev) =>
+        prev.filter((person) => person._id !== contactId)
+      );
+      setPeople((prev) => prev.filter((person) => person._id !== contactId));
+      setNewPeople((prev) => prev.filter((person) => person._id !== contactId));
+    }
+  }
+
+  async function handleUpdatePersonName(contactId, updatedName) {
+    const res = await updateContactName(contactId, updatedName);
+    if (res) {
+      setParticipants((prev) =>
+        prev.map((person) =>
+          person._id === contactId ? { ...person, name: updatedName } : person
+        )
+      );
+      setSelectedPeople((prev) =>
+        prev.map((person) =>
+          person._id === contactId ? { ...person, name: updatedName } : person
+        )
+      );
+      setPeople((prev) =>
+        prev.map((person) =>
+          person._id === contactId ? { ...person, name: updatedName } : person
+        )
+      );
+      setNewPeople((prev) =>
+        prev.map((person) =>
+          person._id === contactId ? { ...person, name: updatedName } : person
+        )
+      );
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   return {
     searchQuery,
     setSearchQuery,
@@ -105,13 +162,16 @@ export const usePeopleState = () => {
     newPerson,
     setNewPerson,
     newPeople,
+    setNewPeople,
     people,
     setPeople,
     filteredPeople,
     togglePersonSelection,
     handleAddNewPerson,
     emailError,
-    setEmailError
+    setEmailError,
+    handleDeletePerson,
+    handleUpdatePersonName,
     // setIsPhoneInUse,
     // isPhoneInUse,
   };

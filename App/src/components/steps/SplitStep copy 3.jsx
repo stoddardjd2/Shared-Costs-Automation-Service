@@ -38,9 +38,8 @@ const SplitStep = ({
   selectedPeople,
   newChargeDetails,
   // Split state
-  // splitType,
-  // setSplitType,
-  setView,
+  splitType,
+  setSplitType,
   totalAmount,
   setTotalAmount,
   customAmounts,
@@ -50,18 +49,15 @@ const SplitStep = ({
   // Percentage state
   percentageAmounts,
   setSelectedCharge,
+  setIsAddingRequest,
   // Edit mode props
   isEditMode = false,
   disableDynamicCosts = true,
   setSelectedCost,
-  setNewChargeDetails,
 }) => {
   // Context to update costs
   const { updateCost, addCost, participants } = useData();
   // Helper function to get amount with fallback logic
-  const [splitType, setSplitType] = useState(
-    selectedCharge?.splitType ? selectedCharge.splitType : "equalWithMe"
-  );
 
   // Advanced options visibility
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
@@ -74,16 +70,12 @@ const SplitStep = ({
   const [showRecurringOptions, setShowRecurringOptions] = useState(false);
   const [recurringType, setRecurringType] = useState(
     selectedCharge?.frequency?.toLowerCase() ||
-      newChargeDetails?.frequency?.toLowerCase() ||
-      "monthly"
+      newChargeDetails?.frequency?.toLowerCase()
   );
   const [originalFrequency, setOriginalFrequency] = useState(
-    selectedCharge?.frequency?.toLowerCase()
+    selectedCharge.frequency.toLowerCase()
   );
 
-  const [chargeName, setChargeName] = useState(
-    selectedCharge?.name ? selectedCharge?.name : ""
-  );
   const [customInterval, setCustomInterval] = useState(
     isEditMode ? selectedCharge?.customInterval || 1 : 1
   );
@@ -97,10 +89,13 @@ const SplitStep = ({
   const [showUnitOptions, setShowUnitOptions] = useState(false);
 
   // State for editable total amounts
-  // const initEditableTotalAmount = Number(
-  //   (Number(totalAmount) || Number(selectedCharge?.lastAmount) || "").toFixed(2)
-  // );
-  const [editableTotalAmount, setEditableTotalAmount] = useState(0);
+  const [editableTotalAmount, setEditableTotalAmount] = useState(
+    Number(
+      (Number(totalAmount) || Number(selectedCharge?.lastAmount) || 0).toFixed(
+        2
+      )
+    )
+  );
 
   // Add state to preserve the last known good amount
   const [lastKnownGoodAmount, setLastKnownGoodAmount] = useState(
@@ -311,7 +306,7 @@ const SplitStep = ({
     costEntry.customUnit = recurringType === "custom" ? customUnit : null;
     costEntry.startTiming = startTiming;
     costEntry.isDynamic = isDynamic;
-    costEntry.name = chargeName;
+
     // NOT CONFIGURABLE FOR USER YET!
     costEntry.requestFrequency = "daily";
     // save id to entry for edit mode, used to identify which cost to update in DB
@@ -389,7 +384,7 @@ const SplitStep = ({
         const newCostFromDB = await createRequest(costEntry);
         if (newCostFromDB) {
           addCost(newCostFromDB);
-          setView("dashboard");
+          setIsAddingRequest(false);
           setIsSendingRequest(false);
         }
       };
@@ -402,6 +397,7 @@ const SplitStep = ({
     if (splitType === "percentage") {
       const percentageSplit = {};
       selectedPeople.forEach((person) => {
+        console.log("percentageAmounts", percentageAmounts);
         const percentage = Number(percentageAmounts[person._id] || 0);
         percentageSplit[person._id] = Number(
           ((Number(editableTotalAmount) * percentage) / 100).toFixed(2)
@@ -622,7 +618,7 @@ const SplitStep = ({
       {/* Main content container with bottom padding to prevent content being hidden behind ConfirmButtonTray */}
       <div className={`max-w-lg mx-auto px-4 sm:px-6 py-0 pb-48 `}>
         {/* Hide step indicator and back button in edit mode since modal has its own header */}
-        {/* {!isEditMode && <StepIndicator current="split" />} */}
+        {!isEditMode && <StepIndicator current="split" />}
 
         {
           <div
@@ -652,7 +648,7 @@ const SplitStep = ({
         }
 
         {/* Charge Display - Always visible and prominent */}
-        {/* <ChargeDisplay
+        <ChargeDisplay
           selectedCharge={selectedCharge}
           newChargeDetails={newChargeDetails}
           overrideAmount={totalSplit}
@@ -661,167 +657,7 @@ const SplitStep = ({
           customInterval={customInterval}
           customUnit={customUnit}
           originalFrequency={originalFrequency}
-        /> */}
-
-        {/* Name of Charge */}
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Name of Charge
-          </h3>
-          <input
-            type="text"
-            value={chargeName}
-            onChange={(e) => setChargeName(e.target.value)}
-            placeholder="e.g., Netflix, Spotify Premium"
-            className="w-full p-3 border border-gray-200 rounded-lg outline-none text-base bg-white hover:bg-gray-50 transition-colors focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-          />
-        </div>
-
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Total Amount to Split
-          </h3>
-          <div className="relative">
-            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="number"
-              step="0.01"
-              value={editableTotalAmount == 0 ? "" : editableTotalAmount}
-              onChange={(e) => {
-                const newAmount = e.target.value;
-                setEditableTotalAmount(newAmount);
-                if (newAmount >= 0) {
-                  setLastKnownGoodAmount(newAmount);
-                }
-                if (setTotalAmount) {
-                  setTotalAmount(newAmount);
-                }
-              }}
-              placeholder="Enter total amount"
-              disabled={splitType === "custom"}
-              className={`w-full pl-10 pr-4 py-3 border rounded-lg outline-none text-base 
-        ${
-          splitType === "custom"
-            ? "bg-gray-100 text-gray-400 "
-            : "bg-white focus:ring-2 border-gray-200 focus:ring-blue-600 focus:border-transparent"
-        }`}
-            />
-          </div>
-        </div>
-
-        {/* Payment Schedule */}
-        <div className=" mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Payment Schedule
-          </h3>
-
-          {/* Recurring Options Dropdown */}
-          <div className="relative recurring-dropdown">
-            <button
-              onClick={() => setShowRecurringOptions(!showRecurringOptions)}
-              className="w-full p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition-colors flex items-center justify-between"
-            >
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700 capitalize">
-                  {getRecurringLabel()}
-                </span>
-              </div>
-              <ChevronDown
-                className={`w-4 h-4 text-gray-500 transition-transform ${
-                  showRecurringOptions ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-
-            {showRecurringOptions && (
-              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[20]">
-                <div className="p-2 space-y-1">
-                  <button
-                    onClick={() => {
-                      setRecurringType("one-time");
-                      setShowRecurringOptions(false);
-                      setIsDynamic(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                      recurringType === "one-time"
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    One-time
-                  </button>
-                  <button
-                    onClick={() => {
-                      setRecurringType("daily");
-                      setShowRecurringOptions(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                      recurringType === "daily"
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    Daily
-                  </button>
-                  <button
-                    onClick={() => {
-                      setRecurringType("weekly");
-                      setShowRecurringOptions(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                      recurringType === "weekly"
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    Weekly
-                  </button>
-                  <button
-                    onClick={() => {
-                      setRecurringType("monthly");
-                      setShowRecurringOptions(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                      recurringType === "monthly"
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    Monthly
-                  </button>
-                  <button
-                    onClick={() => {
-                      setRecurringType("yearly");
-                      setShowRecurringOptions(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                      recurringType === "yearly"
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    Yearly
-                  </button>
-                  <button
-                    onClick={() => {
-                      setRecurringType("custom");
-                      setShowRecurringOptions(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                      recurringType === "custom"
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    Custom
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
+        />
         {/* {isEditMode && (
           <div className="mb-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -864,9 +700,9 @@ const SplitStep = ({
             Split Method
           </h3>
           <div className="grid grid-cols-2 gap-3">
-            {/* <div
+            <div
               onClick={() => setSplitType("equal")}
-              className={`p-4 rounded-xl col-span-2 border-2 cursor-pointer transition-all ${
+              className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                 splitType === "equal"
                   ? "border-blue-600 bg-blue-50"
                   : "border-gray-200 bg-white hover:border-gray-300"
@@ -883,11 +719,11 @@ const SplitStep = ({
                   <p className="text-gray-600 text-xs">Divide equally</p>
                 </div>
               </div>
-            </div> */}
+            </div>
 
             <div
               onClick={() => setSplitType("equalWithMe")}
-              className={`p-4 col-span-2 rounded-xl border-2 cursor-pointer transition-all ${
+              className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                 splitType === "equalWithMe"
                   ? "border-blue-600 bg-blue-50"
                   : "border-gray-200 bg-white hover:border-gray-300"
@@ -899,11 +735,9 @@ const SplitStep = ({
                 </div>
                 <div>
                   <h4 className="font-semibold text-gray-900 text-sm">
-                    Equal Split
+                    Equal Split + Me
                   </h4>
-                  <p className="text-gray-600 text-xs">
-                    Everyone pays their share (including you)
-                  </p>
+                  <p className="text-gray-600 text-xs">Subtract your share</p>
                 </div>
               </div>
             </div>
@@ -1147,6 +981,147 @@ const SplitStep = ({
         {showAdvancedOptions && (
           <div className="space-y-6 mb-6">
             {/* Total Amount Input - Always visible */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Total Amount to Split
+              </h3>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="number"
+                  step="0.01"
+                  value={editableTotalAmount}
+                  onChange={(e) => {
+                    const newAmount = e.target.value;
+                    console.log("NEW AMOUNT", newAmount);
+                    setEditableTotalAmount(newAmount);
+                    // Update last known good amount if it's a valid positive amount
+                    if (newAmount >= 0) {
+                      setLastKnownGoodAmount("newAmount");
+                    }
+                    // Also update parent totalAmount if the setter exists
+                    if (setTotalAmount) {
+                      setTotalAmount(newAmount);
+                    }
+                  }}
+                  placeholder="Enter total amount"
+                  className="w-full pl-10 pr-4 py-3 border rounded-lg outline-none text-base bg-white focus:ring-2 border-gray-200 focus:ring-blue-600 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Payment Schedule */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Payment Schedule
+              </h3>
+
+              {/* Recurring Options Dropdown */}
+              <div className="relative recurring-dropdown mb-4">
+                <button
+                  onClick={() => setShowRecurringOptions(!showRecurringOptions)}
+                  className="w-full p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition-colors flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm font-medium text-gray-700 capitalize">
+                      {getRecurringLabel()}
+                    </span>
+                  </div>
+                  <ChevronDown
+                    className={`w-4 h-4 text-gray-500 transition-transform ${
+                      showRecurringOptions ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {showRecurringOptions && (
+                  <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[20]">
+                    <div className="p-2 space-y-1">
+                      <button
+                        onClick={() => {
+                          setRecurringType("one-time");
+                          setShowRecurringOptions(false);
+                          setIsDynamic(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
+                          recurringType === "one-time"
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        One-time
+                      </button>
+                      <button
+                        onClick={() => {
+                          setRecurringType("daily");
+                          setShowRecurringOptions(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
+                          recurringType === "daily"
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        Daily
+                      </button>
+                      <button
+                        onClick={() => {
+                          setRecurringType("weekly");
+                          setShowRecurringOptions(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
+                          recurringType === "weekly"
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        Weekly
+                      </button>
+                      <button
+                        onClick={() => {
+                          setRecurringType("monthly");
+                          setShowRecurringOptions(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
+                          recurringType === "monthly"
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        Monthly
+                      </button>
+                      <button
+                        onClick={() => {
+                          setRecurringType("yearly");
+                          setShowRecurringOptions(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
+                          recurringType === "yearly"
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        Yearly
+                      </button>
+                      <button
+                        onClick={() => {
+                          setRecurringType("custom");
+                          setShowRecurringOptions(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
+                          recurringType === "custom"
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        Custom
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
 
             {/* Custom Interval Input */}
             {recurringType === "custom" && (
@@ -1408,7 +1383,6 @@ const SplitStep = ({
             selectedCharge?.frequency !== "custom" ||
             newChargeDetails?.frequency !== "custom"
           }
-          chargeName={chargeName}
           frequency={recurringType}
           splitType={splitType}
         />

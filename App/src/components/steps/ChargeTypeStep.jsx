@@ -2,7 +2,7 @@ import { Search, Plus, CreditCard, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import StepIndicator from "./StepIndicator";
 
-const ChargeTypeStep = ({ onChargeTypeSelect, setIsAddingRequest }) => {
+const ChargeTypeStep = ({ onChargeTypeSelect}) => {
   const navigate = useNavigate();
 
   return (
@@ -12,7 +12,7 @@ const ChargeTypeStep = ({ onChargeTypeSelect, setIsAddingRequest }) => {
 
         <div className="flex items-center gap-4 mb-6">
           <button
-            onClick={() => setIsAddingRequest(false)}
+            onClick={() => setView("dashboard")}
             className="p-3 hover:bg-white rounded-xl transition-all hover:shadow-md"
           >
             <X className="w-6 h-6 text-gray-700" />
@@ -26,7 +26,7 @@ const ChargeTypeStep = ({ onChargeTypeSelect, setIsAddingRequest }) => {
         </div>
 
         <div className="space-y-4">
-          <div
+          {/* <div
             onClick={() => onChargeTypeSelect("existing")}
             className="p-6 bg-white border-2 border-gray-200 hover:border-gray-300 rounded-xl cursor-pointer transition-all hover:shadow-md group"
           >
@@ -41,12 +41,10 @@ const ChargeTypeStep = ({ onChargeTypeSelect, setIsAddingRequest }) => {
                 <p className="text-gray-600 mb-2">
                   Find charges directly from your bank
                 </p>
-                {/* <p className="text-xs text-gray-500">
-                  * Requires Bilt account connection
-                </p> */}
+
               </div>
             </div>
-          </div>
+          </div> */}
 
           <div
             onClick={() => onChargeTypeSelect("new")}
@@ -63,6 +61,29 @@ const ChargeTypeStep = ({ onChargeTypeSelect, setIsAddingRequest }) => {
                 <p className="text-gray-600">Set up a new charge to split</p>
               </div>
             </div>
+          </div>
+
+          <div
+            className="p-6 bg-gray-50 border-2 border-gray-200 rounded-xl relative"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-xl bg-gray-300 flex items-center justify-center">
+                <Search className="w-7 h-7 text-gray-500" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-semibold text-gray-400 mb-1">
+                  Track Existing Charge
+                </h3>
+                <p className="text-gray-400 mb-2">
+                  Find charges automatically from your bank
+                </p>
+                <p className="text-sm text-blue-600/50 font-medium whitespace-nowrap">
+                  Coming Soon - Plaid Integration
+                </p>
+              </div>
+            </div>
+            {/* Overlay to prevent any interaction */}
+            <div className="absolute inset-0"></div>
           </div>
         </div>
       </div>

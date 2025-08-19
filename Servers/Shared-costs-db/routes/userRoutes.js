@@ -15,6 +15,7 @@ const {
   getUserData,
   approveSmsMessages,
   addPaymentMethod,
+  updateContactForUser,
 } = require("../controllers/userController");
 
 const { protect, authorize } = require("../middleware/auth");
@@ -81,6 +82,7 @@ router.use(protect); // All routes after this middleware are protected
 
 router.post("/contact", addContactToUser);
 router.delete("/contact", removeContactFromUser);
+router.patch("/contact/updateName", updateContactForUser);
 
 router.get("/data", getUserData);
 

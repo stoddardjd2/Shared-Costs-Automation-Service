@@ -2,7 +2,7 @@ import React from 'react';
 import { getStepNumber } from '../../utils/stepUtils';
 
 const StepIndicator = ({ current }) => {
-  const totalSteps = 4;
+  const totalSteps = 2;
   const currentStepNumber = getStepNumber(current);
   
   return (

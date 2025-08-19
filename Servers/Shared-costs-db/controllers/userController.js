@@ -7,7 +7,7 @@ const nodemailer = require("nodemailer");
 const Request = require("../models/Request");
 const { normalizePhone } = require("../utils/general");
 const { ObjectId } = require("mongodb");
-
+const { mongoose } = require("mongoose");
 // Generate JWT Token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -31,10 +31,54 @@ const getUserData = async (req, res) => {
   }
 };
 
-const removeContactFromUser = async (req, res) => {
+const updateContactForUser = async (req, res) => {
   try {
     const userId = req.user._id; // From auth middleware
-    const { contactId } = req.params;
+    const { contactId, updatedName } = req.body;
+
+    // Validate inputs
+    if (!mongoose.Types.ObjectId.isValid(contactId)) {
+      return res.status(400).json({ message: "Invalid contactId." });
+    }
+
+    if (!updatedName || updatedName.trim() === "") {
+      return res.status(400).json({ message: "Updated name is required." });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    // Find and update the contact
+    const contactIndex = user.contacts.findIndex(
+      (contact) => contact._id.toString() === contactId
+    );
+
+    if (contactIndex === -1) {
+      return res.status(404).json({ message: "Contact not found." });
+    }
+
+    // Update the contact's name
+    user.contacts[contactIndex].name = updatedName.trim();
+
+    await user.save();
+
+    return res.status(200).json({ 
+      message: "Contact name updated successfully.",
+      contact: user.contacts[contactIndex]
+    });
+  } catch (err) {
+    console.error("Error updating contact name:", err);
+    return res
+      .status(500)
+      .json({ message: "Server error while updating contact name." });
+  }
+};
+
+const removeContactFromUser = async (req, res) => {
+  console.log("REMOVING CONTAWCT");
+  try {
+    const userId = req.user._id; // From auth middleware
+    const { contactId } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(contactId)) {
       return res.status(400).json({ message: "Invalid contactId." });
@@ -46,7 +90,7 @@ const removeContactFromUser = async (req, res) => {
     // Filter out the contact
     const initialLength = user.contacts.length;
     user.contacts = user.contacts.filter(
-      (contact) => contact.contactId.toString() !== contactId
+      (contact) => contact._id.toString() !== contactId
     );
 
     if (user.contacts.length === initialLength) {
@@ -256,7 +300,6 @@ const forgotPassword = async (req, res) => {
     `;
 
     // Send email
-    console.log("EMAIL!", process.env.EMAIL_USER, process.env.EMAIL_PASS);
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -943,4 +986,5 @@ module.exports = {
   getUserData,
   approveSmsMessages,
   addPaymentMethod,
+  updateContactForUser,
 };

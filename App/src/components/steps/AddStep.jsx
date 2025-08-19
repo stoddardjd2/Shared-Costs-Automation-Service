@@ -1,21 +1,33 @@
-import { ArrowLeft, User, /* Phone, */ AlertCircle, Mail } from "lucide-react";
+import {
+  ArrowLeft,
+  User,
+  /* Phone, */ AlertCircle,
+  Mail,
+  Users,
+  ArrowRight,
+} from "lucide-react";
 import StepIndicator from "./StepIndicator";
 /* import PhoneInput from "../common/PhoneInput"; */
 import { useEffect, useState } from "react";
 /* import { validatePhoneNumber } from "../../utils/stepUtils"; */
 import "../../styles/index.css";
 import ContactCard from "../costs/ContactCard";
-
+import ConfirmButtonTray from "./ConfirmButtonTray";
 const AddStep = ({
   newPerson,
   newPeople,
+  setNewPeople,
   setNewPerson,
   onAddPerson,
+  onContinue,
   onBack,
+  onDeletePerson,
   /* setIsPhoneInUse,
   isPhoneInUse, */
   setEmailError,
-  emailError
+  emailError,
+  handleUpdatePersonName,
+  selectedPeople,
 }) => {
   /* function formatPhoneNumber(phone) {
     const digits = phone.replace(/\D/g, "");
@@ -37,8 +49,8 @@ const AddStep = ({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-lg mx-auto px-6 py-8">
-        <StepIndicator current="add" />
+      <div className="max-w-lg mx-auto px-6 pb-20">
+        {/* <StepIndicator current="add" /> */}
         <div className="flex items-center gap-4 mb-10">
           <button
             onClick={onBack}
@@ -55,7 +67,7 @@ const AddStep = ({
         <div className="space-y-6 mb-32">
           {/* Full Name */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
+            <label className="ml-2 block text-sm font-semibold text-gray-700 mb-3">
               <User className="w-4 h-4 inline mr-2" />
               Full Name
             </label>
@@ -72,7 +84,7 @@ const AddStep = ({
 
           {/* EMAIL (replaces phone UI, same styling pattern) */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
+            <label className="ml-2 block text-sm font-semibold text-gray-700 mb-3">
               <Mail className="w-4 h-4 inline mr-2" />
               Email
             </label>
@@ -139,15 +151,13 @@ const AddStep = ({
             onClick={() => {
               const input = document.getElementById("email-input");
               const ok = validateEmail(newPerson.email || "");
-              console.log("VALIUDATE",ok, input);
-
               if (!ok) {
                 if (input) input.style.borderColor = "red";
                 setEmailError("Please enter a valid email address");
                 return;
               }
-                input.style.borderColor =
-                  "rgb(229 231 235 / var(--tw-border-opacity, 1))";
+              input.style.borderColor =
+                "rgb(229 231 235 / var(--tw-border-opacity, 1))";
               onAddPerson();
             }}
             className="w-full text-white font-semibold py-4 rounded-xl shadow-lg transition-all disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
@@ -166,16 +176,26 @@ const AddStep = ({
 
           {/* Added people preview */}
           {!!newPeople.length && (
-            <div className="p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+            <div
+            // className="p-4 bg-white rounded-xl border border-gray-200 shadow-sm"
+            >
               <p className="text-sm font-semibold text-gray-700 mb-2">
-                Added People:
+                <label className="ml-2 block text-sm font-semibold text-gray-700 mb-3">
+                  <Users className="w-4 h-4 inline mr-2" />
+                  Added People:
+                </label>
               </p>
               <div className="flex-col gap-3 flex">
-                {newPeople.map((person) => (
+                {newPeople.map((person, index) => (
                   <ContactCard
                     addMode={true}
                     key={person._id}
                     person={person}
+                    index={index}
+                    setNewPeople={setNewPeople}
+                    onDeletePerson={onDeletePerson}
+                    handleUpdatePersonName={handleUpdatePersonName}
+                    deleteEnabled={true}
                   />
                 ))}
               </div>
@@ -183,7 +203,7 @@ const AddStep = ({
           )}
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-6 shadow-2xl">
+        {/* <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-6 shadow-2xl">
           <div className="max-w-lg mx-auto">
             <button
               onClick={onBack}
@@ -193,8 +213,19 @@ const AddStep = ({
               Return
             </button>
           </div>
-        </div>
+        </div> */}
       </div>
+      <ConfirmButtonTray
+        buttonContent={
+          <>
+            Continue
+            <ArrowRight className="w-5 h-5" />
+          </>
+        }
+        selectedPeople={selectedPeople}
+        onConfirm={onContinue}
+        hideBillingInfo={true}
+      />
     </div>
   );
 };

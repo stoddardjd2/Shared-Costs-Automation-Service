@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 export const useSplitState = () => {
-  const [splitType, setSplitType] = useState("equalWithMe");
+  const [splitType, setSplitType] = useState("equal");
   const [totalAmount, setTotalAmount] = useState("");
   const [customAmounts, setCustomAmounts] = useState({});
   const [showSplitPanel, setShowSplitPanel] = useState(false);

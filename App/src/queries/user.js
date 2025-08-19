@@ -45,6 +45,23 @@ export const addContact = async (body = {}) => {
   });
 };
 
+export const deleteContact = async (contactId) => {
+  const endpoint = `/users/contact`;
+  return apiRequest(endpoint, {
+    method: "DELETE",
+    body: { contactId },
+  });
+};
+
+export const updateContactName = async (contactId, updatedName) => {
+  console.log("TEST!!")
+  const endpoint = `/users/contact/updateName`;
+  return apiRequest(endpoint, {
+    method: "PATCH",
+    body: { contactId, updatedName },
+  });
+};
+
 export const getUserData = async () => {
   const endpoint = `/users/data`;
   return apiRequest(endpoint, {

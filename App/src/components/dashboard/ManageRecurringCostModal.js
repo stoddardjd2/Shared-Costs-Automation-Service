@@ -24,7 +24,7 @@ import { usePeopleState } from "../../hooks/usePeopleState";
 import { useSplitState } from "../../hooks/useSplitState";
 import { useChargeState } from "../../hooks/useChargeState";
 
-const ManageRecurringCostModal = ({ cost, onClose }) => {
+const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
   const { participants, updateCost, sendPaymentRequest, resendPaymentRequest } =
     useData();
   const [activeTab, setActiveTab] = useState("requests");
@@ -90,7 +90,6 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
 
   const getStatusLabel = (participant, payment) => {
     const status = getParticipantStatus(participant, payment);
-    console.log("LABEL", status);
     switch (status) {
       case "overdue":
         return "Overdue";
@@ -235,16 +234,54 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
     cost.frequency.toLowerCase() !== "one-time" &&
     cost.frequency.toLowerCase() !== "onetime";
 
+  const formatBillingFrequency = (cost) => {
+    const frequency = cost.frequency;
+    const customInterval = cost.customInterval;
+    const customUnit = cost.customUnit;
+    if (!frequency || frequency === "monthly") {
+      return "Monthly";
+    }
+    if (frequency === "weekly") {
+      return "Weekly";
+    }
+    if (frequency === "yearly") {
+      return "Yearly";
+    }
+    if (frequency === "daily") {
+      return "Daily";
+    }
+    if (frequency === "custom") {
+      // Handle pluralization for time units
+      const getSingularUnit = (unit) => {
+        const singularMap = {
+          months: "month",
+          days: "day",
+          weeks: "week",
+          years: "year",
+        };
+        return singularMap[unit] || unit;
+      };
+
+      const unit =
+        customInterval === 1 ? getSingularUnit(customUnit) : customUnit;
+      return `Every ${customInterval} ${unit}`;
+    }
+  };
+
   // Create charge details for SplitStep
   if (showSplitStep) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 !mt-0">
-        <div className="bg-white rounded-xl shadow-2xl w-full h-full overflow-hidden flex flex-col">
+        <div className="bg-white shadow-2xl w-full h-full overflow-hidden flex flex-col">
           <div className="flex-1 overflow-y-auto">
             <SplitStep
               selectedPeople={peopleState.selectedPeople}
               setSelectedPeople={peopleState.setSelectedPeople}
-              onBack={() => onClose()}
+              // onBack={() => onClose()}
+              onBack={() => {
+                setShowSplitStep(false);
+              }}
+              setSelectedCost={setSelectedCost}
               selectedCharge={chargeState.selectedCharge}
               setSelectedCharge={chargeState.setSelectedCharge}
               newChargeDetails={null}
@@ -266,11 +303,11 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 !mt-0">
-      <div className="bg-gray-50 rounded-xl shadow-2xl w-full h-full overflow-hidden flex flex-col">
+    <div className="bg-black bg-opacity-50 flex items-center justify-center z-50 !mt-0">
+      <div className="bg-gray-50 w-full h-full overflow-hidden flex flex-col">
         <div className="flex-1 overflow-y-auto">
           {/* Main content container with mobile-friendly padding matching SplitStep */}
-          <div className="max-w-7xl mx-auto px-14 py-0 pb-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-0 pb-24">
             {/* Header section - matching SplitStep structure */}
             <div className="flex items-center gap-4 mb-6 mt-8">
               <button
@@ -281,11 +318,13 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
               </button>
               <div className="flex-1">
                 <h1 className="text-3xl font-bold text-gray-900">
-                  Manage Recurring Cost
+                  Manage Request
                 </h1>
-                <p className="text-gray-600 capitalize">
-                  {cost.name} • {formatAmountDisplay(cost).amount} each •{" "}
-                  {cost.frequency || "monthly"}
+                <p className="text-gray-600">
+                  {cost.name} {""}
+                  • {formatAmountDisplay(cost).amount} each •{" "}
+                  {formatBillingFrequency(cost)}
+                  {/* {cost.frequency || "monthly"} */}
                 </p>
               </div>
             </div>
@@ -306,7 +345,7 @@ const ManageRecurringCostModal = ({ cost, onClose }) => {
                         Update Future Requests
                       </h4>
                       <p className="text-gray-600 text-sm">
-                        Update split method, amounts & schedule
+                        Edit request details
                       </p>
                     </div>
                   </div>

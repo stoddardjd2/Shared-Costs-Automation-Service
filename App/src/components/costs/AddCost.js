@@ -11,8 +11,8 @@ import SearchStep from "../steps/SearchStep";
 import SplitStep from "../steps/SplitStep";
 import AddStep from "../steps/AddStep";
 
-const AddCost = ({ setIsAddingRequest }) => {
-  const [currentStep, setCurrentStep] = useState(STEPS.CHARGE_TYPE);
+const AddCost = ({setView }) => {
+  const [currentStep, setCurrentStep] = useState(STEPS.SEARCH);
 
   const chargeState = useChargeState();
   const peopleState = usePeopleState();
@@ -49,6 +49,13 @@ const AddCost = ({ setIsAddingRequest }) => {
     // }
   };
 
+  const handleDeletePerson = async (contactId) => {
+    const success = peopleState.handleDeletePerson(contactId);
+  };
+
+  const handleUpdatePersonName = async (contactId, updatedName) => {
+    const success = peopleState.handleUpdatePersonName(contactId, updatedName);
+  };
   const handleContinueToSplit = () => {
     setCurrentStep(STEPS.SPLIT);
   };
@@ -59,11 +66,12 @@ const AddCost = ({ setIsAddingRequest }) => {
         setCurrentStep(STEPS.CHARGE_TYPE);
         break;
       case STEPS.CHARGE_DETAILS:
-        setCurrentStep(
-          chargeState.chargeType === "new"
-            ? STEPS.CHARGE_TYPE
-            : STEPS.CHARGE_SEARCH
-        );
+        setView("dashoard");
+        // setCurrentStep(
+        //   chargeState.chargeType === "new"
+        //     ? STEPS.CHARGE_TYPE
+        //     : STEPS.CHARGE_SEARCH
+        // );
         break;
       case STEPS.SEARCH:
         setCurrentStep(
@@ -90,7 +98,7 @@ const AddCost = ({ setIsAddingRequest }) => {
         return (
           <ChargeTypeStep
             onChargeTypeSelect={handleChargeTypeSelect}
-            setIsAddingRequest={setIsAddingRequest}
+            setView={setView}
           />
         );
 
@@ -103,7 +111,7 @@ const AddCost = ({ setIsAddingRequest }) => {
             setIsManualCharge={chargeState.setIsManualCharge}
             onChargeSelect={handleChargeSelect}
             onCreateCharge={handleCreateCharge}
-            onBack={handleBack}
+            onBack={setView("dashboard")}
             setTotalAmount={splitState.setTotalAmount}
             setCustomAmounts={splitState.setCustomAmounts}
             setSplitType={splitState.setSplitType}
@@ -113,7 +121,6 @@ const AddCost = ({ setIsAddingRequest }) => {
         );
 
       case STEPS.CHARGE_DETAILS:
-        console.log();
         return (
           <ChargeDetailsStep
             newChargeDetails={chargeState.newChargeDetails}
@@ -147,7 +154,8 @@ const AddCost = ({ setIsAddingRequest }) => {
             // New person form
             newPerson={peopleState.newPerson}
             setNewPerson={peopleState.setNewPerson}
-            handleAddNewPerson={peopleState.handleAddNewPerson}
+            onDeletePerson={handleDeletePerson}
+            handleUpdatePersonName={handleUpdatePersonName}
           />
         );
 
@@ -166,9 +174,10 @@ const AddCost = ({ setIsAddingRequest }) => {
             customAmounts={splitState.customAmounts}
             updateCustomAmount={splitState.updateCustomAmount}
             calculateSplitAmounts={splitState.calculateSplitAmounts}
-            setIsAddingRequest={setIsAddingRequest}
+            setView={setView}
             percentageAmounts={splitState.percentageAmounts}
             setPercentageAmounts={splitState.setPercentageAmounts}
+            setNewChargeDetails={chargeState.setNewChargeDetails}
           />
         );
 
@@ -178,12 +187,17 @@ const AddCost = ({ setIsAddingRequest }) => {
             newPerson={peopleState.newPerson}
             setNewPerson={peopleState.setNewPerson}
             onAddPerson={handleAddPerson}
+            handleUpdatePersonName={handleUpdatePersonName}
             onBack={handleBack}
             newPeople={peopleState.newPeople}
+            setNewPeople={peopleState.setNewPeople}
+            onContinue={handleContinueToSplit}
+            onDeletePerson={handleDeletePerson}
             // isPhoneInUse={peopleState.isPhoneInUse}
             // setIsPhoneInUse={peopleState.setIsPhoneInUse}
             setEmailError={peopleState.setEmailError}
             emailError={peopleState.emailError}
+            selectedPeople={peopleState.selectedPeople}
           />
         );
 

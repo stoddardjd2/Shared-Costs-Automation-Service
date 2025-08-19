@@ -9,6 +9,7 @@ import { getUserData } from "../../queries/user";
 import { getRequests } from "../../queries/requests";
 import { useData } from "../../contexts/DataContext";
 import AddCost from "../costs/AddCost";
+import ManageRecurringCostModal from "./ManageRecurringCostModal";
 import PaymentMethodPrompt from "./PaymentMethodPrompt";
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -26,38 +27,56 @@ const Dashboard = () => {
 
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
   const [isAddingRequest, setIsAddingRequest] = useState(false);
+  const [view, setView] = useState("dashboard");
+  const [selectedCost, setSelectedCost] = useState(null);
 
-  // get payment requests for user and save as costs (on a secure route)
+  const handleCloseModal = () => {
+    // setShowManageModal(false);
+    setView("dashboard")
+    setSelectedCost(null);
+  };
 
-  // backend
-  // create schema for requests
-  // access request under new route as should be seperate from users since next-
-  // backend for automatic requests will not care about who the user is
   useEffect(() => {
     setTimeout(() => {
       setIsLoadingDashboard(false);
     }, 200);
   });
 
-  return (
-    <LoadingWrapper loading={isLoadingDashboard}>
-      {/* prompt for payment methods upon login if not given yet */}
+  function getView() {
+    switch (view) {
+      case "addRequest":
+        return (
+          <div className="mt-6 ">
+            <AddCost
+              setView={setView}
+              setIsAddingRequest={setIsAddingRequest}
+            />
+          </div>
+        );
 
-      {/* <Navbar /> */}
-      <div className="relative">
-        {/* Main content container with mobile-friendly padding matching SplitStep */}
-        {!isAddingRequest ? (
-          <div className="mx-auto px-6 py-0 pb-24">
+      case "requestDetails":
+        return (
+          <ManageRecurringCostModal
+            cost={selectedCost}
+            setSelectedCost={setSelectedCost}
+            onClose={handleCloseModal}
+          />
+        );
+
+      case "dashboard":
+      default:
+        return (
+          <div className="mx-auto px-4 sm:px-6 py-0 pb-24">
             {/* Header section - matching SplitStep structure */}
             <div className="flex items-center justify-between gap-4 mb-6 mt-8">
               <div className="flex-1 min-w-0">
                 <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-                <p className="text-gray-600">Manage your payment requests</p>
+                <p className="text-gray-600">Manage your requests</p>
               </div>
               <button
                 // onClick={() => navigate("/costs/new")}
                 onClick={() => {
-                  setIsAddingRequest(true);
+                  setView("addRequest");
                 }}
                 className="bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 flex-shrink-0"
               >
@@ -76,17 +95,18 @@ const Dashboard = () => {
               )}
 
               {costs.length !== 0 && <OverdueAlerts />}
-              <RecurringCostsSection setIsAddingRequest={setIsAddingRequest} />
+              <RecurringCostsSection setView={setView} setSelectedCost={setSelectedCost} setIsAddingRequest={setIsAddingRequest} />
               {/* <RecurringCostsFromBank recurringFromBank={recurringFromBank} /> */}
               {/* <OneTimeCosts oneTimeCosts={oneTimeCosts} /> */}
             </div>
           </div>
-        ) : (
-          <div className="mt-6 ">
-            <AddCost setIsAddingRequest={setIsAddingRequest} />
-          </div>
-        )}
-      </div>
+        );
+    }
+  }
+
+  return (
+    <LoadingWrapper loading={isLoadingDashboard}>
+      <div className="relative ">{getView()}</div>
     </LoadingWrapper>
   );
 };

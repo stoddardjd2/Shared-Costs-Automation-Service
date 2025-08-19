@@ -3,7 +3,7 @@ import { plaidAPI } from "../services/plaidService";
 import { getUserData } from "../queries/user";
 // You'll need to import this function that was called but not imported
 import { getRequests } from "../queries/requests"; // Add this import
-
+import { useNavigate } from "react-router-dom";
 const DataContext = createContext();
 
 export const useData = () => {
@@ -22,28 +22,40 @@ const LoadingSpinner = () => (
 );
 
 // Error component - you can customize this
-const ErrorComponent = ({ error, onRetry }) => (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: "center",
-      height: "100vh",
-      padding: "20px",
-      textAlign: "center",
-    }}
-  >
-    <h2>Something went wrong</h2>
-    <p>{error.message}</p>
-    <button
-      onClick={onRetry}
-      style={{ marginTop: "10px", padding: "10px 20px" }}
+const ErrorComponent = ({ error, onRetry }) => {
+  const navigate = useNavigate();
+
+  if (error == "Error: Not authorized, user not found") {
+    navigate("/login");
+  }
+  console.log("error", error)
+  if (error == "Error: Not authorized, user not found") {
+    navigate("/login");
+  }
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+        padding: "20px",
+        textAlign: "center",
+      }}
     >
-      Try Again
-    </button>
-  </div>
-);
+      <h2>Something went wrong</h2>
+      <p>{error.message}</p>
+      <button
+        onClick={onRetry}
+        style={{ marginTop: "10px", padding: "10px 20px" }}
+      >
+        Try Again
+      </button>
+    </div>
+  );
+};
 
 export const DataProvider = ({ children }) => {
   const [participants, setParticipants] = useState([]);
@@ -58,7 +70,6 @@ export const DataProvider = ({ children }) => {
   const [loadingError, setLoadingError] = useState(null);
   const [paymentMethods, setPaymentMethods] = useState(null);
 
-  console.log("COSTS", costs)
   const loadInitialData = async () => {
     try {
       setIsContextLoaded(false);
@@ -102,7 +113,6 @@ export const DataProvider = ({ children }) => {
   };
 
   const updateCost = (updatedCost) => {
-    console.log("UPDATING", updatedCost);
     setCosts((prevCosts) =>
       prevCosts.map((cost) =>
         cost._id === updatedCost._id ? updatedCost : cost

@@ -12,9 +12,28 @@ export default function ConfirmButtonTray({
   splitType,
   hideBillingInfo = false,
   isSendingRequest,
+  isCustomFrequency,
+  isEditMode,
+  frequency,
+  chargeName = "none"
 }) {
   const { participants } = useData();
   const [showCostTooltip, setShowCostTooltip] = useState(false);
+
+  const isDisabled = isSendingRequest || totalAmount == 0 || !chargeName;
+
+  function getFrequncyLabel(frequency) {
+    switch (frequency) {
+      case "daily":
+        return "1 day";
+      case "weekly":
+        return "1 week";
+      case "monthly":
+        return "1 month";
+      case "yearly":
+        return "1 year";
+    }
+  }
 
   // Format the amount per person based on split type
   const formatAmountDisplay = () => {
@@ -37,6 +56,8 @@ export default function ConfirmButtonTray({
   const formatBillingFrequency = () => {
     if (billingFrequency === "One-time") {
       return "One-time request";
+    } else if (isCustomFrequency) {
+      return `Requests ${billingFrequency} `;
     }
     return `${billingFrequency} requests`;
   };
@@ -107,6 +128,21 @@ export default function ConfirmButtonTray({
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <RotateCcw className="w-3 h-3 text-blue-500" />
                       <span>{formatBillingFrequency()}</span>
+                      {isEditMode && (
+                        <div className="relative group">
+                          <Info className="w-3 h-3 text-gray-400" />
+                          <div className="absolute bottom-full right-full w-[250px] z-50 left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                            Future requests will be sent{" "}
+                            {frequency == "custom"
+                              ? billingFrequency
+                                  .replace(/\bevery\b/gi, "")
+                                  .replace(/\s+/g, " ")
+                                  .trim()
+                              : getFrequncyLabel(frequency)}{" "}
+                            from last sent request
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -170,11 +206,11 @@ export default function ConfirmButtonTray({
               {/* Confirm Button */}
               <button
                 onClick={onConfirm}
-                disabled={isSendingRequest}
+                disabled={isDisabled}
                 className={`w-full text-white font-semibold py-4 rounded-xl shadow-lg transition-all hover:shadow-xl flex items-center justify-center gap-3 ${
-                  isSendingRequest
-                    ? "bg-blue-500 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700"
+                isDisabled
+                    ? "bg-blue-600/40 "
+                    : "bg-blue-600 hover:bg-blue-700 cursor-pointer"
                 }`}
               >
                 {isSendingRequest ? (

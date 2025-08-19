@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import StepIndicator from "./StepIndicator";
-
+import ChargeDisplay from "../costs/ChargeDisplay";
 const ChargeDetailsStep = ({
   newChargeDetails,
   setNewChargeDetails,
@@ -20,27 +20,32 @@ const ChargeDetailsStep = ({
 }) => {
   const [showFrequencyOptions, setShowFrequencyOptions] = useState(false);
   const [showCustomUnitOptions, setShowCustomUnitOptions] = useState(false);
-  const [customInterval, setCustomInterval] = useState(newChargeDetails.customInterval || 1);
-  const [customUnit, setCustomUnit] = useState(newChargeDetails.customUnit || "months");
-  const isFormValid = newChargeDetails.name.trim() && newChargeDetails.lastAmount.trim();
+  const [customInterval, setCustomInterval] = useState(
+    newChargeDetails.customInterval || 1
+  );
+  const [customUnit, setCustomUnit] = useState(
+    newChargeDetails.customUnit || "months"
+  );
+  const isFormValid =
+    newChargeDetails.name.trim() && newChargeDetails.lastAmount.trim();
 
   // Function to handle numeric input validation
   const handleAmountChange = (e) => {
     const value = e.target.value;
     // Allow only numbers and one decimal point
-    const numericValue = value.replace(/[^0-9.]/g, '');
-    
+    const numericValue = value.replace(/[^0-9.]/g, "");
+
     // Prevent multiple decimal points
-    const parts = numericValue.split('.');
+    const parts = numericValue.split(".");
     if (parts.length > 2) {
       return; // Don't update if there are multiple decimal points
     }
-    
+
     // Limit to 2 decimal places
     if (parts[1] && parts[1].length > 2) {
       return; // Don't update if more than 2 decimal places
     }
-    
+
     setNewChargeDetails((prev) => ({
       ...prev,
       lastAmount: numericValue,
@@ -50,24 +55,29 @@ const ChargeDetailsStep = ({
   // Function to prevent non-numeric key presses
   const handleAmountKeyDown = (e) => {
     // Allow: backspace, delete, tab, escape, enter
-    if ([8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
-        // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
-        (e.keyCode === 65 && e.ctrlKey === true) ||
-        (e.keyCode === 67 && e.ctrlKey === true) ||
-        (e.keyCode === 86 && e.ctrlKey === true) ||
-        (e.keyCode === 88 && e.ctrlKey === true) ||
-        // Allow: home, end, left, right, down, up
-        (e.keyCode >= 35 && e.keyCode <= 40)) {
+    if (
+      [8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
+      // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+      (e.keyCode === 65 && e.ctrlKey === true) ||
+      (e.keyCode === 67 && e.ctrlKey === true) ||
+      (e.keyCode === 86 && e.ctrlKey === true) ||
+      (e.keyCode === 88 && e.ctrlKey === true) ||
+      // Allow: home, end, left, right, down, up
+      (e.keyCode >= 35 && e.keyCode <= 40)
+    ) {
       return;
     }
-    
+
     // Allow decimal point only if there isn't one already
-    if (e.key === '.' && !e.target.value.includes('.')) {
+    if (e.key === "." && !e.target.value.includes(".")) {
       return;
     }
-    
+
     // Ensure that it's a number and stop the keypress if it's not
-    if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+    if (
+      (e.shiftKey || e.keyCode < 48 || e.keyCode > 57) &&
+      (e.keyCode < 96 || e.keyCode > 105)
+    ) {
       e.preventDefault();
     }
   };
@@ -97,12 +107,18 @@ const ChargeDetailsStep = ({
 
   const getFrequencyLabel = () => {
     switch (newChargeDetails.frequency) {
-      case "one-time": return "One-time";
-      case "weekly": return "Weekly";
-      case "monthly": return "Monthly";
-      case "yearly": return "Yearly";
-      case "custom": return "Custom";
-      default: return "One-time";
+      case "one-time":
+        return "One-time";
+      case "weekly":
+        return "Weekly";
+      case "monthly":
+        return "Monthly";
+      case "yearly":
+        return "Yearly";
+      case "custom":
+        return "Custom";
+      default:
+        return "One-time";
     }
   };
 
@@ -110,11 +126,16 @@ const ChargeDetailsStep = ({
     if (newChargeDetails.frequency === "custom") {
       if (customInterval === 1) {
         switch (customUnit) {
-          case "days": return "Daily";
-          case "weeks": return "Weekly";
-          case "months": return "Monthly";
-          case "years": return "Yearly";
-          default: return `Every ${customUnit.slice(0, -1)}`;
+          case "days":
+            return "Daily";
+          case "weeks":
+            return "Weekly";
+          case "months":
+            return "Monthly";
+          case "years":
+            return "Yearly";
+          default:
+            return `Every ${customUnit.slice(0, -1)}`;
         }
       } else {
         return `Every ${customInterval} ${customUnit}`;
@@ -125,10 +146,10 @@ const ChargeDetailsStep = ({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-lg mx-auto px-6 py-0">
+      <div className="max-w-lg mx-auto px-6 py-0 pb-1">
         <StepIndicator current="chargeDetails" />
 
-        <div className="flex items-center gap-4 mb-10">
+        <div className="flex items-center gap-4 mb-6">
           <button
             onClick={onBack}
             className="p-3 hover:bg-white rounded-xl transition-all hover:shadow-md"
@@ -138,16 +159,22 @@ const ChargeDetailsStep = ({
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Charge Details</h1>
             <p className="text-gray-600">
-              Enter the details for this recurring charge
+              Enter the details for your charge
             </p>
           </div>
         </div>
+
+        {/* Preview */}
+        {/* <ChargeDisplay
+          // selectedCharge={selectedCharge}
+          newChargeDetails={newChargeDetails}
+          recurringType={newChargeDetails.frequency}
+        /> */}
 
         <div className="space-y-6 mb-32">
           {/* Name of Charge */}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              <Receipt className="w-5 h-5 inline mr-2" />
               Name of Charge
             </h3>
             <input
@@ -167,7 +194,6 @@ const ChargeDetailsStep = ({
           {/* Charge Amount */}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              <DollarSign className="w-5 h-5 inline mr-2" />
               Charge Amount
             </h3>
             <div className="relative">
@@ -187,10 +213,9 @@ const ChargeDetailsStep = ({
           {/* Billing Frequency */}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              <RefreshCw className="w-5 h-5 inline mr-2" />
               Billing Frequency
             </h3>
-            
+
             {/* Recurring Options Dropdown */}
             <div className="relative recurring-dropdown mb-4">
               <button
@@ -261,7 +286,7 @@ const ChargeDetailsStep = ({
                     >
                       Monthly
                     </button>
-                 
+
                     <button
                       onClick={() => {
                         setNewChargeDetails((prev) => ({
@@ -328,11 +353,14 @@ const ChargeDetailsStep = ({
                   </label>
                   <div className="relative custom-unit-dropdown">
                     <button
-                      onClick={() => setShowCustomUnitOptions(!showCustomUnitOptions)}
+                      onClick={() =>
+                        setShowCustomUnitOptions(!showCustomUnitOptions)
+                      }
                       className="w-full p-3 border border-gray-200 rounded-lg text-base bg-white hover:bg-gray-50 transition-colors flex items-center justify-between outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
                     >
                       <span className="text-gray-700 font-medium">
-                        {customUnit.charAt(0).toUpperCase() + customUnit.slice(1)}
+                        {customUnit.charAt(0).toUpperCase() +
+                          customUnit.slice(1)}
                       </span>
                       <ChevronDown
                         className={`w-4 h-4 text-gray-500 transition-transform ${
@@ -420,45 +448,21 @@ const ChargeDetailsStep = ({
               </div>
             )}
           </div>
-
-          {/* Preview */}
-          {newChargeDetails.name && (
-            <div className="p-4 !mt-14 bg-white rounded-lg border border-gray-200 shadow-sm">
-              <h4 className="text-sm font-semibold text-gray-700 mb-3">
-                Details:
-              </h4>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold text-sm bg-blue-600">
-                  <Receipt className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">
-                    {newChargeDetails.customName || newChargeDetails.name}
-                  </p>
-                  <p className="text-gray-600 text-sm">
-                    ${newChargeDetails.lastAmount || "0.00"} •{" "}
-                    {getCustomFrequencyDisplay()} 
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
-
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-5 shadow-2xl">
-          <div className="max-w-[29rem] mx-auto">
-            <button
-              onClick={onContinue}
-              disabled={!isFormValid}
-              className={`w-full text-white font-semibold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-3 ${
-                isFormValid
-                  ? "bg-blue-600 hover:bg-blue-700 hover:shadow-xl"
-                  : "bg-gray-300 cursor-not-allowed"
-              }`}
-            >
-              Continue to Select People
-            </button>
-          </div>
+      </div>
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-5 shadow-2xl">
+        <div className="max-w-[29rem] mx-auto">
+          <button
+            onClick={onContinue}
+            disabled={!isFormValid}
+            className={`w-full text-white font-semibold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-3 ${
+              isFormValid
+                ? "bg-blue-600 hover:bg-blue-700 hover:shadow-xl"
+                : "bg-gray-300 cursor-not-allowed"
+            }`}
+          >
+            Continue to Select People
+          </button>
         </div>
       </div>
     </div>

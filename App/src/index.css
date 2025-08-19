@@ -25,6 +25,9 @@ html,
 body {
   height: 100%;
 }
+#root {
+  overflow-y: scroll;
+}
 .animate-gradient {
   background-size: 200% 200%;
   animation: gradient 2s ease-in-out infinite;

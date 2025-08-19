@@ -47,7 +47,6 @@ const App = () => {
               <ProtectedRoute>
                 <DataProvider>
                   <Navbar />
-
                   <div className="max-w-7xl mx-auto py-0">
                     <Dashboard />
                   </div>

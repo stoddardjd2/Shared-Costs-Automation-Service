@@ -57,13 +57,13 @@ const Signup = () => {
 
   const handleSubmit = async () => {
     // Clear any existing notifications
-    setNotification(null);
+    // setNotification(null);
 
     // Validation
-    if (formData.password !== formData.confirmPassword) {
-      showNotification("Passwords don't match!", "error");
-      return;
-    }
+    // if (formData.password !== formData.confirmPassword) {
+    //   showNotification("Passwords don't match!", "error");
+    //   return;
+    // }
 
     if (!formData.firstName.trim() || !formData.lastName.trim()) {
       showNotification("Please enter your first and last name", "error");
@@ -97,7 +97,6 @@ const Signup = () => {
       );
       return;
     }
-
     setIsLoading(true);
 
     try {
@@ -111,19 +110,21 @@ const Signup = () => {
 
       // Assuming createUser returns a response object
       if (response && response.success) {
-        showNotification(
-          "Account created successfully! Welcome aboard!",
-          "success"
-        );
-        // Optional: Navigate to login or dashboard after successful signup
-        setTimeout(() => {
-          navigate("/dashboard");
-        }, 2000);
+        navigate("/dashboard");
+
+        // showNotification(
+        //   "Account created successfully! Welcome aboard!",
+        //   "success"
+        // );
+        // // Optional: Navigate to login or dashboard after successful signup
+        // setTimeout(() => {
+        //   navigate("/dashboard");
+        // }, 2000);
       } else {
         // Handle API error response
         const errorMessage =
+          response?.errors?.[0]?.msg ||
           response?.message ||
-          response?.error ||
           "Failed to create account. Please try again.";
         showNotification(errorMessage, "error");
       }
@@ -152,7 +153,9 @@ const Signup = () => {
         );
       }
     } finally {
-      setIsLoading(false);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 300);
     }
   };
 

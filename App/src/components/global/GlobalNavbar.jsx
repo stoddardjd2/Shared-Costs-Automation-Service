@@ -93,12 +93,12 @@ const GlobalNavbar = ({
                 {options.signup && (
                   <button
                     onClick={() => {
-                      navigate("/signup");
+                      navigate("/login");
                     }}
                     className="flex items-center  px-6 py-2 rounded-lg text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors duration-200"
                   >
                     <User className="w-4 h-4 mr-2" />
-                    Signup or Login
+                    Login
                   </button>
                 )}
 

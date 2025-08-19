@@ -1,5 +1,6 @@
 // config/database.js
 const mongoose = require("mongoose");
+require("dotenv").config();
 
 const {
   startScheduler,
@@ -8,6 +9,9 @@ const {
   runSchedulerNow,
   getSchedulerStatus,
 } = require("../reminder-scheduler/reminderScheduler");
+
+
+
 
 async function connectDB() {
   try {

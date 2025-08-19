@@ -24,7 +24,11 @@ import { useData } from "../../contexts/DataContext";
 import { getFrequencyColor, getNextDueStatus } from "../../utils/helpers";
 import ManageRecurringCostModal from "./ManageRecurringCostModal";
 
-const RecurringCostsSection = ({ setIsAddingRequest }) => {
+const RecurringCostsSection = ({
+  setIsAddingRequest,
+  setSelectedCost,
+  setView,
+}) => {
   const { costs, participants, updateCost } = useData();
   const navigate = useNavigate();
 
@@ -37,7 +41,6 @@ const RecurringCostsSection = ({ setIsAddingRequest }) => {
   const itemsPerPage = 5;
 
   // Modal state
-  const [selectedCost, setSelectedCost] = useState(null);
   const [showManageModal, setShowManageModal] = useState(false);
   const [showCostTooltip, setShowCostTooltip] = useState(false);
   const [hoveredCostId, setHoveredCostId] = useState(null);
@@ -51,21 +54,23 @@ const RecurringCostsSection = ({ setIsAddingRequest }) => {
 
   // Apply search and status filters
   const filteredCosts = useMemo(() => {
-    return filteredByType.filter((cost) => {
-      const matchesSearch = cost.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+    return filteredByType
+      .filter((cost) => {
+        const matchesSearch = cost.name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
 
-      let matchesStatus = true;
-      if (statusFilter !== "all") {
-        const hasStatus = cost.participants.some(
-          (p) => p.status === statusFilter
-        );
-        matchesStatus = hasStatus;
-      }
+        let matchesStatus = true;
+        if (statusFilter !== "all") {
+          const hasStatus = cost.participants.some(
+            (p) => p.status === statusFilter
+          );
+          matchesStatus = hasStatus;
+        }
 
-      return matchesSearch && matchesStatus;
-    });
+        return matchesSearch && matchesStatus;
+      })
+      .reverse();
   }, [filteredByType, searchTerm, statusFilter]);
 
   // Pagination
@@ -75,12 +80,10 @@ const RecurringCostsSection = ({ setIsAddingRequest }) => {
     startIndex,
     startIndex + itemsPerPage
   );
-  -(
-    // Reset pagination when filters change
-    React.useEffect(() => {
-      setCurrentPage(1);
-    }, [searchTerm, statusFilter, activeTab])
-  );
+  // Reset pagination when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, activeTab]);
 
   // Close dropdowns when clicking outside
   React.useEffect(() => {
@@ -179,13 +182,13 @@ const RecurringCostsSection = ({ setIsAddingRequest }) => {
 
   const handleManageCost = (cost) => {
     setSelectedCost(cost);
-    setShowManageModal(true);
+    setView("requestDetails");
   };
 
-  const handleCloseModal = () => {
-    setShowManageModal(false);
-    setSelectedCost(null);
-  };
+  // const handleCloseModal = () => {
+  //   setShowManageModal(false);
+  //   setSelectedCost(null);
+  // };
 
   const getStatusFilterLabel = () => {
     switch (statusFilter) {
@@ -221,7 +224,9 @@ const RecurringCostsSection = ({ setIsAddingRequest }) => {
               }`}
             >
               <RefreshCw className="w-4 h-4" />
-              Recurring Payments
+              <div>
+                Recurring <span className="hidden sm:inline">Requests</span>
+              </div>
             </button>
             <button
               onClick={() => setActiveTab("onetime")}
@@ -232,7 +237,9 @@ const RecurringCostsSection = ({ setIsAddingRequest }) => {
               }`}
             >
               <Calendar className="w-4 h-4" />
-              One-time Payments
+              <div>
+                One-time <span className="hidden sm:inline">Requests</span>
+              </div>
             </button>
           </div>
         </div>
@@ -331,15 +338,17 @@ const RecurringCostsSection = ({ setIsAddingRequest }) => {
         </div>
 
         {/* Results Summary */}
-        <div className="mb-4 text-sm text-slate-600">
-          Showing {startIndex + 1}-
-          {Math.min(startIndex + itemsPerPage, filteredCosts.length)} of{" "}
-          {filteredCosts.length}{" "}
-          {activeTab == "onetime" ? "one-time" : "recurring"} payments
-        </div>
+        {filteredCosts.length == 0 && (
+          <div className="mb-4 text-sm text-slate-600">
+            Showing {startIndex + 1}-
+            {Math.min(startIndex + itemsPerPage, filteredCosts.length)} of{" "}
+            {filteredCosts.length}{" "}
+            {activeTab == "onetime" ? "one-time" : "recurring"} requests
+          </div>
+        )}
 
         {/* Payment Requests Section */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden mb-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 mb-6">
           <div className="p-6 border-b border-slate-100">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
@@ -351,13 +360,13 @@ const RecurringCostsSection = ({ setIsAddingRequest }) => {
               </div>
               <div className="text-left">
                 <h2 className="text-xl font-semibold text-slate-900">
-                  {activeTab === "recurring" ? "Recurring" : "One-time"}{" "}
-                  Payment Requests
+                  {activeTab === "recurring" ? "Recurring" : "One-time"} {""}
+                  Requests
                 </h2>
                 <p className="text-gray-600 text-sm">
                   {activeTab === "recurring"
-                    ? "Manage your ongoing payment requests"
-                    : "Manage your one-time payment requests"}
+                    ? "Manage your ongoing requests"
+                    : "Manage your one-time requests"}
                 </p>
               </div>
             </div>
@@ -405,11 +414,11 @@ const RecurringCostsSection = ({ setIsAddingRequest }) => {
                     {/* Header line with cost name and manage button */}
                     <div className="flex items-center justify-between gap-3 mb-3">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-               
-                          <h3 className={`text-lg font-semibold border-l-4 border-blue-600 pl-3`}>
-                            {cost.name}
-                          </h3>
-                      
+                        <h3
+                          className={`text-lg font-semibold border-l-4 border-blue-600 pl-3`}
+                        >
+                          {cost.name}
+                        </h3>
                       </div>
 
                       {/* Manage button */}
@@ -429,10 +438,20 @@ const RecurringCostsSection = ({ setIsAddingRequest }) => {
                         <div className="flex items-center gap-3 mb-2">
                           <div>
                             <div className="flex items-baseline gap-2">
-                              <span className={`text-lg font-bold text-gray-900 ${cost.isDynamic && "bg-gradient-to-r from-orange-300 via-orange-600 to-orange-600 bg-clip-text text-transparent animate-gradient"}`}>
+                              <span
+                                className={`text-lg font-bold text-gray-900 ${
+                                  cost.isDynamic &&
+                                  "bg-gradient-to-r from-orange-300 via-orange-600 to-orange-600 bg-clip-text text-transparent animate-gradient"
+                                }`}
+                              >
                                 {formatAmountDisplay(cost).amount}
                               </span>
-                              <span className={`text-sm font-medium text-gray-500 ${cost.isDynamic && "bg-gradient-to-r from-orange-300 via-orange-600 to-orange-600 bg-clip-text text-transparent animate-gradient"}`}>
+                              <span
+                                className={`text-sm font-medium text-gray-500 ${
+                                  cost.isDynamic &&
+                                  "bg-gradient-to-r from-orange-300 via-orange-600 to-orange-600 bg-clip-text text-transparent animate-gradient"
+                                }`}
+                              >
                                 {formatAmountDisplay(cost).label}
                               </span>
                             </div>
@@ -573,16 +592,14 @@ const RecurringCostsSection = ({ setIsAddingRequest }) => {
                 <div className="text-sm text-slate-600">
                   <span className="font-medium">{filteredCosts.length}</span>{" "}
                   {activeTab == "onetime" ? "one-time" : "recurring"}{" "}
-                  {filteredCosts.length === 1
-                    ? "payment request"
-                    : "payment requests"}
+                  {filteredCosts.length === 1 ? "request" : "requests"}
                 </div>
                 <button
                   onClick={() => setIsAddingRequest(true)}
                   className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all duration-200"
                 >
                   <Plus className="w-4 h-4" />
-                  New Request
+                  New <span>Request</span>
                 </button>
               </div>
             </div>
@@ -637,12 +654,13 @@ const RecurringCostsSection = ({ setIsAddingRequest }) => {
         )}
       </div>
 
-      {showManageModal && selectedCost && (
+      {/* {showManageModal && selectedCost && (
         <ManageRecurringCostModal
           cost={selectedCost}
+          setSelectedCost={setSelectedCost}
           onClose={handleCloseModal}
         />
-      )}
+      )} */}
     </>
   );
 };

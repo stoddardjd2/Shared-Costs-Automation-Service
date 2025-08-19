@@ -1,11 +1,11 @@
 export const getStepNumber = (step) => {
   const steps = {
     chargeType: 1,
-    chargeSearch: 2,
-    chargeDetails: 2,
-    split: 4,
-    search: 3,
-    add: 3,
+    chargeSearch: 1,
+    chargeDetails: 1,
+    split: 2,
+    search: 1,
+    add:1,
   };
   // const steps = ['chargeType', 'chargeSearch', 'chargeDetails', 'search', 'add'];
   return steps[step];
@@ -16,7 +16,7 @@ export const STEPS = {
   CHARGE_SEARCH: "charge-search",
   CHARGE_DETAILS: "charge-details",
   SEARCH: "search",
-  SPLIT: "split", // <-- ONLY ADD THIS LINE
+  SPLIT: "split", 
   ADD: "add",
 };
 

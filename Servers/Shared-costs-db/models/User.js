@@ -135,7 +135,8 @@ const userSchema = new Schema(
     },
     plan: {
       type: String,
-      // required: true,
+      required: true,
+      default: "free"
     },
     role: {
       type: String,
@@ -192,7 +193,7 @@ const userSchema = new Schema(
 
 // Indexes
 userSchema.index({ email: 1 });
-userSchema.index({ role: 1, isActive: 1 });
+// userSchema.index({ role: 1, isActive: 1 });
 
 // Password hashing
 userSchema.pre("save", async function (next) {

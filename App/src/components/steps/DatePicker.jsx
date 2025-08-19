@@ -81,7 +81,7 @@ const DatePicker = ({ startTiming, setStartTiming }) => {
   };
 
   const formatSelectedDate = () => {
-    if (!selectedDate) return "Select custom date";
+    if (!selectedDate) return "Select date";
     return selectedDate.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -90,11 +90,10 @@ const DatePicker = ({ startTiming, setStartTiming }) => {
   };
 
   return (
-    <div className="bg-gray-50 ">
+    <div className="bg-gray-50">
       <div className="max-w-md mx-auto space-y-4">
         {/* Custom Date Option */}
         <div className="relative">
-            {console.log("START TIMING", startTiming)}
           <button
             onClick={() => {
               setShowCalendar(!showCalendar);
@@ -119,7 +118,7 @@ const DatePicker = ({ startTiming, setStartTiming }) => {
 
           {/* Calendar Dropdown */}
           {showCalendar && (
-            <div className="absolute bottom-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-10">
+            <div className="absolute min-w-[228px] bottom-full 0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-10">
               {/* Calendar Header */}
               <div className="flex items-center justify-between mb-4">
                 <button

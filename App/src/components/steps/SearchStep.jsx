@@ -20,13 +20,15 @@ const SearchStep = ({
   newPerson,
   setNewPerson,
   handleAddNewPerson,
+  onDeletePerson,
+  handleUpdatePersonName,
 }) => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 mt-4">
       {/* Main content with padding bottom to prevent button tray overlap */}
       <div className="pb-36">
         <div className="max-w-lg mx-auto px-6 py-0">
-          <StepIndicator current="search" />
+          {/* <StepIndicator current="search" /> */}
 
           <div className="flex items-center gap-4 mb-6">
             <button
@@ -43,7 +45,7 @@ const SearchStep = ({
             </div>
           </div>
 
-          <ChargeDisplay
+          {/* <ChargeDisplay
             selectedCharge={selectedCharge}
             newChargeDetails={newChargeDetails}
             recurringType={
@@ -51,7 +53,7 @@ const SearchStep = ({
                 ? newChargeDetails.frequency
                 : selectedCharge.frequency
             }
-          />
+          /> */}
 
           <div className="relative mb-8">
             <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -82,6 +84,8 @@ const SearchStep = ({
                     !!selectedPeople.find((p) => p._id === person._id)
                   }
                   onToggle={togglePersonSelection}
+                  onDeletePerson={onDeletePerson}
+                  handleUpdatePersonName={handleUpdatePersonName}
                 />
               ))
             ) : (
@@ -101,7 +105,7 @@ const SearchStep = ({
       <ConfirmButtonTray
         buttonContent={
           <>
-            Continue to Split
+            Continue
             <ArrowRight className="w-5 h-5" />
           </>
         }
