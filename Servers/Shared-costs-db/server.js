@@ -51,12 +51,7 @@ async function startServer() {
     app.use(helmet());
     app.use(
       cors({
-        origin: [
-          process.env.CLIENT_URL,
-          "http://localhost:3000",
-          "http://localhost:3001", // Alternative React port
-          "http://127.0.0.1:3000", // Alternative localhost format
-        ],
+        origin: [process.env.CLIENT_URL],
         credentials: true,
       })
     );
@@ -92,13 +87,9 @@ async function startServer() {
     // Routes
     app.get("/", (req, res) => {
       res.json({
-        message: "Welcome to MongoDB Express MVC API",
+        message: "Splitify API",
         version: "1.0.0",
         status: "Active",
-        endpoints: {
-          users: "/api/users",
-          health: "/health",
-        },
       });
     });
 
