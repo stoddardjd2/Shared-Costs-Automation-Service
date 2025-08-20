@@ -49,6 +49,7 @@ async function startServer() {
 
     // Security middleware
     app.use(helmet());
+    console.log("ACCEPTING CORS ORIGIN:", process.env.CLIENT_URL);
     app.use(
       cors({
         origin: [process.env.CLIENT_URL],
