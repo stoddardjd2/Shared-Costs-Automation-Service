@@ -486,7 +486,7 @@ const Signup = () => {
         </div>
 
         {/* Additional Options */}
-        <div className="mt-6">
+        {/* <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-slate-200"></div>
@@ -521,7 +521,7 @@ const Signup = () => {
               <span className="ml-2">Google</span>
             </button>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
