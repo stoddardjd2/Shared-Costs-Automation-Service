@@ -136,7 +136,7 @@ const GlobalNavbar = ({
       {showOptions && isMobileMenuOpen && (
         <div className="md:hidden border-t border-gray-200">
           <div className="px-2 pt-2 pb-3 space-y-1 bg-white">
-            {options.login && (
+            {options.signup && (
               <button
                 onClick={() => {
                   onLogin();

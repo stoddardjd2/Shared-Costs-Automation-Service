@@ -2,7 +2,7 @@
 const cron = require("node-cron");
 const mongoose = require("mongoose");
 const { ObjectId } = require("mongodb");
-
+const sendRequestsRouter = require("../send-request-helpers/sendRequestsRouter")
 // Import your Request model - adjust path as needed
 const Request = require("../models/Request");
 const User = require("../models/User");
@@ -59,8 +59,8 @@ function getParticipantsNeedingReminders(
       const expectedAmount = mainParticipant.amount;
       const paidAmount = historyParticipant.paymentAmount || 0;
 
-      // Send reminder if they haven't paid enough
-      if (paidAmount < expectedAmount) {
+      // Send reminder if they haven't paid enough and if not marked as paid
+      if (paidAmount < expectedAmount && !historyParticipant?.markedAsPaid) {
         participantsToRemind.push({
           participantId: historyParticipant._id,
           expectedAmount,
@@ -72,71 +72,6 @@ function getParticipantsNeedingReminders(
   });
 
   return participantsToRemind;
-}
-
-/**
- * Placeholder function for sending reminders - implement with your SMS/Email API
- */
-async function sendReminder(reminderData) {
-  // TODO: Implement your SMS/Email sending logic here
-  //Generate payment URL
-  function getFrequency(requestData) {
-    const { frequency, customInterval, customUnit } = requestData;
-    if (frequency !== "custom") {
-      return frequency;
-    } else {
-      if (frequency === "custom") {
-        // Handle pluralization for time units
-        const getSingularUnit = (unit) => {
-          const singularMap = {
-            months: "month",
-            days: "day",
-            weeks: "week",
-            years: "year",
-          };
-          return singularMap[unit] || unit;
-        };
-
-        const unit =
-          customInterval === 1 ? getSingularUnit(customUnit) : customUnit;
-        return `Every ${customInterval} ${unit}`;
-      }
-    }
-  }
-
-  const urlBase = `${process.env.CLIENT_URL}/paymentPortal`;
-  const userId = reminderData.participantId;
-  const paymentHistoryId = reminderData.paymentHistoryId;
-  const requestId = reminderData.requestId;
-  const dueDate = reminderData.dueDate;
-  const name = reminderData.participantName;
-  const amount = reminderData.stillOwes;
-  const frequency = getFrequency(reminderData.requestData);
-  const requester = reminderData.requestOwner;
-  const chargeName = reminderData.requestName;
-  const cashapp = reminderData.requestOwnerPaymentMethods?.cashapp || null;
-  const venmo = reminderData.requestOwnerPaymentMethods?.venmo || null;
-
-  const url = new URL(urlBase);
-  url.searchParams.set("userId", userId);
-  url.searchParams.set("paymentHistoryId", paymentHistoryId);
-  url.searchParams.set("requestId", requestId);
-  url.searchParams.set("dueDate", dueDate);
-  url.searchParams.set("name", name);
-  url.searchParams.set("amount", amount);
-  url.searchParams.set("frequency", frequency);
-  url.searchParams.set("requester", requester);
-  url.searchParams.set("chargeName", chargeName);
-  url.searchParams.set("cashapp", cashapp);
-  url.searchParams.set("venmo", venmo);
-
-  const finalUrl = url.toString();
-  console.log(`URL FOR ${name}!`, finalUrl);
-  // Example implementation:
-  // await sendSMS(reminderData.participantId, message);
-  // await sendEmail(reminderData.participantId, subject, message);
-
-  return true;
 }
 
 /**
@@ -183,7 +118,7 @@ async function processRequestReminders(request) {
           new ObjectId(participant.participantId)
         );
 
-        await sendReminder({
+        await sendRequestsRouter({
           requestId: request._id,
           requestName: request.name,
           requestOwner: owner.name,
@@ -391,7 +326,6 @@ module.exports = {
   stopScheduler,
   runSchedulerNow,
   processReminders,
-  sendReminder,
   //   sendSMS,
   //   sendEmail,
   calculateNextReminderDate,

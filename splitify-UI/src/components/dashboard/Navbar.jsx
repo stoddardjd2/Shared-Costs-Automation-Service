@@ -221,7 +221,7 @@ const Navbar = () => {
                   <div className="px-4 py-3 border-b border-gray-100">
                     <div className="flex items-center space-x-3">
                       <div
-                        className={`w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white font-semibold`}
+                        className={`w-10 h-10 self-centerm rounded-lg bg-blue-600 flex items-center justify-center text-white font-semibold`}
                       >
                         {avatar}
                       </div>

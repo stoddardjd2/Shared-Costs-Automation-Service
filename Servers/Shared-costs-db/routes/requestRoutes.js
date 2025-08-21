@@ -8,6 +8,7 @@ const {
   updateRequest,
   handleSendReminder,
   handlePayment,
+  handleToggleMarkAsPaid,
 } = require("../controllers/requestController");
 
 const { protect, authorize } = require("../middleware/auth");
@@ -24,11 +25,8 @@ router.use(protect);
 router.post("/", createRequest);
 router.get("/", getRequests);
 router.put("/:id", updateRequest);
-
-router.patch(
-  "/reminder/:requestId/:paymentHistoryId/:userId",
-  handleSendReminder
-);
+router.patch("/")
+router.patch("/toggleMarkedAsPaid/:requestId/:paymentHistoryId/:userId", handleToggleMarkAsPaid);
 router.patch("/reminder/all");
 
 module.exports = router;

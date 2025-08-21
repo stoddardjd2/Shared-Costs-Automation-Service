@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   ArrowLeft,
   User,
@@ -20,6 +20,7 @@ import {
   Calendar,
   UserPlus,
   UserX,
+  Users,
   UserMinus,
   UserCheck,
 } from "lucide-react";
@@ -69,7 +70,11 @@ const SplitStep = ({
   const [isEditingPeople, setIsEditingPeople] = useState(false);
 
   const [isSendingRequest, setIsSendingRequest] = useState(false);
-
+  const [allowMarkAsPaidForEveryone, setAllowMarkAsPaidForEveryone] =
+    useState(false);
+  const [showMarkAsPaidInfo, setShowMarkAsPaidInfo] = useState(false);
+  const [isHoveringMarkAsPaidInfo, setIsHoveringMarkAsPaidInfo] =
+    useState(false);
   // Local state for recurring options - use existing values in edit mode
   const [showRecurringOptions, setShowRecurringOptions] = useState(false);
   const [recurringType, setRecurringType] = useState(
@@ -130,6 +135,25 @@ const SplitStep = ({
 
   // Track previous split type to detect changes from custom
   const prevSplitTypeRef = useRef(splitType);
+
+  const customUnitPopupRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        customUnitPopupRef.current &&
+        !customUnitPopupRef.current.contains(event.target)
+      ) {
+        setShowUnitOptions(false); // close popup
+      }
+    }
+
+    console.log("LISTINE");
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showUnitOptions]);
 
   // Initialize last known good amount
   React.useEffect(() => {
@@ -314,6 +338,7 @@ const SplitStep = ({
     costEntry.name = chargeName;
     // NOT CONFIGURABLE FOR USER YET!
     costEntry.requestFrequency = "daily";
+    costEntry.allowMarkAsPaidForEveryone = allowMarkAsPaidForEveryone;
     // save id to entry for edit mode, used to identify which cost to update in DB
     if (isEditMode) {
       costEntry._id = selectedCharge._id;
@@ -665,7 +690,7 @@ const SplitStep = ({
 
         {/* Name of Charge */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 ">
             Name of Charge
           </h3>
           <input
@@ -673,7 +698,7 @@ const SplitStep = ({
             value={chargeName}
             onChange={(e) => setChargeName(e.target.value)}
             placeholder="e.g., Netflix, Spotify Premium"
-            className="w-full p-3 border border-gray-200 rounded-lg outline-none text-base bg-white hover:bg-gray-50 transition-colors focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+            className="w-full p-3 border hover:border-gray-300 border-gray-200 rounded-lg outline-none text-base bg-white transition-colors focus:ring-2 focus:ring-blue-600 focus:border-transparent"
           />
         </div>
 
@@ -699,11 +724,11 @@ const SplitStep = ({
               }}
               placeholder="Enter total amount"
               disabled={splitType === "custom"}
-              className={`w-full pl-10 pr-4 py-3 border rounded-lg outline-none text-base 
+              className={`hover:border-gray-300 transition-colors w-full pl-10 pr-4 py-3 border rounded-lg outline-none text-base 
         ${
           splitType === "custom"
             ? "bg-gray-100 text-gray-400 "
-            : "bg-white focus:ring-2 border-gray-200 focus:ring-blue-600 focus:border-transparent"
+            : "bg-white focus:ring-2  border-gray-200 focus:ring-blue-600 focus:border-transparent"
         }`}
             />
           </div>
@@ -714,7 +739,6 @@ const SplitStep = ({
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Payment Schedule
           </h3>
-
           {/* Recurring Options Dropdown */}
           <div className="relative recurring-dropdown">
             <button
@@ -724,7 +748,8 @@ const SplitStep = ({
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-gray-500" />
                 <span className="text-sm font-medium text-gray-700 capitalize">
-                  {getRecurringLabel()}
+                  {/* {getRecurringLabel()} */}
+                  {recurringType}
                 </span>
               </div>
               <ChevronDown
@@ -820,6 +845,86 @@ const SplitStep = ({
               </div>
             )}
           </div>
+
+          {/* Custom Interval Input */}
+          {recurringType === "custom" && (
+            <div className="mb-4 mt-3">
+              <div className="flex gap-2">
+                {/* Every (Number) Input */}
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Every
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={customInterval}
+                    onChange={(e) =>
+                      setCustomInterval(parseInt(e.target.value) || 1)
+                    }
+                    className="w-full p-2 border border-gray-200 rounded text-sm outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                  />
+                </div>
+
+                {/* Unit Dropdown */}
+                <div className="flex-1 relative">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Unit
+                  </label>
+                  <button
+                    onClick={() => setShowUnitOptions(!showUnitOptions)}
+                    className="w-full p-2 border border-gray-200 rounded text-sm outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent bg-white text-left flex justify-between items-center hover:bg-gray-50"
+                  >
+                    <span className="capitalize">{customUnit}</span>
+                    <svg
+                      className="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+
+                  {showUnitOptions && (
+                    <div
+                      ref={customUnitPopupRef}
+                      className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[20]"
+                    >
+                      <div className="p-2 space-y-1">
+                        {[
+                          { value: "days", label: "Days" },
+                          { value: "weeks", label: "Weeks" },
+                          { value: "months", label: "Months" },
+                          { value: "years", label: "Years" },
+                        ].map((unit) => (
+                          <button
+                            key={unit.value}
+                            onClick={() => {
+                              setCustomUnit(unit.value);
+                              setShowUnitOptions(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
+                              customUnit === unit.value
+                                ? "bg-blue-50 text-blue-700"
+                                : "text-gray-700"
+                            }`}
+                          >
+                            {unit.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* {isEditMode && (
@@ -1148,82 +1253,108 @@ const SplitStep = ({
           <div className="space-y-6 mb-6">
             {/* Total Amount Input - Always visible */}
 
-            {/* Custom Interval Input */}
-            {recurringType === "custom" && (
-              <div className="mb-4">
-                <div className="flex gap-2">
-                  {/* Every (Number) Input */}
-                  <div className="flex-1">
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      Every
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={customInterval}
-                      onChange={(e) =>
-                        setCustomInterval(parseInt(e.target.value) || 1)
-                      }
-                      className="w-full p-2 border border-gray-200 rounded text-sm outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-                    />
-                  </div>
-
-                  {/* Unit Dropdown */}
-                  <div className="flex-1 relative">
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      Unit
-                    </label>
-                    <button
-                      onClick={() => setShowUnitOptions(!showUnitOptions)}
-                      className="w-full p-2 border border-gray-200 rounded text-sm outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent bg-white text-left flex justify-between items-center hover:bg-gray-50"
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <label className="text-lg font-semibold text-gray-900">
+                  Mark as Paid Settings
+                </label>
+                <div className="relative dynamic-info-tooltip">
+                  <button
+                    onClick={() => setShowMarkAsPaidInfo(!showMarkAsPaidInfo)}
+                    onMouseEnter={() => {
+                      setIsHoveringMarkAsPaidInfo(true);
+                      // setShowMarkAsPaidInfo(true);
+                    }}
+                    onMouseLeave={() => {
+                      setIsHoveringMarkAsPaidInfo(false);
+                      // Small delay to allow clicking on the tooltip
+                      setTimeout(() => {
+                        if (!isHoveringMarkAsPaidInfo) {
+                          setShowMarkAsPaidInfo(false);
+                        }
+                      }, 150);
+                    }}
+                    className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                  >
+                    <Info className="w-4 h-4" />
+                  </button>
+                  {(showMarkAsPaidInfo || isHoveringMarkAsPaidInfo) && (
+                    <div
+                      className="absolute bottom-full left-0 mb-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50"
+                      onMouseEnter={() => setIsHoveringMarkAsPaidInfo(true)}
+                      onMouseLeave={() => {
+                        console.log("CLOSE");
+                        setIsHoveringMarkAsPaidInfo(false);
+                        setShowMarkAsPaidInfo(false);
+                      }}
                     >
-                      <span className="capitalize">{customUnit}</span>
-                      <svg
-                        className="w-4 h-4 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
+                      <p>
+                        Setting this to Everyone is useful when you trust users
+                        to honestly mark requests as paid.
+                      </p>
+                      <div className="absolute top-full left-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
+                    </div>
+                  )}
+                </div>
+              </div>
 
-                    {showUnitOptions && (
-                      <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[20]">
-                        <div className="p-2 space-y-1">
-                          {[
-                            { value: "days", label: "Days" },
-                            { value: "weeks", label: "Weeks" },
-                            { value: "months", label: "Months" },
-                            { value: "years", label: "Years" },
-                          ].map((unit) => (
-                            <button
-                              key={unit.value}
-                              onClick={() => {
-                                setCustomUnit(unit.value);
-                                setShowUnitOptions(false);
-                              }}
-                              className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                                customUnit === unit.value
-                                  ? "bg-blue-50 text-blue-700"
-                                  : "text-gray-700"
-                              }`}
-                            >
-                              {unit.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+              <div className="space-y-3">
+                <div
+                  onClick={() => setAllowMarkAsPaidForEveryone(false)}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    !allowMarkAsPaidForEveryone
+                      ? "border-blue-600 bg-blue-50"
+                      : "border-gray-200 bg-white hover:border-gray-300"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
+                      <User className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900 text-sm">
+                        Only you
+                      </h4>
+                      <p className="text-gray-600 text-xs">
+                        Only you can mark requests as paid
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  onClick={() => {
+                    setAllowMarkAsPaidForEveryone(true);
+                  }}
+                  className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${
+                    allowMarkAsPaidForEveryone
+                      ? "border-blue-600 bg-blue-50 cursor-pointer"
+                      : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
+                  }`}
+                >
+                  <div
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center ${"bg-orange-500"}`}
+                  >
+                    <Users className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className={`font-semibold text-sm ${"text-gray-900"}`}>
+                      Everyone
+                      {/* <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
+                        {splitType === "custom"
+                          ? "Not Available"
+                          : recurringType === "none"
+                          ? "Recurring Only"
+                          : "Plaid Required"}
+                      </span> */}
+                    </h4>
+                    <p className={`text-xs ${"text-gray-600"}`}>
+                      Others can mark their requests as paid
+                    </p>
                   </div>
                 </div>
               </div>
-            )}
+            </div>
 
             {/* Cost Tracking Section */}
             <div>
@@ -1236,7 +1367,7 @@ const SplitStep = ({
                     onClick={() => setShowDynamicInfo(!showDynamicInfo)}
                     onMouseEnter={() => {
                       setIsHoveringDynamicInfo(true);
-                      setShowDynamicInfo(true);
+                      // setShowDynamicInfo(true);
                     }}
                     onMouseLeave={() => {
                       setIsHoveringDynamicInfo(false);
@@ -1260,14 +1391,6 @@ const SplitStep = ({
                         setShowDynamicInfo(false);
                       }}
                     >
-                      <p className="mb-2">
-                        <strong>Fixed Amount:</strong> Same amount for all
-                        payment cycles
-                      </p>
-                      <p className="mb-2">
-                        <strong>Dynamic Costs:</strong> Track when amounts
-                        change between payment cycles (recurring payments only)
-                      </p>
                       <p>
                         Dynamic costs are useful for utilities, subscriptions,
                         or any recurring cost that varies each period.

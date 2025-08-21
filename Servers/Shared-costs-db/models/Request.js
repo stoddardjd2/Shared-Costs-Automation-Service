@@ -23,10 +23,12 @@ const paymentParticipantSchema = new Schema({
   //   default: "pending",
   // },
   paymentAmount: { type: Number },
+  markedAsPaid: { type: Boolean },
   paidDate: { type: Date },
   amount: { type: Number },
   reminderSent: { type: Boolean },
   reminderSentDate: { type: Date },
+  markedAsPaidDate: { type: Date },
 });
 
 // Sub-schema for payment history entries
@@ -69,7 +71,7 @@ const requestSchema = new Schema({
   startDate: { type: Date }, // for when startTiming is "later"
   lastSent: { type: Date },
   isDynamic: { type: Boolean, default: false },
-  dynamicCostReason: { type: String },
+  allowMarkAsPaidForEveryone: { type: Boolean, default: false },
   reminderFrequency: {
     type: String,
     enum: ["daily", "weekly", "monthly", "none"],

@@ -16,6 +16,8 @@ const RequestButton = ({
   disabled = false,
   sentText = "SENT",
   reminderSentDate,
+  participant,
+  isPaid,
   color = "blue", // new color prop with blue default
   ...props
 }) => {
@@ -25,7 +27,6 @@ const RequestButton = ({
   const { costs, setCosts } = useData();
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-
   // Helper function to get today's date in YYYY-MM-DD format
   const getTodaysDate = () => {
     return new Date().toISOString().split("T")[0];
@@ -44,74 +45,47 @@ const RequestButton = ({
     }
   };
 
+  const formatDate = (date) => {
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  };
+
   // Check if already sent today
   const alreadySentToday = () => {
     const today = getTodaysDate();
+    // Find the specific participant
+    const participant = paymentHistoryRequest?.participants?.find(
+      (p) => p._id === participantUserId
+    );
 
-    if (isRequestAll) {
-      // Check if ALL overdue participants were sent a reminder today
-      const overdueCosts = costs.filter((cost) =>
-        cost.participants.some(
-          (participant) => participant.status === "overdue"
-        )
+    if (!participant) {
+      console.log("Participant not found");
+      return false; // Needs reminder if participant not found
+    }
+
+    if (!participant.reminderSentDate) {
+      console.log("No previous reminder sent to participant");
+      return false; // Needs reminder
+    }
+
+    const now = new Date();
+    const reminderDate = new Date(
+      participant.reminderSentDate.$date || participant.reminderSentDate
+    );
+    const diffInDays = (now - reminderDate) / (1000 * 60 * 60 * 24);
+
+    if (diffInDays > thresholdDays) {
+      console.log(
+        `More than ${thresholdDays} day(s) since last reminder to participant`
       );
-
-      if (overdueCosts.length === 0) return false;
-
-      // Get all overdue participants across all costs
-      const allOverdueParticipants = [];
-      overdueCosts.forEach((cost) => {
-        const currentPayment = cost.paymentHistory?.[0];
-        if (currentPayment) {
-          const overdueInThisCost = currentPayment.participants.filter(
-            (p) => p.status === "overdue"
-          );
-          allOverdueParticipants.push(...overdueInThisCost);
-        }
-      });
-
-      // Check if ALL overdue participants have lastReminderDate as today
-      return (
-        allOverdueParticipants.length > 0 &&
-        allOverdueParticipants.every(
-          (participant) => participant.lastReminderDate === today
-        )
-      );
+      return false; // Needs reminder
     } else {
-      console.log("CHECKING IF REMINDER NEEDED");
-
-      // Find the specific participant
-      const participant = paymentHistoryRequest?.participants?.find(
-        (p) => p._id?.$oid === participantUserId || p._id === participantUserId
+      console.log(
+        `Reminder sent to participant within the last ${thresholdDays} day(s)`
       );
-
-      if (!participant) {
-        console.log("Participant not found");
-        return true; // Needs reminder if participant not found
-      }
-
-      if (!participant.reminderSentDate) {
-        console.log("No previous reminder sent to participant");
-        return true; // Needs reminder
-      }
-
-      const now = new Date();
-      const reminderDate = new Date(
-        participant.reminderSentDate.$date || participant.reminderSentDate
-      );
-      const diffInDays = (now - reminderDate) / (1000 * 60 * 60 * 24);
-
-      if (diffInDays > thresholdDays) {
-        console.log(
-          `More than ${thresholdDays} day(s) since last reminder to participant`
-        );
-        return false; // Needs reminder
-      } else {
-        console.log(
-          `Reminder sent to participant within the last ${thresholdDays} day(s)`
-        );
-        return true; // No reminder needed
-      }
+      return true; // No reminder needed
     }
   };
 
@@ -163,73 +137,135 @@ const RequestButton = ({
         console.log("Requesting payments from all overdue participants");
       } else {
         // Update specific participant
+
         const res = await sendReminder(
           costId,
-          paymentHistoryId,
+          paymentHistoryRequest._id,
           participantUserId
         );
+
         const updatedCost = res.data.updateResult;
 
-        console.log("UPDATEING!");
-        setTimeout(() => {
-          setIsLoading(false);
-          setCosts(
-            costs.map((cost) => {
-              if (cost._id == costId) {
-                return { ...updatedCost /* your updated properties here */ };
-              }
-              return cost;
-            })
-          );
-          console.log(
-            `Resending payment request for cost ${costId} to user ${participantUserId}`
-          );
-        }, 1000);
+        if (updatedCost) {
+          setTimeout(() => {
+            setIsLoading(false);
+            console.log("UPdATING COST", updatedCost);
+            setIsSuccess(true);
+            setCosts(
+              costs.map((cost) => {
+                if (cost._id == costId) {
+                  return { ...updatedCost /* your updated properties here */ };
+                }
+                return cost;
+              })
+            );
+            console.log(
+              `Resending payment request for cost ${costId} to user ${participantUserId}`
+            );
+          }, 1000);
+        }
       }
 
       // setIsSuccess(true);
     } catch (error) {
-      setIsLoading(false);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 1000);
       console.error("Request failed:", error);
     }
   };
 
+  function getSentInitialRecently() {
+    function hasBeenOneWeek(nextReminderDate) {
+      const now = new Date();
+      const reminderDate = new Date(nextReminderDate);
+
+      // Calculate difference in days
+      const diffTime = Math.abs(now - reminderDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      return diffDays >= 7;
+    }
+
+    if (hasBeenOneWeek(paymentHistoryRequest.requestDate)) {
+      return false;
+    }
+    return true;
+  }
+
   const sentToday = alreadySentToday();
-  const isDisabled = isLoading || isSuccess || disabled || sentToday;
+  const sentInitialRecently = getSentInitialRecently();
+  const isDisabled =
+    isLoading ||
+    isSuccess ||
+    disabled ||
+    sentToday ||
+    sentInitialRecently ||
+    isPaid;
   const colorClasses = getColorClasses(color);
 
+  console.log("participant.reminderSentDate", participant.reminderSentDate);
+
+  const sendIcon = <Send className="w-6 h-6 " />;
+
   return (
-    <button
-      onClick={handleClick}
-      disabled={isDisabled}
-      className={
-        "bg-white/15 hover:bg-white/25 border border-white/30 text-white px-6 py-3 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-300 flex items-center gap-2 backdrop-blur-md translate-y-0 hover:-translate-y-0.5 shadow-none hover:shadow-lg hover:shadow-black/10 disabled:opacity-70 disabled:cursor-auto " +
-        className
-      }
-      {...props}
-    >
-      {sentToday ? (
-        <>
-          <Check className="w-5 h-5" />
-          <span>{isRequestAll ? "Sent to all" : "Sent"}</span>
-        </>
-      ) : isLoading ? (
-        <>
-          <Loader2 className="w-5 h-5 animate-spin" />
-          <span>{loadingText}</span>
-        </>
-      ) : isSuccess ? (
-        <>
-          <Check className="w-5 h-5" />
-          <span>{isRequestAll ? "Sent to all!" : "Sent!"}</span>
-        </>
-      ) : (
-        <>
-          <Send className="w-5 h-5" />
-          <span>{children}</span>
-        </>
-      )}
-    </button>
+    <>
+      <button
+        onClick={handleClick}
+        disabled={isDisabled}
+        className={
+          `${
+            isPaid && "!opacity-0 !transition-none"
+          } bg-blue-600 h-10  border border-white/30 text-white px-3 py-3 rounded-lg text-sm font-semibold cursor-pointer transition-all duration-300 flex items-center gap-4 backdrop-blur-md translate-y-0 ${
+            !isDisabled
+              ? "hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/10 hover:bg-blue-600/90"
+              : ""
+          } shadow-none disabled:opacity-50 disabled:cursor-auto ` + className
+        }
+        {...props}
+      >
+        {sentToday ? (
+          <>
+            {/* <Check className="w-5 h-5" /> */}
+            {sendIcon}
+
+            <span>
+              {isRequestAll
+                ? "Sent to all"
+                : `Sent on ${formatDate(
+                    new Date(participant.reminderSentDate)
+                  )}`}
+            </span>
+          </>
+        ) : isLoading ? (
+          <>
+            <Loader2 className="w-5 h-5 animate-spin" />
+            <span>{loadingText}</span>
+          </>
+        ) : isSuccess ? (
+          <>
+            {/* <Check className="w-5 h-5" /> */}
+            {sendIcon}
+
+            <span>{isRequestAll ? "Sent to all!" : "Sent!"}</span>
+          </>
+        ) : sentInitialRecently ? (
+          <>
+            {/* <Check className="w-5 h-5" /> */}
+            {sendIcon}
+
+            <span>{`Sent ${formatDate(
+              new Date(paymentHistoryRequest.requestDate)
+            )}`}</span>
+          </>
+        ) : (
+          <>
+            {sendIcon}
+            <span>{children}</span>
+          </>
+        )}
+      </button>
+    </>
   );
 };
 

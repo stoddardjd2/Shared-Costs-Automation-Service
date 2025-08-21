@@ -3,6 +3,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
+const sendEmailRequest = require("./send-request-helpers/sendEmailRequest");
 
 // Import database connection
 const connectDB = require("./config/database");
@@ -165,6 +166,25 @@ async function startServer() {
         res.status(500).json({
           success: false,
           message: "Failed to process requests",
+          error: error.message,
+        });
+      }
+    });
+
+    app.post("/admin/trigger-email", async (req, res) => {
+      try {
+        console.log("🔧 Manually sending email");
+        await sendEmailRequest("Jared", "Kevin", "13", "URL", "stoddardjd3@gmail.com");
+        res.json({
+          success: true,
+          message: "email sent successfully",
+          timestamp: new Date().toISOString(),
+        });
+      } catch (error) {
+        console.error("❌ email trigger failed:", error);
+        res.status(500).json({
+          success: false,
+          message: "Failed to send email",
           error: error.message,
         });
       }

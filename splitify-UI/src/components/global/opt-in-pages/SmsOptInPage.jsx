@@ -72,6 +72,7 @@ export default function SmsOptInPage() {
         type: "success",
         text: "You're all set! Text notifications are now enabled.",
       });
+      window.close();
       setConfirmedPhone(rawPhone);
       setIsConfirmed(true);
     } catch (err) {
@@ -313,12 +314,18 @@ export default function SmsOptInPage() {
                     payments. Message & data rates may apply. Message frequency
                     may vary. Reply STOP to opt out anytime. By enabling text
                     messages you agree to our
-                    <a className="text-[#1865f2]" href="/about/termsAndConditions">
+                    <a
+                      className="text-[#1865f2]"
+                      href="/about/termsAndConditions"
+                    >
                       {" "}
                       Terms and Conditions
                     </a>{" "}
                     and our
-                    <a className="text-[#1865f2]" href="/about/privacyPolicy"> Privacy Policy.</a>
+                    <a className="text-[#1865f2]" href="/about/privacyPolicy">
+                      {" "}
+                      Privacy Policy.
+                    </a>
                   </label>
                 </div>
 

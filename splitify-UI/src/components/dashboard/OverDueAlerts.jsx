@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useData } from "../../contexts/DataContext";
 import RequestButton from "./RequestButton";
+import PaymentHistoryParticipantDetails from "./PaymentHistoryParticipantDetails";
 
 const OverdueAlerts = () => {
   // Use real data from context
@@ -95,8 +96,11 @@ const OverdueAlerts = () => {
     { totalAmount: 0, totalParticipants: 0, totalRequests: 0 }
   );
 
+  if (isDismissed) {
+    return;
+  }
   // Don't render if no overdue requests or component is dismissed
-  if (overduePaymentRequests.length === 0 || isDismissed) {
+  if (overduePaymentRequests.length === 0) {
     return (
       <div
         style={{
@@ -150,10 +154,6 @@ const OverdueAlerts = () => {
     return date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
-      year:
-        date.getFullYear() !== currentDate.getFullYear()
-          ? "numeric"
-          : undefined,
     });
   };
 
@@ -265,7 +265,7 @@ const OverdueAlerts = () => {
                   <div className="flex items-center justify-between gap-3 mb-2">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <h3 className="text-lg font-semibold border-l-4 border-red-500 pl-3 ">
-                        {request.costName} 
+                        {request.costName}
                       </h3>
                     </div>
 
@@ -291,10 +291,10 @@ const OverdueAlerts = () => {
                         overdue
                       </span> */}
                       </div>
-                      <div className="text-sm">
+                      {overdueParticipants.length !== 1 && <div className="text-sm">
                         {overdueParticipants.length} of{" "}
                         {request.participants.length} participants
-                      </div>
+                      </div>}
                     </div>
                   </div>
 
@@ -311,68 +311,74 @@ const OverdueAlerts = () => {
                       const user = participants.find(
                         (u) => u._id === participantId
                       );
-
                       return (
-                        <div
-                          key={participantId}
-                          className="flex items-center justify-between rounded-lg p-3 border "
-                        >
-                          <div className="flex items-center gap-3">
-                            {/* User Avatar */}
-                            <div
-                              className={`w-12 h-12 rounded-lg ${
-                                user?.color || "bg-gray-500"
-                              } flex items-center justify-center text-white font-semibold text-sm relative`}
-                            >
-                              {user?.avatar ||
-                                participantId.slice(-2).toUpperCase()}
-                              {/* Overdue status indicator */}
-                              {/* <div className="absolute -bottom-0.5 -right-0.5 bg-red-500 rounded-full w-3 h-3 border border-white shadow-sm"></div> */}
-                            </div>
+                        <PaymentHistoryParticipantDetails
+                          costId={request.costId}
+                          participant={participant}
+                          paymentHistoryRequest={request}
+                          user={user}
+                        />
+                        // <div
+                        //   key={participantId}
+                        //   className="flex items-center justify-between rounded-lg p-3 border "
+                        // >
+                        //   <div className="flex items-center gap-3">
+                        //     {/* User Avatar */}
+                        //     <div
+                        //       className={`w-12 h-12 rounded-lg ${
+                        //         user?.color || "bg-gray-500"
+                        //       } flex items-center justify-center text-white font-semibold text-sm relative`}
+                        //     >
+                        //       {user?.avatar ||
+                        //         participantId.slice(-2).toUpperCase()}
+                        //       {/* Overdue status indicator */}
+                        //       {/* <div className="absolute -bottom-0.5 -right-0.5 bg-red-500 rounded-full w-3 h-3 border border-white shadow-sm"></div> */}
+                        //     </div>
 
-                            {/* User Info */}
-                            <div>
-                              <div className="font-semibold text-sm">
-                                {user?.name ||
-                                  `User ${participantId.slice(-4)}`}
-                              </div>
-                              <div className="text-xs font-medium">
-                                Owes ${participant.amount.toFixed(2)}
-                              </div>
-                              {participant.reminderSent ? (
-                                <div className="text-xs flex items-center text-black/70 gap-1">
-                                  <Bell className="w-3 h-3" />
-                                  Reminder sent on{" "}
-                                  {participant.reminderSent
-                                    ? formatDate(
-                                        new Date(participant.reminderSentDate)
-                                      )
-                                    : ""}
-                                </div>
-                              ) : (
-                                <div className="text-xs flex items-center text-black/70 gap-1">
-                                  <Bell className="w-3 h-3" /> No Reminders Sent
-                                </div>
-                              )}
-                            </div>
-                          </div>
+                        //     {/* User Info */}
+                        //     <div>
+                        //       <div className="font-semibold text-sm">
+                        //         {user?.name ||
+                        //           `User ${participantId.slice(-4)}`}
+                        //       </div>
+                        //       <div className="text-xs font-medium">
+                        //         Owes ${participant.amount.toFixed(2)}
+                        //       </div>
+                        //       {participant.reminderSent ? (
+                        //         <div className="text-xs flex items-center text-black/70 gap-1">
+                        //           <Bell className="w-3 h-3" />
+                        //           Reminder sent on{" "}
+                        //           {participant.reminderSent
+                        //             ? formatDate(
+                        //                 new Date(participant.reminderSentDate)
+                        //               )
+                        //             : ""}
+                        //         </div>
+                        //       ) : (
+                        //         <div className="text-xs flex items-center text-black/70 gap-1">
+                        //           <Bell className="w-3 h-3" /> No Reminders Sent
+                        //         </div>
+                        //       )}
+                        //     </div>
+                        //   </div>
 
-                          {/* Resend Button */}
-                          <RequestButton
-                            className="px-3 py-1.5 text-sm !bg-blue-600 text-white border border-white/30 !hover:bg-blue-600/25"
-                            costId={
-                              request.costId && request.costId.$oid
-                                ? request.costId.$oid
-                                : request.costId
-                            }
-                            participantUserId={participantId}
-                            paymentHistoryId={request._id}
-                            reminderSentDate={participant.reminderSentDate}
-                            paymentHistoryRequest={request}
-                          >
-                            Request{" "}
-                          </RequestButton>
-                        </div>
+                        //   {/* Resend Button */}
+                        //   <RequestButton
+                        //     className="px-3 py-1.5 text-sm !bg-blue-600 text-white border border-white/30 !hover:bg-blue-600/25"
+                        //     costId={
+                        //       request.costId && request.costId.$oid
+                        //         ? request.costId.$oid
+                        //         : request.costId
+                        //     }
+                        //     participantUserId={participantId}
+                        //     paymentHistoryId={request._id}
+                        //     reminderSentDate={participant.reminderSentDate}
+                        //     paymentHistoryRequest={request}
+                        //     participant={participant}
+                        //   >
+                        //     Resend
+                        //   </RequestButton>
+                        // </div>
                       );
                     })}
                   </div>

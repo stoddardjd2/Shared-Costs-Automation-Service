@@ -1,0 +1,150 @@
+import { useState } from "react";
+import RequestButton from "./RequestButton";
+import { Check, Timer, Hourglass, Pause } from "lucide-react";
+import { handleToggleMarkAsPaid } from "../../queries/requests";
+export default function PaymentHistoryParticipantDetails({
+  costId,
+  participant,
+  paymentHistoryRequest,
+  user,
+}) {
+  const [isPaid, setIsPaid] = useState(
+    participant.paymentAmount >= participant.amount || participant.markedAsPaid
+  );
+
+  // Get subtle status indicator color
+  const getParticipantStatus = () => {
+    // check if paid full balance or greater
+    if (participant.paymentAmount >= participant.amount) {
+      return "paid";
+    }
+
+    // Check if overdue
+    const dueDate = new Date(paymentHistoryRequest.dueDate);
+    const today = new Date();
+
+    // Set both dates to start of day for accurate comparison
+    dueDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    return dueDate < today ? "overdue" : "pending";
+  };
+
+  const getStatusIndicatorColor = () => {
+    const status = getParticipantStatus(participant, paymentHistoryRequest);
+    switch (status) {
+      case "paid":
+        return "bg-green-500";
+      case "pending":
+        return "bg-blue-500";
+      case "partial":
+        return "bg-yellow-500"; // Added specific color for partial
+      case "overdue":
+        return "bg-red-500"; // Changed from orange to red for more distinction
+      default:
+        return "bg-gray-400";
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-[13px] border border-b-2 p-3 rounded">
+      <div className="flex gap-4 flex-wrap justify-between">
+        <div className="flex gap-4">
+          <Avatar user={user} color={getStatusIndicatorColor()} />
+          <div className="flex-col flex justify-between">
+            <div className="font-semibold">{user.name}</div>
+            <div className="text-sm text-gray-800">${participant.amount - (participant?.amountPaid ? participant?.amountPaid : 0)}</div>
+          </div>
+        </div>
+
+        <div className="flex gap-5 justify-between items-center xs:justify-end flex-grow">
+          <RequestButton
+            costId={costId}
+            participantUserId={participant._id}
+            className="text-sm flex-shrink-0"
+            loadingText="Sending..."
+            successText="Sent!"
+            paymentHistoryRequest={paymentHistoryRequest}
+            participant={participant}
+            isPaid={isPaid}
+          >
+            Resend
+          </RequestButton>
+          <MarkAsPaidButton
+            participant={participant}
+            // status={getParticipantStatus()}
+            costId={costId}
+            paymentHistoryRequest={paymentHistoryRequest}
+            isPaid={isPaid}
+            setIsPaid={setIsPaid}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Avatar({ user, color, enableStatus = false }) {
+  return (
+    <div
+      className={`h-11 aspect-square relative rounded-lg ${user?.color} flex items-center justify-center text-white font-semibold text-sm border-2 border-white shadow-sm`}
+    >
+      {user.avatar}
+      {enableStatus && (
+        <div
+          className={`absolute -bottom-1.5 -right-1.5 ${color} rounded-full w-4 h-4 border-2 border-white`}
+        />
+      )}
+    </div>
+  );
+}
+
+function MarkAsPaidButton({
+  status,
+  participant,
+  paymentHistoryRequest,
+  costId,
+  isPaid,
+  setIsPaid,
+}) {
+  async function handleMarkAsPaid() {
+    setIsPaid(!isPaid);
+    try {
+      const res = await handleToggleMarkAsPaid(
+        costId,
+        paymentHistoryRequest._id,
+        participant._id
+      );
+    } catch (err) {
+      console.log("failed to mark as paid");
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-3">
+      <button
+        onClick={handleMarkAsPaid}
+        className={`${
+          isPaid
+            ? "bg-blue-600 text-white border-blue-600"
+            : "bg-white text-blue-600 border-blue-600 hover:bg-blue-50"
+        } transition-all duration-200 ease-in-out w-8 h-8 flex items-center justify-center rounded-lg border-2`}
+      >
+        <Check
+          className={`w-6 h-6 transition-all duration-200 ${
+            isPaid ? "scale-100 opacity-100" : "scale-75 opacity-0"
+          }`}
+        />
+      </button>
+
+      {/* Simple working animation */}
+      <span
+        className={`text-blue-600 font-medium text-sm transition-all duration-300 ease-out ${
+          isPaid ? "opacity-100 translate-x-0" : "opacity-100 translate-x-0"
+        }`}
+      >
+        {isPaid ? "Paid" : "Not Paid"}
+      </span>
+    </div>
+  );
+}

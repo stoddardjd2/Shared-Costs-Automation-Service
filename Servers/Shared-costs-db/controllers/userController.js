@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
-const { sendReminder } = require("../reminder-scheduler/reminderScheduler");
+const  sendRequestsRouter  = require("../send-request-helpers/sendRequestsRouter");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const Request = require("../models/Request");
@@ -75,7 +75,6 @@ const updateContactForUser = async (req, res) => {
 };
 
 const removeContactFromUser = async (req, res) => {
-  console.log("REMOVING CONTAWCT");
   try {
     const userId = req.user._id; // From auth middleware
     const { contactId } = req.body;
@@ -112,14 +111,15 @@ const addContactToUser = async (req, res) => {
   try {
     const userId = req.user._id; // From auth middleware
     const { name, phone, avatar, color, email } = req.body;
+    const emailClean = email.toLowerCase().trim()
 
     // prevent adding self
-    if (email == req.user.email) {
+    if (emailClean == req.user.email) {
       return res.status(404).json({ message: "Cannot add self" });
     }
 
     // phone is not required
-    if (!name || !email || !avatar || !color) {
+    if (!name || !emailClean || !avatar || !color) {
       return res
         .status(400)
         .json({ message: "Name, phone, avatar, and color are required." });
@@ -144,7 +144,7 @@ const addContactToUser = async (req, res) => {
 
     // check for duplicate email
     const emailExists = user.contacts.some(
-      (contact) => contact.email.trim() === email.trim()
+      (contact) => contact.email.trim() === emailClean.trim()
     );
 
     if (emailExists) {
@@ -154,10 +154,10 @@ const addContactToUser = async (req, res) => {
     }
 
     // Add new contact as new User in DB if not added yet
-    const prevUser = await User.findOne({ email: email.trim().toLowerCase() });
+    const prevUser = await User.findOne({ email: emailClean.toLowerCase() });
     let newUser;
     if (!prevUser) {
-      newUser = new User({ email: email.trim(), name: name });
+      newUser = new User({ email: emailClean, name: name });
       await newUser.save();
     }
 
@@ -166,7 +166,7 @@ const addContactToUser = async (req, res) => {
       name: name.trim(),
       avatar: avatar.trim(),
       color: color.trim(),
-      email: email.trim(),
+      email: emailClean,
       // Add user Id (either newly created or one found)
       _id: prevUser ? prevUser._id : newUser._id,
       ...(phone ? phone.trim : {}),
@@ -190,7 +190,6 @@ const addContactToUser = async (req, res) => {
 // @desc    Check if token is expired without validating user
 // @route   POST /api/auth/check-token
 // @access  Public
-// USED TO GET USER AND GET REQUESTS
 const checkTokenExpiry = async (req, res) => {
   try {
     const { token } = req.body;
@@ -773,14 +772,15 @@ async function approveSmsMessages(req, res) {
         return now.getTime() >= date.getTime();
       }
 
+      
       if (reqDoc.startTiming == "now" || isPastOrOnDate(reqDoc.startTiming)) {
-        if (participant.paymentAmount < participant.amount) {
+        if (participant.paymentAmount < participant.amount && !participant?.markedAsPaid) {
           // LIMIT SENDING TEXTS AGAIN TO 3 TIMES TO REDUCE USER ABUSE IF THEY -
           // RESUBMIT FORM MULTIPLE TIMES:
           if (currentSetCount <= 3) {
             // do not send again if same number:
             if (oldUser.phone !== normalizedPhone) {
-              sendReminder({
+              sendRequestsRouter({
                 requestId: reqDoc._id,
                 paymentHistoryId: history._id,
                 requestName: reqDoc.name,

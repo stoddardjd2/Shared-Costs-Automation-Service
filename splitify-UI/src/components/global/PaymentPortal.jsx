@@ -121,7 +121,6 @@ export default function PaymentPage() {
         userId,
         paymentAmount
       );
-      console.log("Payment Results", res?.error?.data.data.isAlreadyPaid);
 
       if (res?.success === true) {
         setTimeout(() => {
@@ -129,7 +128,6 @@ export default function PaymentPage() {
           setIsProcessing(false);
         }, 1000);
       } else if (res?.error?.data?.data?.isAlreadyPaid) {
-        console.log("already paid", res?.error?.data);
         setIsAlreadyPaid(true);
         const date = res?.error?.data?.data?.paidDate;
 
@@ -138,7 +136,6 @@ export default function PaymentPage() {
           month: "short",
           day: "numeric",
         });
-        console.log("DATE", date)
         setPaidDate(formattedDate);
         setIsProcessing(false);
       } else {

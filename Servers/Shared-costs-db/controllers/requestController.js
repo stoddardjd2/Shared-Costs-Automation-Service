@@ -2,7 +2,7 @@
 const Request = require("../models/Request");
 const User = require("../models/User");
 const { ObjectId } = require("mongodb");
-const { sendReminder } = require("../reminder-scheduler/reminderScheduler");
+const sendRequestsRouter = require("../send-request-helpers/sendRequestsRouter");
 const {
   calculateNextReminderDate,
   calculateDueDate,
@@ -74,7 +74,7 @@ const createRequest = async (req, res) => {
         owner: userId,
         reminderFrequency: reminderFrequency,
         paymentHistory: [initialHistory], // Add initial history as subdocument
-        lastSent: new Date()
+        lastSent: new Date(),
       });
     } else {
       // for future payment, do not add history yet as has not sent request
@@ -128,7 +128,7 @@ const createRequest = async (req, res) => {
       const owner = await User.findById(new ObjectId(req.user._id));
       participantsTextPermissions.forEach((participant) => {
         if (participant.canText) {
-          sendReminder({
+          sendRequestsRouter({
             requestId: request._id,
             paymentHistoryId: request.paymentHistory[0]._id,
             requestName: request.name,
@@ -237,6 +237,19 @@ const handleSendReminder = async (req, res) => {
 
     const eligible = !lastSent || now - lastSent >= intervalMs;
 
+    const alreadyPaid =
+      participant.paidAmount >= participant.amount || participant.markedAsPaid;
+
+    if (alreadyPaid) {
+      return res.status(429).json({
+        throttled: true,
+        error: `Already paid`,
+        markedAsPaid: participant.markedAsPaid,
+        paidAmount: participant.paidAmount,
+        amount: participant.amount,
+      });
+    }
+
     if (!eligible) {
       const msLeft = intervalMs - (now - lastSent);
       const hoursLeft = Math.ceil(msLeft / (60 * 60 * 1000));
@@ -309,7 +322,7 @@ const handleSendReminder = async (req, res) => {
         .json({ error: "Could not resolve amount/dueDate" });
 
     // 6) Send the reminder (only now that we know it's eligible)
-    await sendReminder({
+    await sendRequestsRouter({
       requestId: existingRequest._id,
       paymentHistoryId: paymentHistoryId,
       requestId: requestId,
@@ -393,17 +406,18 @@ const handlePayment = async (req, res) => {
     const originalAmount = participant.amount;
     const currentPaymentAmount = participant.paymentAmount || 0;
     const paidDate = participant.paidDate;
-
+    const isMarkedAsPaid = participant.markedAsPaid;
     // Check if payment has already been made in full or overpaid
-    if (currentPaymentAmount >= originalAmount) {
+    if (currentPaymentAmount >= originalAmount || isMarkedAsPaid) {
       return res.status(400).json({
         success: false,
-        error: "Payment has already been made in full or overpaid",
+        error: "Payment has already been made",
         data: {
           originalAmount: originalAmount,
           currentPaymentAmount: currentPaymentAmount,
           isAlreadyPaid: true,
           paidDate: paidDate,
+          isMarkedAsPaid: isMarkedAsPaid,
         },
       });
     }
@@ -501,10 +515,234 @@ const handlePayment = async (req, res) => {
   }
 };
 
+const handleToggleMarkAsPaid = async (req, res) => {
+  try {
+    const { requestId, paymentHistoryId, userId } = req.params;
+
+    // First, fetch the current document to check payment status
+    const currentRequest = await Request.findOne({
+      _id: new ObjectId(requestId),
+      "paymentHistory._id": new ObjectId(paymentHistoryId),
+      "paymentHistory.participants._id": new ObjectId(userId),
+    });
+
+    if (!currentRequest) {
+      return res.status(404).json({
+        error:
+          "Payment request not found or user not authorized for this payment",
+      });
+    }
+
+    // Find the specific payment history entry and participant
+    const paymentEntry = currentRequest.paymentHistory.find(
+      (payment) => payment._id.toString() === paymentHistoryId
+    );
+
+    const participant = paymentEntry.participants.find(
+      (p) => p._id.toString() === userId
+    );
+
+    const originalAmount = participant.amount;
+    const currentPaymentAmount = participant.paymentAmount || 0;
+    const isCurrentlyMarkedAsPaid = participant.markedAsPaid || false;
+    const paidDate = participant.paidDate;
+
+    // Toggle the markedAsPaid status
+    const newMarkedAsPaid = !isCurrentlyMarkedAsPaid;
+    const actionType = newMarkedAsPaid ? "marked" : "unmarked";
+
+    // Update the markedAsPaid field in the Request collection
+    const result = await Request.findOneAndUpdate(
+      {
+        _id: new ObjectId(requestId),
+        "paymentHistory._id": new ObjectId(paymentHistoryId),
+        "paymentHistory.participants._id": new ObjectId(userId),
+      },
+      {
+        $set: {
+          "paymentHistory.$[payment].participants.$[participant].markedAsPaid":
+            newMarkedAsPaid,
+          "paymentHistory.$[payment].participants.$[participant].markedAsPaidDate":
+            newMarkedAsPaid ? new Date() : null,
+        },
+      },
+      {
+        arrayFilters: [
+          { "payment._id": new ObjectId(paymentHistoryId) },
+          { "participant._id": new ObjectId(userId) },
+        ],
+        new: true,
+      }
+    );
+
+    // Calculate status for response (considering both actual payments and marked status)
+    const effectivelyPaid =
+      newMarkedAsPaid || currentPaymentAmount >= originalAmount;
+    const amountOwed = effectivelyPaid
+      ? 0
+      : originalAmount - currentPaymentAmount;
+
+    // Handle User model updates based on action
+    let userUpdate;
+
+    if (newMarkedAsPaid) {
+      // Mark as paid - update existing entry or create new one if it doesn't exist
+      const existingEntry = await User.findOne({
+        _id: userId,
+        "paymentHistory.requestId": new ObjectId(requestId),
+        "paymentHistory.paymentHistoryId": new ObjectId(paymentHistoryId),
+      });
+
+      if (existingEntry) {
+        // Update existing entry
+        userUpdate = await User.findOneAndUpdate(
+          {
+            _id: userId,
+            "paymentHistory.requestId": new ObjectId(requestId),
+            "paymentHistory.paymentHistoryId": new ObjectId(paymentHistoryId),
+          },
+          {
+            $set: {
+              "paymentHistory.$.markedAsPaid": true,
+              "paymentHistory.$.markedAmount":
+                originalAmount - currentPaymentAmount,
+              "paymentHistory.$.isFullyPaid": true,
+              "paymentHistory.$.amountOwed": 0,
+              "paymentHistory.$.markedAsPaidDate": new Date(),
+            },
+            $inc: {
+              totalMarkedAsPaid: 1,
+              totalMarkedAmount: originalAmount - currentPaymentAmount,
+            },
+            $set: {
+              lastMarkedAsPaidDate: new Date(),
+            },
+          },
+          {
+            new: true,
+          }
+        );
+      } else {
+        // Create new entry if it doesn't exist
+        userUpdate = await User.findByIdAndUpdate(
+          userId,
+          {
+            $push: {
+              paymentHistory: {
+                requestId: new ObjectId(requestId),
+                paymentHistoryId: new ObjectId(paymentHistoryId),
+                originalAmount: originalAmount,
+                amountPaid: currentPaymentAmount,
+                markedAmount: originalAmount - currentPaymentAmount,
+                amountOwed: 0,
+                paidDate: paidDate,
+                requestName: currentRequest.name,
+                isFullyPaid: true,
+                markedAsPaid: true,
+                markedAsPaidDate: new Date(),
+              },
+            },
+            $inc: {
+              totalMarkedAsPaid: 1,
+              totalMarkedAmount: originalAmount - currentPaymentAmount,
+            },
+            $set: {
+              lastMarkedAsPaidDate: new Date(),
+            },
+          },
+          {
+            upsert: true,
+            new: true,
+          }
+        );
+      }
+    } else {
+      // Unmark as paid - update existing entry but preserve payment history
+      const isStillFullyPaid = currentPaymentAmount >= originalAmount;
+
+      userUpdate = await User.findOneAndUpdate(
+        {
+          _id: userId,
+          "paymentHistory.requestId": new ObjectId(requestId),
+          "paymentHistory.paymentHistoryId": new ObjectId(paymentHistoryId),
+          "paymentHistory.markedAsPaid": true,
+        },
+        {
+          $set: {
+            "paymentHistory.$.markedAsPaid": false,
+            "paymentHistory.$.markedAmount": 0,
+            "paymentHistory.$.isFullyPaid": isStillFullyPaid, // Based on actual payments
+            "paymentHistory.$.amountOwed": isStillFullyPaid
+              ? 0
+              : originalAmount - currentPaymentAmount,
+            "paymentHistory.$.markedAsPaidDate": null, // Clear the marked date when unmarking
+          },
+          $inc: {
+            totalMarkedAsPaid: -1,
+            totalMarkedAmount: -(originalAmount - currentPaymentAmount),
+          },
+        },
+        {
+          new: true,
+        }
+      );
+
+      // Update lastMarkedAsPaidDate if there are still marked payments
+      const remainingMarkedPayments = userUpdate?.paymentHistory?.filter(
+        (p) => p.markedAsPaid
+      );
+      if (remainingMarkedPayments && remainingMarkedPayments.length > 0) {
+        const lastMarkedPayment = remainingMarkedPayments.sort(
+          (a, b) => new Date(b.markedAsPaidDate) - new Date(a.markedAsPaidDate)
+        )[0];
+
+        await User.findByIdAndUpdate(userId, {
+          $set: {
+            lastMarkedAsPaidDate: lastMarkedPayment.markedAsPaidDate,
+          },
+        });
+      } else {
+        // No marked payments left, remove lastMarkedAsPaidDate
+        await User.findByIdAndUpdate(userId, {
+          $unset: {
+            lastMarkedAsPaidDate: "",
+          },
+        });
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Payment ${actionType} as paid successfully`,
+      data: {
+        request: result,
+        paymentSummary: {
+          originalAmount: originalAmount,
+          actualAmountPaid: currentPaymentAmount, // Actual payment amount unchanged
+          effectiveAmountPaid: originalAmount, // Full amount when marked as paid
+          amountOwed: amountOwed,
+          isMarkedAsPaid: newMarkedAsPaid,
+          isEffectivelyPaid: effectivelyPaid, // Either marked or actually paid in full
+          isActuallyFullyPaid: currentPaymentAmount >= originalAmount, // Based on actual payments only
+          actionPerformed: actionType,
+          markedAsPaidDate: newMarkedAsPaid ? new Date() : null,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Error toggling marked as paid status:", error);
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createRequest,
   getRequests,
   updateRequest,
   handleSendReminder,
   handlePayment,
+  handleToggleMarkAsPaid,
 };

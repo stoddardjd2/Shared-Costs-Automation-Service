@@ -136,7 +136,7 @@ const userSchema = new Schema(
     plan: {
       type: String,
       required: true,
-      default: "free"
+      default: "free",
     },
     role: {
       type: String,
@@ -177,11 +177,15 @@ const userSchema = new Schema(
         paidDate: Date,
         requestName: String,
         isFullyPaid: Boolean,
+        markedAsPaid: Boolean,
+        markedAsPaidDate: Date,
       },
     ],
     totalPaymentsMade: Number,
+    totalMarkedAsPaid: Number,
     totalAmountPaid: Number,
     lastPaymentDate: Date,
+    lastMarkedAsPaidDate: Date,
   },
 
   {

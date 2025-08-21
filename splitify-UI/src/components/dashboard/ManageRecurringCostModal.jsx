@@ -23,6 +23,7 @@ import RequestButton from "./RequestButton";
 import { usePeopleState } from "../../hooks/usePeopleState";
 import { useSplitState } from "../../hooks/useSplitState";
 import { useChargeState } from "../../hooks/useChargeState";
+import PaymentHistoryParticipantDetails from "./PaymentHistoryParticipantDetails";
 
 const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
   const { participants, updateCost, sendPaymentRequest, resendPaymentRequest } =
@@ -321,8 +322,7 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                   Manage Request
                 </h1>
                 <p className="text-gray-600">
-                  {cost.name} {""}
-                  • {formatAmountDisplay(cost).amount} each •{" "}
+                  {cost.name} {""}• {formatAmountDisplay(cost).amount} each •{" "}
                   {formatBillingFrequency(cost)}
                   {/* {cost.frequency || "monthly"} */}
                 </p>
@@ -370,7 +370,7 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-4 bg-white">
                   {sortedPayments.map((payment) => {
                     // const statusStyling = getPaymentStatusStyling(payment);
                     // const StatusIcon = statusStyling.icon;
@@ -409,7 +409,7 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
 
                         <div className="p-4">
                           {/* Date Information */}
-                          <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-100">
+                          <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-200">
                             {payment.requestDate && (
                               <div className="flex items-center gap-2 text-gray-600 px-3">
                                 <Calendar className="w-4 h-4" />
@@ -431,55 +431,21 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                               );
                               const statusIndicatorColor =
                                 getStatusIndicatorColor(participant, payment);
+                              const partcipantStatus = getParticipantStatus(
+                                participant,
+                                payment
+                              );
                               const canResend =
-                                participant.status === "pending" ||
-                                participant.status === "overdue";
+                                partcipantStatus === "pending" ||
+                                partcipantStatus === "overdue";
 
                               return (
-                                <div
-                                  key={participant._id}
-                                  className="flex items-center justify-between p-3 rounded-lg border border-gray-100"
-                                >
-                                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                                    <div className="relative flex-shrink-0">
-                                      <div
-                                        className={`w-12 h-12 rounded-lg ${user?.color} flex items-center justify-center text-white font-semibold text-sm border-2 border-white shadow-sm`}
-                                      >
-                                        {user.avatar}
-                                        {/* Status indicator - small and subtle */}
-                                        <div
-                                          className={`absolute -bottom-0.5 -right-0.5 ${statusIndicatorColor} rounded-full w-4 h-4 border-2 border-white`}
-                                        ></div>
-                                      </div>
-                                    </div>
-
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex flex-col">
-                                        <span className="font-semibold text-black text-sm truncate">
-                                          {user?.name}
-                                        </span>
-                                        <span className="text-gray-600 font-medium text-xs">
-                                          ${participant.amount}
-                                        </span>
-                                        <span className="text-xs text-gray-600">
-                                          {getStatusLabel(participant, payment)}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  {canResend && (
-                                    <RequestButton
-                                      costId={cost._id}
-                                      participantUserId={participant._id}
-                                      className="px-3 py-2 text-sm ml-3 flex-shrink-0"
-                                      loadingText="Sending..."
-                                      successText="Sent!"
-                                    >
-                                      Resend
-                                    </RequestButton>
-                                  )}
-                                </div>
+                                <PaymentHistoryParticipantDetails
+                                  costId={cost._id}
+                                  participant={participant}
+                                  paymentHistoryRequest={payment}
+                                  user={user}
+                                />
                               );
                             })}
                           </div>

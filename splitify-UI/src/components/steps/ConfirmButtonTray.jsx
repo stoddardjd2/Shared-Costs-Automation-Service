@@ -209,7 +209,7 @@ export default function ConfirmButtonTray({
                 disabled={isDisabled}
                 className={`w-full text-white font-semibold py-4 rounded-xl shadow-lg transition-all hover:shadow-xl flex items-center justify-center gap-3 ${
                 isDisabled
-                    ? "bg-blue-600/40 "
+                    ? "bg-blue-600/40 cursor-not-allowed"
                     : "bg-blue-600 hover:bg-blue-700 cursor-pointer"
                 }`}
               >

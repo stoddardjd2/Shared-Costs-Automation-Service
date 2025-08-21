@@ -1,5 +1,7 @@
 const User = require("../models/User");
 const nodemailer = require("nodemailer");
+const smsOptInEmailTemplate = require("./smsEmailTemplate");
+
 // Create transporter (configure with your SMTP settings)
 const transporter = nodemailer.createTransport({
   service: "gmail", // change to your SMTP provider if needed
@@ -98,7 +100,7 @@ async function emailNonApprovedParticipants(
     const r = byRequester[requesterKey] || byRequester.get?.(requesterKey); // Map or plain obj
     const lastSentAt = r?.lastSentAt || null;
 
-    console.log("t", t)
+    console.log("t", t);
     return {
       _id: t._id,
       email: t.email,
@@ -170,6 +172,8 @@ async function emailNonApprovedParticipants(
 
     const finalUrl = url.toString();
 
+
+    
     try {
       await transporter.sendMail({
         from: process.env.DEFAULT_FROM_EMAIL,
@@ -181,10 +185,10 @@ async function emailNonApprovedParticipants(
           `but we don't have your consent on file.\n` +
           `Please go to ${finalUrl} to opt in.\n\n` +
           `Thank you,\nSplitify`,
-        html: `<p>Hi ${c.name},</p>
-<p><strong>${requesterName}</strong> would like to send you payment reminders by text message, but we don't have your consent on file.</p>
-<p>Please <a href="${finalUrl}">click here</a> to opt in.</p>
-<p>Thank you,<br>Splitify</p>`,
+        html: smsOptInEmailTemplate
+          .replace(/\{\{senderName\}\}/g, requesterName)
+          .replace(/\{\{receiverName\}\}/g, c.name)
+          .replace(/\{\{optInUrl\}\}/g, finalUrl),
       });
       sent.push(c.email.toLowerCase());
       toUpdate.push({ _id: c._id });
