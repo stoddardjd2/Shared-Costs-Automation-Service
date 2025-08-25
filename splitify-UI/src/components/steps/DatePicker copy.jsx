@@ -1,54 +1,28 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState } from "react";
 import { SkipForward, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
-const DatePicker = ({ startTiming, setStartTiming }) => {
-  // --- Helpers: safe local parse/format for YYYY-MM-DD ---
-  const isISODate = (v) => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
-
-  const parseISODateLocal = (iso) => {
-    if (!isISODate(iso)) return null;
-    const [y, m, d] = iso.split("-").map(Number);
-    return new Date(y, m - 1, d); // local midnight
-  };
-
-  const toISODateLocal = (date) => {
-    if (!(date instanceof Date)) return null;
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
-  };
-
-  console.log("nextExpectedChargeDate", startTiming)
-  // --- State ---
-  const [selectedDate, setSelectedDate] = useState(() =>
-    isISODate(startTiming) ? parseISODateLocal(startTiming) : null
-  );
+const DatePicker = ({ startTiming = "now", setStartTiming }) => {
+  const [selectedDate, setSelectedDate] = useState(null);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [currentMonth, setCurrentMonth] = useState(() =>
-    isISODate(startTiming) ? parseISODateLocal(startTiming) : new Date()
-  );
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  // Mock functions - replace with your actual functions
 
-  // Keep internal selection in sync if parent changes startTiming
-  useEffect(() => {
-    if (isISODate(startTiming)) {
-      const d = parseISODateLocal(startTiming);
-      setSelectedDate(d);
-      setCurrentMonth(d || new Date());
-    } else if (startTiming === "now") {
-      setSelectedDate(null);
-      setCurrentMonth(new Date());
-    }
-  }, [startTiming]);
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
 
-  const months = useMemo(
-    () => [
-      "January","February","March","April","May","June",
-      "July","August","September","October","November","December",
-    ],
-    []
-  );
-  const daysOfWeek = useMemo(() => ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"], []);
+  const daysOfWeek = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
@@ -57,19 +31,25 @@ const DatePicker = ({ startTiming, setStartTiming }) => {
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
     const startingDayOfWeek = firstDay.getDay();
+
     const days = [];
 
-    // leading blanks
-    for (let i = 0; i < startingDayOfWeek; i++) days.push(null);
-    // actual days
-    for (let day = 1; day <= daysInMonth; day++) days.push(new Date(year, month, day));
+    // Add empty cells for days before the first day of the month
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      days.push(null);
+    }
+
+    // Add days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      days.push(new Date(year, month, day));
+    }
+
     return days;
   };
 
   const handleDateSelect = (date) => {
-    if (!date) return;
-    setSelectedDate(date);
-    setStartTiming(toISODateLocal(date)); // <<< emit "YYYY-MM-DD"
+    setSelectedDate(date)
+    setStartTiming(date);
     setShowCalendar(false);
   };
 
@@ -80,25 +60,22 @@ const DatePicker = ({ startTiming, setStartTiming }) => {
   };
 
   const isToday = (date) => {
-    if (!date) return false;
-    const t = new Date();
-    t.setHours(0, 0, 0, 0);
-    const c = new Date(date);
-    c.setHours(0, 0, 0, 0);
-    return c.getTime() === t.getTime();
+    const today = new Date();
+    return date?.toDateString() === today.toDateString();
   };
 
   const isPastDate = (date) => {
     if (!date) return false;
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate comparison
     const compareDate = new Date(date);
     compareDate.setHours(0, 0, 0, 0);
     return compareDate < today;
   };
 
-  const isSelected = (date) =>
-    selectedDate && date?.toDateString() === selectedDate.toDateString();
+  const isSelected = (date) => {
+    return selectedDate && date?.toDateString() === selectedDate.toDateString();
+  };
 
   const formatSelectedDate = () => {
     if (!selectedDate) return "Select date";
@@ -115,7 +92,10 @@ const DatePicker = ({ startTiming, setStartTiming }) => {
         {/* Custom Date Option */}
         <div className="relative">
           <button
-            onClick={() => setShowCalendar(!showCalendar)}
+            onClick={() => {
+              setShowCalendar(!showCalendar);
+            }}
+            
             className={`w-full p-3 rounded-lg border-2 cursor-pointer transition-all flex items-center gap-3 ${
               startTiming !== "now"
                 ? "border-blue-600 bg-blue-50"
@@ -124,15 +104,19 @@ const DatePicker = ({ startTiming, setStartTiming }) => {
           >
             <Calendar className="w-5 h-5 text-gray-500" />
             <div className="text-left flex-1">
-              <div className="text-sm font-medium text-gray-900">Start Date</div>
-              <div className="text-xs text-gray-600">{formatSelectedDate()}</div>
+              <div className="text-sm font-medium text-gray-900 ">
+                Custom Date
+              </div>
+              <div className="text-xs text-gray-600">
+                {formatSelectedDate()}
+              </div>
             </div>
           </button>
 
           {/* Calendar Dropdown */}
           {showCalendar && (
-            <div className="absolute min-w-[228px] bottom-full right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-10">
-              {/* Header */}
+            <div className="absolute min-w-[228px] bottom-full 0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-10">
+              {/* Calendar Header */}
               <div className="flex items-center justify-between mb-4">
                 <button
                   onClick={() => navigateMonth(-1)}
@@ -153,29 +137,32 @@ const DatePicker = ({ startTiming, setStartTiming }) => {
                 </button>
               </div>
 
-              {/* Days of Week */}
+              {/* Days of Week Header */}
               <div className="grid grid-cols-7 gap-1 mb-2">
                 {daysOfWeek.map((day) => (
-                  <div key={day} className="text-center text-xs font-medium text-gray-500 py-2">
+                  <div
+                    key={day}
+                    className="text-center text-xs font-medium text-gray-500 py-2"
+                  >
                     {day}
                   </div>
                 ))}
               </div>
 
-              {/* Grid */}
+              {/* Calendar Grid */}
               <div className="grid grid-cols-7 gap-1">
                 {getDaysInMonth(currentMonth).map((date, index) => {
-                  const past = isPastDate(date);
+                  const isPast = isPastDate(date);
                   return (
                     <button
                       key={index}
-                      onClick={() => date && !past && handleDateSelect(date)}
-                      disabled={!date || past || isToday(date)}
+                      onClick={() => date && !isPast && handleDateSelect(date)}
+                      disabled={!date || isPast || isToday(date)}
                       className={`
                         h-8 w-8 text-xs font-medium rounded-lg transition-all
                         ${!date ? "invisible" : ""}
                         ${
-                          past
+                          isPast
                             ? "text-gray-300"
                             : isSelected(date)
                             ? "bg-blue-600 text-white"
@@ -190,6 +177,7 @@ const DatePicker = ({ startTiming, setStartTiming }) => {
                   );
                 })}
               </div>
+
             </div>
           )}
         </div>

@@ -16,6 +16,8 @@ export const AuthProvider = ({ children }) => {
       if (token && token !== "undefined") {
         try {
           const isValidToken = await verifyToken(token);
+          console.log("checking token", isValidToken);
+
           if (isValidToken) {
             setIsValidToken(true);
             // setUserData(userData);

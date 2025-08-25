@@ -3,8 +3,7 @@ const cron = require("node-cron");
 const { ObjectId } = require("mongodb");
 const Request = require("../models/Request");
 const User = require("../models/User");
-const sendRequestsRouter = require("../send-request-helpers/sendRequestsRouter");
-const { resolveDynamicAmountIfEnabled } = require("./plaidHelper");
+const { sendReminder } = require("../reminder-scheduler/reminderScheduler");
 
 const TIMEZONE = process.env.REMINDER_TIMEZONE || "America/Los_Angeles";
 const CRON_EXPRESSION = "0 12 * * *"; // 12:00 PM Pacific daily
@@ -66,10 +65,6 @@ function addIntervalToDate(baseDate, intervalCount, intervalUnit) {
     case "weekly":
       updatedDate.setDate(updatedDate.getDate() + count * 7);
       return updatedDate;
-    case "biweekly":
-    case "bi-weekly":
-      updatedDate.setDate(updatedDate.getDate() + count * 7);
-      return updatedDate;
     case "month":
     case "months":
     case "monthly":
@@ -95,7 +90,6 @@ function getIntervalFromFrequency(frequency, customInterval, customUnit) {
   }
   if (freq === "daily") return { count: 1, unit: "days" };
   if (freq === "weekly") return { count: 1, unit: "weeks" };
-  if (freq === "biweekly") return { count: 2, unit: "weeks" };
   if (freq === "monthly") return { count: 1, unit: "months" };
   if (freq === "yearly") return { count: 1, unit: "years" };
   if (freq === "one-time") return null;
@@ -128,12 +122,20 @@ function isRequestDueByFrequency(
 }
 
 function calculateDueDate(requestDate, reminderFrequency) {
-  const interval = getIntervalFromFrequency(reminderFrequency, 1, null);
+  const interval =
+    getIntervalFromFrequency(reminderFrequency || "weekly", 1, null) || {
+      count: 7,
+      unit: "days",
+    };
   return addIntervalToDate(requestDate, interval.count, interval.unit);
 }
 
 function calculateNextReminderDate(dueDate, reminderFrequency) {
-  const interval = getIntervalFromFrequency(reminderFrequency, 1, null);
+  const interval =
+    getIntervalFromFrequency(reminderFrequency || "weekly", 1, null) || {
+      count: 7,
+      unit: "days",
+    };
   return addIntervalToDate(dueDate, interval.count, interval.unit);
 }
 
@@ -142,14 +144,13 @@ function calculateNextReminderDate(dueDate, reminderFrequency) {
  * can generate the _id up front and pass it through to notifications.
  */
 function createPaymentHistoryEntry(requestDocument, requestSentDate, presetId) {
-  console.log("entry with", requestDocument.participants)
   const dueDate = calculateDueDate(
     requestSentDate,
-    requestDocument.reminderFrequency
+    requestDocument.reminderFrequency || "weekly"
   );
   const nextReminderDate = calculateNextReminderDate(
     dueDate,
-    requestDocument.reminderFrequency
+    requestDocument.reminderFrequency || "weekly"
   );
 
   const participantsData = (requestDocument.participants || []).map(
@@ -227,7 +228,7 @@ async function sendPaymentRequestToParticipant({
     }
 
     // 5) Call your existing sender with populated history id
-    const success = await sendRequestsRouter({
+    const success = await sendReminder({
       requestId: request._id,
       requestName: request.name,
       requestOwner: ownerUser?.name || "Unknown",
@@ -266,11 +267,16 @@ async function processRecurringRequestIfDue(
 ) {
   const startTimingValue = normalizeStartTiming(requestDocument.startTiming);
   const hasInitialRequestBeenSent = !!requestDocument.lastSent;
+
   // Initial request
   if (!hasInitialRequestBeenSent) {
     if (startTimingValue && startTimingValue !== "now") {
       if (sameOrAfterDayInTimezone(currentDate, startTimingValue, TIMEZONE)) {
         const requestSentDate = currentDate;
+
+        // if dynamic cost, check new updated cost
+
+
         // Generate history id up front and pass it through
         const paymentHistoryId = new ObjectId();
         const paymentHistoryEntry = createPaymentHistoryEntry(
@@ -327,32 +333,7 @@ async function processRecurringRequestIfDue(
   ) {
     const requestSentDate = currentDate;
 
-    // DYNAMIC COST
-    // let overrideAmount = null;
-    // let newTotalAmount = null;
-
-    if (requestDocument?.isDynamic) {
-      try {
-        const updatedDynamicData = await resolveDynamicAmountIfEnabled(
-          requestDocument
-        );
-
-          console.log('here')
-        console.log("updatedDynamicData", updatedDynamicData);
-
-        requestDocument.participants = updatedDynamicData.newParticipants;
-        console.log(
-          "updated req doc after dynamic newParticpants",
-          requestDocument.participants
-        );
-      } catch (e) {
-        console.error("Dynamic amount (recurring) failed:", e?.message || e);
-        throw e;
-      }
-    }
-    // if (newAmount != null) paymentHistoryEntry.amount = newAmount;
-    // if (newAmount != null) paymentHistoryEntry.totalAmount = newTotalAmount;
-
+    // Generate history id up front and pass it through
     const paymentHistoryId = new ObjectId();
     const paymentHistoryEntry = createPaymentHistoryEntry(
       requestDocument,
@@ -389,6 +370,7 @@ async function processRecurringRequestIfDue(
     schedulerMetrics.lastRunSentCount++;
     return { sent: true, reason: "recurrence" };
   }
+
   return { sent: false, reason: "not_due" };
 }
 

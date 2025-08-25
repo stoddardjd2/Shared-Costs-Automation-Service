@@ -23,6 +23,7 @@ import {
   Users,
   UserMinus,
   UserCheck,
+  Split,
 } from "lucide-react";
 import StepIndicator from "./StepIndicator";
 import ChargeDisplay from "../costs/ChargeDisplay";
@@ -32,6 +33,7 @@ import ConfirmButtonTray from "./ConfirmButtonTray";
 import { createRequest, updateRequest } from "../../queries/requests";
 import EditPeople from "../dashboard/EditPeople";
 import DatePicker from "./DatePicker";
+import PlaidConnect from "../plaid/PlaidConnect";
 const SplitStep = ({
   setSelectedPeople,
   onBack,
@@ -42,8 +44,8 @@ const SplitStep = ({
   // splitType,
   // setSplitType,
   setView,
-  totalAmount,
-  setTotalAmount,
+  // totalAmount,
+  // setTotalAmount,
   customAmounts,
   updateCustomAmount,
   calculateSplitAmounts,
@@ -53,7 +55,7 @@ const SplitStep = ({
   setSelectedCharge,
   // Edit mode props
   isEditMode = false,
-  disableDynamicCosts = true,
+  disableDynamicCosts = false,
   setSelectedCost,
   setNewChargeDetails,
 }) => {
@@ -78,9 +80,7 @@ const SplitStep = ({
   // Local state for recurring options - use existing values in edit mode
   const [showRecurringOptions, setShowRecurringOptions] = useState(false);
   const [recurringType, setRecurringType] = useState(
-    selectedCharge?.frequency?.toLowerCase() ||
-      newChargeDetails?.frequency?.toLowerCase() ||
-      "monthly"
+    selectedCharge?.frequency?.toLowerCase() || null
   );
   const [originalFrequency, setOriginalFrequency] = useState(
     selectedCharge?.frequency?.toLowerCase()
@@ -97,37 +97,43 @@ const SplitStep = ({
   );
 
   // State for start timing - default based on mode
-  const [startTiming, setStartTiming] = useState(isEditMode ? "next" : "now");
+  const [startTiming, setStartTiming] = useState("now");
 
   const [showUnitOptions, setShowUnitOptions] = useState(false);
+
+  const [isPlaidCharge, setIsPlaidCharge] = useState(
+    selectedCharge?.isPlaidCharge || false
+  );
 
   // State for editable total amounts
   // const initEditableTotalAmount = Number(
   //   (Number(totalAmount) || Number(selectedCharge?.lastAmount) || "").toFixed(2)
   // );
-  const [editableTotalAmount, setEditableTotalAmount] = useState(0);
+  const [editableTotalAmount, setEditableTotalAmount] = useState(
+    selectedCharge?.totalAmount || 0
+  );
 
   // Add state to preserve the last known good amount
   const [lastKnownGoodAmount, setLastKnownGoodAmount] = useState(
     Number(
-      (Number(totalAmount) || Number(selectedCharge?.lastAmount) || 0).toFixed(
-        2
-      )
+      (
+        Number(selectedCharge?.totalAmount) ||
+        Number(selectedCharge?.lastAmount) ||
+        0
+      ).toFixed(2)
     )
   );
 
   // Check if dynamic costs should be disabled
   const isDynamicCostsDisabled =
     splitType === "custom" ||
-    !selectedCharge?.plaidMatch ||
-    recurringType === "none" ||
+    !isPlaidCharge ||
+    recurringType === "one-time" ||
     disableDynamicCosts;
 
   // State for dynamic costs tracking - use previous setting in edit mode, otherwise default based on plaidMatch
   const [isDynamic, setIsDynamic] = useState(
-    isEditMode
-      ? selectedCharge?.isDynamic || false
-      : (selectedCharge?.plaidMatch && true) || false
+    selectedCharge?.isDynamic || false
   );
   // const [isDynamic, setIsDynamic] = useState(false);
   const [showDynamicInfo, setShowDynamicInfo] = useState(false);
@@ -148,7 +154,6 @@ const SplitStep = ({
       }
     }
 
-    console.log("LISTINE");
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -158,37 +163,39 @@ const SplitStep = ({
   // Initialize last known good amount
   React.useEffect(() => {
     const initialAmount = Number(
-      (Number(totalAmount) || Number(selectedCharge?.lastAmount) || 0).toFixed(
-        2
-      )
+      (
+        Number(selectedCharge?.totalAmount) ||
+        Number(selectedCharge?.lastAmount) ||
+        0
+      ).toFixed(2)
     );
     if (initialAmount > 0) {
       setLastKnownGoodAmount(initialAmount);
     }
-  }, [selectedCharge?.lastAmount, totalAmount]);
+  }, [selectedCharge?.lastAmount]);
 
   // Only disable dynamic costs if conditions don't allow it, but don't auto-enable
-  React.useEffect(() => {
-    // If dynamic costs become disabled (e.g., switching to custom split or one-time), turn it off
-    if (isDynamicCostsDisabled && isDynamic) {
-      setIsDynamic(false);
-    }
-    // Don't auto-enable when conditions allow - let user choose
-  }, [isDynamicCostsDisabled, isDynamic]);
+  // React.useEffect(() => {
+  //   // If dynamic costs become disabled (e.g., switching to custom split or one-time), turn it off
+  //   if (isDynamicCostsDisabled && isDynamic) {
+  //     setIsDynamic(false);
+  //   }
+  //   // Don't auto-enable when conditions allow - let user choose
+  // }, [isDynamicCostsDisabled, isDynamic]);
 
   // Sync editableTotalAmount with totalAmount prop
-  React.useEffect(() => {
-    if (totalAmount !== undefined && totalAmount !== editableTotalAmount) {
-      setEditableTotalAmount(Number(Number(totalAmount).toFixed(2)));
-    }
-  }, [totalAmount]);
+  // React.useEffect(() => {
+  //   if (totalAmount !== undefined && totalAmount !== editableTotalAmount) {
+  //     setEditableTotalAmount(Number(Number(totalAmount).toFixed(2)));
+  //   }
+  // }, [totalAmount]);
 
   // Update parent totalAmount when editableTotalAmount changes
-  React.useEffect(() => {
-    if (setTotalAmount && editableTotalAmount !== totalAmount) {
-      setTotalAmount(Number(editableTotalAmount.toFixed(2)));
-    }
-  }, [editableTotalAmount, setTotalAmount, totalAmount]);
+  // React.useEffect(() => {
+  //   if (setTotalAmount && editableTotalAmount !== totalAmount) {
+  //     setTotalAmount(Number(editableTotalAmount.toFixed(2)));
+  //   }
+  // }, [editableTotalAmount, setTotalAmount, totalAmount]);
 
   // Close dropdowns when clicking outside
   React.useEffect(() => {
@@ -223,6 +230,8 @@ const SplitStep = ({
         return "Daily";
       case "weekly":
         return "Weekly";
+      case "biweekly":
+        return "Biweekly";
       case "monthly":
         return "Monthly";
       case "yearly":
@@ -257,6 +266,8 @@ const SplitStep = ({
             return "Tomorrow";
           case "weeks":
             return "Next week";
+          case "biweekly":
+            return "In two weeks";
           case "months":
             return "Next month";
           case "years":
@@ -273,6 +284,8 @@ const SplitStep = ({
         return "Tomorrow";
       case "weekly":
         return "Next week";
+      case "biweekly":
+        return "In two weeks";
       case "monthly":
         return "Next month";
       case "yearly":
@@ -310,9 +323,12 @@ const SplitStep = ({
       selectedPeople,
       splitType,
       ...(splitType === "custom" && { customAmounts }),
-      ...(splitType === "percentage" && {
-        percentageAmounts: percentageAmounts,
-      }),
+      //   ...(splitType === "percentage" &&
+      //     {
+      //     percentageAmounts: percentageAmounts,
+      //   }
+      // )
+      // ,
       recurringType,
       customInterval,
       customUnit,
@@ -327,7 +343,8 @@ const SplitStep = ({
 
     // Override cost entry properties with current state values to ensure accuracy
     costEntry.splitType = splitType;
-    costEntry.amount = actualAmount;
+    costEntry.amount = editableTotalAmount / (participants.length + 1);
+    costEntry.totalAmount = editableTotalAmount;
     // costEntry.totalAmount = actualAmount;
     costEntry.frequency = recurringType === "none" ? null : recurringType;
     costEntry.customInterval =
@@ -339,6 +356,7 @@ const SplitStep = ({
     // NOT CONFIGURABLE FOR USER YET!
     costEntry.requestFrequency = "daily";
     costEntry.allowMarkAsPaidForEveryone = allowMarkAsPaidForEveryone;
+    costEntry.isPlaidCharge = isPlaidCharge;
     // save id to entry for edit mode, used to identify which cost to update in DB
     if (isEditMode) {
       costEntry._id = selectedCharge._id;
@@ -488,32 +506,26 @@ const SplitStep = ({
       : 0;
 
   // Auto-enable dynamic costs when switching away from custom split method (when appropriate)
-  React.useEffect(() => {
-    const prevSplitType = prevSplitTypeRef.current;
+  // React.useEffect(() => {
+  //   const prevSplitType = prevSplitTypeRef.current;
 
-    // Check if we're changing FROM custom TO another split type
-    if (prevSplitType === "custom" && splitType !== "custom") {
-      // Auto-enable dynamic costs if:
-      // 1. Not in edit mode (new cost) and plaidMatch is available, OR
-      // 2. In edit mode and the original charge had dynamic costs enabled
-      const shouldAutoEnable = !isEditMode
-        ? selectedCharge?.plaidMatch || false // New cost: enable if plaid available
-        : selectedCharge?.isDynamic || false; // Edit mode: enable if original was dynamic
+  //   // Check if we're changing FROM custom TO another split type
+  //   if (prevSplitType === "custom" && splitType !== "custom") {
+  //     // Auto-enable dynamic costs if:
+  //     // 1. Not in edit mode (new cost) and plaidMatch is available, OR
+  //     // 2. In edit mode and the original charge had dynamic costs enabled
+  //     const shouldAutoEnable = !isEditMode
+  //       ? isPlaidCharge || false // New cost: enable if plaid available
+  //       : isDynamic || false; // Edit mode: enable if original was dynamic
 
-      if (shouldAutoEnable && !isDynamicCostsDisabled) {
-        setIsDynamic(true);
-      }
-    }
+  //     if (shouldAutoEnable && !isDynamicCostsDisabled) {
+  //       setIsDynamic(true);
+  //     }
+  //   }
 
-    // Update the ref for next comparison
-    prevSplitTypeRef.current = splitType;
-  }, [
-    splitType,
-    isDynamicCostsDisabled,
-    isEditMode,
-    selectedCharge?.plaidMatch,
-    selectedCharge?.isDynamic,
-  ]);
+  //   // Update the ref for next comparison
+  //   prevSplitTypeRef.current = splitType;
+  // }, [splitType, isDynamicCostsDisabled, isEditMode, isPlaidCharge, isDynamic]);
 
   // Update last known good amount when we have a valid amount
   React.useEffect(() => {
@@ -539,15 +551,12 @@ const SplitStep = ({
       // If custom total is 0, restore the last known good amount
       if (customTotal === 0 && lastKnownGoodAmount > 0) {
         setEditableTotalAmount(lastKnownGoodAmount);
-        if (setTotalAmount) {
-          setTotalAmount(lastKnownGoodAmount);
-        }
       }
     }
 
     // Update the ref for next comparison
     prevSplitTypeRef.current = splitType;
-  }, [splitType, customAmounts, lastKnownGoodAmount, setTotalAmount]);
+  }, [splitType, customAmounts, lastKnownGoodAmount]);
 
   // Recalculate total amount when split method changes
   React.useEffect(() => {
@@ -570,7 +579,7 @@ const SplitStep = ({
     else if (splitType === "percentage") {
       if (!editableTotalAmount || editableTotalAmount === 0) {
         newTotalAmount = Number(
-          selectedCharge?.lastAmount || totalAmount || lastKnownGoodAmount || 0
+          editableTotalAmount || lastKnownGoodAmount || 0
         );
       }
     }
@@ -579,7 +588,7 @@ const SplitStep = ({
     else if (splitType === "equal" || splitType === "equalWithMe") {
       if (!editableTotalAmount || editableTotalAmount === 0) {
         newTotalAmount = Number(
-          selectedCharge?.lastAmount || totalAmount || lastKnownGoodAmount || 0
+          editableTotalAmount || lastKnownGoodAmount || 0
         );
       }
     }
@@ -587,15 +596,12 @@ const SplitStep = ({
     // Update if amount changed and is valid
     if (newTotalAmount !== editableTotalAmount && newTotalAmount >= 0) {
       setEditableTotalAmount(newTotalAmount);
-      if (setTotalAmount) {
-        setTotalAmount(newTotalAmount);
-      }
+      setEditableTotalAmount(newTotalAmount);
     }
   }, [
     splitType,
     customAmounts,
     selectedCharge?.lastAmount,
-    totalAmount,
     lastKnownGoodAmount,
   ]);
 
@@ -609,9 +615,7 @@ const SplitStep = ({
       const roundedTotal = Number(customTotal.toFixed(2));
       if (roundedTotal !== editableTotalAmount) {
         setEditableTotalAmount(roundedTotal);
-        if (setTotalAmount) {
-          setTotalAmount(roundedTotal);
-        }
+        setEditableTotalAmount(roundedTotal);
       }
     }
   }, [customAmounts, splitType]);
@@ -636,11 +640,8 @@ const SplitStep = ({
       const chargeAmount = Number(Number(selectedCharge.lastAmount).toFixed(2));
       setEditableTotalAmount(chargeAmount);
       setLastKnownGoodAmount(chargeAmount);
-      if (setTotalAmount) {
-        setTotalAmount(chargeAmount);
-      }
     }
-  }, [selectedCharge?._id, selectedCharge?.lastAmount, setTotalAmount]);
+  }, [selectedCharge?._id, selectedCharge?.lastAmount]);
 
   return (
     <div className={"relative"}>
@@ -648,7 +649,6 @@ const SplitStep = ({
       <div className={`max-w-lg mx-auto px-4 sm:px-6 py-0 pb-48 `}>
         {/* Hide step indicator and back button in edit mode since modal has its own header */}
         {/* {!isEditMode && <StepIndicator current="split" />} */}
-
         {
           <div
             className={`flex items-center gap-4 mb-6  ${isEditMode && "mt-8"}`}
@@ -687,7 +687,16 @@ const SplitStep = ({
           customUnit={customUnit}
           originalFrequency={originalFrequency}
         /> */}
-
+        <PlaidConnect
+          setChargeName={setChargeName}
+          setEditableTotalAmount={setEditableTotalAmount}
+          setRecurringType={setRecurringType}
+          setIsPlaidCharge={setIsPlaidCharge}
+          setIsDynamic={setIsDynamic}
+          setStartTiming={setStartTiming}
+          chargeName={chargeName}
+          isPlaidCharge={isPlaidCharge}
+        />
         {/* Name of Charge */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 ">
@@ -695,10 +704,15 @@ const SplitStep = ({
           </h3>
           <input
             type="text"
+            disabled={isPlaidCharge}
             value={chargeName}
             onChange={(e) => setChargeName(e.target.value)}
             placeholder="e.g., Netflix, Spotify Premium"
-            className="w-full p-3 border hover:border-gray-300 border-gray-200 rounded-lg outline-none text-base bg-white transition-colors focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+            className={`w-full p-3 border hover:border-gray-300 border-gray-200 rounded-lg outline-none text-base bg-white transition-colors focus:ring-2 focus:ring-blue-600 focus:border-transparent ${
+              isPlaidCharge
+                ? "!bg-gray-100 text-gray-500 "
+                : "bg-white focus:ring-2  border-gray-200 focus:ring-blue-600 focus:border-transparent"
+            }`}
           />
         </div>
 
@@ -718,16 +732,14 @@ const SplitStep = ({
                 if (newAmount >= 0) {
                   setLastKnownGoodAmount(newAmount);
                 }
-                if (setTotalAmount) {
-                  setTotalAmount(newAmount);
-                }
+                setEditableTotalAmount(newAmount);
               }}
               placeholder="Enter total amount"
-              disabled={splitType === "custom"}
+              disabled={splitType === "custom" || isPlaidCharge}
               className={`hover:border-gray-300 transition-colors w-full pl-10 pr-4 py-3 border rounded-lg outline-none text-base 
         ${
-          splitType === "custom"
-            ? "bg-gray-100 text-gray-400 "
+          splitType === "custom" || isPlaidCharge
+            ? "bg-gray-100 text-gray-500 "
             : "bg-white focus:ring-2  border-gray-200 focus:ring-blue-600 focus:border-transparent"
         }`}
             />
@@ -737,19 +749,21 @@ const SplitStep = ({
         {/* Payment Schedule */}
         <div className=" mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Payment Schedule
+            Frequency
           </h3>
           {/* Recurring Options Dropdown */}
           <div className="relative recurring-dropdown">
             <button
               onClick={() => setShowRecurringOptions(!showRecurringOptions)}
-              className="w-full p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition-colors flex items-center justify-between"
+              className={`w-full p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition-colors flex items-center justify-between   
+          
+              `}
             >
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-gray-500" />
                 <span className="text-sm font-medium text-gray-700 capitalize">
                   {/* {getRecurringLabel()} */}
-                  {recurringType}
+                  {recurringType || "Select Frequency"}
                 </span>
               </div>
               <ChevronDown
@@ -801,6 +815,19 @@ const SplitStep = ({
                     }`}
                   >
                     Weekly
+                  </button>
+                  <button
+                    onClick={() => {
+                      setRecurringType("biweekly");
+                      setShowRecurringOptions(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
+                      recurringType === "biweekly"
+                        ? "bg-blue-50 text-blue-700"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    Biweekly
                   </button>
                   <button
                     onClick={() => {
@@ -1034,26 +1061,47 @@ const SplitStep = ({
               </div>
             </div>
 
-            <div
+            <button
+              disabled={isDynamic}
               onClick={() => setSplitType("custom")}
-              className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                splitType === "custom"
-                  ? "border-blue-600 bg-blue-50"
-                  : "border-gray-200 bg-white hover:border-gray-300"
+              className={`p-4 rounded-xl border-2 transition-all ${
+                isDynamic
+                  ? "border-gray-200 bg-gray-100 cursor-not-allowed opacity-60"
+                  : splitType === "custom"
+                  ? "border-blue-600 bg-blue-50 cursor-pointer"
+                  : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
               }`}
             >
               <div className="flex flex-col items-center text-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-purple-500 flex items-center justify-center">
+                <div
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                    isDynamic ? "bg-gray-400" : "bg-purple-500"
+                  }`}
+                >
                   <DollarSign className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-900 text-sm">
+                  <h4
+                    className={`font-semibold text-sm ${
+                      isDynamic
+                        ? "text-gray-400"
+                        : "text-gray-900"
+                    }`}
+                  >
                     Custom
                   </h4>
-                  <p className="text-gray-600 text-xs">Set amounts</p>
+                  <p
+                    className={`text-xs ${
+                      isDynamic
+                        ? "text-gray-400"
+                        : "text-gray-600"
+                    }`}
+                  >
+                    Set amounts
+                  </p>
                 </div>
               </div>
-            </div>
+            </button>
           </div>
         </div>
 
@@ -1236,7 +1284,7 @@ const SplitStep = ({
                   Advanced Options
                 </h4>
                 <p className="text-gray-600 text-xs">
-                  Payment schedule, cost tracking & more
+                  Mark as paid options, cost tracking & more
                 </p>
               </div>
             </div>
@@ -1253,114 +1301,11 @@ const SplitStep = ({
           <div className="space-y-6 mb-6">
             {/* Total Amount Input - Always visible */}
 
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <label className="text-lg font-semibold text-gray-900">
-                  Mark as Paid Settings
-                </label>
-                <div className="relative dynamic-info-tooltip">
-                  <button
-                    onClick={() => setShowMarkAsPaidInfo(!showMarkAsPaidInfo)}
-                    onMouseEnter={() => {
-                      setIsHoveringMarkAsPaidInfo(true);
-                      // setShowMarkAsPaidInfo(true);
-                    }}
-                    onMouseLeave={() => {
-                      setIsHoveringMarkAsPaidInfo(false);
-                      // Small delay to allow clicking on the tooltip
-                      setTimeout(() => {
-                        if (!isHoveringMarkAsPaidInfo) {
-                          setShowMarkAsPaidInfo(false);
-                        }
-                      }, 150);
-                    }}
-                    className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
-                  >
-                    <Info className="w-4 h-4" />
-                  </button>
-                  {(showMarkAsPaidInfo || isHoveringMarkAsPaidInfo) && (
-                    <div
-                      className="absolute bottom-full left-0 mb-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50"
-                      onMouseEnter={() => setIsHoveringMarkAsPaidInfo(true)}
-                      onMouseLeave={() => {
-                        console.log("CLOSE");
-                        setIsHoveringMarkAsPaidInfo(false);
-                        setShowMarkAsPaidInfo(false);
-                      }}
-                    >
-                      <p>
-                        Setting this to Everyone is useful when you trust users
-                        to honestly mark requests as paid.
-                      </p>
-                      <div className="absolute top-full left-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div
-                  onClick={() => setAllowMarkAsPaidForEveryone(false)}
-                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                    !allowMarkAsPaidForEveryone
-                      ? "border-blue-600 bg-blue-50"
-                      : "border-gray-200 bg-white hover:border-gray-300"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
-                      <User className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 text-sm">
-                        Only you
-                      </h4>
-                      <p className="text-gray-600 text-xs">
-                        Only you can mark requests as paid
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  onClick={() => {
-                    setAllowMarkAsPaidForEveryone(true);
-                  }}
-                  className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${
-                    allowMarkAsPaidForEveryone
-                      ? "border-blue-600 bg-blue-50 cursor-pointer"
-                      : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
-                  }`}
-                >
-                  <div
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center ${"bg-orange-500"}`}
-                  >
-                    <Users className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className={`font-semibold text-sm ${"text-gray-900"}`}>
-                      Everyone
-                      {/* <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
-                        {splitType === "custom"
-                          ? "Not Available"
-                          : recurringType === "none"
-                          ? "Recurring Only"
-                          : "Plaid Required"}
-                      </span> */}
-                    </h4>
-                    <p className={`text-xs ${"text-gray-600"}`}>
-                      Others can mark their requests as paid
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* Cost Tracking Section */}
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <label className="text-lg font-semibold text-gray-900">
-                  Cost Tracking (Coming Soon)
+                  Cost Tracking
                 </label>
                 <div className="relative dynamic-info-tooltip">
                   <button
@@ -1458,7 +1403,7 @@ const SplitStep = ({
                       {isDynamicCostsDisabled && (
                         <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
                           {splitType === "custom"
-                            ? "Not Available"
+                            ? "Not Available For Custom Split Method"
                             : recurringType === "none"
                             ? "Recurring Only"
                             : "Plaid Required"}
@@ -1478,6 +1423,109 @@ const SplitStep = ({
                 </div>
               </div>
             </div>
+
+            {/* mark as paid */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <label className="text-lg font-semibold text-gray-900">
+                  Mark as Paid Settings
+                </label>
+                <div className="relative dynamic-info-tooltip">
+                  <button
+                    onClick={() => setShowMarkAsPaidInfo(!showMarkAsPaidInfo)}
+                    onMouseEnter={() => {
+                      setIsHoveringMarkAsPaidInfo(true);
+                      // setShowMarkAsPaidInfo(true);
+                    }}
+                    onMouseLeave={() => {
+                      setIsHoveringMarkAsPaidInfo(false);
+                      // Small delay to allow clicking on the tooltip
+                      setTimeout(() => {
+                        if (!isHoveringMarkAsPaidInfo) {
+                          setShowMarkAsPaidInfo(false);
+                        }
+                      }, 150);
+                    }}
+                    className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                  >
+                    <Info className="w-4 h-4" />
+                  </button>
+                  {(showMarkAsPaidInfo || isHoveringMarkAsPaidInfo) && (
+                    <div
+                      className="absolute bottom-full left-0 mb-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50"
+                      onMouseEnter={() => setIsHoveringMarkAsPaidInfo(true)}
+                      onMouseLeave={() => {
+                        setIsHoveringMarkAsPaidInfo(false);
+                        setShowMarkAsPaidInfo(false);
+                      }}
+                    >
+                      <p>
+                        Setting this to "Everyone" is useful when you trust
+                        users to honestly mark requests as paid.
+                      </p>
+                      <div className="absolute top-full left-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div
+                  onClick={() => setAllowMarkAsPaidForEveryone(false)}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    !allowMarkAsPaidForEveryone
+                      ? "border-blue-600 bg-blue-50"
+                      : "border-gray-200 bg-white hover:border-gray-300"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-gray-500 flex items-center justify-center">
+                      <User className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900 text-sm">
+                        Only you
+                      </h4>
+                      <p className="text-gray-600 text-xs">
+                        Only you can mark requests as paid
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  onClick={() => {
+                    setAllowMarkAsPaidForEveryone(true);
+                  }}
+                  className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${
+                    allowMarkAsPaidForEveryone
+                      ? "border-blue-600 bg-blue-50 cursor-pointer"
+                      : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
+                  }`}
+                >
+                  <div
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center ${"bg-orange-500"}`}
+                  >
+                    <Users className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className={`font-semibold text-sm ${"text-gray-900"}`}>
+                      Everyone
+                      {/* <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
+                        {splitType === "custom"
+                          ? "Not Available"
+                          : recurringType === "none"
+                          ? "Recurring Only"
+                          : "Plaid Required"}
+                      </span> */}
+                    </h4>
+                    <p className={`text-xs ${"text-gray-600"}`}>
+                      Others can mark their requests as paid
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -1487,6 +1535,8 @@ const SplitStep = ({
         <ConfirmButtonTray
           isSendingRequest={isSendingRequest}
           isEditMode={isEditMode}
+          isCheckout={true}
+          startTiming={startTiming}
           buttonContent={
             isEditMode ? (
               <>
@@ -1521,16 +1571,11 @@ const SplitStep = ({
                 )
               : 0 // For custom/percentage, we'll show total instead
           }
-          totalAmount={Number(
-            splitType === "custom" || splitType === "percentage"
-              ? totalSplit
-              : editableTotalAmount
-          )}
-          billingFrequency={getRecurringLabel()}
-          isCustomFrequency={
-            selectedCharge?.frequency !== "custom" ||
-            newChargeDetails?.frequency !== "custom"
+          totalAmount={
+            splitType == "percentage" ? totalSplit : editableTotalAmount
           }
+          billingFrequency={getRecurringLabel()}
+          isCustomFrequency={recurringType == "custom"}
           chargeName={chargeName}
           frequency={recurringType}
           splitType={splitType}

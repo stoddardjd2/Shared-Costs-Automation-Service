@@ -102,7 +102,6 @@ export default function PaymentMethodPrompt({
           </div>
 
           <div className="flex gap-3 flex-wrap">
-            {console.log("isEditingFromSettings", isEditingFromSettings)}
             {(!paymentMethods?.venmo || isEditingFromSettings) && (
               <PaymentButton
                 onClick={() => openModal("venmo")}

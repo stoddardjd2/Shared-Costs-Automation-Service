@@ -2,6 +2,7 @@ import { useState } from "react";
 import RequestButton from "./RequestButton";
 import { Check, Timer, Hourglass, Pause } from "lucide-react";
 import { handleToggleMarkAsPaid } from "../../queries/requests";
+import { useData } from "../../contexts/DataContext";
 export default function PaymentHistoryParticipantDetails({
   costId,
   participant,
@@ -11,6 +12,7 @@ export default function PaymentHistoryParticipantDetails({
   const [isPaid, setIsPaid] = useState(
     participant.paymentAmount >= participant.amount || participant.markedAsPaid
   );
+  const { setCosts } = useData();
 
   // Get subtle status indicator color
   const getParticipantStatus = () => {
@@ -47,13 +49,17 @@ export default function PaymentHistoryParticipantDetails({
   };
 
   return (
-    <div className="flex flex-col gap-[13px] border border-b-2 p-3 rounded">
+    <div className="flex flex-col gap-[13px] border border-b-2 p-3 rounded-xl">
       <div className="flex gap-4 flex-wrap justify-between">
         <div className="flex gap-4">
           <Avatar user={user} color={getStatusIndicatorColor()} />
           <div className="flex-col flex justify-between">
             <div className="font-semibold">{user.name}</div>
-            <div className="text-sm text-gray-800">${participant.amount - (participant?.amountPaid ? participant?.amountPaid : 0)}</div>
+            <div className="text-sm text-gray-800">
+              $
+              {participant.amount -
+                (participant?.amountPaid ? participant?.amountPaid : 0)}
+            </div>
           </div>
         </div>
 
@@ -76,6 +82,7 @@ export default function PaymentHistoryParticipantDetails({
             costId={costId}
             paymentHistoryRequest={paymentHistoryRequest}
             isPaid={isPaid}
+            setCosts={setCosts}
             setIsPaid={setIsPaid}
           />
         </div>
@@ -106,6 +113,7 @@ function MarkAsPaidButton({
   costId,
   isPaid,
   setIsPaid,
+  setCosts,
 }) {
   async function handleMarkAsPaid() {
     setIsPaid(!isPaid);
@@ -115,8 +123,12 @@ function MarkAsPaidButton({
         paymentHistoryRequest._id,
         participant._id
       );
+
+      setCosts((prev) =>
+        prev.map((cost) => (cost._id === costId ? res.data.data.request : cost))
+      );
     } catch (err) {
-      console.log("failed to mark as paid");
+      console.log("failed to mark as paid", err);
     }
   }
 

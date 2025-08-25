@@ -1,5 +1,4 @@
 import React, { useState, createContext, useContext, useEffect } from "react";
-import { plaidAPI } from "../services/plaidService";
 import { getUserData } from "../queries/user";
 // You'll need to import this function that was called but not imported
 import { getRequests } from "../queries/requests"; // Add this import
@@ -24,14 +23,15 @@ const LoadingSpinner = () => (
 // Error component - you can customize this
 const ErrorComponent = ({ error, onRetry }) => {
   const navigate = useNavigate();
-
-  if (error == "Error: Not authorized, user not found") {
-    navigate("/login");
-  }
-  console.log("error", error)
-  if (error == "Error: Not authorized, user not found") {
-    navigate("/login");
-  }
+  useEffect(() => {
+    if (error == "Error: Not authorized, user not found") {
+      navigate("/login");
+    }
+    console.log("error", error);
+    if (error == "Error: Not authorized, user not found") {
+      navigate("/login");
+    }
+  }, []);
 
   return (
     <div

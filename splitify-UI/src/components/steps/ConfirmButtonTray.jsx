@@ -15,12 +15,20 @@ export default function ConfirmButtonTray({
   isCustomFrequency,
   isEditMode,
   frequency,
-  chargeName = "none"
+  chargeName = "none",
+  isCheckout = false,
+  startTiming,
 }) {
   const { participants } = useData();
   const [showCostTooltip, setShowCostTooltip] = useState(false);
 
-  const isDisabled = isSendingRequest || totalAmount == 0 || !chargeName;
+  const isDisabled = () => {
+    if (!isCheckout) {
+      return false;
+    } else {
+      return isSendingRequest || totalAmount == 0 || !chargeName || !frequency || !startTiming;
+    }
+  };
 
   function getFrequncyLabel(frequency) {
     switch (frequency) {
@@ -51,6 +59,7 @@ export default function ConfirmButtonTray({
   };
 
   const { amount, label } = formatAmountDisplay();
+  const capitalizeFirst = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
   // Format billing frequency for display
   const formatBillingFrequency = () => {
@@ -59,7 +68,7 @@ export default function ConfirmButtonTray({
     } else if (isCustomFrequency) {
       return `Requests ${billingFrequency} `;
     }
-    return `${billingFrequency} requests`;
+    return `${capitalizeFirst(billingFrequency)} requests`;
   };
 
   return (
@@ -206,9 +215,9 @@ export default function ConfirmButtonTray({
               {/* Confirm Button */}
               <button
                 onClick={onConfirm}
-                disabled={isDisabled}
+                disabled={isDisabled()}
                 className={`w-full text-white font-semibold py-4 rounded-xl shadow-lg transition-all hover:shadow-xl flex items-center justify-center gap-3 ${
-                isDisabled
+                  isDisabled()
                     ? "bg-blue-600/40 cursor-not-allowed"
                     : "bg-blue-600 hover:bg-blue-700 cursor-pointer"
                 }`}

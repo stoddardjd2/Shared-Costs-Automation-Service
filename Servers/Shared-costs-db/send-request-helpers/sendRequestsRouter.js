@@ -28,7 +28,7 @@ async function sendRequestsRouter(reminderData) {
     }
   }
 
-  const urlBase = `${process.env.CLIENT_URL}/paymentPortalv2`;
+  const urlBase = `${process.env.CLIENT_URL}/paymentPortal`;
   const userId = reminderData.participantId;
   const paymentHistoryId = reminderData.paymentHistoryId;
   const requestId = reminderData.requestId;

@@ -109,6 +109,7 @@ const SearchStep = ({
             <ArrowRight className="w-5 h-5" />
           </>
         }
+        isCheckout={false}
         selectedPeople={selectedPeople}
         onConfirm={onContinue}
         hideBillingInfo={true}

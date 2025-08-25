@@ -119,9 +119,13 @@ const RecurringCostsSection = ({
     const amountPerPerson =
       totalParticipants > 0 ? cost.amount / totalParticipants : cost.amount;
     if (cost.splitType == "custom" || cost.splitType == "percentage") {
+      // return {
+      //   amount: `$${Number(cost.totalAmount).toFixed(2)}`,
+      //   label: "total",
+      // };
       return {
-        amount: `$${Number(cost.amount).toFixed(2)}`,
-        label: "total",
+        amount: `$${(Number(cost.totalAmount) / totalParticipants).toFixed(2)}`,
+        label: "avg",
       };
     } else {
       return {
@@ -141,6 +145,9 @@ const RecurringCostsSection = ({
     }
     if (frequency === "weekly") {
       return "Weekly requests";
+    }
+    if (frequency === "biweekly") {
+      return "Biweekly requests";
     }
     if (frequency === "yearly") {
       return "Yearly requests";

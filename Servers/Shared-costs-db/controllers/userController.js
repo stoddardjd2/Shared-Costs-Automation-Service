@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
-const  sendRequestsRouter  = require("../send-request-helpers/sendRequestsRouter");
+const sendRequestsRouter = require("../send-request-helpers/sendRequestsRouter");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const Request = require("../models/Request");
@@ -14,6 +14,9 @@ const generateToken = (id) => {
     expiresIn: process.env.JWT_EXPIRE || "7d",
   });
 };
+
+
+
 
 const getUserData = async (req, res) => {
   try {
@@ -62,9 +65,9 @@ const updateContactForUser = async (req, res) => {
 
     await user.save();
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: "Contact name updated successfully.",
-      contact: user.contacts[contactIndex]
+      contact: user.contacts[contactIndex],
     });
   } catch (err) {
     console.error("Error updating contact name:", err);
@@ -111,7 +114,7 @@ const addContactToUser = async (req, res) => {
   try {
     const userId = req.user._id; // From auth middleware
     const { name, phone, avatar, color, email } = req.body;
-    const emailClean = email.toLowerCase().trim()
+    const emailClean = email.toLowerCase().trim();
 
     // prevent adding self
     if (emailClean == req.user.email) {
@@ -190,7 +193,7 @@ const addContactToUser = async (req, res) => {
 // @desc    Check if token is expired without validating user
 // @route   POST /api/auth/check-token
 // @access  Public
-const checkTokenExpiry = async (req, res) => {
+const checkIfValidToken = async (req, res) => {
   try {
     const { token } = req.body;
 
@@ -772,9 +775,11 @@ async function approveSmsMessages(req, res) {
         return now.getTime() >= date.getTime();
       }
 
-      
       if (reqDoc.startTiming == "now" || isPastOrOnDate(reqDoc.startTiming)) {
-        if (participant.paymentAmount < participant.amount && !participant?.markedAsPaid) {
+        if (
+          participant.paymentAmount < participant.amount &&
+          !participant?.markedAsPaid
+        ) {
           // LIMIT SENDING TEXTS AGAIN TO 3 TIMES TO REDUCE USER ABUSE IF THEY -
           // RESUBMIT FORM MULTIPLE TIMES:
           if (currentSetCount <= 3) {
@@ -971,6 +976,9 @@ const addPaymentMethod = async (req, res) => {
     });
   }
 };
+
+
+
 module.exports = {
   getUsers,
   getUser,
@@ -980,11 +988,12 @@ module.exports = {
   loginUser,
   forgotPassword,
   resetPassword: resetPasswordHandler,
-  checkTokenExpiry,
+  checkIfValidToken,
   removeContactFromUser,
   addContactToUser,
   getUserData,
   approveSmsMessages,
   addPaymentMethod,
   updateContactForUser,
+  
 };

@@ -1,13 +1,73 @@
 const express = require("express");
 const cors = require("cors");
+const {
+  Configuration,
+  PlaidApi,
+  PlaidEnvironments,
+} = require("plaid");
 require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+/** Initialize Plaid client */
+const config = new Configuration({
+  basePath: PlaidEnvironments[process.env.PLAID_ENV || "sandbox"],
+  baseOptions: {
+    headers: {
+      "PLAID-CLIENT-ID": process.env.PLAID_CLIENT_ID,
+      "PLAID-SECRET": process.env.PLAID_SECRET,
+    },
+  },
+});
+const plaid = new PlaidApi(config);
+
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+app.post("/api/sandbox/create_link_token", async (req, res) => {
+  console.log("create link token")
+  try {
+    const body = req.body || {};
+    const fallbackId =
+      (crypto.randomUUID && crypto.randomUUID()) ||
+      `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+    const client_user_id =
+      body.userId ||
+      (req.user && (req.user.id || req.user._id)) ||
+      `demo-${fallbackId}`;
+
+    const request = {
+      user: { client_user_id },
+      client_name: "Sandbox Connect",
+      products: ["transactions"], // add more if needed: "auth", "identity", etc.
+      country_codes: ["US"],
+      language: "en",
+      // Optional fields below; include only if set
+      // redirect_uri must be registered in Plaid dashboard when used
+    };
+
+    if (process.env.PLAID_REDIRECT_URI) {
+      request.redirect_uri = process.env.PLAID_REDIRECT_URI;
+    }
+
+    const response = await plaid.linkTokenCreate(request);
+    return res.json({ link_token: response.data.link_token });
+  } catch (err) {
+    // Normalize Plaid errors for the frontend
+    const p = err?.response?.data;
+    console.error("create_link_token error:", p || err.message || err);
+    return res.status(500).json({
+      error: {
+        message: p?.error_message || "Failed to create link token",
+        type: p?.error_type || "INTERNAL",
+        code: p?.error_code || "LINK_TOKEN_CREATE_FAILED",
+      },
+    });
+  }
+});
 
 app.post("/api/sandbox/public_token", async (req, res) => {
   try {
@@ -61,15 +121,18 @@ app.post("/api/transactions/refresh", async (req, res) => {
   try {
     const { access_token } = req.body;
 
-    const response = await fetch("https://sandbox.plaid.com/transactions/refresh", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        client_id: "686ee94862386b0024d2cbcd",
-        secret: "c18250107468c87adf2934e95d0358",
-        access_token: access_token,
-      }),
-    });
+    const response = await fetch(
+      "https://sandbox.plaid.com/transactions/refresh",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          client_id: "686ee94862386b0024d2cbcd",
+          secret: "c18250107468c87adf2934e95d0358",
+          access_token: access_token,
+        }),
+      }
+    );
 
     console.log("Fetching transactions with access token:", access_token);
     const data = await response.json();
@@ -78,7 +141,6 @@ app.post("/api/transactions/refresh", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 
 // Simple route to get transactions
 app.post("/api/transactions", async (req, res) => {

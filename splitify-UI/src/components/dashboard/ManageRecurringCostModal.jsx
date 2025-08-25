@@ -245,6 +245,9 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
     if (frequency === "weekly") {
       return "Weekly";
     }
+    if (frequency === "biweekly") {
+      return "Biweekly";
+    }
     if (frequency === "yearly") {
       return "Yearly";
     }
@@ -372,6 +375,7 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
               ) : (
                 <div className="space-y-4 bg-white">
                   {sortedPayments.map((payment) => {
+                    
                     // const statusStyling = getPaymentStatusStyling(payment);
                     // const StatusIcon = statusStyling.icon;
 
@@ -384,32 +388,40 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                         <div
                           className={` px-4 pt-3 flex items-center justify-between`}
                         >
+                          <span className="text-gray-900 font-semibold text-lg">
+                            ${payment.totalAmount}
+                            <span className="text-sm font-medium  text-gray-500 false">
+                              Total
+                            </span>
+                          </span>
+
                           <div className="flex items-center gap-3">
                             <div
                               className={`inline-flex items-center gap-2 px-3 py-1 rounded-full `}
                             >
                               {payment.dueDate && (
                                 <div className="flex items-center font-semibold  gap-2">
-                                  <Clock className="w-5 h-5" />
+                                  {/* <Clock className="w-5 h-5" /> */}
                                   <span className="text-lg">
-                                    Due:{" "}
-                                    {new Date(
-                                      payment.dueDate
-                                    ).toLocaleDateString()}
+                                    <span className="mr-1 text-sm text-gray-500 false">
+                                      Due{" "}
+                                    </span>
+                                    <span className="text-lg">
+                                      {new Date(
+                                        payment.dueDate
+                                      ).toLocaleDateString()}
+                                    </span>
                                   </span>
                                 </div>
                               )}
                               <span className="text-sm font-medium"></span>
                             </div>
                           </div>
-                          <span className="text-gray-900 font-semibold text-xl">
-                            ${payment.amount}
-                          </span>
                         </div>
 
                         <div className="p-4">
                           {/* Date Information */}
-                          <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-200">
+                          {/* <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-200">
                             {payment.requestDate && (
                               <div className="flex items-center gap-2 text-gray-600 px-3">
                                 <Calendar className="w-4 h-4" />
@@ -421,11 +433,11 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                                 </span>
                               </div>
                             )}
-                          </div>
+                          </div> */}
 
                           {/* Participant Status */}
                           <div className="space-y-3">
-                            {payment.participants.map((participant) => {
+                            {payment.participants.map((participant, index) => {
                               const user = participants.find(
                                 (u) => u._id === participant._id
                               );
@@ -441,6 +453,7 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
 
                               return (
                                 <PaymentHistoryParticipantDetails
+                                  key={index}
                                   costId={cost._id}
                                   participant={participant}
                                   paymentHistoryRequest={payment}

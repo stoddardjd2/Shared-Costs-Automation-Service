@@ -28,7 +28,8 @@ import SmsOptInPage from "./components/global/opt-in-pages/SmsOptInPage.jsx";
 import PrivacyPolicy from "./components/global/about/PrivacyPolicy.jsx";
 import TermsAndConditions from "./components/global/about/TermsAndConditions.jsx";
 import PaymentPortal from "./components/global/PaymentPortal.jsx";
-import PaymentPortalV2 from "./components/global/PaymentPortalV2.jsx";
+import PlaidSandboxDemo from "./components/plaid/PlaidSandboxDemo.jsx";
+import PlaidSandboxDemoUserFlow from "./components/plaid/PlaidSandboxDemoUserFlow.jsx";
 const App = () => {
   const navigate = useNavigate();
   return (
@@ -155,25 +156,10 @@ const App = () => {
             </>
           }
         ></Route>
-        <Route
-          path="/PaymentPortalv2"
-          element={
-            <>
-              <GlobalNavbar
-                options={{
-                  features: false,
-                  security: false,
-                  pricing: false,
-                  createFreeAccount: true,
-                  // login:true,
-                  signup: true,
-                }}
-              />
-              <PaymentPortalV2 />
-            </>
-          }
-        ></Route>
         {/* <Route path="/" element={<Navigate to="/dashboard" replace />} /> */}
+        <Route path="/plaidSandboxDemo" element={<PlaidSandboxDemo/>} />
+        <Route path="/PlaidSandboxDemoUserFlow" element={<PlaidSandboxDemoUserFlow/>} />
+
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </div>

@@ -12,7 +12,6 @@ const {
 // const createRequest = () => {};
 
 const getRequests = async (req, res) => {
-  console.log("getting requests");
   try {
     const requests = await Request.find({ owner: req.user._id });
     res.json(requests);
@@ -56,6 +55,7 @@ const createRequest = async (req, res) => {
         requestDate: calculateStartingDate(requestData.startTiming),
         dueDate: dueDate,
         amount: requestData.amount,
+        totalAmount: requestData.totalAmount,
         nextReminderDate: nextReminderDate,
         // status: "pending",
         participants: (requestData.participants || []).map((participant) => ({
@@ -391,6 +391,13 @@ const handlePayment = async (req, res) => {
       return res.status(404).json({
         error:
           "Payment request not found or user not authorized for this payment",
+      });
+    }
+
+    // deny request if allowed mark as paid disabled
+    if (!currentRequest.allowMarkAsPaidForEveryone) {
+      return res.status(401).json({
+        error: "User not authorized to mark as paid",
       });
     }
 
@@ -738,6 +745,79 @@ const handleToggleMarkAsPaid = async (req, res) => {
   }
 };
 
+const handlePaymentDetails = async (req, res) => {
+  try {
+    const { requestId, paymentHistoryId, userId } = req.params;
+
+    const requestObjectId = new ObjectId(requestId);
+    const historyObjectId = new ObjectId(paymentHistoryId);
+    const participantObjectId = new ObjectId(userId);
+
+    const requestDocument = await Request.findOne({
+      _id: requestObjectId,
+      paymentHistory: {
+        $elemMatch: {
+          _id: historyObjectId,
+          "participants._id": participantObjectId,
+        },
+      },
+    });
+
+    const owner = await User.findById(new ObjectId(requestDocument.owner));
+    const OwnerName = owner.name;
+    console.log("OWNER", owner);
+
+    const convertToNumber = (value) =>
+      typeof value === "number" ? value : Number(value ?? 0);
+
+    const thisPaymentHistory = requestDocument?.paymentHistory?.find(
+      (history) => history._id?.equals(historyObjectId)
+    );
+
+    const thisParticipant = thisPaymentHistory?.participants?.find(
+      (participant) => participant._id?.equals(participantObjectId)
+    );
+
+    // ✅ Step-by-step boolean evaluation
+    let paidInFull = false;
+    let amountLeft;
+    console.log("thisParticipant", thisParticipant);
+
+    if (thisParticipant) {
+      const amountOwed = convertToNumber(thisParticipant.amount);
+      const amountPaid = convertToNumber(thisParticipant.paymentAmount);
+
+      amountLeft = amountOwed - amountPaid;
+
+      if (thisParticipant.markedAsPaid === true) {
+        paidInFull = true; // manual override
+      } else if (amountPaid >= amountOwed) {
+        paidInFull = true; // fully paid
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      isPaidInFull: paidInFull,
+      amountOwed: amountLeft,
+      owedTo: OwnerName,
+      allowMarkAsPaidForEveryone:
+        requestDocument?.allowMarkAsPaidForEveryone || false,
+      dueDate: thisPaymentHistory.dueDate,
+      amountPaid: thisParticipant.amount,
+      requestName: requestDocument.name,
+      datePaid: thisParticipant.paidDate || thisParticipant.markedAsPaidDate,
+      message: `Request ${paidInFull ? "paid in full" : "not paid in full"}`,
+    });
+  } catch (error) {
+    console.error("Error checking if paid:", error);
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createRequest,
   getRequests,
@@ -745,4 +825,5 @@ module.exports = {
   handleSendReminder,
   handlePayment,
   handleToggleMarkAsPaid,
+  handlePaymentDetails,
 };

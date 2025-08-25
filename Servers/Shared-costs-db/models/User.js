@@ -186,6 +186,12 @@ const userSchema = new Schema(
     totalAmountPaid: Number,
     lastPaymentDate: Date,
     lastMarkedAsPaidDate: Date,
+    plaid: {
+      isEnabled: Boolean,
+      enabledOn: Date,
+      lastUsed: Date,
+      accessToken: { type: String, select: false },
+    },
   },
 
   {

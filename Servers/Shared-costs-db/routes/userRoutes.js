@@ -9,7 +9,7 @@ const {
   loginUser,
   forgotPassword,
   resetPassword,
-  checkTokenExpiry,
+  checkIfValidToken,
   addContactToUser,
   removeContactFromUser,
   getUserData,
@@ -74,11 +74,11 @@ router.post("/", validateUser, createUser);
 
 router.post("/forgot-password", forgotPassword);
 router.put("/reset-password/:token", resetPassword);
-router.post("/check-token", checkTokenExpiry);
+router.post("/check-token", checkIfValidToken);
 
 router.patch("/sms/user-consent/:userId", approveSmsMessages);
 // Protected routes
-router.use(protect); // All routes after this middleware are protected
+router.use(protect); // All routes after this require user to logged in
 
 router.post("/contact", addContactToUser);
 router.delete("/contact", removeContactFromUser);

@@ -22,6 +22,7 @@
     "mongoose": "^8.0.0",
     "node-cron": "^4.2.1",
     "nodemailer": "^7.0.5",
+    "plaid": "^38.0.0",
     "stripe": "^18.4.0"
   },
   "devDependencies": {

@@ -1,7 +1,4 @@
 const express = require("express");
-const braintree = require("braintree");
-
-const { body } = require("express-validator");
 const {
   createRequest,
   getRequests,
@@ -9,6 +6,7 @@ const {
   handleSendReminder,
   handlePayment,
   handleToggleMarkAsPaid,
+  handlePaymentDetails,
 } = require("../controllers/requestController");
 
 const { protect, authorize } = require("../middleware/auth");
@@ -25,8 +23,15 @@ router.use(protect);
 router.post("/", createRequest);
 router.get("/", getRequests);
 router.put("/:id", updateRequest);
-router.patch("/")
-router.patch("/toggleMarkedAsPaid/:requestId/:paymentHistoryId/:userId", handleToggleMarkAsPaid);
+router.patch("/");
+router.patch(
+  "/toggleMarkedAsPaid/:requestId/:paymentHistoryId/:userId",
+  handleToggleMarkAsPaid
+);
 router.patch("/reminder/all");
+router.get(
+  "/paymentDetails/:requestId/:paymentHistoryId/:userId",
+  handlePaymentDetails
+);
 
 module.exports = router;

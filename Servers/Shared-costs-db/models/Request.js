@@ -5,13 +5,9 @@ const { Schema } = mongoose;
 // Sub-schema for participants inside the main request
 const participantSchema = new Schema({
   _id: { type: Schema.Types.ObjectId, required: true },
-  status: {
-    type: String,
-    enum: ["pending", "paid", "overdue"],
-    default: "pending",
-  },
   // customAmount: { type: String },
   amount: { type: Number },
+  percentage: Number,
 });
 
 // Sub-schema for participants inside each payment history entry
@@ -51,7 +47,6 @@ const requestSchema = new Schema({
   amount: { type: Number, required: true },
   //   totalAmount: { type: Number },
   isRecurring: { type: Boolean, default: false },
-  plaidMatch: { type: String },
   splitType: {
     type: String,
     enum: ["equal", "equalWithMe", "custom", "percentage"],
@@ -72,6 +67,8 @@ const requestSchema = new Schema({
   lastSent: { type: Date },
   isDynamic: { type: Boolean, default: false },
   allowMarkAsPaidForEveryone: { type: Boolean, default: false },
+  isPlaidCharge: Boolean,
+  totalAmount: Number,
   reminderFrequency: {
     type: String,
     enum: ["daily", "weekly", "monthly", "none"],
@@ -81,36 +78,36 @@ const requestSchema = new Schema({
 });
 
 // Pre-save middleware to calculate nextDue
-requestSchema.pre("save", function (next) {
-  if (this.isRecurring && !this.nextDue) {
-    const baseDate =
-      this.startTiming === "later" && this.startDate
-        ? new Date(this.startDate)
-        : new Date();
+// requestSchema.pre("save", function (next) {
+//   if (this.isRecurring && !this.nextDue) {
+//     const baseDate =
+//       this.startTiming === "later" && this.startDate
+//         ? new Date(this.startDate)
+//         : new Date();
 
-    let nextDue = new Date(baseDate);
+//     let nextDue = new Date(baseDate);
 
-    if (this.frequency === "weekly") {
-      nextDue.setDate(nextDue.getDate() + 7);
-    } else if (this.frequency === "monthly") {
-      nextDue.setMonth(nextDue.getMonth() + 1);
-    } else if (
-      this.frequency === "custom" &&
-      this.customInterval &&
-      this.customUnit
-    ) {
-      if (this.customUnit === "days") {
-        nextDue.setDate(nextDue.getDate() + this.customInterval);
-      } else if (this.customUnit === "weeks") {
-        nextDue.setDate(nextDue.getDate() + this.customInterval * 7);
-      } else if (this.customUnit === "months") {
-        nextDue.setMonth(nextDue.getMonth() + this.customInterval);
-      }
-    }
+//     if (this.frequency === "weekly") {
+//       nextDue.setDate(nextDue.getDate() + 7);
+//     } else if (this.frequency === "monthly") {
+//       nextDue.setMonth(nextDue.getMonth() + 1);
+//     } else if (
+//       this.frequency === "custom" &&
+//       this.customInterval &&
+//       this.customUnit
+//     ) {
+//       if (this.customUnit === "days") {
+//         nextDue.setDate(nextDue.getDate() + this.customInterval);
+//       } else if (this.customUnit === "weeks") {
+//         nextDue.setDate(nextDue.getDate() + this.customInterval * 7);
+//       } else if (this.customUnit === "months") {
+//         nextDue.setMonth(nextDue.getMonth() + this.customInterval);
+//       }
+//     }
 
-    this.nextDue = nextDue;
-  }
-  next();
-});
+//     this.nextDue = nextDue;
+//   }
+//   next();
+// });
 
 module.exports = mongoose.model("Request", requestSchema);

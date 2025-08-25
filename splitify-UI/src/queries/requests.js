@@ -202,3 +202,16 @@ export const handleToggleMarkAsPaid = async (
     }
   );
 };
+
+export const handlePaymentDetails = async (
+  requestId,
+  paymentHistoryId,
+  userId
+) => {
+  return await apiRequest(
+    `/requests/paymentDetails/${requestId}/${paymentHistoryId}/${userId}`,
+    {
+      method: "GET",
+    }
+  );
+};

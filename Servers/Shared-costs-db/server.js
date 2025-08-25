@@ -24,6 +24,8 @@ const {
 const userRoutes = require("./routes/userRoutes");
 const requestRoutes = require("./routes/requestRoutes");
 const supportRoutes = require("./routes/supportRoutes");
+const plaidRoutes = require("./routes/plaidRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 // const stripeRoutes = require("./routes/stripeRoutes");
 
 // Import error handler
@@ -106,105 +108,11 @@ async function startServer() {
     app.use("/api/users", userRoutes);
     app.use("/api/requests", requestRoutes);
     app.use("/api/support", supportRoutes);
+    app.use("/api/plaid", plaidRoutes);
+    app.use("/api/admin", adminRoutes);
     // app.use("/api/stripe", stripeRoutes);
 
-    // FOR REMINDER SCHEDULER
-    // Admin endpoint to check scheduler status
-    app.get("/admin/scheduler-status", async (req, res) => {
-      try {
-        const status = await getSchedulerStatus();
-        res.json(status);
-      } catch (error) {
-        res.status(500).json({ error: error.message });
-      }
-    });
-    // Manual trigger endpoint
-    app.post("/admin/trigger-reminders", async (req, res) => {
-      try {
-        console.log("🔧 Manual reminder trigger requested");
-        await runSchedulerNow();
-
-        const status = await getSchedulerStatus();
-        res.json({
-          success: true,
-          message: "Reminders processed successfully",
-          timestamp: new Date().toISOString(),
-          status,
-        });
-      } catch (error) {
-        console.error("❌ Manual reminder trigger failed:", error);
-        res.status(500).json({
-          success: false,
-          message: "Failed to process reminders",
-          error: error.message,
-        });
-      }
-    });
-
-    // Manual trigger endpoint
-    app.get("/admin/request-scheduler-status", async (req, res) => {
-      try {
-        const status = getRequestSchedulerStatus();
-        res.json(status);
-      } catch (error) {
-        res.status(500).json({ error: error.message });
-      }
-    });
-
-    app.post("/admin/trigger-request-scheduler", async (req, res) => {
-      try {
-        console.log("🔧 Manual requests scheduler trigger requested");
-        const status = await runRecurringRequestsNow();
-        res.json({
-          success: true,
-          message: "requests scheduler processed successfully",
-          timestamp: new Date().toISOString(),
-          status,
-        });
-      } catch (error) {
-        console.error("❌ Manual request scheduler trigger failed:", error);
-        res.status(500).json({
-          success: false,
-          message: "Failed to process requests",
-          error: error.message,
-        });
-      }
-    });
-
-    app.post("/admin/trigger-email", async (req, res) => {
-      try {
-        console.log("🔧 Manually sending email");
-        await sendEmailRequest("Jared", "Kevin", "13", "URL", "stoddardjd3@gmail.com");
-        res.json({
-          success: true,
-          message: "email sent successfully",
-          timestamp: new Date().toISOString(),
-        });
-      } catch (error) {
-        console.error("❌ email trigger failed:", error);
-        res.status(500).json({
-          success: false,
-          message: "Failed to send email",
-          error: error.message,
-        });
-      }
-    });
-
-    // FOR STRIPE
-    // app.get("/connect/standard", (req, res) => {
-    //   const state = req.session.id; // CSRF protection
-    //   const origin = process.env.SERVER_URL;
-    //   const params = new URLSearchParams({
-    //     response_type: "code",
-    //     client_id: process.env.STRIPE_CLIENT_ID,
-    //     scope: "read_write",
-    //     redirect_uri: `${origin}/connect/standard/callback`,
-    //     state,
-    //   });
-    //   res.redirect(
-    //     `https://connect.stripe.com/oauth/authorize?${params.toString()}`
-    //   );
-    // });
+   
 
     // Error handling middleware
     app.use(notFound);
