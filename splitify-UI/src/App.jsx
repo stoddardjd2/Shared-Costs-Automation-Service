@@ -75,10 +75,11 @@ const App = () => {
             <>
               <GlobalNavbar
                 options={{
-                  features: true,
-                  security: true,
-                  pricing: true,
+                  // features: true,
+                  // security: true,
+                  // pricing: true,
                   createFreeAccount: true,
+                  signup: true,
                 }}
               />
               <Outlet />

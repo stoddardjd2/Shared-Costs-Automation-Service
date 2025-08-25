@@ -64,7 +64,7 @@ const SmartSplitLanding = () => {
   ];
 
   const securityBadges = [
-    // { name: "SOC 2 Type II", icon: <CheckCircle className="w-8 h-8" /> },
+    { name: "SOC 2 Type II", icon: <CheckCircle className="w-8 h-8" /> },
     { name: "256-bit SSL", icon: <Lock className="w-8 h-8" /> },
     { name: "PCI DSS", icon: <Shield className="w-8 h-8" /> },
     { name: "GDPR Compliant", icon: <Users className="w-8 h-8" /> }
@@ -239,7 +239,7 @@ const SmartSplitLanding = () => {
       </section>
 
       {/* Social Proof */}
-      {/* <section className="py-20 bg-white">
+      <section className="py-20 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Trusted by Leading Organizations</h2>
@@ -274,10 +274,10 @@ const SmartSplitLanding = () => {
             ))}
           </div>
         </div>
-      </section> */}
+      </section>
 
       {/* Security Section */}
-      {/* <section id="security" className="py-20 bg-gray-50">
+      <section id="security" className="py-20 bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-8">Enterprise-Grade Security</h2>
           <p className="text-xl text-gray-600 mb-12">
@@ -299,7 +299,7 @@ const SmartSplitLanding = () => {
             </p>
           </div>
         </div>
-      </section> */}
+      </section>
 
       {/* Pricing CTA */}
       <section id="pricing" className="py-20 bg-white">
