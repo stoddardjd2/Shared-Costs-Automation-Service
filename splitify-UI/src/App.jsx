@@ -160,7 +160,7 @@ const App = () => {
         <Route path="/plaidSandboxDemo" element={<PlaidSandboxDemo/>} />
         <Route path="/PlaidSandboxDemoUserFlow" element={<PlaidSandboxDemoUserFlow/>} />
 
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/landing" replace />} />
       </Routes>
     </div>
   );
