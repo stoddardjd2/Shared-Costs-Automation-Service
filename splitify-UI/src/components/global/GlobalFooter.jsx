@@ -31,7 +31,7 @@ export default function GlobalFooter() {
         {/* Left: Brand + Links */}
         <div className="flex-1 flex flex-col md:flex-row gap-6">
           <div>
-            <h3 className="text-lg font-bold mb-2">SmartSplit</h3>
+            <h3 className="text-lg font-bold mb-2">Splitify</h3>
             <p className="text-gray-400 text-sm">
               Professional expense management with intelligent automation.
             </p>
@@ -156,7 +156,7 @@ export default function GlobalFooter() {
         </div>
       </div>
       <div className="border-t border-gray-800 mt-6 pt-4 text-center text-gray-400 text-xs">
-        <p>&copy; 2025 SmartSplit. All rights reserved.</p>
+        <p>&copy; 2025 Spltifiy. All rights reserved.</p>
       </div>
     </footer>
   );
