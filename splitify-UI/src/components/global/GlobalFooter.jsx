@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import SmartSplitLogo from "../../assets/SmartSplitLogo.svg?react";
+
 import getAPIUrl from "../../config";
 export default function GlobalFooter() {
   const [email, setEmail] = useState("");
@@ -14,7 +16,7 @@ export default function GlobalFooter() {
     setStatus("Thank you! Your message has been sent.");
     setEmail("");
     setMessage("");
-    setTimeout(() => setStatus(null), 3000);
+    // setTimeout(() => setStatus(null), 3000);
 
     console.log("Sending support email:", JSON.stringify({ email, message }));
     fetch(`${getAPIUrl}/api/support/email`, {
@@ -26,14 +28,17 @@ export default function GlobalFooter() {
     });
   };
   return (
-    <footer className="bg-gray-900 text-white py-6">
+    <footer className="bg-gray-50 text-white py-6 border-t border-gray-200">
       <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row md:items-start md:justify-between gap-6">
         {/* Left: Brand + Links */}
         <div className="flex-1 flex flex-col md:flex-row gap-6">
           <div>
-            <h3 className="text-lg font-bold mb-2">Splitify</h3>
-            <p className="text-gray-400 text-sm">
-              Professional expense management with intelligent automation.
+            <div className="flex-shrink-0 flex items-center space-x-3 cursor-pointer mb-2">
+              <SmartSplitLogo className="w-8 h-8" />
+              <div className="text-2xl font-bold text-blue-600">Splitify</div>
+            </div>
+            <p className="text-gray-600 text-sm">
+              Shared cost management with intelligent automation.
             </p>
           </div>
           {/* 
@@ -123,18 +128,20 @@ export default function GlobalFooter() {
 
         {/* Right: Minimal Contact Form, fully blended in */}
         <div className="w-full md:w-[300px] mt-4 md:mt-0">
-          <h4 className="font-semibold mb-2 text-base">Contact Us</h4>
+          <h4 className="font-semibold mb-2 text-gray-600 text-base">
+            Contact Us
+          </h4>
           <form onSubmit={handleSubmit} className="flex flex-col gap-2">
             <input
               type="email"
-              className="bg-gray-900 text-white px-0 py-1 border-b border-gray-700 focus:border-blue-600 transition text-sm placeholder-gray-400 focus:outline-none"
+              className=" text-gray-600 bg-gray-50 px-0 py-1 border-b border-gray-700 focus:border-blue-600 transition text-sm placeholder-gray-400 focus:outline-none"
               placeholder="Your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
             <textarea
-              className="bg-gray-900 text-white px-0 py-1 border-b border-gray-700 focus:border-blue-600 transition text-sm min-h-[38px] placeholder-gray-400 resize-none focus:outline-none"
+              className=" text-gray-600 bg-gray-50  px-0 py-1 border-b border-gray-700 focus:border-blue-600 transition text-sm min-h-[38px] placeholder-gray-400 resize-none focus:outline-none"
               placeholder="Message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
@@ -155,7 +162,7 @@ export default function GlobalFooter() {
           </form>
         </div>
       </div>
-      <div className="border-t border-gray-800 mt-6 pt-4 text-center text-gray-400 text-xs">
+      <div className="border-t border-gray-200 mt-6 pt-4 text-center text-gray-400 text-xs">
         <p>&copy; 2025 Spltifiy. All rights reserved.</p>
       </div>
     </footer>

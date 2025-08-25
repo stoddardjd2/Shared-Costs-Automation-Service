@@ -79,7 +79,9 @@ const App = () => {
                   // security: true,
                   // pricing: true,
                   createFreeAccount: true,
-                  signup: true,
+                  // signup: true,
+                  isFullScreenMobileMode: true,
+                  login:true,
                 }}
               />
               <Outlet />

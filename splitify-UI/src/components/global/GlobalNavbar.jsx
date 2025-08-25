@@ -6,13 +6,15 @@ import { useNavigate } from "react-router-dom";
 const GlobalNavbar = ({
   showOptions = true,
   options = {
-    login: true,
-    signup: true,
-    features: true,
-    security: true,
-    pricing: true,
+    login: false,
+    signup: false,
+    features: false,
+    security: false,
+    pricing: false,
     createFreeAccount: true,
+    isFullScreenMobileMode: false,
   },
+
   className = "",
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -88,7 +90,7 @@ const GlobalNavbar = ({
                   </button>
                 )}
 
-                {options.signup && (
+                {options.login && (
                   <button
                     onClick={() => {
                       navigate("/login");
@@ -114,8 +116,8 @@ const GlobalNavbar = ({
             </div>
           )}
 
-          {/* Mobile menu button */}
-          {showOptions && (
+          {/* Mobile menu button for full screen mobile mode*/}
+          {showOptions && options.isFullScreenMobileMode && (
             <div className="md:hidden">
               <button
                 onClick={toggleMobileMenu}
@@ -132,20 +134,44 @@ const GlobalNavbar = ({
         </div>
       </div>
 
-      {/* Mobile Navigation Menu */}
-      {showOptions && isMobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-200">
-          <div className="px-2 pt-2 pb-3 space-y-1 bg-white">
-            {options.signup && (
+      {/* Mobile Navigation Menu  for full screen mobile mode*/}
+      {showOptions && isMobileMenuOpen && options.isFullScreenMobileMode && (
+        <div
+          className={`fixed inset-0 z-50 bg-white md:hidden ${
+            isMobileMenuOpen ? "flex" : "hidden"
+          } flex-col`}
+        >
+          {/* Close button */}
+          <button
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="absolute top-4 right-4 p-2 rounded-full text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors duration-200"
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          {/* Centered menu options */}
+          <div className="flex flex-col flex-1 items-center justify-center space-y-6 text-center">
+            {options.login && (
               <button
                 onClick={() => {
-                  onLogin();
+                  navigate("/login");
                   setIsMobileMenuOpen(false);
                 }}
-                className="flex items-center w-full px-3 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors duration-200"
+                className="flex items-center justify-center w-full max-w-xs px-6 py-3 text-lg font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
               >
-                <User className="w-4 h-4 mr-2" />
-                Login or Signup
+                {/* <User className="w-5 h-5 mr-2" /> */}
+                Login
+              </button>
+            )}
+
+            {options.createFreeAccount && (
+              <button
+                onClick={() => {
+                  navigate("/signup");
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center w-full max-w-xs px-6 py-3  rounded-lg font-medium transition-colors"
+              >
+                Create Your Free Account
               </button>
             )}
           </div>

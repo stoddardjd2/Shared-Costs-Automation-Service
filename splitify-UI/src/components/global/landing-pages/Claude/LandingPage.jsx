@@ -17,6 +17,7 @@ import {
   Lock,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
 const SmartSplitLanding = () => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [realtimeStats, setRealtimeStats] = useState({
@@ -115,10 +116,15 @@ const SmartSplitLanding = () => {
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Automated follow-ups and payment requests eliminate payment delays
-              while preserving relationships and freeing your mind. Get paid
-              back faster with zero manual intervention.
+              Automated follow-ups and price tracking do the work for you. Escape the burden of being the group manager. Get paid back faster with
+              zero manual intervention.
             </p>
+
+            {/* <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+              Automated follow-ups eliminate payment delays while preserving
+              relationships and freeing your mind. Get paid back faster with
+              zero manual intervention.
+            </p> */}
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
               <button
@@ -160,12 +166,12 @@ const SmartSplitLanding = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-              The Challenge of Shared Cost Management
+              The Challenges of Shared Cost Management
             </h2>
             <p className="text-xl text-gray-600">
               Manual follow-ups and payment delays create tension. Existing
-              tools track expenses but don’t effectively handle collections or follow-ups,
-              forcing users to intervene manually.
+              tools track expenses but don’t effectively handle collections or
+              follow-ups, forcing users to intervene manually.
             </p>
           </div>
 
@@ -176,27 +182,28 @@ const SmartSplitLanding = () => {
               </h3>
               <ul className="space-y-3">
                 <li className="flex items-start">
-                  <div className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <X className="w-5 h-5 text-red-600 mt-0.5 mr-3 flex-shrink-0" />
                   <span className="text-gray-700">
-                    Manual follow-ups strain professional relationships
+                    Manual follow-ups strain relationships
                   </span>
                 </li>
                 <li className="flex items-start">
-                  <div className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <X className="w-5 h-5 text-red-600 mt-0.5 mr-3 flex-shrink-0" />
                   <span className="text-gray-700">
-                    No tracking of recurring cost changes
+                    No way to track changing recurring costs like utilities,
+                    groceries, or subscription increases
                   </span>
                 </li>
                 <li className="flex items-start">
-                  <div className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <X className="w-5 h-5 text-red-600 mt-0.5 mr-3 flex-shrink-0" />
                   <span className="text-gray-700">
-                    Complex calculations and poor payment history
+                    Complex manual calculations and poor payment history
                   </span>
                 </li>
                 <li className="flex items-start">
-                  <div className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <X className="w-5 h-5 text-red-600 mt-0.5 mr-3 flex-shrink-0" />
                   <span className="text-gray-700">
-                    Average 3-week payment delays
+                    Ineffective follow-up solutions
                   </span>
                 </li>
               </ul>
@@ -209,25 +216,28 @@ const SmartSplitLanding = () => {
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 mr-3 flex-shrink-0" />
                   <span className="text-gray-700">
-                    Automated intelligent follow-ups preserve relationships
+                    Automated intelligent follow-ups preserve relationships and
+                    eliminate manual intervention.
                   </span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 mr-3 flex-shrink-0" />
                   <span className="text-gray-700">
-                    Real-time monitoring with automatic adjustments
+                    Smart cost tracking that updates future requests as prices
+                    change.
                   </span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 mr-3 flex-shrink-0" />
                   <span className="text-gray-700">
-                    Smart calculations with comprehensive analytics
+                    Smart calculations with comprehensive payment history.
                   </span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mt-0.5 mr-3 flex-shrink-0" />
                   <span className="text-gray-700">
-                    Average 3-day payment completion
+                    Friendly text and email reminders that help everyone stay on
+                    top of payments.
                   </span>
                 </li>
               </ul>
@@ -239,7 +249,7 @@ const SmartSplitLanding = () => {
       {/* Features Section */}
       <section id="features" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          {/* <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
               Intelligent Automation for Professional Teams
             </h2>
@@ -267,24 +277,23 @@ const SmartSplitLanding = () => {
                 </div>
               </div>
             ))}
-          </div>
+          </div> */}
 
           {/* Workflow */}
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              How it Works
+            </h2>
+          </div>
           <div className="mt-20">
-            <h3 className="text-2xl font-bold text-center text-gray-900 mb-12">
-              How It Works
-            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="text-center">
                 <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center text-white text-xl font-bold mx-auto mb-4">
                   1
                 </div>
-                <h4 className="text-lg font-semibold mb-3">
-                  Configure & Deploy
-                </h4>
+                <h4 className="text-lg font-semibold mb-3">Send Request</h4>
                 <p className="text-gray-600">
-                  Set up expense categories, payment rules, and automation
-                  preferences in minutes
+                  Set up costs, rules, and automation preferences in seconds
                 </p>
               </div>
               <div className="text-center">
@@ -295,20 +304,18 @@ const SmartSplitLanding = () => {
                   Intelligent Processing
                 </h4>
                 <p className="text-gray-600">
-                  AI handles follow-ups, adjusts pricing dynamically, and tracks
-                  all interactions
+                  Our system handles follow-ups, keeps up with changing costs,
+                  and tracks all interactions
                 </p>
               </div>
               <div className="text-center">
                 <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center text-white text-xl font-bold mx-auto mb-4">
                   3
                 </div>
-                <h4 className="text-lg font-semibold mb-3">
-                  Optimized Results
-                </h4>
+                <h4 className="text-lg font-semibold mb-3">Get Paid</h4>
                 <p className="text-gray-600">
-                  Faster payments, reduced conflicts, and comprehensive
-                  reporting for insights
+                  Get paid directly to Venmo, Cash App, or your preferred method
+                  — all saved in your payment history{" "}
                 </p>
               </div>
             </div>
@@ -443,11 +450,10 @@ const SmartSplitLanding = () => {
       <section id="pricing" className="py-20 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            Start Optimizing Your Expense Management
+            Start Automating Your Shared Cost Management
           </h2>
           <p className="text-xl text-gray-600 mb-12">
-            Join thousands of organizations that have eliminated payment delays
-            and reduced administrative overhead.
+            Free yourself of the burden of being the group manager.
           </p>
 
           <div className="bg-gray-50 rounded-2xl p-8 mb-8">
@@ -468,23 +474,23 @@ const SmartSplitLanding = () => {
               </div>
               <div className="flex items-center">
                 <Check className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
-                <span>Intelligent automation</span>
+                <span>Intelligent Follow-ups</span>
               </div>
               <div className="flex items-center">
                 <Check className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
-                <span>Dynamic pricing engine</span>
+                <span>Automatic price tracking</span>
               </div>
               <div className="flex items-center">
                 <Check className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
-                <span>Enterprise security</span>
+                <span>Most advanced shared costs service</span>
               </div>
               <div className="flex items-center">
                 <Check className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
-                <span>Advanced analytics</span>
+                <span>Comprehensive payment history</span>
               </div>
               <div className="flex items-center">
                 <Check className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
-                <span>24/7 support</span>
+                <span>Free to use</span>
               </div>
             </div>
           </div>
