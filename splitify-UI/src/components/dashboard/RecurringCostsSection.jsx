@@ -23,12 +23,8 @@ import {
 import { useData } from "../../contexts/DataContext";
 import { getFrequencyColor, getNextDueStatus } from "../../utils/helpers";
 import ManageRecurringCostModal from "./ManageRecurringCostModal";
-
-const RecurringCostsSection = ({
-  setIsAddingRequest,
-  setSelectedCost,
-  setView,
-}) => {
+import { amountRange } from "../../utils/amountHelper.js";
+const RecurringCostsSection = ({ setSelectedCost, setView }) => {
   const { costs, participants, updateCost } = useData();
   const navigate = useNavigate();
 
@@ -116,21 +112,32 @@ const RecurringCostsSection = ({
   // Format the amount per person based on split type
   const formatAmountDisplay = (cost) => {
     const totalParticipants = cost.participants.length;
-    const amountPerPerson =
-      totalParticipants > 0 ? cost.amount / totalParticipants : cost.amount;
+
     if (cost.splitType == "custom" || cost.splitType == "percentage") {
       // return {
       //   amount: `$${Number(cost.totalAmount).toFixed(2)}`,
       //   label: "total",
       // };
-      return {
-        amount: `$${(Number(cost.totalAmount) / totalParticipants).toFixed(2)}`,
-        label: "avg",
-      };
+      // return {
+      //   amount: `$${(Number(cost.totalAmountOwed) / totalParticipants).toFixed(2)}`,
+      //   label: "avg",
+      // };
+      const range = amountRange(cost);
+      if (range.isSame) {
+        return {
+          amount: `$${cost.amount}`,
+          label: "per person",
+        };
+      } else {
+        return {
+          amount: `$${range.low}-$${range.high}`,
+          label: "per person",
+        };
+      }
     } else {
       return {
-        amount: `$${Number(amountPerPerson).toFixed(2)}`,
-        label: "each",
+        amount: `$${cost.amount}`,
+        label: "per person",
       };
     }
   };
@@ -422,7 +429,7 @@ const RecurringCostsSection = ({
                     <div className="flex items-center justify-between gap-3 mb-3">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <h3
-                          className={`text-lg font-semibold border-l-4 border-blue-600 pl-3`}
+                          className={`text-lg capitalize font-semibold border-l-4 border-blue-600 pl-3`}
                         >
                           {cost.name}
                         </h3>
@@ -558,7 +565,7 @@ const RecurringCostsSection = ({
                                   {/* Tooltip */}
                                   <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs py-2 px-3 rounded-lg opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
                                     {user?.name}
-                                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
+                                    <div className="absolute top-[28px] left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
                                   </div>
                                 </div>
                               );
@@ -602,11 +609,17 @@ const RecurringCostsSection = ({
                   {filteredCosts.length === 1 ? "request" : "requests"}
                 </div>
                 <button
-                  onClick={() => setIsAddingRequest(true)}
+                  onClick={() => {
+                    setView("addRequest");
+                    const root = document.getElementById("root");
+                    if (root) {
+                      root.scrollTo({ top: 0, left: 0, behavior: "instant" });
+                    }
+                  }}
                   className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all duration-200"
                 >
                   <Plus className="w-4 h-4" />
-                  New <span>Request</span>
+                  New Request
                 </button>
               </div>
             </div>

@@ -26,7 +26,13 @@ export default function ConfirmButtonTray({
     if (!isCheckout) {
       return false;
     } else {
-      return isSendingRequest || totalAmount == 0 || !chargeName || !frequency || !startTiming;
+      return (
+        isSendingRequest ||
+        totalAmount == 0 ||
+        !chargeName ||
+        !frequency ||
+        !startTiming
+      );
     }
   };
 
@@ -181,7 +187,7 @@ export default function ConfirmButtonTray({
                             {/* Tooltip */}
                             <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs py-2 px-3 rounded-lg opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
                               {user.name}
-                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
+                              <div className="absolute top-[28px] left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
                             </div>
                           </div>
                         );
@@ -214,7 +220,13 @@ export default function ConfirmButtonTray({
 
               {/* Confirm Button */}
               <button
-                onClick={onConfirm}
+                onClick={() => {
+                  const root = document.getElementById("root");
+                  if (root) {
+                    root.scrollTo({ top: 0, left: 0, behavior: "instant" });
+                  }
+                  onConfirm();
+                }}
                 disabled={isDisabled()}
                 className={`w-full text-white font-semibold py-4 rounded-xl shadow-lg transition-all hover:shadow-xl flex items-center justify-center gap-3 ${
                   isDisabled()

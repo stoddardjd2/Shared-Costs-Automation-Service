@@ -345,7 +345,6 @@ const SplitStep = ({
     costEntry.splitType = splitType;
     costEntry.amount = editableTotalAmount / (participants.length + 1);
     costEntry.totalAmount = editableTotalAmount;
-    // costEntry.totalAmount = actualAmount;
     costEntry.frequency = recurringType === "none" ? null : recurringType;
     costEntry.customInterval =
       recurringType === "custom" ? customInterval : null;
@@ -387,15 +386,15 @@ const SplitStep = ({
       switch (splitType) {
         case "equalWithMe":
           // individualAmount = actualAmount / (selectedPeople.length + 1);
-          individualAmount = actualAmount / selectedPeople.length;
-
+          individualAmount = editableTotalAmount / selectedPeople.length;
           break;
         case "equal":
-          individualAmount = actualAmount / selectedPeople.length;
+          individualAmount = editableTotalAmount / selectedPeople.length;
           break;
         case "percentage":
           individualAmount =
-            actualAmount * (Number(percentageAmounts[person._id] || 0) / 100);
+            editableTotalAmount *
+            (Number(percentageAmounts[person._id] || 0) / 100);
           baseParticipant.percentage = percentageAmounts[person._id];
           break;
         case "custom":
@@ -406,9 +405,21 @@ const SplitStep = ({
           individualAmount = 0;
       }
 
+      console.log("individual amont", individualAmount)
       baseParticipant.amount = Number(individualAmount.toFixed(2));
       return baseParticipant;
     });
+
+    function calculateTotalAmountOwed(participants) {
+      return participants.reduce((total, participant) => {
+        return total + (participant.amount || 0);
+      }, 0);
+    }
+
+    costEntry.totalAmountOwed = calculateTotalAmountOwed(
+      costEntry.participants
+    );
+
     return costEntry;
   }
 
@@ -1083,18 +1094,14 @@ const SplitStep = ({
                 <div>
                   <h4
                     className={`font-semibold text-sm ${
-                      isDynamic
-                        ? "text-gray-400"
-                        : "text-gray-900"
+                      isDynamic ? "text-gray-400" : "text-gray-900"
                     }`}
                   >
                     Custom
                   </h4>
                   <p
                     className={`text-xs ${
-                      isDynamic
-                        ? "text-gray-400"
-                        : "text-gray-600"
+                      isDynamic ? "text-gray-400" : "text-gray-600"
                     }`}
                   >
                     Set amounts

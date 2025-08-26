@@ -33,6 +33,9 @@ const paymentHistorySchema = new Schema({
   dueDate: { type: Date },
   nextReminderDate: { type: Date },
   amount: { type: Number },
+  totalAmount: Number,
+  totalAmountOwed: Number,
+
   //   status: {
   //     type: String,
   //     enum: ["paid", "pending", "overdue", "partial"],
@@ -69,6 +72,7 @@ const requestSchema = new Schema({
   allowMarkAsPaidForEveryone: { type: Boolean, default: false },
   isPlaidCharge: Boolean,
   totalAmount: Number,
+  totalAmountOwed: Number,
   reminderFrequency: {
     type: String,
     enum: ["daily", "weekly", "monthly", "none"],

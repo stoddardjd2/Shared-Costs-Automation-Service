@@ -26,7 +26,6 @@ const Dashboard = () => {
   } = useData();
 
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
-  const [isAddingRequest, setIsAddingRequest] = useState(false);
   const [view, setView] = useState("dashboard");
   const [selectedCost, setSelectedCost] = useState(null);
 
@@ -49,7 +48,6 @@ const Dashboard = () => {
           <div className="mt-6 ">
             <AddCost
               setView={setView}
-              setIsAddingRequest={setIsAddingRequest}
             />
           </div>
         );
@@ -95,7 +93,7 @@ const Dashboard = () => {
               )}
 
               {costs.length !== 0 && <OverdueAlerts />}
-              <RecurringCostsSection setView={setView} setSelectedCost={setSelectedCost} setIsAddingRequest={setIsAddingRequest} />
+              <RecurringCostsSection setView={setView} setSelectedCost={setSelectedCost} />
               {/* <RecurringCostsFromBank recurringFromBank={recurringFromBank} /> */}
               {/* <OneTimeCosts oneTimeCosts={oneTimeCosts} /> */}
             </div>

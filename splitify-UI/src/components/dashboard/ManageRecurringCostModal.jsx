@@ -24,6 +24,7 @@ import { usePeopleState } from "../../hooks/usePeopleState";
 import { useSplitState } from "../../hooks/useSplitState";
 import { useChargeState } from "../../hooks/useChargeState";
 import PaymentHistoryParticipantDetails from "./PaymentHistoryParticipantDetails";
+import CancelRequestBtn from "./CancelRequestBtn";
 
 const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
   const { participants, updateCost, sendPaymentRequest, resendPaymentRequest } =
@@ -51,6 +52,7 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
       totalParticipants > 0 ? cost.amount / totalParticipants : cost.amount;
     return {
       amount: `$${Number(amountPerPerson).toFixed(2)}`,
+      totalAmount: `$${cost.totalAmount}`,
       label: "each",
     };
   };
@@ -325,11 +327,10 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                   Manage Request
                 </h1>
                 <p className="text-gray-600">
-                  {cost.name} {""}• {formatAmountDisplay(cost).amount} each •{" "}
-                  {formatBillingFrequency(cost)}
-                  {/* {cost.frequency || "monthly"} */}
+                  View payment history or update future requests
                 </p>
               </div>
+              <CancelRequestBtn />
             </div>
 
             {/* Update Future Requests Button - only show for recurring costs */}
@@ -375,7 +376,6 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
               ) : (
                 <div className="space-y-4 bg-white">
                   {sortedPayments.map((payment) => {
-                    
                     // const statusStyling = getPaymentStatusStyling(payment);
                     // const StatusIcon = statusStyling.icon;
 
@@ -389,9 +389,9 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                           className={` px-4 pt-3 flex items-center justify-between`}
                         >
                           <span className="text-gray-900 font-semibold text-lg">
-                            ${payment.totalAmount}
+                            ${payment.totalAmountOwed}{" "}
                             <span className="text-sm font-medium  text-gray-500 false">
-                              Total
+                              Total Owed
                             </span>
                           </span>
 

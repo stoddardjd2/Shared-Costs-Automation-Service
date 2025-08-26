@@ -56,6 +56,7 @@ const createRequest = async (req, res) => {
         dueDate: dueDate,
         amount: requestData.amount,
         totalAmount: requestData.totalAmount,
+        totalAmountOwed: requestData.totalAmountOwed,
         nextReminderDate: nextReminderDate,
         // status: "pending",
         participants: (requestData.participants || []).map((participant) => ({
