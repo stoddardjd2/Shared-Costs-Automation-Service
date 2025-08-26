@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Eye,
   EyeOff,
@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { loginUser } from "../../queries/auth";
 import ForgotPasswordModal from "./ForgotPasswordModal";
-import { useData } from "../../contexts/DataContext";
+import { verifyToken } from "../../queries/auth";
 const Loginv2 = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -25,6 +25,28 @@ const Loginv2 = () => {
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const navigate = useNavigate();
   // Email validation regex
+
+  useEffect(() => {
+    // check token and get user data and requests for user
+    const checkToken = async () => {
+      const token = localStorage.getItem("token");
+
+      if (token && token !== "undefined") {
+        try {
+          const isValidToken = await verifyToken(token);
+          if (isValidToken) {
+            navigate("/dashboard");
+          }
+        } catch (err) {
+          console.error("Error verifying token:", err);
+        }
+      } else {
+      }
+    };
+
+    checkToken();
+  }, []);
+
   const isValidEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -125,9 +147,7 @@ const Loginv2 = () => {
           <div className="w-16 h-16 bg-blue-600 rounded-2xl mx-auto mb-6 flex items-center justify-center">
             <User className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome
-          </h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome</h2>
           <p className="text-gray-600">Sign in to your account to continue</p>
         </div>
 

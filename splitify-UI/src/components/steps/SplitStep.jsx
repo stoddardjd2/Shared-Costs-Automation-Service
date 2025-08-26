@@ -296,54 +296,26 @@ const SplitStep = ({
   };
 
   function getCostEntry() {
-    // Calculate the actual amount to use based on split type
-    // switch (splitType) {
-    //   case "custom":
-    //     return totalSplit;
-    //   case "percentage":
-    //     return totalSplit;
-    //   case "equalWithMe":
-    //     return totalSplit;
-    //   default:
-    //     editableTotalAmount;
-    // }
-
-    const actualAmount = totalSplit;
-
-    // Number(
-    //   (splitType === "custom" || splitType === "percentage"
-    //     ? totalSplit
-    //     : editableTotalAmount
-    //   ).toFixed(2)
-    // );
-    // Original flow for new costs
     const costEntry = generateCostEntry({
       selectedCharge,
       newChargeDetails,
       selectedPeople,
       splitType,
       ...(splitType === "custom" && { customAmounts }),
-      //   ...(splitType === "percentage" &&
-      //     {
-      //     percentageAmounts: percentageAmounts,
-      //   }
-      // )
-      // ,
       recurringType,
       customInterval,
       customUnit,
       startTiming,
       totalSplit,
-      // isDynamic,
-      // dynamicCostReason,
-      // Pass the actual calculated amount
-      // totalAmount: actualAmount,
       editableTotalAmount,
     });
 
     // Override cost entry properties with current state values to ensure accuracy
     costEntry.splitType = splitType;
-    costEntry.amount = editableTotalAmount / (participants.length + 1);
+    costEntry.amount =
+      splitType == "percentage"
+        ? null
+        : editableTotalAmount / (participants.length + 1);
     costEntry.totalAmount = editableTotalAmount;
     costEntry.frequency = recurringType === "none" ? null : recurringType;
     costEntry.customInterval =
@@ -352,8 +324,10 @@ const SplitStep = ({
     costEntry.startTiming = startTiming;
     costEntry.isDynamic = isDynamic;
     costEntry.name = chargeName;
+
     // NOT CONFIGURABLE FOR USER YET!
     costEntry.requestFrequency = "daily";
+
     costEntry.allowMarkAsPaidForEveryone = allowMarkAsPaidForEveryone;
     costEntry.isPlaidCharge = isPlaidCharge;
     // save id to entry for edit mode, used to identify which cost to update in DB
@@ -395,17 +369,21 @@ const SplitStep = ({
           individualAmount =
             editableTotalAmount *
             (Number(percentageAmounts[person._id] || 0) / 100);
-          baseParticipant.percentage = percentageAmounts[person._id];
+          baseParticipant.percentage = Number(
+            percentageAmounts[person._id]
+          ).toFixed(2);
+          console.log("amount ind", individualAmount);
           break;
         case "custom":
           individualAmount = Number(customAmounts[person._id] || 0);
-          baseParticipant.customAmount = customAmounts[person._id];
+          baseParticipant.customAmount = Number(
+            customAmounts[person._id]
+          ).toFixed(2);
           break;
         default:
           individualAmount = 0;
       }
 
-      console.log("individual amont", individualAmount)
       baseParticipant.amount = Number(individualAmount.toFixed(2));
       return baseParticipant;
     });
@@ -425,6 +403,7 @@ const SplitStep = ({
 
   const handleSendRequest = () => {
     const costEntry = getCostEntry();
+    console.log("submitting cost", costEntry);
     setIsSendingRequest(true);
     if (isEditMode) {
       const handleUpdateRequest = async () => {
@@ -434,6 +413,7 @@ const SplitStep = ({
           setSelectedCost(UpdatedCostFromDB);
           onBack();
           setIsSendingRequest(false);
+          root.scrollTo({ top: 0, behavior: "instant" });
         }
       };
       handleUpdateRequest(); // Call the function
@@ -445,6 +425,7 @@ const SplitStep = ({
           addCost(newCostFromDB);
           setView("dashboard");
           setIsSendingRequest(false);
+          root.scrollTo({ top: 0, behavior: "instant" });
         }
       };
       handleCreateRequest(); // Call the function
@@ -1344,8 +1325,9 @@ const SplitStep = ({
                       }}
                     >
                       <p>
-                        Dynamic costs are useful for utilities, subscriptions,
-                        or any recurring cost that varies each period.
+                        Dynamic Cost tracking is useful for utilities,
+                        subscriptions, or any recurring cost that varies each
+                        period.
                       </p>
                       <div className="absolute top-full left-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
                     </div>
@@ -1406,7 +1388,7 @@ const SplitStep = ({
                           : "text-gray-900"
                       }`}
                     >
-                      Dynamic Costs
+                      Dynamic Cost
                       {isDynamicCostsDisabled && (
                         <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
                           {splitType === "custom"
@@ -1581,6 +1563,7 @@ const SplitStep = ({
           totalAmount={
             splitType == "percentage" ? totalSplit : editableTotalAmount
           }
+          costEntry = {getCostEntry()}
           billingFrequency={getRecurringLabel()}
           isCustomFrequency={recurringType == "custom"}
           chargeName={chargeName}

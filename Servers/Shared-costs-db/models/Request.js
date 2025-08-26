@@ -47,7 +47,7 @@ const paymentHistorySchema = new Schema({
 const requestSchema = new Schema({
   owner: { type: Schema.Types.ObjectId, required: true },
   name: { type: String, required: true },
-  amount: { type: Number, required: true },
+  amount: { type: Number },
   //   totalAmount: { type: Number },
   isRecurring: { type: Boolean, default: false },
   splitType: {
@@ -62,7 +62,7 @@ const requestSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
   lastMatched: { type: Date },
   frequency: { type: String }, // weekly, monthly, custom
-  // nextDue: { type: Date },
+  nextDue: { type: Date },
   customInterval: { type: Number },
   customUnit: { type: String }, // days, weeks, months
   startTiming: { type: Schema.Types.Mixed, default: "now" },
@@ -79,6 +79,8 @@ const requestSchema = new Schema({
     default: "weekly",
   },
   paymentHistory: [paymentHistorySchema],
+  isDeleted: Boolean,
+  isPaused: Boolean,
 });
 
 // Pre-save middleware to calculate nextDue

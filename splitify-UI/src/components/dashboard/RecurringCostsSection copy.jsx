@@ -19,18 +19,16 @@ import {
   XCircle,
   Filter,
   ChevronDown,
-  PauseCircle, // ⬅️ added
 } from "lucide-react";
 import { useData } from "../../contexts/DataContext";
 import { getFrequencyColor, getNextDueStatus } from "../../utils/helpers";
 import { amountRange } from "../../utils/amountHelper.js";
-
 const RecurringCostsSection = ({ setSelectedCost, setView }) => {
   const { costs, participants, updateCost } = useData();
   const navigate = useNavigate();
 
   // Tab and filtering state
-  const [activeTab, setActiveTab] = useState("recurring"); // 'recurring' | 'onetime' | 'paused'
+  const [activeTab, setActiveTab] = useState("recurring");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");
@@ -42,21 +40,11 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
   const [showCostTooltip, setShowCostTooltip] = useState(false);
   const [hoveredCostId, setHoveredCostId] = useState(null);
 
-  // ✅ New: easy label for current tab
-  const activeLabel =
-    activeTab === "onetime"
-      ? "one-time"
-      : activeTab === "paused"
-      ? "paused"
-      : "recurring";
-
-  // ✅ Updated: Filter costs based on active tab
-  // ✅ Updated: filter out paused from recurring
+  // Filter costs based on active tab
   const filteredByType = useMemo(() => {
-    if (activeTab === "paused") return costs.filter((c) => c.isPaused);
-    if (activeTab === "recurring")
-      return costs.filter((c) => c.isRecurring && !c.isPaused);
-    return costs.filter((c) => !c.isRecurring);
+    return costs.filter((cost) =>
+      activeTab === "recurring" ? cost.isRecurring : !cost.isRecurring
+    );
   }, [costs, activeTab]);
 
   // Apply search and status filters
@@ -66,6 +54,7 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
         const matchesSearch = cost.name
           .toLowerCase()
           .includes(searchTerm.toLowerCase());
+
         let matchesStatus = true;
         if (statusFilter !== "all") {
           const hasStatus = cost.participants.some(
@@ -73,6 +62,7 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
           );
           matchesStatus = hasStatus;
         }
+
         return matchesSearch && matchesStatus;
       })
       .reverse();
@@ -85,7 +75,6 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
     startIndex,
     startIndex + itemsPerPage
   );
-
   // Reset pagination when filters change
   React.useEffect(() => {
     setCurrentPage(1);
@@ -98,8 +87,11 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
         setShowStatusDropdown(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, [showStatusDropdown]);
 
   // Helper function to generate avatar for users
@@ -110,20 +102,40 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
       nameParts.length > 1
         ? `${nameParts[0][0]}${nameParts[1][0]}`
         : name.slice(0, 2);
-    return { avatar: avatar.toUpperCase() };
+
+    return {
+      avatar: avatar.toUpperCase(),
+    };
   };
 
   // Format the amount per person based on split type
   const formatAmountDisplay = (cost) => {
     if (cost.splitType == "custom" || cost.splitType == "percentage") {
+      // return {
+      //   amount: `$${Number(cost.totalAmount).toFixed(2)}`,
+      //   label: "total",
+      // };
+      // return {
+      //   amount: `$${(Number(cost.totalAmountOwed) / totalParticipants).toFixed(2)}`,
+      //   label: "avg",
+      // };
       const range = amountRange(cost);
       if (range.isSame) {
-        return { amount: `$${range.low}`, label: "per person" };
+        return {
+          amount: `$${range.low}`,
+          label: "per person",
+        };
       } else {
-        return { amount: `$${range.low}-$${range.high}`, label: "per person" };
+        return {
+          amount: `$${range.low}-$${range.high}`,
+          label: "per person",
+        };
       }
     } else {
-      return { amount: `$${cost.amount}`, label: "per person" };
+      return {
+        amount: `$${cost.amount}`,
+        label: "per person",
+      };
     }
   };
 
@@ -132,12 +144,23 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
     const frequency = cost.frequency;
     const customInterval = cost.customInterval;
     const customUnit = cost.customUnit;
-    if (!frequency || frequency === "monthly") return "Monthly requests";
-    if (frequency === "weekly") return "Weekly requests";
-    if (frequency === "biweekly") return "Biweekly requests";
-    if (frequency === "yearly") return "Yearly requests";
-    if (frequency === "daily") return "Daily requests";
+    if (!frequency || frequency === "monthly") {
+      return "Monthly requests";
+    }
+    if (frequency === "weekly") {
+      return "Weekly requests";
+    }
+    if (frequency === "biweekly") {
+      return "Biweekly requests";
+    }
+    if (frequency === "yearly") {
+      return "Yearly requests";
+    }
+    if (frequency === "daily") {
+      return "Daily requests";
+    }
     if (frequency === "custom") {
+      // Handle pluralization for time units
       const getSingularUnit = (unit) => {
         const singularMap = {
           months: "month",
@@ -147,6 +170,7 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
         };
         return singularMap[unit] || unit;
       };
+
       const unit =
         customInterval === 1 ? getSingularUnit(customUnit) : customUnit;
       return `Requests every ${customInterval} ${unit}`;
@@ -172,6 +196,11 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
     setView("requestDetails");
   };
 
+  // const handleCloseModal = () => {
+  //   setShowManageModal(false);
+  //   setSelectedCost(null);
+  // };
+
   const getStatusFilterLabel = () => {
     switch (statusFilter) {
       case "paid":
@@ -188,12 +217,18 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
   return (
     <>
       <div className="w-full bg-gray-50 min-h-screen">
+        {/* Header */}
+        {/* <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment Requests</h1>
+          <p className="text-gray-600">Manage your recurring and one-time payment requests</p>
+        </div> */}
+
         {/* Tab Navigation */}
         <div className="mb-6">
           <div className="flex space-x-1 bg-white p-1 rounded-lg shadow-sm border border-slate-200/60">
             <button
               onClick={() => setActiveTab("recurring")}
-              className={`flex-1 py-3 px-1 xs:px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+              className={`flex-1 py-3 px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
                 activeTab === "recurring"
                   ? "bg-blue-600 text-white shadow-sm"
                   : "text-gray-600 hover:text-gray-900"
@@ -204,10 +239,9 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                 Recurring <span className="hidden sm:inline">Requests</span>
               </div>
             </button>
-
             <button
               onClick={() => setActiveTab("onetime")}
-              className={`flex-1 py-3 px-1 xs:px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+              className={`flex-1 py-3 px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
                 activeTab === "onetime"
                   ? "bg-blue-600 text-white shadow-sm"
                   : "text-gray-600 hover:text-gray-900"
@@ -218,25 +252,10 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                 One-time <span className="hidden sm:inline">Requests</span>
               </div>
             </button>
-
-            {/* ✅ New Paused tab */}
-            <button
-              onClick={() => setActiveTab("paused")}
-              className={`flex-1 py-3 px-1 xs:px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-                activeTab === "paused"
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              <PauseCircle className="w-4 h-4" />
-              <div>
-                Paused <span className="hidden sm:inline">Requests</span>
-              </div>
-            </button>
           </div>
         </div>
 
-        {/* Search + Filters */}
+        {/* Search and Filters */}
         <div className="mb-6 flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -329,60 +348,68 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
           </div>
         </div>
 
-        {/* Section header */}
+        {/* Results Summary */}
+        {filteredCosts.length == 0 && (
+          <div className="mb-4 text-sm text-slate-600">
+            Showing {startIndex + 1}-
+            {Math.min(startIndex + itemsPerPage, filteredCosts.length)} of{" "}
+            {filteredCosts.length}{" "}
+            {activeTab == "onetime" ? "one-time" : "recurring"} requests
+          </div>
+        )}
+
+        {/* Payment Requests Section */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 mb-6">
           <div className="p-6 border-b border-slate-100">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
                 {activeTab === "recurring" ? (
                   <RefreshCw className="w-5 h-5 text-white" />
-                ) : activeTab === "onetime" ? (
-                  <Calendar className="w-5 h-5 text-white" />
                 ) : (
-                  <PauseCircle className="w-5 h-5 text-white" />
+                  <Calendar className="w-5 h-5 text-white" />
                 )}
               </div>
               <div className="text-left">
                 <h2 className="text-xl font-semibold text-slate-900">
-                  {activeTab === "recurring"
-                    ? "Recurring"
-                    : activeTab === "onetime"
-                    ? "One-time"
-                    : "Paused"}{" "}
+                  {activeTab === "recurring" ? "Recurring" : "One-time"} {""}
                   Requests
                 </h2>
                 <p className="text-gray-600 text-sm">
                   {activeTab === "recurring"
                     ? "Manage your ongoing requests"
-                    : activeTab === "onetime"
-                    ? "Manage your one-time requests"
-                    : "Requests you've paused"}
+                    : "Manage your one-time requests"}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Empty state */}
           {paginatedCosts.length === 0 ? (
             <div className="p-12 text-center">
               <div className="w-20 h-20 bg-slate-100 rounded-2xl mx-auto mb-6 flex items-center justify-center">
                 {activeTab === "recurring" ? (
                   <RefreshCw className="w-10 h-10 text-slate-400" />
-                ) : activeTab === "onetime" ? (
-                  <Calendar className="w-10 h-10 text-slate-400" />
                 ) : (
-                  <PauseCircle className="w-10 h-10 text-slate-400" />
+                  <Calendar className="w-10 h-10 text-slate-400" />
                 )}
               </div>
               <h3 className="text-lg font-medium text-slate-900 mb-2">
-                No{" "}
-                {activeTab === "onetime"
-                  ? "one-time"
-                  : activeTab === "paused"
-                  ? "paused"
-                  : "recurring"}{" "}
-                requests found
+                No {activeTab == "onetime" ? "one-time" : activeTab} requests
+                found
               </h3>
+              {/* <p className="text-slate-600 mb-6 max-w-sm mx-auto">
+                {searchTerm || statusFilter !== "all"
+                  ? "Try adjusting your search or filter criteria"
+                  : `Add a ${
+                      activeTab == "onetime" ? "one-time" : activeTab
+                    } payment request.`}
+              </p> */}
+              {/* <button
+                onClick={() => navigate("/costs/new")}
+                className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-all duration-200 transform hover:scale-105 font-medium shadow-sm"
+              >
+                <Plus className="w-4 h-4 inline mr-2" />
+                Add {activeTab === "recurring" ? "Recurring" : "One-time"} Cost
+              </button> */}
             </div>
           ) : (
             <div className="divide-y divide-slate-100">
@@ -398,7 +425,9 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                     {/* Header line with cost name and manage button */}
                     <div className="flex items-center justify-between gap-3 mb-3">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <h3 className="text-xl capitalize font-semibold border-l-4 border-blue-600 pl-3">
+                        <h3
+                          className={`text-xl capitalize font-semibold border-l-4 border-blue-600 pl-3`}
+                        >
                           {cost.name}
                         </h3>
                       </div>
@@ -424,8 +453,9 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                       </button>
                     </div>
 
-                    {/* Price and People */}
+                    {/* Price and People section - full width */}
                     <div className="flex justify-between items-start mb-4">
+                      {/* Price section */}
                       <div className="flex-shrink-0">
                         <div className="flex items-center gap-3 mb-2">
                           <div>
@@ -449,6 +479,7 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                             </div>
                           </div>
 
+                          {/* Dynamic cost tracking badge */}
                           {cost.isDynamic && (
                             <div className="relative">
                               <div
@@ -457,13 +488,13 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                                 onMouseLeave={() => setHoveredCostId(null)}
                               >
                                 <TrendingUp className="w-5 h-4 text-orange-500" />
+                                {/* <Info className="w-3 h-3 text-gray-500 absolute -top-2 -right-2" /> */}
                               </div>
+
+                              {/* Tooltip - only show for the specific hovered cost */}
                               {hoveredCostId === cost._id && (
                                 <div className="absolute bottom-full left-0 mb-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50">
-                                  <p>
-                                    Dynamic cost tracking enabled. Future
-                                    requests will be updated as prices change.
-                                  </p>
+                                  <p className="">Dynamic cost tracking enabled. Future requests will be updated as prices change.</p>
                                   <div className="absolute top-full left-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
                                 </div>
                               )}
@@ -487,7 +518,7 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                       </div>
                     </div>
 
-                    {/* People */}
+                    {/* People display section */}
                     <div className="flex justify-start">
                       <div className="flex items-center gap-3">
                         <div className="flex -space-x-2">
@@ -501,6 +532,7 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                               const statusColor = getStatusColor(
                                 participant.status
                               );
+
                               return (
                                 <div
                                   key={user._id}
@@ -510,11 +542,15 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                                   }}
                                 >
                                   {avatar}
+
+                                  {/* Solid color status indicator */}
                                   {statusColor && (
                                     <div
                                       className={`absolute -bottom-0.5 -right-0.5 ${statusColor} rounded-full w-2.5 h-2.5 border border-white shadow-sm`}
                                     ></div>
                                   )}
+
+                                  {/* Tooltip */}
                                   <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs py-2 px-3 rounded-lg opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
                                     {user?.name}
                                     <div className="absolute top-[28px] left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
@@ -525,6 +561,7 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                           {cost.participants.length > 5 && (
                             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center text-white font-semibold text-xs border-2 border-white shadow-sm relative group/avatar hover:translate-x-1 transition-transform duration-200">
                               +{cost.participants.length - 5}
+                              {/* Tooltip for overflow count */}
                               <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs py-2 px-3 rounded-lg opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
                                 {cost.participants.length - 5} more{" "}
                                 {cost.participants.length - 5 === 1
@@ -536,6 +573,7 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                           )}
                         </div>
 
+                        {/* People count indicator */}
                         <div className="flex items-center gap-1 text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded-lg">
                           <Users className="w-4 h-4" />
                           <span className="font-medium">
@@ -550,21 +588,21 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
             </div>
           )}
 
-          {/* Footer summary + CTA */}
           {paginatedCosts.length > 0 && (
             <div className="p-6 bg-slate-50/30 border-t border-slate-100">
               <div className="flex justify-between items-center">
                 <div className="text-sm text-slate-600">
                   <span className="font-medium">{filteredCosts.length}</span>{" "}
-                  {activeLabel}{" "}
+                  {activeTab == "onetime" ? "one-time" : "recurring"}{" "}
                   {filteredCosts.length === 1 ? "request" : "requests"}
                 </div>
                 <button
                   onClick={() => {
                     setView("addRequest");
                     const root = document.getElementById("root");
-                    if (root)
+                    if (root) {
                       root.scrollTo({ top: 0, left: 0, behavior: "instant" });
+                    }
                   }}
                   className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all duration-200"
                 >
@@ -587,6 +625,7 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
+
               <div className="flex space-x-1">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(
                   (page) => (
@@ -604,6 +643,7 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                   )
                 )}
               </div>
+
               <button
                 onClick={() =>
                   setCurrentPage(Math.min(totalPages, currentPage + 1))
@@ -614,12 +654,21 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
+
             <div className="text-sm text-slate-600">
               Page {currentPage} of {totalPages}
             </div>
           </div>
         )}
       </div>
+
+      {/* {showManageModal && selectedCost && (
+        <ManageRecurringCostModal
+          cost={selectedCost}
+          setSelectedCost={setSelectedCost}
+          onClose={handleCloseModal}
+        />
+      )} */}
     </>
   );
 };

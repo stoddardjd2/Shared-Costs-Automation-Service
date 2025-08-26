@@ -25,6 +25,7 @@ import { useSplitState } from "../../hooks/useSplitState";
 import { useChargeState } from "../../hooks/useChargeState";
 import PaymentHistoryParticipantDetails from "./PaymentHistoryParticipantDetails";
 import CancelRequestBtn from "./CancelRequestBtn";
+import PauseRequestBtn from "./PauseRequestBtn";
 
 const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
   const { participants, updateCost, sendPaymentRequest, resendPaymentRequest } =
@@ -330,7 +331,14 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                   View payment history or update future requests
                 </p>
               </div>
-              <CancelRequestBtn />
+              <PauseRequestBtn
+                requestId={cost._id}
+                isPausedPassed={cost?.isPaused}
+              />
+              <CancelRequestBtn
+                requestId={cost._id}
+                onDeleteSuccess={onClose}
+              />
             </div>
 
             {/* Update Future Requests Button - only show for recurring costs */}

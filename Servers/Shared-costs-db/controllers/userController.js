@@ -15,9 +15,6 @@ const generateToken = (id) => {
   });
 };
 
-
-
-
 const getUserData = async (req, res) => {
   try {
     const userId = req.user._id; // From auth middleware
@@ -208,21 +205,36 @@ const checkIfValidToken = async (req, res) => {
       // Just verify the token structure and expiry
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // const user = await User.findById(decoded.id);
+      const user = await User.findById(decoded.id);
 
       console.log("Token decoded:", new Date(decoded.exp * 1000));
-      res.status(200).json({
-        success: true,
-        message: "Token is valid",
-        data: {
-          valid: true,
-          userId: decoded.id,
-          // user: user,
-          issuedAt: new Date(decoded.iat * 1000),
-          expiresAt: new Date(decoded.exp * 1000),
-          timeUntilExpiry: decoded.exp * 1000 - Date.now(),
-        },
-      });
+      if (user) {
+        res.status(200).json({
+          success: true,
+          message: "Token is valid",
+          data: {
+            valid: true,
+            userId: decoded.id,
+            // user: user,
+            issuedAt: new Date(decoded.iat * 1000),
+            expiresAt: new Date(decoded.exp * 1000),
+            timeUntilExpiry: decoded.exp * 1000 - Date.now(),
+          },
+        });
+      } else {
+        res.status(200).json({
+          success: false,
+          message: "No user found matching token",
+          data: {
+            valid: false,
+            userId: decoded.id,
+            // user: user,
+            issuedAt: new Date(decoded.iat * 1000),
+            expiresAt: new Date(decoded.exp * 1000),
+            timeUntilExpiry: decoded.exp * 1000 - Date.now(),
+          },
+        });
+      }
     } catch (jwtError) {
       if (jwtError.name === "TokenExpiredError") {
         return res.status(401).json({
@@ -977,8 +989,6 @@ const addPaymentMethod = async (req, res) => {
   }
 };
 
-
-
 module.exports = {
   getUsers,
   getUser,
@@ -995,5 +1005,4 @@ module.exports = {
   approveSmsMessages,
   addPaymentMethod,
   updateContactForUser,
-  
 };

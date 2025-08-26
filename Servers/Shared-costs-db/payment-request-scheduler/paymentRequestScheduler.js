@@ -142,7 +142,6 @@ function calculateNextReminderDate(dueDate, reminderFrequency) {
  * can generate the _id up front and pass it through to notifications.
  */
 function createPaymentHistoryEntry(requestDocument, requestSentDate, presetId) {
-  console.log("entry with", requestDocument.participants)
   const dueDate = calculateDueDate(
     requestSentDate,
     requestDocument.reminderFrequency
@@ -170,6 +169,9 @@ function createPaymentHistoryEntry(requestDocument, requestSentDate, presetId) {
     _id: presetId || new ObjectId(), // <— key change: use caller-provided id when present
     requestDate: requestSentDate,
     dueDate,
+    amount: requestDocument.amount,
+    totalAmount: requestDocument.totalAmount,
+    totalAmountOwed: requestDocument.totalAmountOwed,
     nextReminderDate,
     amount: requestDocument.amount,
     participants: participantsData,
@@ -234,7 +236,7 @@ async function sendPaymentRequestToParticipant({
       requestOwnerPaymentMethods: ownerUser?.paymentMethods || {},
       participantId: participant._id,
       participantName,
-      paymentHistoryId, // <— now set
+      paymentHistoryId,
       stillOwes,
       dueDate: effectiveDueDate,
       requestData: request,
@@ -266,6 +268,14 @@ async function processRecurringRequestIfDue(
 ) {
   const startTimingValue = normalizeStartTiming(requestDocument.startTiming);
   const hasInitialRequestBeenSent = !!requestDocument.lastSent;
+
+  if (requestDocument?.isPaused) {
+    return { sent: false, reason: "request_paused" };
+  }
+  if (requestDocument?.isDeleted) {
+    return { sent: false, reason: "request_deleted" };
+  }
+
   // Initial request
   if (!hasInitialRequestBeenSent) {
     if (startTimingValue && startTimingValue !== "now") {
@@ -336,10 +346,6 @@ async function processRecurringRequestIfDue(
         const updatedDynamicData = await resolveDynamicAmountIfEnabled(
           requestDocument
         );
-
-          console.log('here')
-        console.log("updatedDynamicData", updatedDynamicData);
-
         requestDocument.participants = updatedDynamicData.newParticipants;
         console.log(
           "updated req doc after dynamic newParticpants",

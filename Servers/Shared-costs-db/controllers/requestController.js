@@ -2,6 +2,7 @@
 const Request = require("../models/Request");
 const User = require("../models/User");
 const { ObjectId } = require("mongodb");
+const { mongoose } = require("mongoose");
 const sendRequestsRouter = require("../send-request-helpers/sendRequestsRouter");
 const {
   calculateNextReminderDate,
@@ -13,13 +14,28 @@ const {
 
 const getRequests = async (req, res) => {
   try {
-    const requests = await Request.find({ owner: req.user._id });
+    // 1) Get the array of request IDs from the user doc
+    const user = await User.findById(req.user._id).select("requests").lean();
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const requestIds = (user.requests || [])
+      .filter(Boolean)
+      .map((id) => new ObjectId(id));
+
+    // 2) If no ids, return empty list
+    if (requestIds.length === 0) return res.json([]);
+
+    // 3) Fetch only those requests (exclude soft-deleted)
+    const requests = await Request.find({
+      _id: { $in: requestIds },
+      isDeleted: { $ne: true },
+    }).lean();
+
     res.json(requests);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
-
 const createRequest = async (req, res) => {
   console.log("Creating request with data:", req.body);
   try {
@@ -819,6 +835,239 @@ const handlePaymentDetails = async (req, res) => {
   }
 };
 
+const handleTogglePauseRequest = async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const userId = req.user._id; // Assuming user ID comes from auth middleware
+
+    // Validate input
+    if (!requestId) {
+      return res.status(400).json({
+        success: false,
+        message: "Request ID is required",
+      });
+    }
+
+    // Validate ObjectId format
+    if (!ObjectId.isValid(requestId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid request ID format",
+      });
+    }
+
+    // Find the request and verify ownership
+    const request = await Request.findOne({
+      _id: new ObjectId(requestId),
+      owner: userId, // Assuming requests have userId field for ownership
+    });
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: "Request not found or you do not have permission to modify it",
+      });
+    }
+
+    // Check if request is already deleted
+    if (request.isDeleted) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot modify a deleted request",
+      });
+    }
+
+    // Toggle pause status
+    const newPauseStatus = !request.isPaused;
+
+    // Update the request
+    const updateResult = await Request.updateOne(
+      { _id: new ObjectId(requestId) },
+      {
+        $set: {
+          isPaused: newPauseStatus,
+        },
+      }
+    );
+
+    if (updateResult.matchedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Request not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Request ${newPauseStatus ? "paused" : "unpaused"} successfully`,
+      data: {
+        requestId: requestId,
+        isPaused: newPauseStatus,
+      },
+    });
+  } catch (error) {
+    console.error("Error toggling request pause status:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+// Controller to handle deleting a request (soft delete)
+
+// assumes: const mongoose = require("mongoose");
+
+const handleDeleteRequest = async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const userId = req.user._id;
+    const useTransactions = process.env.NODE_ENV === "production";
+
+    if (!requestId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Request ID is required" });
+    }
+    if (!ObjectId.isValid(requestId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid request ID format" });
+    }
+
+    // Find and verify ownership
+    const request = await Request.findOne({
+      _id: new ObjectId(requestId),
+      owner: userId,
+    });
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: "Request not found or you do not have permission to delete it",
+      });
+    }
+    if (request.isDeleted) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Request is already deleted" });
+    }
+
+    // --- Try transactional path first (preferred) ---
+    if (useTransactions) {
+      const session = await mongoose.startSession();
+      try {
+        await session.withTransaction(async () => {
+          const upd = await Request.updateOne(
+            { _id: request._id },
+            {
+              $set: { isDeleted: true, isPaused: false, deletedAt: new Date() },
+            },
+            { session }
+          );
+          if (upd.matchedCount === 0)
+            throw new Error("Request not found for update");
+
+          const userUpd = await User.updateOne(
+            { _id: userId },
+            { $pull: { requests: request._id } },
+            { session }
+          );
+          // Require actual removal from the array
+          if (userUpd.matchedCount === 0)
+            throw new Error("User not found for update");
+          if ((userUpd.modifiedCount ?? userUpd.nModified ?? 0) === 0) {
+            throw new Error(
+              "Failed to pull request from user's requests array"
+            );
+          }
+        });
+
+        // Transaction committed
+        return res.status(200).json({
+          success: true,
+          message: "Request deleted successfully",
+          data: { requestId, isDeleted: true },
+        });
+      } catch (txnErr) {
+        // If transaction not supported or failed, fall through to compensating path
+        session.endSession();
+        // Only fall back for topology/txn support issues; otherwise return error
+        const msg = String(txnErr?.message || "");
+        const looksLikeNoTxnSupport =
+          msg.includes("replica set") ||
+          msg.includes(
+            "Transaction numbers are only allowed on a replica set"
+          ) ||
+          msg.includes("not supported");
+
+        if (!looksLikeNoTxnSupport) {
+          console.error("Transactional delete failed:", txnErr);
+          return res
+            .status(500)
+            .json({ success: false, message: "Failed to delete request" });
+        }
+        // continue to non-transactional compensating logic
+      }
+    }
+
+    // --- Non-transactional compensating path (dev/local without replica set) ---
+    const prevPaused = !!request.isPaused;
+
+    // Step 1: soft-delete
+    const upd = await Request.updateOne(
+      { _id: request._id },
+      { $set: { isDeleted: true, isPaused: false, deletedAt: new Date() } }
+    );
+    if (upd.matchedCount === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Request not found" });
+    }
+
+    // Step 2: pull from user array
+    const userUpd = await User.updateOne(
+      { _id: userId },
+      { $pull: { requests: request._id } }
+    );
+
+    const removed = (userUpd.modifiedCount ?? userUpd.nModified ?? 0) > 0;
+    if (!removed) {
+      // COMPENSATION: revert the request doc since user array was not updated
+      try {
+        await Request.updateOne(
+          { _id: request._id },
+          {
+            $set: { isDeleted: false, isPaused: prevPaused },
+            $unset: { deletedAt: "" },
+          }
+        );
+      } catch (revertErr) {
+        console.error(
+          "CRITICAL: Delete compensation failed; manual cleanup needed.",
+          revertErr
+        );
+      }
+      return res.status(500).json({
+        success: false,
+        message:
+          "Failed to remove request from user's requests array; no changes were persisted.",
+      });
+    }
+
+    // Both steps succeeded
+    return res.status(200).json({
+      success: true,
+      message: "Request deleted successfully",
+      data: { requestId, isDeleted: true },
+    });
+  } catch (error) {
+    console.error("Error deleting request:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+};
+
 module.exports = {
   createRequest,
   getRequests,
@@ -827,4 +1076,6 @@ module.exports = {
   handlePayment,
   handleToggleMarkAsPaid,
   handlePaymentDetails,
+  handleDeleteRequest,
+  handleTogglePauseRequest,
 };

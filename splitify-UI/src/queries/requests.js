@@ -215,3 +215,15 @@ export const handlePaymentDetails = async (
     }
   );
 };
+
+export const handleTogglePauseRequest = async (requestId) => {
+  return await apiRequest(`/requests/pause/${requestId}`, {
+    method: "POST",
+  });
+};
+
+export const handleDeleteRequest = async (requestId) => {
+  return await apiRequest(`/requests/delete/${requestId}`, {
+    method: "POST",
+  });
+};

@@ -1,6 +1,7 @@
 import { Users, RotateCcw, TrendingUp, Info, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useData } from "../../contexts/DataContext";
+import { amountRange } from "../../utils/amountHelper";
 export default function ConfirmButtonTray({
   selectedPeople,
   onConfirm,
@@ -18,6 +19,7 @@ export default function ConfirmButtonTray({
   chargeName = "none",
   isCheckout = false,
   startTiming,
+  costEntry,
 }) {
   const { participants } = useData();
   const [showCostTooltip, setShowCostTooltip] = useState(false);
@@ -50,12 +52,20 @@ export default function ConfirmButtonTray({
   }
 
   // Format the amount per person based on split type
-  const formatAmountDisplay = () => {
+  const formatAmountDisplay = (cost) => {
     if (splitType === "custom" || splitType === "percentage") {
-      return {
-        amount: `$${Number(totalAmount).toFixed(2)}`,
-        label: "total",
-      };
+      const range = amountRange(cost);
+      if (range.isSame) {
+        return {
+          amount: `$${range.low}`,
+          label: "per person",
+        };
+      } else {
+        return {
+          amount: `$${range.low}-$${range.high}`,
+          label: "per person",
+        };
+      }
     } else {
       return {
         amount: `$${Number(amountPerPerson).toFixed(2)}`,
@@ -64,7 +74,7 @@ export default function ConfirmButtonTray({
     }
   };
 
-  const { amount, label } = formatAmountDisplay();
+  const { amount, label } = formatAmountDisplay(costEntry);
   const capitalizeFirst = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
   // Format billing frequency for display
@@ -221,9 +231,11 @@ export default function ConfirmButtonTray({
               {/* Confirm Button */}
               <button
                 onClick={() => {
-                  const root = document.getElementById("root");
-                  if (root) {
-                    root.scrollTo({ top: 0, left: 0, behavior: "instant" });
+                  if (!isCheckout) {
+                    const root = document.getElementById("root");
+                    if (root) {
+                      root.scrollTo({ top: 0, left: 0, behavior: "instant" });
+                    }
                   }
                   onConfirm();
                 }}
