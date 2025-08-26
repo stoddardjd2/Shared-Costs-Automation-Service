@@ -55,11 +55,7 @@ export default function PaymentHistoryParticipantDetails({
           <Avatar user={user} color={getStatusIndicatorColor()} />
           <div className="flex-col flex justify-between">
             <div className="font-semibold">{user.name}</div>
-            <div className="text-sm text-gray-800">
-              $
-              {participant.amount -
-                (participant?.amountPaid ? participant?.amountPaid : 0)}
-            </div>
+            <div className="text-sm text-gray-800">${participant.amount.toFixed(2)}</div>
           </div>
         </div>
 

@@ -118,12 +118,12 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
     if (cost.splitType == "custom" || cost.splitType == "percentage") {
       const range = amountRange(cost);
       if (range.isSame) {
-        return { amount: `$${range.low}`, label: "per person" };
+        return { amount: `$${range.low.toFixed(2)}`, label: "per person" };
       } else {
-        return { amount: `$${range.low}-$${range.high}`, label: "per person" };
+        return { amount: `$${range.low.toFixed(2)}-$${range.high.toFixed(2)}`, label: "per person" };
       }
     } else {
-      return { amount: `$${cost.amount}`, label: "per person" };
+      return { amount: `$${cost.amount.toFixed(2)}`, label: "per person" };
     }
   };
 

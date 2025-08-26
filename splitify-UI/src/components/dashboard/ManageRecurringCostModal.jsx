@@ -53,7 +53,7 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
       totalParticipants > 0 ? cost.amount / totalParticipants : cost.amount;
     return {
       amount: `$${Number(amountPerPerson).toFixed(2)}`,
-      totalAmount: `$${cost.totalAmount}`,
+      totalAmount: `$${cost.totalAmount.toFixed(2)}`,
       label: "each",
     };
   };
@@ -354,7 +354,7 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                     </div>
                     <div className="text-left">
                       <h4 className="font-semibold text-gray-900">
-                        Update Future Requests
+                        {cost.name}
                       </h4>
                       <p className="text-gray-600 text-sm">
                         Edit request details
@@ -397,7 +397,7 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                           className={` px-4 pt-3 flex items-center justify-between`}
                         >
                           <span className="text-gray-900 font-semibold text-lg">
-                            ${payment.totalAmountOwed}{" "}
+                            ${payment.totalAmountOwed.toFixed(2)}{" "}
                             <span className="text-sm font-medium  text-gray-500 false">
                               Total Owed
                             </span>

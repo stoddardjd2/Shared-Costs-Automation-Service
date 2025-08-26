@@ -315,8 +315,8 @@ const SplitStep = ({
     costEntry.amount =
       splitType == "percentage"
         ? null
-        : editableTotalAmount / (participants.length + 1);
-    costEntry.totalAmount = editableTotalAmount;
+        : Number((editableTotalAmount / (participants.length + 1)).toFixed(2));
+    costEntry.totalAmount = Number(editableTotalAmount);
     costEntry.frequency = recurringType === "none" ? null : recurringType;
     costEntry.customInterval =
       recurringType === "custom" ? customInterval : null;
@@ -360,10 +360,15 @@ const SplitStep = ({
       switch (splitType) {
         case "equalWithMe":
           // individualAmount = actualAmount / (selectedPeople.length + 1);
-          individualAmount = editableTotalAmount / selectedPeople.length;
+          individualAmount = Number(
+            editableTotalAmount / (selectedPeople.length + 1)
+          ).toFixed(2);
+          console.log("AMOUNT IND", individualAmount);
           break;
         case "equal":
-          individualAmount = editableTotalAmount / selectedPeople.length;
+          individualAmount = Number(
+            editableTotalAmount / selectedPeople.length
+          ).toFixed(2);
           break;
         case "percentage":
           individualAmount =
@@ -372,7 +377,6 @@ const SplitStep = ({
           baseParticipant.percentage = Number(
             percentageAmounts[person._id]
           ).toFixed(2);
-          console.log("amount ind", individualAmount);
           break;
         case "custom":
           individualAmount = Number(customAmounts[person._id] || 0);
@@ -384,13 +388,13 @@ const SplitStep = ({
           individualAmount = 0;
       }
 
-      baseParticipant.amount = Number(individualAmount.toFixed(2));
+      baseParticipant.amount = individualAmount;
       return baseParticipant;
     });
 
     function calculateTotalAmountOwed(participants) {
       return participants.reduce((total, participant) => {
-        return total + (participant.amount || 0);
+        return total + (Number(participant.amount) || 0);
       }, 0);
     }
 
@@ -398,6 +402,7 @@ const SplitStep = ({
       costEntry.participants
     );
 
+    console.log("ENTRY", costEntry);
     return costEntry;
   }
 
@@ -1563,7 +1568,7 @@ const SplitStep = ({
           totalAmount={
             splitType == "percentage" ? totalSplit : editableTotalAmount
           }
-          costEntry = {getCostEntry()}
+          costEntry={getCostEntry()}
           billingFrequency={getRecurringLabel()}
           isCustomFrequency={recurringType == "custom"}
           chargeName={chargeName}
