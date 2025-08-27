@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Menu, X, User, UserPlus } from "lucide-react";
 import SmartSplitLogo from "../../assets/SmartSplitLogo.svg?react";
 import { useNavigate } from "react-router-dom";
+import { trackCreateAccount } from "../../googleAnalytics/googleAnalyticsHelpers";
 
 const GlobalNavbar = ({
   showOptions = true,
@@ -22,6 +23,11 @@ const GlobalNavbar = ({
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+
+  function handleCreateAccount() {
+    navigate("/signup");
+    trackCreateAccount(1);
+  }
 
   const navigate = useNavigate();
   return (
@@ -104,9 +110,7 @@ const GlobalNavbar = ({
 
                 {options.createFreeAccount && (
                   <button
-                    onClick={() => {
-                      navigate("/signup");
-                    }}
+                    onClick={handleCreateAccount}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
                   >
                     Create Your Free Account
@@ -166,9 +170,7 @@ const GlobalNavbar = ({
 
             {options.createFreeAccount && (
               <button
-                onClick={() => {
-                  navigate("/signup");
-                }}
+                onClick={handleCreateAccount}
                 className="bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center w-full max-w-xs px-6 py-3  rounded-lg font-medium transition-colors"
               >
                 Create Your Free Account

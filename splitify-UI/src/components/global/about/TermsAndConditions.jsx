@@ -112,7 +112,7 @@ export default function TermsAndConditions() {
         regard to conflicts of law principles.
       </p>
 
-      <h2 className="text-xl font-medium mt-6 mb-2">12. Contact</h2>
+      <h2 className="text-xl font-medium mt-6 mb-2">12. Contact</h2>  
       <p>
         Questions? Contact us at <em>SplitifyOfficial@gmail.com</em>,{" "}
         {/* <em>[business phone]</em>, or <em>[business address]</em>. */}

@@ -17,6 +17,7 @@ import {
   Lock,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { trackCreateAccount } from "../../../../googleAnalytics/googleAnalyticsHelpers";
 
 const SmartSplitLanding = () => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
@@ -42,6 +43,8 @@ const SmartSplitLanding = () => {
 
   function handleCreateAccount() {
     navigate("/signup");
+
+    trackCreateAccount(1);
   }
 
   const testimonials = [
@@ -116,8 +119,9 @@ const SmartSplitLanding = () => {
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Automated follow-ups and price tracking do the work for you. Escape the burden of being the group manager. Get paid back faster with
-              zero manual intervention.
+              Automated follow-ups and price tracking do the work for you.
+              Escape the burden of being the group manager. Get paid back faster
+              with zero manual intervention.
             </p>
 
             {/* <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
@@ -470,11 +474,11 @@ const SmartSplitLanding = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 text-left">
               <div className="flex items-center">
                 <Check className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
-                <span>Unlimited expense tracking</span>
+                <span>Unlimited payment requests</span>
               </div>
               <div className="flex items-center">
                 <Check className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
-                <span>Intelligent Follow-ups</span>
+                <span>Text and email follow-ups</span>
               </div>
               <div className="flex items-center">
                 <Check className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
@@ -482,7 +486,7 @@ const SmartSplitLanding = () => {
               </div>
               <div className="flex items-center">
                 <Check className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
-                <span>Most advanced shared costs service</span>
+                <span>Optional bank integration</span>
               </div>
               <div className="flex items-center">
                 <Check className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
