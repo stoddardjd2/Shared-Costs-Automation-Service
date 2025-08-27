@@ -25,7 +25,7 @@ router.use(protect);
 router.post("/", createRequest);
 router.get("/", getRequests);
 router.put("/:id", updateRequest);
-
+router.patch("/reminder/:requestId/:paymentHistoryId/:userId", handleSendReminder)
 router.post("/delete/:requestId", handleDeleteRequest);
 router.post("/pause/:requestId", handleTogglePauseRequest);
 
@@ -33,7 +33,7 @@ router.patch(
   "/toggleMarkedAsPaid/:requestId/:paymentHistoryId/:userId",
   handleToggleMarkAsPaid
 );
-router.patch("/reminder/all");
+// router.patch("/reminder/all");
 router.get(
   "/paymentDetails/:requestId/:paymentHistoryId/:userId",
   handlePaymentDetails

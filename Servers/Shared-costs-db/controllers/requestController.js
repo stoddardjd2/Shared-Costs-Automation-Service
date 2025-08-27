@@ -80,6 +80,7 @@ const createRequest = async (req, res) => {
           reminderSentDate: null,
           paymentAmount: null,
           paidDate: null,
+          requestSentDate: new Date(),
           amount: participant.amount,
           _id: new ObjectId(participant._id),
         })),

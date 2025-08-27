@@ -16,6 +16,9 @@ export default function PlaidConnect({
   setStartTiming,
   chargeName,
   isPlaidCharge,
+  setSelectedTransaction,
+  selectedTransaction,
+  isEditMode
 }) {
   const [linkToken, setLinkToken] = useState("");
   const [linkKey, setLinkKey] = useState(0); // force re-mount per token
@@ -27,7 +30,6 @@ export default function PlaidConnect({
   const [error, setError] = useState("");
   const [log, setLog] = useState([]);
   const [showTransactions, setShowTransactions] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState(null);
   const { userData, setUserData } = useData();
   //   const [startDate, setStartDate] = useState(() => {
   //     const d = new Date();
@@ -149,7 +151,7 @@ export default function PlaidConnect({
   if (userData?.plaid?.isEnabled)
     return (
       <>
-        <button
+       {!isEditMode && <button
           onClick={() => {
             setShowTransactions(true);
           }}
@@ -158,7 +160,7 @@ export default function PlaidConnect({
         >
           <Landmark className="w-6 h-6" />
           <span>Find from bank</span>
-        </button>
+        </button>}
 
         {isPlaidCharge && (
           // <div className="relatative bg-gradient-to-br mb-6 from-blue-600 to-blue-700 border border-white/30 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center gap-2 backdrop-blur-md translate-y-0  shadow-none hover:shadow-lg hover:shadow-black/10">
@@ -172,7 +174,7 @@ export default function PlaidConnect({
           //   </button>
           // </div>
           <div
-            className={`relative flex items-center mb-6 p-4 rounded-lg cursor-pointer transition-all border ${
+            className={`relative flex items-center mb-6 p-4 rounded-lg transition-all border ${
               true
                 ? "bg-blue-50 border-blue-500"
                 : "hover:bg-slate-50 border-transparent hover:border-slate-200"
@@ -221,7 +223,7 @@ export default function PlaidConnect({
                 </div>
               </div>
             </div> */}
-            <button
+           {!isEditMode && <button
               className="absolute top-50% right-4  bg-blue-600 hover:bg-blue-600/80 border-none text-white w-8 h-8 rounded-lg cursor-pointer text-base transition-all duration-200 z-[3]"
               title="Remove"
               onClick={() => {
@@ -235,7 +237,7 @@ export default function PlaidConnect({
               }}
             >
               ×
-            </button>
+            </button>}
           </div>
         )}
 

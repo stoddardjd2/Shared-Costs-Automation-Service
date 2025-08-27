@@ -9,7 +9,8 @@ export default function PrivacyPolicy() {
       </p>
 
       <p className="mb-4">
-        At <strong>Splitify</strong>, we value your privacy and are committed to protecting your personal information.
+        <strong>Splitify</strong> we value your
+        privacy and are committed to protecting your personal information.
       </p>
 
       <h2 className="text-xl font-medium mt-6 mb-2">1. Information We Collect</h2>
@@ -25,32 +26,7 @@ export default function PrivacyPolicy() {
         opted-in) marketing communications.
       </p>
 
-      <h2 className="text-xl font-medium mt-6 mb-2">3. Optional Use of Plaid Link</h2>
-      <p className="mb-2">
-        As an optional feature, you may choose to connect your financial
-        accounts through <strong>Plaid Link</strong>. If you do, you authorize
-        Splitify and Plaid Inc. (“Plaid”) to access and transmit your financial
-        information from your financial institution.
-      </p>
-      <p className="mb-2">
-        Plaid may collect, use, and store your information in accordance with
-        their own practices. You can learn more by reviewing{" "}
-        <a
-          href="https://plaid.com/legal/#consumers"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 underline"
-        >
-          Plaid’s Privacy Policy
-        </a>
-        .
-      </p>
-      <p>
-        Using Plaid Link is entirely optional. If you do not connect your
-        accounts with Plaid, you may still use Splitify’s core services.
-      </p>
-
-      <h2 className="text-xl font-medium mt-6 mb-2">4. SMS Privacy</h2>
+      <h2 className="text-xl font-medium mt-6 mb-2">3. SMS Privacy</h2>
       <p className="mb-2">
         <strong>
           We will not share or sell your mobile information with third parties
@@ -70,50 +46,46 @@ export default function PrivacyPolicy() {
         </li>
       </ul>
 
-      <h2 className="text-xl font-medium mt-6 mb-2">5. Sharing & Disclosure</h2>
+      <h2 className="text-xl font-medium mt-6 mb-2">4. Sharing & Disclosure</h2>
       <p>
         We may share information with service providers who support our Services
-        (e.g., hosting, analytics, or payment processing) under confidentiality
-        obligations. We may disclose information if required by law or to
-        protect our rights.
+        (e.g., hosting, analytics) under confidentiality obligations. We may
+        disclose information if required by law or to protect our rights.
       </p>
 
-      <h2 className="text-xl font-medium mt-6 mb-2">6. Security</h2>
+      <h2 className="text-xl font-medium mt-6 mb-2">5. Security</h2>
       <p>
         We implement reasonable technical and organizational measures to protect
-        your information. All connections to third-party providers (including
-        Plaid) use industry-standard encryption. No method of transmission or
-        storage is 100% secure.
+        your information. No method of transmission or storage is 100% secure.
       </p>
 
-      <h2 className="text-xl font-medium mt-6 mb-2">7. Data Retention</h2>
+      <h2 className="text-xl font-medium mt-6 mb-2">6. Data Retention</h2>
       <p>
         We retain information only as long as necessary for the purposes outlined
         in this Policy or as required by law.
       </p>
 
-      <h2 className="text-xl font-medium mt-6 mb-2">8. Your Choices</h2>
+      <h2 className="text-xl font-medium mt-6 mb-2">7. Your Choices</h2>
       <ul className="list-disc pl-6 space-y-1">
         <li>Opt out of SMS: reply <strong>STOP</strong> to any message.</li>
         <li>Request access, update, or deletion by contacting us.</li>
-        <li>Choosing whether or not to connect your financial accounts via Plaid Link.</li>
       </ul>
 
-      <h2 className="text-xl font-medium mt-6 mb-2">9. Children’s Privacy</h2>
+      <h2 className="text-xl font-medium mt-6 mb-2">8. Children’s Privacy</h2>
       <p>
         Our Services are not directed to children under 13, and we do not
         knowingly collect personal information from them.
       </p>
 
-      <h2 className="text-xl font-medium mt-6 mb-2">10. Changes to this Policy</h2>
+      <h2 className="text-xl font-medium mt-6 mb-2">9. Changes to this Policy</h2>
       <p>
         We may update this Policy from time to time. We will post the updated
         version with a revised “Effective Date.”
       </p>
 
-      <h2 className="text-xl font-medium mt-6 mb-2">11. Contact Us</h2>
+      <h2 className="text-xl font-medium mt-6 mb-2">10. Contact Us</h2>
       <p>
-        Email: <em>SplitifyOfficial@gmail.com</em> <br />
+        Email: <em>Splitify.support@gmail.com</em> <br />
         {/* Phone: <em>[business phone]</em> <br /> */}
         {/* Address: <em>[business address]</em> */}
       </p>

@@ -101,12 +101,12 @@ const PauseRequestBtn = ({ requestId, isPausedPassed, onToggleSuccess }) => {
         // className={`text-white px-4 py-3 rounded-lg transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
         //   isPaused ? "bg-green-500 hover:bg-green-600" : "bg-yellow-500 hover:bg-yellow-600"
         // }`}
-        className={`text-gray-600 px-4 py-3 rounded-lg transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed `}
+        className="text-gray-600 hover:text-black px-4 py-3 rounded-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isPaused ? (
           <Play className="w-5 h-5 flex-shrink-0 " />
         ) : (
-          <PauseCircle className="w-5 h-5 flex-shrink-0 text-gray-600" />
+          <PauseCircle className="w-5 h-5 flex-shrink-0 " />
         )}
         {actionText} Request
       </button>

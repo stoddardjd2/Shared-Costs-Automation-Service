@@ -162,6 +162,7 @@ function createPaymentHistoryEntry(requestDocument, requestSentDate, presetId) {
       amount: participant.amount ?? null,
       reminderSent: false,
       reminderSentDate: null,
+      requestSentDate: new Date(),
     })
   );
 

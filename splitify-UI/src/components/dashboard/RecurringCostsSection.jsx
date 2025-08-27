@@ -405,7 +405,7 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
 
                       {/* Next due date */}
                       {cost.nextDue && (
-                        <div className="hidden xs:flex items-center gap-2 text-gray-600 bg-gray-100/80 px-3 py-1.5 rounded-lg w-fit">
+                        <div className="hidden xs:flex items-center gap-2 text-gray-600 px-3 py-1.5 rounded-lg w-fit">
                           <Calendar className="w-4 h-4" />
                           <span className="text-sm">
                             {cost.isRecurring ? "Next: " : "Due: "}

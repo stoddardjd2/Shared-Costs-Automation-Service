@@ -1,91 +1,81 @@
 import React, { useState } from "react";
-import {
-  AlertTriangle,
-  Clock,
-  X,
-  ChevronRight,
-  Users,
-  DollarSign,
-  Calendar,
-  Bell,
-} from "lucide-react";
+import { AlertTriangle, Calendar, Bell } from "lucide-react";
 import { useData } from "../../contexts/DataContext";
 import RequestButton from "./RequestButton";
 import PaymentHistoryParticipantDetails from "./PaymentHistoryParticipantDetails";
 
 const OverdueAlerts = () => {
-  // Use real data from context
   const { costs, participants } = useData();
   const [isDismissed, setIsDismissed] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [showAll, setShowAll] = useState(false);
   const [viewOverdueRequestsLimit, setViewOverdueRequestsLimit] = useState(5);
   const currentDate = new Date();
-  // Helper function to check if a participant is overdue
-  const isOverdue = (participant, dueDate) => {
-    const participantId =
-      participant._id && participant._id.$oid
-        ? participant._id.$oid
-        : participant._id;
+  const [costsPreserved, setCostsPreserved] = useState(costs);
+  // ---------- Helpers ----------
+  const parseDate = (d) =>
+    d?.$date ? new Date(d.$date) : d instanceof Date ? d : new Date(d);
 
-    const isPastDue = currentDate > dueDate;
-    return isPastDue && !participant?.paidDate;
+  const normalizeId = (id) => (id && id.$oid ? id.$oid : String(id ?? ""));
+
+  const isParticipantPaid = (p) => {
+    const paidAmt = Number(p?.paymentAmount ?? 0);
+    const oweAmt = Number(p?.amount ?? 0);
+    return Boolean(p?.markedAsPaid) || paidAmt >= oweAmt;
   };
 
-  // Flatten all payment requests from all costs' paymentHistory
+  const outstanding = (p) => {
+    const owe = Number(p?.amount ?? 0);
+    const paid = Number(p?.paymentAmount ?? 0);
+    return Math.max(0, owe - paid);
+  };
+
+  // Past due AND not paid in full
+  const isOverdue = (participant, dueDate, now = new Date()) => {
+    const due = parseDate(dueDate);
+    return now > due && !isParticipantPaid(participant);
+  };
+
+  const formatDate = (date) =>
+    date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+  const getDaysOverdue = (dueDate) => {
+    const diffTime = currentDate - dueDate;
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  // ---------- Build + Filter Requests ----------
   const allPaymentRequests = [];
-  costs.forEach((cost) => {
-    if (cost.paymentHistory && Array.isArray(cost.paymentHistory)) {
+  costsPreserved.forEach((cost) => {
+    if (Array.isArray(cost.paymentHistory)) {
       cost.paymentHistory.forEach((paymentRequest) => {
         allPaymentRequests.push({
           ...paymentRequest,
           costName: cost.name,
           costId: cost._id,
+          _dueDateParsed: parseDate(paymentRequest.dueDate), // cache parsed
         });
       });
     }
   });
 
-  // Find all payment requests with overdue participants
-  const overduePaymentRequests = allPaymentRequests.filter((request) => {
-    // Handle the MongoDB date structure
-    let dueDate;
-    if (request.dueDate && request.dueDate.$date) {
-      dueDate = new Date(request.dueDate.$date);
-    } else if (request.dueDate instanceof Date) {
-      dueDate = request.dueDate;
-    } else if (typeof request.dueDate === "string") {
-      dueDate = new Date(request.dueDate);
-    } else {
-      console.warn("Unknown dueDate format:", request.dueDate);
-      return false;
-    }
+  const overduePaymentRequests = allPaymentRequests.filter((req) =>
+    (req.participants || []).some((p) =>
+      isOverdue(p, req._dueDateParsed, currentDate)
+    )
+  );
 
-    const hasOverdueParticipants = request.participants.some((participant) =>
-      isOverdue(participant, dueDate)
-    );
-    return hasOverdueParticipants;
-  });
-
-  // Calculate total overdue amount and participant count
+  // ---------- Stats ----------
   const overdueStats = overduePaymentRequests.reduce(
-    (stats, request) => {
-      let dueDate;
-      if (request.dueDate && request.dueDate.$date) {
-        dueDate = new Date(request.dueDate.$date);
-      } else if (request.dueDate instanceof Date) {
-        dueDate = request.dueDate;
-      } else if (typeof request.dueDate === "string") {
-        dueDate = new Date(request.dueDate);
-      } else {
-        dueDate = new Date(request.dueDate);
-      }
-
-      const overdueParticipants = request.participants.filter((participant) =>
-        isOverdue(participant, dueDate)
+    (stats, req) => {
+      const overdueParticipants = (req.participants || []).filter((p) =>
+        isOverdue(p, req._dueDateParsed, currentDate)
       );
-      const overdueAmount = overdueParticipants.reduce((sum, participant) => {
-        return sum + participant.amount;
-      }, 0);
+
+      const overdueAmount = overdueParticipants.reduce(
+        (sum, p) => sum + outstanding(p),
+        0
+      );
 
       return {
         totalAmount: stats.totalAmount + overdueAmount,
@@ -96,10 +86,9 @@ const OverdueAlerts = () => {
     { totalAmount: 0, totalParticipants: 0, totalRequests: 0 }
   );
 
-  if (isDismissed) {
-    return;
-  }
-  // Don't render if no overdue requests or component is dismissed
+  if (isDismissed) return null;
+
+  // ---------- No Overdue UI ----------
   if (overduePaymentRequests.length === 0) {
     return (
       <div
@@ -132,37 +121,10 @@ const OverdueAlerts = () => {
           </div>
         </div>
       </div>
-      // <div className="bg-green-50 rounded-2xl shadow-sm border border-green-200/60 p-4 mb-6">
-      //   <div className="flex items-center gap-3">
-      //     <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-      //       <Users className="w-4 h-4 text-white" />
-      //     </div>
-      //     <div>
-      //       <h3 className="text-lg font-semibold text-green-900">All Caught Up!</h3>
-      //       <p className="text-green-700 text-sm">No overdue payments at the moment.</p>
-      //     </div>
-      //   </div>
-      // </div>
     );
   }
 
-  const handleDismiss = () => {
-    setIsDismissed(true);
-  };
-
-  const formatDate = (date) => {
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const getDaysOverdue = (dueDate) => {
-    const diffTime = currentDate - dueDate;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
-
+  // ---------- Main UI ----------
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden mb-6">
       {/* Alert Banner */}
@@ -179,22 +141,23 @@ const OverdueAlerts = () => {
               <AlertTriangle className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                {overduePaymentRequests.length} Overdue Payment Request
+              <h3 className="text-2xl font-semibold text-white flex items-center gap-2">
+                {overduePaymentRequests.length} Overdue Payment
                 {overduePaymentRequests.length !== 1 ? "s" : ""}
               </h3>
-              <p className="text-white/80 text-sm">
+              <p className="text-white/80 text-base">
                 ${overdueStats.totalAmount.toFixed(2)} from{" "}
-                {overdueStats.totalParticipants} participant
-                {overdueStats.totalParticipants !== 1 ? "s" : ""}
+                {overdueStats.totalParticipants}{" "}
+                {overdueStats.totalParticipants !== 1 ? "people" : "person"}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* Actions */}
         <div className="flex gap-2 mt-3">
-          {/* <RequestButton
+          {/* Example bulk button if needed later:
+          <RequestButton
             isRequestAll={true}
             className="px-3 py-1.5 text-sm bg-white/10 border border-white/30"
           >
@@ -202,7 +165,7 @@ const OverdueAlerts = () => {
           </RequestButton> */}
 
           <button
-            onClick={() => setShowDetails(!showDetails)}
+            onClick={() => setShowDetails((s) => !s)}
             className="bg-white/15 hover:bg-white/25 border border-white/30 text-white px-6 py-3 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-300 flex items-center gap-2 backdrop-blur-md translate-y-0 hover:-translate-y-0.5 shadow-none hover:shadow-lg hover:shadow-black/10"
           >
             {showDetails ? "Hide" : "Show"} Details
@@ -210,14 +173,14 @@ const OverdueAlerts = () => {
         </div>
 
         <button
-          onClick={handleDismiss}
+          onClick={() => setIsDismissed(true)}
           className="absolute top-4 right-4 bg-white/20 border-none text-white w-8 h-8 rounded-lg cursor-pointer text-base transition-all duration-200 z-[3]"
           title="Dismiss alert"
           onMouseEnter={(e) =>
-            (e.target.style.background = "rgba(255, 255, 255, 0.3)")
+            (e.currentTarget.style.background = "rgba(255, 255, 255, 0.3)")
           }
           onMouseLeave={(e) =>
-            (e.target.style.background = "rgba(255, 255, 255, 0.2)")
+            (e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)")
           }
         >
           ×
@@ -226,51 +189,40 @@ const OverdueAlerts = () => {
 
       {/* Detailed View */}
       {showDetails && (
-        <div className="">
+        <div>
           {overduePaymentRequests
-            .slice(0, viewOverdueRequestsLimit)
+            .slice(
+              0,
+              showAll ? overduePaymentRequests.length : viewOverdueRequestsLimit
+            )
             .map((request) => {
-              let dueDate;
-              if (request.dueDate && request.dueDate.$date) {
-                dueDate = new Date(request.dueDate.$date);
-              } else if (request.dueDate instanceof Date) {
-                dueDate = request.dueDate;
-              } else if (typeof request.dueDate === "string") {
-                dueDate = new Date(request.dueDate);
-              } else {
-                dueDate = new Date(request.dueDate);
-              }
-
-              const overdueParticipants = request.participants.filter(
-                (participant) => isOverdue(participant, dueDate)
+              const dueDate =
+                request._dueDateParsed ?? parseDate(request.dueDate);
+              const overdueParticipants = (request.participants || []).filter(
+                (p) => isOverdue(p, dueDate, currentDate)
               );
               const overdueAmount = overdueParticipants.reduce(
-                (sum, participant) => sum + participant.amount,
+                (sum, p) => sum + outstanding(p),
                 0
               );
               const daysOverdue = getDaysOverdue(dueDate);
-              const requestId =
-                request._id && request._id.$oid
-                  ? request._id.$oid
-                  : request._id;
-
-              // const paymentHistoryId = overduePaymentRequests
+              const requestId = normalizeId(request._id);
 
               return (
                 <div
                   key={requestId}
-                  className="p-4 transition-all duration-200 group"
+                  className="p-4 transition-all duration-200 group border-b border-gray-200"
                 >
-                  {/* Header line with request info */}
+                  {/* Header */}
                   <div className="flex items-center justify-between gap-3 mb-2">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <h3 className="text-lg font-semibold border-l-4 border-red-500 pl-3 ">
+                      <h3 className="text-lg font-semibold border-l-4 border-blue-600 pl-3">
                         {request.costName}
                       </h3>
                     </div>
 
-                    {/* Due date and overdue info */}
-                    <div className="flex items-center gap-2 text-black bg-gray-100/7a0 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+                    {/* Due date */}
+                    <div className="flex items-center gap-2 text-black bg-gray-100/70 backdrop-blur-sm px-3 py-1.5 rounded-lg">
                       <Calendar className="w-4 h-4" />
                       <span className="text-sm">
                         Due {formatDate(dueDate)} ({daysOverdue} day
@@ -279,106 +231,43 @@ const OverdueAlerts = () => {
                     </div>
                   </div>
 
-                  {/* Amount and count info */}
+                  {/* Amount summary */}
                   <div className="flex justify-start items-start mb-3">
                     <div className="text-left">
                       <div className="flex items-baseline gap-2">
                         <div className="text-lg font-bold text-black">
                           ${overdueAmount.toFixed(2)}
-                        </div>{" "}
-                        Total
-                        {/* <span className="text-sm font-medium text-black/70">
-                        overdue
-                      </span> */}
+                        </div>
+                        Total overdue
                       </div>
-                      {overdueParticipants.length !== 1 && <div className="text-sm">
-                        {overdueParticipants.length} of{" "}
-                        {request.participants.length} participants
-                      </div>}
+                      {overdueParticipants.length !== 1 && (
+                        <div className="text-sm">
+                          {overdueParticipants.length} of{" "}
+                          {request.participants?.length ?? 0} participants
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  {/* Overdue Participants List */}
+                  {/* Overdue Participants */}
                   <div className="space-y-2">
-                    {overdueParticipants.map((participant) => {
-                      // Extract the actual ID from MongoDB ObjectId structure
-                      const participantId =
-                        participant._id && participant._id.$oid
-                          ? participant._id.$oid
-                          : participant._id;
-
-                      // Find the matching user in the participants array
+                    {overdueParticipants.map((participant, index) => {
+                      const participantId = normalizeId(participant._id);
                       const user = participants.find(
-                        (u) => u._id === participantId
+                        (u) => normalizeId(u._id) === participantId
                       );
+
+                      // If participant got fully paid somehow, skip render
+                      if (isParticipantPaid(participant)) return null;
+
                       return (
                         <PaymentHistoryParticipantDetails
+                          key={`${participantId}-${index}`}
                           costId={request.costId}
                           participant={participant}
                           paymentHistoryRequest={request}
                           user={user}
                         />
-                        // <div
-                        //   key={participantId}
-                        //   className="flex items-center justify-between rounded-lg p-3 border "
-                        // >
-                        //   <div className="flex items-center gap-3">
-                        //     {/* User Avatar */}
-                        //     <div
-                        //       className={`w-12 h-12 rounded-lg ${
-                        //         user?.color || "bg-gray-500"
-                        //       } flex items-center justify-center text-white font-semibold text-sm relative`}
-                        //     >
-                        //       {user?.avatar ||
-                        //         participantId.slice(-2).toUpperCase()}
-                        //       {/* Overdue status indicator */}
-                        //       {/* <div className="absolute -bottom-0.5 -right-0.5 bg-red-500 rounded-full w-3 h-3 border border-white shadow-sm"></div> */}
-                        //     </div>
-
-                        //     {/* User Info */}
-                        //     <div>
-                        //       <div className="font-semibold text-sm">
-                        //         {user?.name ||
-                        //           `User ${participantId.slice(-4)}`}
-                        //       </div>
-                        //       <div className="text-xs font-medium">
-                        //         Owes ${participant.amount.toFixed(2)}
-                        //       </div>
-                        //       {participant.reminderSent ? (
-                        //         <div className="text-xs flex items-center text-black/70 gap-1">
-                        //           <Bell className="w-3 h-3" />
-                        //           Reminder sent on{" "}
-                        //           {participant.reminderSent
-                        //             ? formatDate(
-                        //                 new Date(participant.reminderSentDate)
-                        //               )
-                        //             : ""}
-                        //         </div>
-                        //       ) : (
-                        //         <div className="text-xs flex items-center text-black/70 gap-1">
-                        //           <Bell className="w-3 h-3" /> No Reminders Sent
-                        //         </div>
-                        //       )}
-                        //     </div>
-                        //   </div>
-
-                        //   {/* Resend Button */}
-                        //   <RequestButton
-                        //     className="px-3 py-1.5 text-sm !bg-blue-600 text-white border border-white/30 !hover:bg-blue-600/25"
-                        //     costId={
-                        //       request.costId && request.costId.$oid
-                        //         ? request.costId.$oid
-                        //         : request.costId
-                        //     }
-                        //     participantUserId={participantId}
-                        //     paymentHistoryId={request._id}
-                        //     reminderSentDate={participant.reminderSentDate}
-                        //     paymentHistoryRequest={request}
-                        //     participant={participant}
-                        //   >
-                        //     Resend
-                        //   </RequestButton>
-                        // </div>
                       );
                     })}
                   </div>
@@ -391,20 +280,17 @@ const OverdueAlerts = () => {
               <div className="text-center">
                 <button
                   onClick={() => {
-                    if (
-                      viewOverdueRequestsLimit < overduePaymentRequests.length
-                    ) {
-                      setViewOverdueRequestsLimit(
-                        overduePaymentRequests.length + 1
-                      );
-                    } else {
-                      setViewOverdueRequestsLimit(5);
-                    }
+                    const toggled = !showAll;
+                    setShowAll(toggled);
+                    setViewOverdueRequestsLimit(
+                      toggled ? overduePaymentRequests.length : 5
+                    );
                   }}
                   className="text-red-700 hover:text-red-800 hover:bg-red-200/50 px-3 py-1.5 rounded-lg font-medium transition-all duration-200 text-sm"
                 >
-                  View all {overduePaymentRequests.length} overdue payment
-                  requests →
+                  {!showAll
+                    ? `View all ${overduePaymentRequests.length} overdue payment requests →`
+                    : "Hide"}
                 </button>
               </div>
             </div>

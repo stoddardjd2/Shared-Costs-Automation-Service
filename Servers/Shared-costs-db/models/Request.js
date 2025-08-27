@@ -25,6 +25,7 @@ const paymentParticipantSchema = new Schema({
   reminderSent: { type: Boolean },
   reminderSentDate: { type: Date },
   markedAsPaidDate: { type: Date },
+  requestSentDate: Date,
 });
 
 // Sub-schema for payment history entries
@@ -81,6 +82,7 @@ const requestSchema = new Schema({
   paymentHistory: [paymentHistorySchema],
   isDeleted: Boolean,
   isPaused: Boolean,
+  selectedTransaction: { type: Schema.Types.Mixed },
 });
 
 // Pre-save middleware to calculate nextDue

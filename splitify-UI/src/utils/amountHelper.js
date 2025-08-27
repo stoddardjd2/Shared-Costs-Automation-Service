@@ -9,8 +9,8 @@ function amountRange(request) {
 
   const data = { low: Math.min(...amounts), high: Math.max(...amounts) };
   return {
-    low: data.low,
-    high: data.high,
+    low: Number(data.low.toFixed(2)),
+    high: Number(data.high.toFixed(2)),
     isSame: data.high === data.low,
   };
 }

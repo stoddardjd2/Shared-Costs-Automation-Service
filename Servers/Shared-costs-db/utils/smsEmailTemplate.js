@@ -55,61 +55,53 @@ const smsOptInEmailTemplate = `<!DOCTYPE html>
     }
   </style>
 </head>
-<body style="margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #374151; background-color: #ffffff; width: 100%; min-width: 100%;">
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0; padding: 0; width: 100%; min-width: 100%; background-color: #ffffff;">
+<body style="margin:0; padding:0; font-family:Arial, Helvetica, sans-serif; line-height:1.6; color:#374151; background-color:#ffffff; width:100%; min-width:100%;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:0; padding:0; width:100%; background-color:#ffffff;">
     <tr>
-      <td style="padding: 10px 0;">
-        <!--[if mso]>
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="480" align="left">
-        <tr>
-        <td>
-        <![endif]-->
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" class="email-container" style="max-width: 480px; width: 100%; margin: 0; background-color: #ffffff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+      <td align="center" style="padding:20px 0;">
+        
+        <!-- Email container (centered) -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" class="email-container" style="max-width:480px; width:100%; background-color:#ffffff; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin:0 auto;">
           
           <!-- Header -->
           <tr>
-            <td style="background-color: #f9fafb; padding: 20px; border-bottom: 1px solid #e5e7eb; text-align: center; border-radius: 8px 8px 0 0;">
-              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-                <tr>
-                  <td style="text-align: start;">
-                    <div style="font-size: 24px; font-weight: bold; color: #2563eb; font-family: Arial, Helvetica, sans-serif;">Splitify</div>
-                  </td>
-                </tr>
-              </table>
+            <td style="background-color:#f9fafb; padding:20px; border-bottom:1px solid #e5e7eb; text-align:center; border-radius:8px 8px 0 0;">
+              <div style="font-size:24px; font-weight:bold; color:#2563eb; font-family:Arial, Helvetica, sans-serif; text-align:center;">
+                Splitify
+              </div>
             </td>
           </tr>
           
           <!-- Content -->
           <tr>
-            <td class="content-padding" style="padding: 24px 20px; background-color: #f9fafb;">
+            <td class="content-padding" style="padding:24px 20px; background-color:#f9fafb;">
               <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                 
                 <!-- Greeting -->
                 <tr>
-                  <td style="font-size: 18px; font-weight: bold; color: #111827; padding-bottom: 16px; font-family: Arial, Helvetica, sans-serif;">
+                  <td style="font-size:18px; font-weight:bold; color:#111827; padding-bottom:16px; font-family:Arial, Helvetica, sans-serif;">
                     Hi {{receiverName}},
                   </td>
                 </tr>
                 
                 <!-- Main Message -->
                 <tr>
-                  <td style="font-size: 15px; line-height: 1.6; padding-bottom: 20px; color: #374151; font-family: Arial, Helvetica, sans-serif;">
-                    <span class="sender-name" style="font-weight: bold; color: #2563eb;">{{senderName}}</span> would like to send you payment reminders by text message, but we don't have your consent on file.
+                  <td style="font-size:15px; line-height:1.6; padding-bottom:20px; color:#374151; font-family:Arial, Helvetica, sans-serif;">
+                    <span class="sender-name" style="font-weight:bold; color:#2563eb;">{{senderName}}</span> would like to send you payment reminders by text message, but we don't have your consent on file.
                   </td>
                 </tr>
                 
-                
                 <!-- CTA Button -->
                 <tr>
-                  <td style="text-align: center; padding: 16px 0;">
+                  <td style="text-align:center; padding:16px 0;">
                     <!--[if mso]>
                     <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{optInUrl}}" style="height:48px;v-text-anchor:middle;width:140px;" arcsize="12%" stroke="f" fillcolor="#2563eb">
-                    <w:anchorlock/>
-                    <center style="color:#ffffff;font-family:Arial,sans-serif;font-size:15px;font-weight:bold;">Opt In Now</center>
+                      <w:anchorlock/>
+                      <center style="color:#ffffff;font-family:Arial,sans-serif;font-size:15px;font-weight:bold;">Opt In Now</center>
                     </v:roundrect>
                     <![endif]-->
                     <!--[if !mso]><!-->
-                    <a href="{{optInUrl}}" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 15px; font-weight: bold; text-align: center; font-family: Arial, Helvetica, sans-serif; mso-hide: all;" class="button-padding">
+                    <a href="{{optInUrl}}" style="display:inline-block; background-color:#2563eb; color:#ffffff; text-decoration:none; padding:14px 28px; border-radius:6px; font-size:15px; font-weight:bold; text-align:center; font-family:Arial, Helvetica, sans-serif; mso-hide:all;" class="button-padding">
                       Opt In Now
                     </a>
                     <!--<![endif]-->
@@ -118,7 +110,7 @@ const smsOptInEmailTemplate = `<!DOCTYPE html>
                 
                 <!-- Additional Message -->
                 <tr>
-                  <td style="font-size: 14px; line-height: 1.6; color: #64748b; text-align: center; padding-top: 16px; border-top: 1px solid #e2e8f0; font-family: Arial, Helvetica, sans-serif;">
+                  <td style="font-size:14px; line-height:1.6; color:#64748b; text-align:center; padding-top:16px; border-top:1px solid #e2e8f0; font-family:Arial, Helvetica, sans-serif;">
                     Questions? Contact {{senderName}} or our support team.
                   </td>
                 </tr>
@@ -129,20 +121,17 @@ const smsOptInEmailTemplate = `<!DOCTYPE html>
           
           <!-- Footer -->
           <tr>
-            <td style="background-color: #f3f4f6; padding: 16px 20px; text-align: center; border-top: 1px solid #e2e8f0; border-radius: 0 0 8px 8px;">
-              <div style="font-size: 12px; color: #64748b; line-height: 1.5; font-family: Arial, Helvetica, sans-serif;">
+            <td style="background-color:#f3f4f6; padding:16px 20px; text-align:center; border-top:1px solid #e2e8f0; border-radius:0 0 8px 8px;">
+              <div style="font-size:12px; color:#64748b; line-height:1.5; font-family:Arial, Helvetica, sans-serif;">
                 Thank you,<br>
-                <span style="font-weight: bold; color: #2563eb;">Splitify</span>
+                <span style="font-weight:bold; color:#2563eb;">Splitify</span>
               </div>
             </td>
           </tr>
           
         </table>
-        <!--[if mso]>
-        </td>
-        </tr>
-        </table>
-        <![endif]-->
+        <!-- End email container -->
+
       </td>
     </tr>
   </table>

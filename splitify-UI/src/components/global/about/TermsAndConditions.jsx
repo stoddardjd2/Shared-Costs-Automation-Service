@@ -44,7 +44,7 @@ export default function TermsAndConditions() {
         </li>
         <li>
           {/* <strong>Help:</strong> Reply <strong>HELP</strong> or contact us at{" "} */}
-          <em>Contact us at Splitifiy.support@gmail.com</em>.
+          <em>Contact us at SplitifyOfficial@gmail.com</em>.
         </li>
         <li>
           <strong>Rates & Frequency:</strong> Message and data rates may apply.
@@ -114,7 +114,7 @@ export default function TermsAndConditions() {
 
       <h2 className="text-xl font-medium mt-6 mb-2">12. Contact</h2>
       <p>
-        Questions? Contact us at <em>Splitify.support@gmail.com</em>,{" "}
+        Questions? Contact us at <em>SplitifyOfficial@gmail.com</em>,{" "}
         {/* <em>[business phone]</em>, or <em>[business address]</em>. */}
       </p>
     </div>

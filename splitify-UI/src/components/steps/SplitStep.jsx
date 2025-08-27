@@ -68,6 +68,9 @@ const SplitStep = ({
 
   // Advanced options visibility
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(
+    selectedCharge?.selectedTransaction
+  );
 
   const [isEditingPeople, setIsEditingPeople] = useState(false);
 
@@ -324,6 +327,7 @@ const SplitStep = ({
     costEntry.startTiming = startTiming;
     costEntry.isDynamic = isDynamic;
     costEntry.name = chargeName;
+    costEntry.selectedTransaction = selectedTransaction;
 
     // NOT CONFIGURABLE FOR USER YET!
     costEntry.requestFrequency = "daily";
@@ -693,6 +697,9 @@ const SplitStep = ({
           setStartTiming={setStartTiming}
           chargeName={chargeName}
           isPlaidCharge={isPlaidCharge}
+          setSelectedTransaction={setSelectedTransaction}
+          selectedTransaction={selectedTransaction}
+          isEditMode={isEditMode}
         />
         {/* Name of Charge */}
         <div className="mb-6">
@@ -751,9 +758,14 @@ const SplitStep = ({
           {/* Recurring Options Dropdown */}
           <div className="relative recurring-dropdown">
             <button
+              disabled={isEditMode}
               onClick={() => setShowRecurringOptions(!showRecurringOptions)}
-              className={`w-full p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition-colors flex items-center justify-between   
-          
+              className={`w-full p-3 border border-gray-200 rounded-lg  transition-colors flex items-center justify-between   
+           ${
+             isEditMode
+               ? "bg-gray-100 text-gray-500 "
+               : "bg-white focus:ring-2 hover:bg-gray-50 border-gray-200 focus:ring-blue-600 focus:border-transparent"
+           }
               `}
             >
               <div className="flex items-center gap-2">
@@ -1104,7 +1116,7 @@ const SplitStep = ({
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Percentage Split
             </label>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
+            <div className="space-y-2 max-h-50 overflow-y-auto">
               {selectedPeople.map((person) => {
                 const user = participants.find((u) => u._id === person._id);
 
@@ -1566,7 +1578,9 @@ const SplitStep = ({
               : 0 // For custom/percentage, we'll show total instead
           }
           totalAmount={
-            splitType == "percentage" ? totalSplit : editableTotalAmount
+            splitType == "percentage"
+              ? totalSplit.toFixed(2)
+              : editableTotalAmount.toFixed(2)
           }
           costEntry={getCostEntry()}
           billingFrequency={getRecurringLabel()}

@@ -28,7 +28,7 @@ const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [notification, setNotification] = useState(null);
-
+  const [consent, setConsent] = useState(false);
   const navigate = useNavigate();
 
   const showNotification = (message, type = "error") => {
@@ -451,6 +451,32 @@ const Signup = () => {
                 {passwordsMatch && (
                   <p className="mt-2 text-sm text-green-600">Passwords match</p>
                 )}
+              </div>
+
+              {/* opt in */}
+              <div className="flex items-start gap-3">
+                {/* <input
+                  id="consent"
+                  type="checkbox"
+                  checked={consent}
+                  onChange={(e) => setConsent(e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                /> */}
+                <label htmlFor="consent" className="text-xs text-gray-400">
+                   By signing up you agree to our
+                  <a
+                    className="text-[#1865f2]"
+                    href="/about/termsAndConditions"
+                  >
+                    {" "}
+                    Terms and Conditions
+                  </a>{" "}
+                  and our
+                  <a className="text-[#1865f2]" href="/about/privacyPolicy">
+                    {" "}
+                    Privacy Policy.
+                  </a>
+                </label>
               </div>
 
               {/* Submit Button */}

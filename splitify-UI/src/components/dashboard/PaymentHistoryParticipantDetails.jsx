@@ -1,6 +1,6 @@
 import { useState } from "react";
 import RequestButton from "./RequestButton";
-import { Check, Timer, Hourglass, Pause } from "lucide-react";
+import { Check, Timer, Hourglass, Pause, Send } from "lucide-react";
 import { handleToggleMarkAsPaid } from "../../queries/requests";
 import { useData } from "../../contexts/DataContext";
 export default function PaymentHistoryParticipantDetails({
@@ -32,6 +32,16 @@ export default function PaymentHistoryParticipantDetails({
     return dueDate < today ? "overdue" : "pending";
   };
 
+  const monthDay = (input) => {
+    const d = input && input.$date ? new Date(input.$date) : new Date(input);
+    if (isNaN(d)) return "";
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      timeZone: "America/Los_Angeles",
+    }).format(d);
+  };
+
   const getStatusIndicatorColor = () => {
     const status = getParticipantStatus(participant, paymentHistoryRequest);
     switch (status) {
@@ -51,16 +61,16 @@ export default function PaymentHistoryParticipantDetails({
   return (
     <div className="flex flex-col gap-[13px] border border-b-2 p-3 rounded-xl">
       <div className="flex gap-4 flex-wrap justify-between">
-        <div className="flex gap-4">
+        <div className="flex gap-4 min-w-[200px]">
           <Avatar user={user} color={getStatusIndicatorColor()} />
           <div className="flex-col flex justify-between">
             <div className="font-semibold">{user.name}</div>
-            <div className="text-sm text-gray-800">${participant.amount.toFixed(2)}</div>
+            <div className="text-sm text-gray-800">${participant.amount}</div>
           </div>
         </div>
 
-        <div className="flex gap-5 justify-between items-center xs:justify-end flex-grow">
-          <RequestButton
+        <div className="flex gap-5 justify-between items-center sm:justify-end flex-grow">
+          {/* <RequestButton
             costId={costId}
             participantUserId={participant._id}
             className="text-sm flex-shrink-0"
@@ -71,16 +81,23 @@ export default function PaymentHistoryParticipantDetails({
             isPaid={isPaid}
           >
             Resend
-          </RequestButton>
-          <MarkAsPaidButton
-            participant={participant}
-            // status={getParticipantStatus()}
-            costId={costId}
-            paymentHistoryRequest={paymentHistoryRequest}
-            isPaid={isPaid}
-            setCosts={setCosts}
-            setIsPaid={setIsPaid}
-          />
+          </RequestButton> */}
+          <div className="h-10  border border-white/30 text-blue-600 px-3 py-3 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-4 shadow-none disabled:opacity-50 disabled:cursor-auto text-sm flex-shrink-0">
+            <Send className="w-6 h-6 " />
+            {console.log("date", participant)}
+            <span>Last Sent {monthDay(participant?.requestSentDate)}</span>
+          </div>
+          <div className="min-w-[100px]">
+            <MarkAsPaidButton
+              participant={participant}
+              // status={getParticipantStatus()}
+              costId={costId}
+              paymentHistoryRequest={paymentHistoryRequest}
+              isPaid={isPaid}
+              setCosts={setCosts}
+              setIsPaid={setIsPaid}
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -60,6 +60,16 @@ async function startServer() {
       })
     );
 
+    if (process.env.NODE_ENV == "production") {
+      app.enable("trust proxy");
+
+      app.use((req, res, next) => {
+        if (req.secure) return next();
+        console.log("redirect");
+        res.redirect(301, `https://${req.headers.host}${req.url}`);
+      });
+    }
+
     // Rate limiting
     const limiter = rateLimit({
       windowMs: 15 * 60 * 1000, // 15 minutes
@@ -111,8 +121,6 @@ async function startServer() {
     app.use("/api/plaid", plaidRoutes);
     app.use("/api/admin", adminRoutes);
     // app.use("/api/stripe", stripeRoutes);
-
-   
 
     // Error handling middleware
     app.use(notFound);
