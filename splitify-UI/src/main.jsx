@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import App from "./App";
 import { useEffect } from "react";
+import { Workbox } from "workbox-window";
 
 // google analytics
 export default function Analytics() {
@@ -34,3 +35,15 @@ root.render(
     </BrowserRouter>
   </React.StrictMode>
 );
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    const wb = new Workbox("/sw.js"); // vite-plugin-pwa handles this path
+    wb.addEventListener("waiting", () => {
+      // optional: show “Update available” UI, then:
+      wb.messageSW({ type: "SKIP_WAITING" });
+    });
+    wb.register();
+  });
+}
+

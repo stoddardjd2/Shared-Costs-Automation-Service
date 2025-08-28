@@ -324,21 +324,23 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                 <ArrowLeft className="w-6 h-6 text-gray-700" />
               </button>
               <div className="flex-1">
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-3xl font-bold whitespace-nowrap text-gray-900">
                   Manage Request
                 </h1>
                 <p className="text-gray-600">
                   View payment history or update future requests
                 </p>
               </div>
-              <PauseRequestBtn
-                requestId={cost._id}
-                isPausedPassed={cost?.isPaused}
-              />
-              <CancelRequestBtn
-                requestId={cost._id}
-                onDeleteSuccess={onClose}
-              />
+              <div className="flex flex-wrap items-center justify-end">
+                <PauseRequestBtn
+                  requestId={cost._id}
+                  isPausedPassed={cost?.isPaused}
+                />
+                <CancelRequestBtn
+                  requestId={cost._id}
+                  onDeleteSuccess={onClose}
+                />
+              </div>
             </div>
 
             {/* Update Future Requests Button - only show for recurring costs */}

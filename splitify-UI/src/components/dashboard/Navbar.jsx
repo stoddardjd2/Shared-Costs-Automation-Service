@@ -18,6 +18,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useData } from "../../contexts/DataContext";
 import PaymentMethodPrompt from "./PaymentMethodPrompt";
+import PwaInstallPrompt from "./PwaInstallPrompt";
 const Navbar = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showPaymentMethodPrompt, setShowPaymentMethodPrompt] = useState(false);
@@ -148,7 +149,7 @@ const Navbar = () => {
           {/* Logo/Brand */}
           <div
             onClick={() => {
-              navigate("/");
+              navigate(0);
             }}
             className="flex-shrink-0 flex items-center space-x-3 cursor-pointer"
           >
@@ -295,6 +296,9 @@ const Navbar = () => {
                       </button>
                     )}
                   </div>
+
+                  {/* PWA */}
+                  <PwaInstallPrompt />
 
                   {/* Logout */}
                   <div className="border-t border-gray-100 py-2">

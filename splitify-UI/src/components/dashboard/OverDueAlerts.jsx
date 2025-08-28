@@ -129,15 +129,12 @@ const OverdueAlerts = () => {
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden mb-6">
       {/* Alert Banner */}
       <div
-        style={{
-          background:
-            "linear-gradient(135deg, rgb(220 38 38) 0%, rgb(200 20 22) 100%)",
-        }}
-        className="bg-gradient-to-r from-red-50 to-orange-50 p-5 relative"
+ 
+        className="bg-blue-600 p-5 relative"
       >
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
               <AlertTriangle className="w-4 h-4 text-white" />
             </div>
             <div>
@@ -276,7 +273,7 @@ const OverdueAlerts = () => {
             })}
 
           {overduePaymentRequests.length > 5 && (
-            <div className="p-4 bg-red-100/40 border-t border-red-200/60">
+            <div className="p-4 bg-blue-100/40 border-t border-blue-200/60">
               <div className="text-center">
                 <button
                   onClick={() => {
@@ -286,7 +283,7 @@ const OverdueAlerts = () => {
                       toggled ? overduePaymentRequests.length : 5
                     );
                   }}
-                  className="text-red-700 hover:text-red-800 hover:bg-red-200/50 px-3 py-1.5 rounded-lg font-medium transition-all duration-200 text-sm"
+                  className="text-blue-700 hover:text-blue-800 hover:bg-blue-200/50 px-3 py-1.5 rounded-lg font-medium transition-all duration-200 text-sm"
                 >
                   {!showAll
                     ? `View all ${overduePaymentRequests.length} overdue payment requests →`

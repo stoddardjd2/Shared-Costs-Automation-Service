@@ -18,9 +18,11 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { trackCreateAccount } from "../../../../googleAnalytics/googleAnalyticsHelpers";
-
+import ProductDemoModal2 from "../demo/ProductDemoModal2";
+import ProductDemoModal from "../demo/ProductDemoModal";
+import { demoSlides } from "../demo/slides";
 const SmartSplitLanding = () => {
-  const [isVideoOpen, setIsVideoOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [realtimeStats, setRealtimeStats] = useState({
     users: 47823,
     tracked: 2847291,
@@ -102,7 +104,8 @@ const SmartSplitLanding = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-b from-gray-50 to-white pt-16 pb-20">
+      {/* <section className="relative bg-gradient-to-b from-blue-100 to-white pt-16 pb-20"> */}
+      <section className="relative bg-gradient-to-b from-white to-blue-50 pt-16 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             {/* <div className="inline-flex items-center bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-medium mb-8">
@@ -139,7 +142,7 @@ const SmartSplitLanding = () => {
                 <ArrowRight className="w-5 h-5" />
               </button>
               <button
-                onClick={() => setIsVideoOpen(true)}
+                onClick={() => setIsOpen(true)}
                 className="w-full sm:w-auto bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 font-semibold py-4 px-8 rounded-lg text-lg transition-all flex items-center justify-center gap-2"
               >
                 <Play className="w-5 h-5" /> View Product Demo
@@ -214,7 +217,7 @@ const SmartSplitLanding = () => {
             </div>
             <div className="bg-blue-50 p-8 rounded-xl">
               <h3 className="font-bold text-lg text-gray-900 mb-4">
-                Splitifiy Solution
+                Splitify Solution
               </h3>
               <ul className="space-y-3">
                 <li className="flex items-start">
@@ -514,8 +517,17 @@ const SmartSplitLanding = () => {
         </div>
       </section>
 
+      {/* <ProductDemoModal2
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        slides={demoSlides}
+        autoplayMs={5000}
+        showThumbnails
+      /> */}
+
+      {/* <ProductDemoModal /> */}
       {/* Video Modal */}
-      {isVideoOpen && (
+      {/* {isVideoOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-6 max-w-4xl w-full">
             <div className="flex justify-between items-center mb-4">
@@ -535,7 +547,7 @@ const SmartSplitLanding = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

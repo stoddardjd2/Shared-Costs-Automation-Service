@@ -15,7 +15,7 @@ const formatCurrency = (value) => {
   if (!Number.isFinite(num)) return value;
   try {
     return new Intl.NumberFormat(undefined, {
-      style: "currency", 
+      style: "currency",
       currency: "USD",
     }).format(num);
   } catch (e) {
@@ -72,6 +72,78 @@ const getPaymentMethods = (initial, paymentDetails) => [
         xmlns="http://www.w3.org/2000/svg"
       >
         <path d="M23.59 3.47A5.1 5.1 0 0 0 20.54.42C19.23 0 18.04 0 15.62 0H8.36c-2.4 0-3.61 0-4.9.4A5.1 5.1 0 0 0 .41 3.46C0 4.76 0 5.96 0 8.36v7.27c0 2.41 0 3.6.4 4.9a5.1 5.1 0 0 0 3.05 3.05c1.3.41 2.5.41 4.9.41h7.28c2.41 0 3.61 0 4.9-.4a5.1 5.1 0 0 0 3.06-3.06c.41-1.3.41-2.5.41-4.9V8.38c0-2.41 0-3.61-.41-4.91zM17.42 8.1l-.93.93a.5.5 0 0 1-.67.01 5 5 0 0 0-3.22-1.18c-.97 0-1.94.32-1.94 1.21 0 .9 1.04 1.2 2.24 1.65 2.1.7 3.84 1.58 3.84 3.64 0 2.24-1.74 3.78-4.58 3.95l-.26 1.2a.49.49 0 0 1-.48.39H9.63l-.09-.01a.5.5 0 0 1-.38-.59l.28-1.27a6.54 6.54 0 0 1-2.88-1.57v-.01a.48.48 0 0 1 0-.68l1-.97a.49.49 0 0 1 .67 0c.91.86 2.13 1.34 3.39 1.32 1.3 0 2.17-.55 2.17-1.42 0-.87-.88-1.1-2.54-1.72-1.76-.63-3.43-1.52-3.43-3.6 0-2.42 2.01-3.6 4.39-3.71l.25-1.23a.48.48 0 0 1 .48-.38h1.78l.1.01c.26.06.43.31.37.57l-.27 1.37c.9.3 1.75.77 2.48 1.39l.02.02c.19.2.19.5 0 .68z"></path>
+      </svg>
+    ),
+  },
+
+  // {
+  //   id: "zelle",
+  //   name: "Zelle",
+  //   bgColor: "#6D1ED4",
+  //   textColor: "white",
+  //   paymentUrl: "https://www.zellepay.com/get-started",
+  //   icon: (
+  //     <svg
+  //       fill="#ffffff"
+  //       viewBox="0 0 24 24"
+  //       xmlns="http://www.w3.org/2000/svg"
+  //     >
+  //       <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.568 17.334h-7.568L16.432 6.666H9.568L7.432 17.334h7.568L8.568 6.666h7.568L17.568 17.334z" />
+  //       <path d="M15.134 9.866H8.866l2.268-3.2h6.268l-2.268 3.2zM8.866 14.134h6.268l-2.268 3.2H6.598l2.268-3.2z" />
+  //     </svg>
+  //   ),
+  // },
+  {
+    id: "applepay",
+    name: "Apple Pay",
+    bgColor: "#000000",
+    textColor: "white",
+    paymentUrl: "https://www.apple.com/apple-pay/",
+    icon: (
+      <svg
+        fill="#ffffff"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+      </svg>
+    ),
+  },
+  {
+    id: "googlepay",
+    name: "Google Pay",
+    bgColor: "#4285F4",
+    textColor: "white",
+    paymentUrl: "https://pay.google.com/",
+    icon: (
+      <svg
+        fill="#ffffff"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+      </svg>
+    ),
+  },
+  {
+    id: "paypal",
+    name: "PayPal",
+    bgColor: "#0070BA",
+    textColor: "white",
+    paymentUrl:
+      initial.paypal && initial.paypal.trim() !== ""
+        ? `https://www.paypal.me/${initial.paypal}/${paymentDetails.amountOwed}`
+        : "https://paypal.me/",
+    icon: (
+      <svg
+        fill="#ffffff"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.982.382-1.064.9l-1.106 7.006zm2.146-10.814a.641.641 0 0 0 .633-.74L8.930 2.717a.641.641 0 0 1 .633-.74h4.008c1.295 0 2.233.259 2.845.833.612.574.918 1.407.918 2.833 0 .259-.018.5-.053.740-.018.259-.053.518-.118.777-.018.037-.018.074-.035.111-.353 1.704-1.353 2.833-3.08 3.481-.595.222-1.295.333-2.104.333H9.222z" />
       </svg>
     ),
   },
@@ -459,11 +531,11 @@ export default function PaymentPage() {
         );
       } else if (method.paymentUrl) {
         window.open(method.paymentUrl, "_blank");
-        alert(
-          `Opened ${method.name} in a new tab with amount ${formatCurrency(
-            paymentDetails.amountOwed
-          )}.\n\nIMPORTANT: After completing your payment, return to this page and click "Mark As Paid" to confirm.`
-        );
+        // alert(
+        //   `Opened ${method.name} in a new tab with amount ${formatCurrency(
+        //     paymentDetails.amountOwed
+        //   )}.\n\nIMPORTANT: After completing your payment, return to this page and click "Mark As Paid" to confirm.`
+        // );
       } else {
         alert(
           `Redirecting to ${method.name} with amount ${formatCurrency(
@@ -523,7 +595,11 @@ export default function PaymentPage() {
             paymentDetails={paymentDetails}
             amountPaid={amountPaid || paymentDetails.amountOwed}
           />
-          <SuccessMessage initial={initial} paymentDetails={paymentDetails} isAlreadyPaid={isAlreadyPaid} />
+          <SuccessMessage
+            initial={initial}
+            paymentDetails={paymentDetails}
+            isAlreadyPaid={isAlreadyPaid}
+          />
         </div>
       </PageLayout>
     );
@@ -617,7 +693,7 @@ export default function PaymentPage() {
 
         {/* Payment Methods */}
         <div className="space-y-4 mt-4">
-          <h3 className="text-black tracking-wide">Select Payment Method</h3>
+          <h3 className="text-gray-500 tracking-wide">Select Payment Method</h3>
 
           <div className="grid gap-3">
             {paymentMethods.map((method) => (

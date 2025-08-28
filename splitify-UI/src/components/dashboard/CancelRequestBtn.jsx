@@ -77,7 +77,7 @@ const CancelRequestBtn = ({ requestId, onDeleteSuccess }) => {
         onClick={handleDeleteClick}
         disabled={isDeleting}
         // className="text-white px-4 py-3 rounded-lg transition-all flex items-center justify-center gap-3 bg-gray-400 hover:bg-red-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-        className="text-gray-600 hover:text-black px-4 py-3 rounded-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-[172px] text-gray-600 justify-between hover:text-black px-4 py-1 rounded-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Trash2 className="w-5 h-5 flex-shrink-0" />
         Delete Request

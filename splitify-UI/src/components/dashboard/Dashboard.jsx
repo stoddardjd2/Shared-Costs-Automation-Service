@@ -11,6 +11,7 @@ import { useData } from "../../contexts/DataContext";
 import AddCost from "../costs/AddCost";
 import ManageRecurringCostModal from "./ManageRecurringCostModal";
 import PaymentMethodPrompt from "./PaymentMethodPrompt";
+import PwaInstallPrompt from "./PwaInstallPrompt";
 const Dashboard = () => {
   const navigate = useNavigate();
   const {
@@ -31,7 +32,7 @@ const Dashboard = () => {
 
   const handleCloseModal = () => {
     // setShowManageModal(false);
-    setView("dashboard")
+    setView("dashboard");
     setSelectedCost(null);
   };
 
@@ -46,9 +47,7 @@ const Dashboard = () => {
       case "addRequest":
         return (
           <div className="mt-6 ">
-            <AddCost
-              setView={setView}
-            />
+            <AddCost setView={setView} />
           </div>
         );
 
@@ -76,7 +75,7 @@ const Dashboard = () => {
                 onClick={() => {
                   setView("addRequest");
                 }}
-                className="bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 flex-shrink-0"
+                className="hidden sm:flex bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors items-center gap-2 flex-shrink-0"
               >
                 <Plus className="w-5 h-5" />
                 <span className="hidden sm:inline">New Request</span>
@@ -93,10 +92,25 @@ const Dashboard = () => {
               )}
 
               {costs.length !== 0 && <OverdueAlerts />}
-              <RecurringCostsSection setView={setView} setSelectedCost={setSelectedCost} />
+              <RecurringCostsSection
+                setView={setView}
+                setSelectedCost={setSelectedCost}
+              />
               {/* <RecurringCostsFromBank recurringFromBank={recurringFromBank} /> */}
               {/* <OneTimeCosts oneTimeCosts={oneTimeCosts} /> */}
             </div>
+
+            {/* new req button for mobile*/}
+            <button
+              // onClick={() => navigate("/costs/new")}
+              onClick={() => {
+                setView("addRequest");
+              }}
+              className="fixed flex bottom-5 right-5 sm:hidden shadow-xl bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors items-center gap-2 flex-shrink-0"
+            >
+              <Plus className="w-5 h-5" />
+              <span className="sm:hidden">New Request</span>
+            </button>
           </div>
         );
     }

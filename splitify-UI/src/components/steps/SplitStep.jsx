@@ -1580,7 +1580,7 @@ const SplitStep = ({
           totalAmount={
             splitType == "percentage"
               ? totalSplit.toFixed(2)
-              : editableTotalAmount.toFixed(2)
+              : Number(editableTotalAmount).toFixed(2)
           }
           costEntry={getCostEntry()}
           billingFrequency={getRecurringLabel()}
