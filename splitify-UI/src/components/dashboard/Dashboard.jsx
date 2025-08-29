@@ -25,7 +25,6 @@ const Dashboard = () => {
     userData,
     paymentMethods,
   } = useData();
-
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
   const [view, setView] = useState("dashboard");
   const [selectedCost, setSelectedCost] = useState(null);
@@ -74,6 +73,10 @@ const Dashboard = () => {
                 // onClick={() => navigate("/costs/new")}
                 onClick={() => {
                   setView("addRequest");
+                  const root = document.getElementById("root");
+                  if (root) {
+                    root.scrollTo({ top: 0, left: 0, behavior: "instant" });
+                  }
                 }}
                 className="hidden sm:flex bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors items-center gap-2 flex-shrink-0"
               >
@@ -104,6 +107,10 @@ const Dashboard = () => {
             <button
               // onClick={() => navigate("/costs/new")}
               onClick={() => {
+                const root = document.getElementById("root");
+                if (root) {
+                  root.scrollTo({ top: 0, left: 0, behavior: "instant" });
+                }
                 setView("addRequest");
               }}
               className="fixed flex bottom-5 right-5 sm:hidden shadow-xl bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors items-center gap-2 flex-shrink-0"
