@@ -67,11 +67,11 @@ export default function PwaInstallPrompt({ className = "" }) {
   }, [deferredPrompt, installed]);
 
   // Hide if installed or no way to install yet
-  if (installed) return null;
+  // if (installed) return null;
 
-  const shouldShowButton = canInstall || isIOS();
+  // const shouldShowButton = canInstall || isIOS();
 
-  if (!shouldShowButton) return null;
+  // if (!shouldShowButton) return null;
 
   return (
     <div className={className}>
