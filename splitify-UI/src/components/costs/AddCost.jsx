@@ -11,7 +11,7 @@ import SearchStep from "../steps/SearchStep";
 import SplitStep from "../steps/SplitStep";
 import AddStep from "../steps/AddStep";
 
-const AddCost = ({setView }) => {
+const AddCost = ({ setView }) => {
   const [currentStep, setCurrentStep] = useState(STEPS.SEARCH);
 
   const chargeState = useChargeState();

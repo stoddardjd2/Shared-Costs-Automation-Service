@@ -14,6 +14,7 @@ import {
   Send,
   CreditCard,
   Inbox,
+  Smartphone,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useData } from "../../contexts/DataContext";
@@ -22,6 +23,7 @@ import PwaInstallPrompt from "./PwaInstallPrompt";
 const Navbar = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showPaymentMethodPrompt, setShowPaymentMethodPrompt] = useState(false);
+  const [showPwaGuide, setShowPwaGuide] = useState(false);
   const { userData, setUserData } = useData();
   const navigate = useNavigate();
   // Demo user data
@@ -298,7 +300,16 @@ const Navbar = () => {
                   </div>
 
                   {/* PWA */}
-                  {/* <PwaInstallPrompt /> */}
+                  <button
+                    onClick={() => {
+                      setShowPwaGuide(!showPwaGuide);
+                      setShowUserMenu(false);
+                    }}
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  >
+                    <Smartphone className="w-4 h-4 mr-3" />
+                    Install Web App
+                  </button>
 
                   {/* Logout */}
                   <div className="border-t border-gray-100 py-2">
@@ -328,6 +339,12 @@ const Navbar = () => {
           />
         </div>
       </div> */}
+
+      <PwaInstallPrompt
+        isOpen={showPwaGuide}
+        onClose={() => setShowPwaGuide(false)}
+      />
+
       <FullscreenModal
         isOpen={showPaymentMethodPrompt}
         onClose={() => setShowPaymentMethodPrompt(false)}
