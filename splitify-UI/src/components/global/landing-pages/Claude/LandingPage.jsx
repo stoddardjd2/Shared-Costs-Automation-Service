@@ -517,13 +517,13 @@ const SmartSplitLanding = () => {
         </div>
       </section>
 
-      {/* <ProductDemoModal2
+      <ProductDemoModal2
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         slides={demoSlides}
         autoplayMs={5000}
         showThumbnails
-      /> */}
+      />
 
       {/* <ProductDemoModal /> */}
       {/* Video Modal */}
