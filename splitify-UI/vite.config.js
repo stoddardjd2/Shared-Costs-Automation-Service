@@ -21,8 +21,8 @@ export default defineConfig({
         "apple-touch-icon.png",
       ],
       manifest: {
-        name: "SmartSplit",
-        short_name: "SmartSplit",
+        name: "Splitify",
+        short_name: "Splitify",
         description: "Automated shared expenses & reminders.",
         start_url: "/",
         scope: "/",
