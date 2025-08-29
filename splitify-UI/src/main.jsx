@@ -4,7 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import App from "./App";
 import { useEffect } from "react";
-import { Workbox } from "workbox-window";
+import { registerSW } from "virtual:pwa-register";
 
 // google analytics
 export default function Analytics() {
@@ -27,23 +27,22 @@ export default function Analytics() {
   return null;
 }
 
+registerSW({
+  immediate: true, // optional
+  onNeedRefresh() {
+    alert("PWA");
+    // show "update available" UI if you want, then:
+    // updateSW()
+  },
+  onOfflineReady() {},
+});
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <BrowserRouter>
+      <Analytics />
       <App />
     </BrowserRouter>
   </React.StrictMode>
 );
-
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    const wb = new Workbox("/sw.js"); // vite-plugin-pwa handles this path
-    wb.addEventListener("waiting", () => {
-      // optional: show “Update available” UI, then:
-      wb.messageSW({ type: "SKIP_WAITING" });
-    });
-    wb.register();
-  });
-}
-

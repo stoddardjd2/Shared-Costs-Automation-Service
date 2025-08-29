@@ -11,7 +11,7 @@ import { useData } from "../../contexts/DataContext";
 import AddCost from "../costs/AddCost";
 import ManageRecurringCostModal from "./ManageRecurringCostModal";
 import PaymentMethodPrompt from "./PaymentMethodPrompt";
-import PwaInstallPrompt from "./PwaInstallPrompt";
+// import PwaInstallPrompt from "./PwaInstallPrompt";
 const Dashboard = () => {
   const navigate = useNavigate();
   const {

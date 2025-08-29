@@ -131,7 +131,6 @@ export const updateRequest = async (requestId, requestData) => {
 
   if (result.success) {
     // Handle success
-    console.log("Data received:", result.data);
     return result.data;
   } else {
     // Handle error gracefully without crashing

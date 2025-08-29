@@ -161,7 +161,7 @@ const GlobalNavbar = ({
                   navigate("/login");
                   setIsMobileMenuOpen(false);
                 }}
-                className="flex items-center justify-center w-full max-w-xs px-6 py-3 text-lg font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                className="flex items-center bg-gray-100 justify-center w-full max-w-xs px-6 py-3 text-lg font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors duration-200"
               >
                 {/* <User className="w-5 h-5 mr-2" /> */}
                 Login

@@ -10,7 +10,16 @@ export default defineConfig({
     svgr(),
     VitePWA({
       registerType: "autoUpdate", // SW updates in background
-      includeAssets: ["favicon.svg", "robots.txt", "apple-touch-icon.png"],
+      devOptions: { enabled: true }, // key line
+      includeAssets: [
+        "favicon-16x16.png",
+        "favicon-32x32.png",
+        "favicon-48x48.png",
+        "favicon-180x180.png",
+        "favicon-192x192.png",
+        "favicon-512x512.png",
+        "apple-touch-icon.png",
+      ],
       manifest: {
         name: "SmartSplit",
         short_name: "SmartSplit",
@@ -22,13 +31,19 @@ export default defineConfig({
         theme_color: "#2563EB", // rgb(37,99,235)
         orientation: "portrait",
         icons: [
-          { src: "/smartSplitLogo.svg", sizes: "192x192", type: "image/png" },
-          { src: "/smartSplitLogo.svg", sizes: "512x512", type: "image/png" },
+          { src: "/favicon-192x192.png", sizes: "192x192", type: "image/png" },
+          { src: "/favicon-512x512.png", sizes: "512x512", type: "image/png" },
           {
-            src: "/smartSplitLogo.svg.png",
+            src: "/favicon-512x512.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "any maskable",
+          },
+          {
+            src: "/apple-touch-icon.png",
+            sizes: "180x180",
+            type: "image/png",
+            purpose: "any",
           },
         ],
       },
