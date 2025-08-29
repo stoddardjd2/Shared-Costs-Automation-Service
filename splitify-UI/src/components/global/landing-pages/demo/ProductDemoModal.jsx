@@ -1,12 +1,6 @@
 import React, { useState } from "react";
 import { ChevronLeft, ChevronRight, X, Play, Pause } from "lucide-react";
 import advancedOptions from "../../../../assets/demoSlides/advancedOptions.png";
-import dashboard from "../../../../assets/demoSlides/dashboard.png";
-import overdue from "../../../../assets/demoSlides/Overdue.png";
-import percentageSplitandStartTiming from "../../../../assets/demoSlides/percentageSplitandStartTime.png";
-import plaidSearch from "../../../../assets/demoSlides/plaidSearch.png";
-import reminders from "../../../../assets/demoSlides/reminders.png";
-import split from "../../../../assets/demoSlides/split.png";
 
 // claude
 const ProductDemoModal = () => {
