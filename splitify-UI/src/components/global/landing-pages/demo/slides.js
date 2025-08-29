@@ -1,6 +1,6 @@
 import advancedOptions from "../../../../assets/demoSlides/cropped/advancedOptionsCropped3.png";
 import dashboard from "../../../../assets/demoSlides/cropped/dashboardCropped.png";
-import overdue from "../../../../assets/demoSlides/cropped/overdue.png";
+import overdue from "../../../../assets/demoSlides/cropped/Overdue.png";
 import SplitMethodAndStarTime from "../../../../assets/demoSlides/cropped/SplitMethodAndStartTime.png";
 import plaidSearch from "../../../../assets/demoSlides/cropped/plaidCropped.png";
 import paymentHistory from "../../../../assets/demoSlides/cropped/paymentHistoryCropped.png";
