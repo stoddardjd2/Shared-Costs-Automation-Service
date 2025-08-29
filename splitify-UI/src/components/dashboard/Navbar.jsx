@@ -298,7 +298,7 @@ const Navbar = () => {
                   </div>
 
                   {/* PWA */}
-                  <PwaInstallPrompt />
+                  {/* <PwaInstallPrompt /> */}
 
                   {/* Logout */}
                   <div className="border-t border-gray-100 py-2">
