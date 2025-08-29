@@ -25,7 +25,6 @@ export default function PwaInstallPrompt({ fixed = false }) {
 
   if (!show) return null;
 
-  if (window.innerWidth > 1200) return null;
 
   if (!fixed) {
     return (
@@ -48,12 +47,4 @@ export default function PwaInstallPrompt({ fixed = false }) {
     </button>
   );
 
-  return (
-    <button
-      className="fixed bottom-4 left-4 rounded-2xl px-4 py-2 shadow bg-blue-600 text-white"
-      onClick={handleClick}
-    >
-      Install App
-    </button>
-  );
 }
