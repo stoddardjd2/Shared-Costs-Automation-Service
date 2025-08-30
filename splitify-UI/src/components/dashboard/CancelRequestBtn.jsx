@@ -97,7 +97,7 @@ const CancelRequestBtn = ({ requestId, onDeleteSuccess }) => {
             </h3>
 
             {deleteStatus === "success" ? (
-              <div className="flex items-center gap-3 text-green-600 mb-6">
+              <div className="flex items-center gap-3 text-blue-600 mb-6">
                 <CheckCircle className="w-5 h-5" />
                 <p>Request deleted successfully!</p>
               </div>

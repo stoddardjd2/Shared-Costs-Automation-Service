@@ -1,5 +1,7 @@
 const sendEmailRequest = require("./sendEmailRequest");
+const sentTextMessage = require("./sendTextMessage");
 const User = require("../models/User");
+
 async function sendRequestsRouter(reminderData) {
   // TODO: Implement your SMS/Email sending logic here
   //Generate payment URL
@@ -61,12 +63,30 @@ async function sendRequestsRouter(reminderData) {
   );
 
   const finalUrl = url.toString();
-  console.log(`URL FOR ${name}!`, finalUrl);
   // Example implementation:
   // await sendSMS(reminderData.participantId, message);
   // await sendEmail(reminderData.participantId, subject, message);
-  const user = await User.findOne({ _id: userId }, { email: 1, _id: 0 });
+  const user = await User.findOne(
+    { _id: userId },
+    { email: 1, phone: 1, _id: 0 }
+  );
+
+  console.log(`URL FOR ${name}!`, finalUrl);
+  console.log("sening req, getting user filtered", user);
   sendEmailRequest(requester, name, amount, finalUrl, user.email);
+
+  const message = `Hi ${name},
+${requester} sent you a payment request.
+
+AMOUNT REQUESTED: $${amount}
+FOR: ${chargeName}
+
+To complete your payment, visit: ${finalUrl}
+
+Sent via Splitify
+Split expenses. Automate follow-ups.`;
+
+  sentTextMessage(user.phone, "+18333702013", message);
   return true;
 }
 module.exports = sendRequestsRouter;

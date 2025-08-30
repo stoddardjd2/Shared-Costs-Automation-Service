@@ -128,12 +128,12 @@ const PauseRequestBtn = ({ requestId, isPausedPassed, onToggleSuccess }) => {
               <div className="text-center mb-6">
                 <div
                   className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 ${
-                    isPaused ? "bg-green-100" : "bg-yellow-100"
+                    isPaused ? "bg-blue-100" : "bg-blue-100"
                   }`}
                 >
                   <CheckCircle
                     className={`w-8 h-8 ${
-                      isPaused ? "text-green-600" : "text-yellow-600"
+                      isPaused ? "text-blue-600" : "text-blue-600"
                     }`}
                   />
                 </div>
@@ -142,7 +142,7 @@ const PauseRequestBtn = ({ requestId, isPausedPassed, onToggleSuccess }) => {
                 </h4>
                 <p
                   className={`font-medium ${
-                    isPaused ? "text-green-600" : "text-yellow-600"
+                    isPaused ? "text-blue-600" : "text-blue-600"
                   }`}
                 >
                   Your request has been successfully{" "}
@@ -175,8 +175,8 @@ const PauseRequestBtn = ({ requestId, isPausedPassed, onToggleSuccess }) => {
                 disabled={isToggling || toggleStatus === "success"}
                 className={`px-4 py-2 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 min-w-[120px] justify-center ${
                   isPaused
-                    ? "bg-green-600 hover:bg-green-700"
-                    : "bg-yellow-600 hover:bg-yellow-700"
+                    ? "bg-blue-600 hover:bg-blue-700"
+                    : "bg-blue-600 hover:bg-blue-700"
                 }`}
               >
                 {isToggling ? (

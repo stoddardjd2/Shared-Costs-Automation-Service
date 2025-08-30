@@ -92,11 +92,8 @@ const OverdueAlerts = () => {
   if (overduePaymentRequests.length === 0) {
     return (
       <div
-        style={{
-          background:
-            "linear-gradient(135deg, rgb(16, 185, 129) 0%, rgb(5, 150, 105) 100%)",
-        }}
-        className="rounded-2xl shadow-sm border border-green-200/60 p-4 mb-6"
+ 
+        className="rounded-2xl bg-blue-600 shadow-sm border border-blue-200/60 p-4 mb-6"
       >
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-white/20 grid place-items-center">
@@ -219,7 +216,7 @@ const OverdueAlerts = () => {
                     </div>
 
                     {/* Due date */}
-                    <div className="flex items-center gap-2 text-black bg-gray-100/70 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+                    <div className="flex items-center gap-2 text-gray-600 backdrop-blur-sm px-3 py-1.5 rounded-lg">
                       <Calendar className="w-4 h-4" />
                       <span className="text-sm">
                         Due {formatDate(dueDate)} ({daysOverdue} day

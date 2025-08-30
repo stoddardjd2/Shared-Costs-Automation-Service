@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { SkipForward, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
-const TransactionsDatePicker = ({ setDate, currentDate }) => {
+const TransactionsDatePicker = ({
+  setDate,
+  currentDate,
+  position,
+}) => {
   const [selectedDate, setSelectedDate] = useState(() => new Date(currentDate));
   const [showCalendar, setShowCalendar] = useState(false);
 
@@ -150,7 +154,15 @@ const TransactionsDatePicker = ({ setDate, currentDate }) => {
 
           {/* Calendar Dropdown */}
           {showCalendar && (
-            <div className="absolute min-w-[228px] top-full 0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-10">
+            <div
+              className={`absolute min-w-[228px] top-full 0 ${
+                position == "left"
+                  ? "left"
+                  : position == "right"
+                  ? "right"
+                  : "right" //default
+              }-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-10`}
+            >
               {/* Calendar Header */}
               <div className="flex items-center justify-between mb-4">
                 <button

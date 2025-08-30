@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const Request = require("../models/Request");
 
+const sentTextMessage = require("../send-request-helpers/sendTextMessage");
+
 const {
   startReminderScheduler,
   startSchedulerWithFrequentChecks,
@@ -142,6 +144,43 @@ router.post("/override-and-test-scheduler/:id", async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to process requests",
+      error: error.message,
+    });
+  }
+});
+
+router.post("/send-text", async (req, res) => {
+  const { to } = req.body;
+console.log("sending to", to)
+  const message = `Hi Jared,
+kevin sent you a payment request.
+
+AMOUNT REQUESTED: $32
+FOR: Netflix
+
+To complete your payment, visit: https://splitifyofficial.netlify.app/dashboard
+
+Sent via Splitify
+`;
+
+  try {
+    console.log("🔧 Manually sending text");
+    await sentTextMessage(to, "+18333702013", message);
+
+    res.json({
+      success: true,
+      message: "text sent successfully",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("raw:", JSON.stringify(error.raw, null, 2));
+    console.error("errors:", JSON.stringify(error.raw?.errors, null, 2));
+    // Optional: log request-id so support can trace
+    console.error("x-request-id:", error.requestId);
+    console.error("❌ text trigger failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to send text",
       error: error.message,
     });
   }

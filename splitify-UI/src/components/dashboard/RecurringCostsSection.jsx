@@ -60,23 +60,40 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
   }, [costs, activeTab]);
 
   // Apply search and status filters
+  // const filteredCosts = useMemo(() => {
+  //   return filteredByType
+  //     .filter((cost) => {
+  //       const matchesSearch = cost.name
+  //         .toLowerCase()
+  //         .includes(searchTerm.toLowerCase());
+  //       let matchesStatus = true;
+  //       if (statusFilter !== "all") {
+  //         const hasStatus = cost.participants.some(
+  //           (p) => p.status === statusFilter
+  //         );
+  //         matchesStatus = hasStatus;
+  //       }
+  //       return matchesSearch && matchesStatus;
+  //     })
+  //     .reverse();
+  // }, [filteredByType, searchTerm, statusFilter]);- const filteredCosts = useMemo(() => {    return filteredByType
   const filteredCosts = useMemo(() => {
-    return filteredByType
+    const q = searchTerm.trim().toLowerCase();
+    const base = q ? costs : filteredByType;
+    return base
       .filter((cost) => {
-        const matchesSearch = cost.name
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
-        let matchesStatus = true;
+        const matchesSearch = cost.name.toLowerCase().includes(q);
+        if (q) return matchesSearch; // while searching, only match by text
         if (statusFilter !== "all") {
           const hasStatus = cost.participants.some(
             (p) => p.status === statusFilter
           );
-          matchesStatus = hasStatus;
+          return matchesSearch && hasStatus;
         }
-        return matchesSearch && matchesStatus;
+        return matchesSearch;
       })
       .reverse();
-  }, [filteredByType, searchTerm, statusFilter]);
+  }, [costs, filteredByType, searchTerm, statusFilter]);
 
   // Pagination
   const totalPages = Math.ceil(filteredCosts.length / itemsPerPage);
@@ -120,7 +137,10 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
       if (range.isSame) {
         return { amount: `$${range.low.toFixed(2)}`, label: "per person" };
       } else {
-        return { amount: `$${range.low.toFixed(2)}-$${range.high.toFixed(2)}`, label: "per person" };
+        return {
+          amount: `$${range.low.toFixed(2)}-$${range.high.toFixed(2)}`,
+          label: "per person",
+        };
       }
     } else {
       return { amount: `$${cost.amount.toFixed(2)}`, label: "per person" };
@@ -250,7 +270,7 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
           </div>
 
           {/* Status Filter Dropdown */}
-          <div className="relative status-dropdown">
+          {/* <div className="relative status-dropdown">
             <button
               onClick={() => setShowStatusDropdown(!showStatusDropdown)}
               className="w-full sm:w-auto px-4 py-2 border border-slate-200/60 rounded-lg bg-white hover:bg-gray-50 transition-colors flex items-center justify-between gap-2 min-w-[140px]"
@@ -326,7 +346,7 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                 </div>
               </div>
             )}
-          </div>
+          </div> */}
         </div>
 
         {/* Section header */}
@@ -416,7 +436,17 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
 
                       {/* Manage button */}
                       <button
-                        onClick={() => handleManageCost(cost)}
+                        onClick={() => {
+                          const root = document.getElementById("root");
+                          if (root) {
+                            root.scrollTo({
+                              top: 0,
+                              left: 0,
+                              behavior: "instant",
+                            });
+                          }
+                          handleManageCost(cost);
+                        }}
                         className="opacity-60 hover:opacity-100 text-slate-600 hover:text-slate-900 hover:bg-slate-100 p-2 rounded-lg transition-all duration-200 group-hover:opacity-80 shrink-0"
                         title="Manage cost"
                       >

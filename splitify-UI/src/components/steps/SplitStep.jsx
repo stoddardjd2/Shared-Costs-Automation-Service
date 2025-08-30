@@ -1334,7 +1334,7 @@ const SplitStep = ({
                   </button>
                   {(showDynamicInfo || isHoveringDynamicInfo) && (
                     <div
-                      className="absolute bottom-full left-0 mb-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50"
+                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-[200px] bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50 break-words"
                       onMouseEnter={() => setIsHoveringDynamicInfo(true)}
                       onMouseLeave={() => {
                         setIsHoveringDynamicInfo(false);
@@ -1346,7 +1346,7 @@ const SplitStep = ({
                         subscriptions, or any recurring cost that varies each
                         period.
                       </p>
-                      <div className="absolute top-full left-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>{" "}
                     </div>
                   )}
                 </div>
@@ -1458,7 +1458,7 @@ const SplitStep = ({
                   </button>
                   {(showMarkAsPaidInfo || isHoveringMarkAsPaidInfo) && (
                     <div
-                      className="absolute bottom-full left-0 mb-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50"
+                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-[200px] bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50 break-words"
                       onMouseEnter={() => setIsHoveringMarkAsPaidInfo(true)}
                       onMouseLeave={() => {
                         setIsHoveringMarkAsPaidInfo(false);
@@ -1469,7 +1469,7 @@ const SplitStep = ({
                         Setting this to "Everyone" is useful when you trust
                         users to honestly mark requests as paid.
                       </p>
-                      <div className="absolute top-full left-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
                     </div>
                   )}
                 </div>

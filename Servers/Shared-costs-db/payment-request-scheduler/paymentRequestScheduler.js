@@ -270,12 +270,12 @@ async function processRecurringRequestIfDue(
   const startTimingValue = normalizeStartTiming(requestDocument.startTiming);
   const hasInitialRequestBeenSent = !!requestDocument.lastSent;
 
-  if (requestDocument?.isPaused) {
-    return { sent: false, reason: "request_paused" };
-  }
-  if (requestDocument?.isDeleted) {
-    return { sent: false, reason: "request_deleted" };
-  }
+  // if (requestDocument?.isPaused) {
+  //   return { sent: false, reason: "request_paused" };
+  // }
+  // if (requestDocument?.isDeleted) {
+  //   return { sent: false, reason: "request_deleted" };
+  // }
 
   // Initial request
   if (!hasInitialRequestBeenSent) {
@@ -437,6 +437,9 @@ function startRecurringRequestsCron() {
         const currentDateTime = new Date();
         const activeRecurringRequests = await Request.find({
           isRecurring: true,
+          isDelete: { $ne: true }, // Not deleted,
+          iPaused: { $ne: true }, // Not paused,
+          
         }).lean();
         schedulerMetrics.lastRunProcessedCount = activeRecurringRequests.length;
 

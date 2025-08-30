@@ -316,7 +316,7 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
           {/* Main content container with mobile-friendly padding matching SplitStep */}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-0 pb-24">
             {/* Header section - matching SplitStep structure */}
-            <div className="flex items-center gap-4 mb-6 mt-8">
+            <div className="flex flex-wrap items-center gap-4 mb-6 mt-8">
               <button
                 onClick={onClose}
                 className="p-3 hover:bg-white rounded-xl transition-all hover:shadow-md"

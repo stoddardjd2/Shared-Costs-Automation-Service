@@ -26,7 +26,7 @@ async function sendEmailRequest(
 
 ${sender} sent you a payment request.
 
-AMOUNT REQUESTED: ${amount}
+AMOUNT REQUESTED: $${amount}
 From: ${sender}
 
 To complete your payment, visit: ${paymentUrl}
@@ -35,7 +35,7 @@ Questions? Contact ${sender} or our support team.
 
 ---
 Sent via Splitify
-Split expenses. Settle up easily.`,
+Split expenses. Automate follow-ups.`,
       html: emailTemplate
         .replace(/\{\{sender\}\}/g, sender)
         .replace(/\{\{receiver\}\}/g, receiver)

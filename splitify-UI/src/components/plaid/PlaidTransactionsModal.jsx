@@ -274,6 +274,7 @@ export default function PlaidTransactionsModal({
                 Start Date
               </label>
               <TransactionsDatePicker
+                position={"left"}
                 setDate={setStartDate}
                 currentDate={startDate}
               />

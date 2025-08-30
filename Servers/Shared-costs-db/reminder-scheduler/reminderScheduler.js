@@ -2,7 +2,7 @@
 const cron = require("node-cron");
 const mongoose = require("mongoose");
 const { ObjectId } = require("mongodb");
-const sendRequestsRouter = require("../send-request-helpers/sendRequestsRouter")
+const sendRequestsRouter = require("../send-request-helpers/sendRequestsRouter");
 // Import your Request model - adjust path as needed
 const Request = require("../models/Request");
 const User = require("../models/User");
@@ -84,10 +84,10 @@ async function processRequestReminders(request) {
   for (let i = 0; i < request.paymentHistory.length; i++) {
     const paymentEntry = request.paymentHistory[i];
 
-    // Skip if no reminder date set or not yet due
-    if (!paymentEntry.nextReminderDate || paymentEntry.nextReminderDate > now) {
-      continue;
-    }
+    // // Skip if no reminder date set or not yet due
+    // if (!paymentEntry.nextReminderDate || paymentEntry.nextReminderDate > now) {
+    //   continue;
+    // }
 
     // Get participants who need reminders
     const participantsToRemind = getParticipantsNeedingReminders(
@@ -96,14 +96,18 @@ async function processRequestReminders(request) {
     );
 
     if (participantsToRemind.length === 0) {
+      // disable reminders for payment entry if no one eligible
+      paymentEntry.nextReminderDate = null;
+      updatedRequest = true;
+
       // No one needs reminders, but still update next reminder date for recurring requests
-      if (request.isRecurring) {
-        paymentEntry.nextReminderDate = calculateNextReminderDate(
-          now,
-          request.reminderFrequency
-        );
-        updatedRequest = true;
-      }
+      // if (request.isRecurring) {
+      //   paymentEntry.nextReminderDate = calculateNextReminderDate(
+      //     now,
+      //     request.reminderFrequency
+      //   );
+      //   updatedRequest = true;
+      // }
       continue;
     }
 
@@ -192,11 +196,14 @@ async function processReminders() {
 
   try {
     const now = new Date();
-
     // Find all active requests that have reminders due
+    // Skip if no reminder date set or not yet due
+    // Skip if paused or delete
     const requests = await Request.find({
-      isCompleted: { $ne: true }, // Not completed
+      isDelete: { $ne: true }, // Not deleted,
+      iPaused: { $ne: true }, // Not paused,
       // FLIP for dev
+      "paymentHistory.nextReminderDate": { $lte: now }, // Has reminders due
       "paymentHistory.nextReminderDate": { $lte: now }, // Has reminders due
     });
 
@@ -261,17 +268,6 @@ function stopScheduler() {
 async function runSchedulerNow() {
   console.log("🔧 Manually triggering reminder processing...");
   await processReminders();
-}
-
-// Helper functions for sending SMS/Email - implement with your APIs
-async function sendSMS(participantId, message) {
-  // TODO: Implement with your SMS provider (Twilio, etc.)
-  console.log(`📱 SMS to ${participantId}: ${message}`);
-}
-
-async function sendEmail(participantId, subject, message) {
-  // TODO: Implement with your email provider (SendGrid, etc.)
-  console.log(`📧 Email to ${participantId}: ${subject} - ${message}`);
 }
 
 /**
