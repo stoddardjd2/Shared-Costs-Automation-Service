@@ -52,6 +52,7 @@ export default function PlaidConnect({
 
       const accessToken = await plaidAPI.exchangePublicToken(pubToken);
 
+      console.log("access", accessToken)
       const res = await savePlaidAccessToken(accessToken);
       if (res.success) {
         setUserData((prev) => {
@@ -76,6 +77,7 @@ export default function PlaidConnect({
   }
 
   function onLinkExit(err /*, metadata */) {
+    console.log("onLinkExit", err)
     if (err) {
       setError(err.display_message || err.message || "Exited Link with error.");
       pushLog("Link exited with error.");

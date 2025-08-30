@@ -123,7 +123,7 @@ const ContactCard = ({
         >
           {person.avatar}
         </div>
-        <div className="flex-1">
+        <div className="flex-1 w-[100px]">
           {isEditingName ? (
             <div className="flex items-center gap-2">
               {/* <input
@@ -180,7 +180,7 @@ const ContactCard = ({
           {person.phone && (
             <p className="text-gray-600">{formatPhoneNumber(person.phone)}</p>
           )}
-          {person.email && <p className="text-gray-600">{person.email}</p>}
+          {person.email && <p className="text-gray-600 w-full truncate">{person.email}</p>}
         </div>
       </div>
       <div
