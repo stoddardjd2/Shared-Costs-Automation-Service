@@ -76,6 +76,92 @@ export default function PaymentMethodPrompt({
 
   if (!bannerVisible) return null;
 
+  if (isEditingFromSettings) {
+    return (
+      <div className="bg-slate-50 rounded-2xl">
+        <div className="relative bg-white rounded-2xl p-5 text-white overflow-hidden shadow-[0_10px_25px_rgba(37,99,235,0.2)] mx-auto">
+          <button
+            onClick={dismissBanner}
+            className={`absolute top-4 right-4 border-none ${
+              isEditingFromSettings
+                ? "flex items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                : "text-white hover:bg-white/30 bg-white/20 rounded-lg"
+            } w-8 h-8  cursor-pointer text-base transition-all duration-200 z-[3]`}
+            title="Dismiss"
+          >
+            ×
+          </button>
+
+          <div className="relative z-[2]">
+            <div className="flex sm:items-center flex-col items-center mb-4 ">
+              <div
+                className={`w-14 h-14 mt-2 ${
+                  !isEditingFromSettings && "hidden"
+                } sm:flex sm:mt-0 flex-shrink-0 mb-4 bg-blue-600 rounded-xl flex items-center justify-center backdrop-blur-md`}
+              >
+                <CreditCardIcon className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <div className="text-xl font-semibold text-slate-900 mb-2 text-center">
+                  Set up payments
+                </div>
+                <div className="text-slate-600 text-sm text-center">
+                  Add your payment methods to receive money. Choose from the
+                  options below.
+                </div>
+              </div>
+            </div>
+
+            <div
+              className={`flex gap-3 flex-wrap ${
+                isEditingFromSettings && "justify-center"
+              }`}
+            >
+              {(!paymentMethods?.venmo || isEditingFromSettings) && (
+                <PaymentButton
+                  onClick={() => openModal("venmo")}
+                  icon={
+                    <VenmoIcon isEditingFromSettings={isEditingFromSettings} />
+                  }
+                  label="Add Venmo"
+                  isEditingFromSettings={isEditingFromSettings}
+                />
+              )}
+              {(!paymentMethods?.cashapp || isEditingFromSettings) && (
+                <PaymentButton
+                  onClick={() => openModal("cashapp")}
+                  icon={
+                    <CashappIcon
+                      isEditingFromSettings={isEditingFromSettings}
+                    />
+                  }
+                  label="Add Cash App"
+                  isEditingFromSettings={isEditingFromSettings}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+
+        {modalType && (
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[1000]"
+            onClick={(e) => e.target === e.currentTarget && closeModal()}
+          >
+            <PaymentModal
+              type={modalType}
+              value={values[modalType]}
+              onChange={(v) => setValue(modalType, v)}
+              onCancel={closeModal}
+              onSave={() => handleSubmit(modalType)}
+              submitting={submitting}
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="bg-slate-50 rounded-2xl">
       <div className="relative bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-5 text-white overflow-hidden shadow-[0_10px_25px_rgba(37,99,235,0.2)] mx-auto">
@@ -90,9 +176,9 @@ export default function PaymentMethodPrompt({
         <div className="relative z-[2]">
           <div className="flex sm:items-center items-start gap-4 mb-4 ">
             <div className="w-12 h-12 mt-2 hidden sm:flex sm:mt-0 flex-shrink-0 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
-              <CreditCardIcon />
+              <CreditCardIcon className="w-7 h-7 text-white" />
             </div>
-            <div >
+            <div>
               <div className="text-2xl font-bold ">Set up payments</div>
               <div className="text-base opacity-90 leading-relaxed ">
                 Add your payment methods to receive money. Choose from the
@@ -141,11 +227,15 @@ export default function PaymentMethodPrompt({
 
 /* ---------- Reusable UI pieces ---------- */
 
-function PaymentButton({ onClick, icon, label }) {
+function PaymentButton({ onClick, icon, label, isEditingFromSettings }) {
   return (
     <button
       onClick={onClick}
-      className="bg-white/15 hover:bg-white/25 border border-white/30 text-white px-2 py-2 sm:px-6 sm:py-3 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-300 flex items-center gap-2 backdrop-blur-md translate-y-0 hover:-translate-y-0.5 shadow-none hover:shadow-lg hover:shadow-black/10"
+      className={`${
+        isEditingFromSettings
+          ? "bg-blue-600 hover:bg-blue-700 border border-blue-600 text-white"
+          : "bg-white/15 hover:bg-white/25 border border-white/30 text-white"
+      } px-2 py-2 sm:px-6 sm:py-3 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-300 flex items-center gap-2 backdrop-blur-md translate-y-0 hover:-translate-y-0.5 shadow-none hover:shadow-lg hover:shadow-black/10`}
     >
       {icon}
       {label}
@@ -203,7 +293,7 @@ function PaymentModal({ type, value, onChange, onCancel, onSave, submitting }) {
         <button
           type="button"
           onClick={onCancel}
-          className="px-6 py-3 rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 border-none bg-gray-100 text-gray-700 hover:bg-gray-200"
+          className={`px-6 py-3 rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 border-none bg-gray-100 text-gray-700 hover:bg-gray-200 `}
         >
           Cancel
         </button>
@@ -226,9 +316,9 @@ function PaymentModal({ type, value, onChange, onCancel, onSave, submitting }) {
 
 /* ---------- Icons (unchanged) ---------- */
 
-function CreditCardIcon() {
+function CreditCardIcon({ className = "" }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6 text-white">
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
       <path
         d="M21 8.5C21 7.11929 19.8807 6 18.5 6H5.5C4.11929 6 3 7.11929 3 8.5V15.5C3 16.8807 4.11929 18 5.5 18H18.5C19.8807 18 21 16.8807 21 15.5V8.5Z"
         stroke="currentColor"
@@ -251,7 +341,7 @@ function CreditCardIcon() {
   );
 }
 
-function CashappIcon() {
+function CashappIcon({ isEditingFromSettings }) {
   return (
     <svg
       fill="#ffffff"
@@ -266,13 +356,13 @@ function CashappIcon() {
   );
 }
 
-function VenmoIcon() {
+function VenmoIcon({ isEditingFromSettings }) {
   return (
     <svg
       fill="#ffffff"
       viewBox="0 0 512 512"
       stroke="#ffffff"
-      className="w-7 h-7"
+      className={`w-7 h-7 ${isEditingFromSettings && ""}`}
       xmlns="http://www.w3.org/2000/svg"
     >
       <path d="M444.17,32H70.28C49.85,32,32,46.7,32,66.89V441.6C32,461.91,49.85,480,70.28,480H444.06C464.6,480,480,461.8,480,441.61V66.89C480.12,46.7,464.6,32,444.17,32ZM278,387H174.32L132.75,138.44l90.75-8.62,22,176.87c20.53-33.45,45.88-86,45.88-121.87,0-19.62-3.36-33-8.61-44L365.4,124.1c9.56,15.78,13.86,32,13.86,52.57C379.25,242.17,323.34,327.26,278,387Z"></path>

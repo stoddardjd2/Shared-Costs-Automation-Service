@@ -20,10 +20,12 @@ import { useNavigate } from "react-router-dom";
 import { useData } from "../../contexts/DataContext";
 import PaymentMethodPrompt from "./PaymentMethodPrompt";
 import PwaInstallPrompt from "./PwaInstallPrompt";
+import SplitifyPremiumModal from "../premium/SplitifyPremiumModal";
 const Navbar = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showPaymentMethodPrompt, setShowPaymentMethodPrompt] = useState(false);
   const [showPwaGuide, setShowPwaGuide] = useState(false);
+  const [showPremiumPrompt, setShowPremiumPrompt] = useState(false);
   const { userData, setUserData } = useData();
   const navigate = useNavigate();
   // Demo user data
@@ -272,32 +274,31 @@ const Navbar = () => {
                       <Settings className="w-4 h-4 mr-3" />
                       App Settings
                     </button> */}
+                  </div>
 
+                  {/* premium */}
+                  <button
+                    onClick={() => {
+                      setShowPremiumPrompt(!showPremiumPrompt);
+                      setShowUserMenu(false);
+                    }}
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  >
+                    <Crown className="w-4 h-4 mr-3" /> Get Premium
+                  </button>
+
+                  {userData.plan === "Free" && (
                     <button
                       onClick={() => {
-                        // alert("App settings would open here");
-                        setShowPaymentMethodPrompt(true);
+                        alert("Upgrade plan modal would open here");
                         setShowUserMenu(false);
                       }}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      className="flex items-center w-full px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 transition-colors"
                     >
-                      <Settings className="w-4 h-4 mr-3" />
-                      Edit Payment Methods
+                      <Crown className="w-4 h-4 mr-3" />
+                      Upgrade Plan
                     </button>
-
-                    {userData.plan === "Free" && (
-                      <button
-                        onClick={() => {
-                          alert("Upgrade plan modal would open here");
-                          setShowUserMenu(false);
-                        }}
-                        className="flex items-center w-full px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 transition-colors"
-                      >
-                        <Crown className="w-4 h-4 mr-3" />
-                        Upgrade Plan
-                      </button>
-                    )}
-                  </div>
+                  )}
 
                   {/* PWA */}
                   <button
@@ -309,6 +310,18 @@ const Navbar = () => {
                   >
                     <Smartphone className="w-4 h-4 mr-3" />
                     Install Web App
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      // alert("App settings would open here");
+                      setShowPaymentMethodPrompt(true);
+                      setShowUserMenu(false);
+                    }}
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  >
+                    <Settings className="w-4 h-4 mr-3" />
+                    Edit Payment Methods
                   </button>
 
                   {/* Logout */}
@@ -340,6 +353,7 @@ const Navbar = () => {
         </div>
       </div> */}
 
+      {/* MODALS */}
       <PwaInstallPrompt
         isOpen={showPwaGuide}
         onClose={() => setShowPwaGuide(false)}
@@ -354,6 +368,11 @@ const Navbar = () => {
           isEditingFromSettings={true}
         />
       </FullscreenModal>
+
+      <SplitifyPremiumModal
+        isOpen={showPremiumPrompt}
+        onClose={() => setShowPremiumPrompt(false)}
+      />
     </nav>
   );
 };
@@ -378,9 +397,10 @@ function FullscreenModal({ isOpen, onClose, children }) {
       onClick={onClose}
     >
       <div
+        className="flex justify-center items-center"
         onClick={(e) => e.stopPropagation()} // Prevent closing on inside click
       >
-        {children}
+        <div className="max-w-[28rem]">{children}</div>
       </div>
     </div>
   );

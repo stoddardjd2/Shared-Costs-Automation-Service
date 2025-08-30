@@ -6,6 +6,8 @@ import { plaidAPI, savePlaidAccessToken } from "../../queries/plaidService";
 import PlaidTransactionsModal from "./PlaidTransactionsModal";
 import { useData } from "../../contexts/DataContext";
 import { Banknote, Landmark, CreditCard } from "lucide-react";
+import PremiumModal from "../premium/premiumModal";
+import SplitifyPremiumModal from "../premium/SplitifyPremiumModal";
 
 export default function PlaidConnect({
   setChargeName,
@@ -18,7 +20,7 @@ export default function PlaidConnect({
   isPlaidCharge,
   setSelectedTransaction,
   selectedTransaction,
-  isEditMode
+  isEditMode,
 }) {
   const [linkToken, setLinkToken] = useState("");
   const [linkKey, setLinkKey] = useState(0); // force re-mount per token
@@ -30,7 +32,9 @@ export default function PlaidConnect({
   const [error, setError] = useState("");
   const [log, setLog] = useState([]);
   const [showTransactions, setShowTransactions] = useState(false);
+  const [showPremiumPrompt, setShowPremiumPrompt] = useState(false);
   const { userData, setUserData } = useData();
+
   //   const [startDate, setStartDate] = useState(() => {
   //     const d = new Date();
   //     d.setDate(d.getDate() - 30);
@@ -51,8 +55,6 @@ export default function PlaidConnect({
       setLoading(true);
 
       const accessToken = await plaidAPI.exchangePublicToken(pubToken);
-
-      console.log("access", accessToken)
       const res = await savePlaidAccessToken(accessToken);
       if (res.success) {
         setUserData((prev) => {
@@ -77,7 +79,6 @@ export default function PlaidConnect({
   }
 
   function onLinkExit(err /*, metadata */) {
-    console.log("onLinkExit", err)
     if (err) {
       setError(err.display_message || err.message || "Exited Link with error.");
       pushLog("Link exited with error.");
@@ -94,21 +95,29 @@ export default function PlaidConnect({
 
   // Always fetch a fresh token, then re-mount the Link instance and open it.
   async function handleConnect() {
-    try {
-      setError("");
-      setLoading(true);
-      setShouldOpen(false);
+    // verify is premium user
+    if (userData?.plan == "premium") {
+      try {
+        setError("");
+        setLoading(true);
+        setShouldOpen(false);
 
-      const token = await plaidAPI.createLinkToken();
-      pushLog("link_token created.");
+        const token = await plaidAPI.createLinkToken();
+        pushLog("link_token created.");
 
-      setLinkToken(token || "");
-      setLinkKey((k) => k + 1); // force PlaidLinkOpener to re-initialize
-      setShouldOpen(true); // will auto-open once ready
-    } catch (e) {
-      setError(e?.message || "Failed to create link_token.");
-    } finally {
-      setLoading(false);
+        setLinkToken(token || "");
+        setLinkKey((k) => k + 1); // force PlaidLinkOpener to re-initialize
+        setShouldOpen(true); // will auto-open once ready
+      } catch (e) {
+        setError(e?.message || "Failed to create link_token.");
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setShowPremiumPrompt(true);
+      setError("Premium plan required");
+
+      console.log("Premium plan required");
     }
   }
 
@@ -153,16 +162,18 @@ export default function PlaidConnect({
   if (userData?.plaid?.isEnabled)
     return (
       <>
-       {!isEditMode && <button
-          onClick={() => {
-            setShowTransactions(true);
-          }}
-          className="bg-gradient-to-br mb-6 from-blue-600 to-blue-700 border border-white/30 text-white px-6 py-3 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-300 flex items-center gap-2 backdrop-blur-md translate-y-0 hover:-translate-y-0.5 shadow-none hover:shadow-lg hover:shadow-black/10"
-          disabled={loading}
-        >
-          <Landmark className="w-6 h-6" />
-          <span>Find from bank</span>
-        </button>}
+        {!isEditMode && (
+          <button
+            onClick={() => {
+              setShowTransactions(true);
+            }}
+            className="bg-gradient-to-br mb-6 from-blue-600 to-blue-700 border border-white/30 text-white px-6 py-3 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-300 flex items-center gap-2 backdrop-blur-md translate-y-0 hover:-translate-y-0.5 shadow-none hover:shadow-lg hover:shadow-black/10"
+            disabled={loading}
+          >
+            <Landmark className="w-6 h-6" />
+            <span>Find from bank</span>
+          </button>
+        )}
 
         {isPlaidCharge && (
           // <div className="relatative bg-gradient-to-br mb-6 from-blue-600 to-blue-700 border border-white/30 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center gap-2 backdrop-blur-md translate-y-0  shadow-none hover:shadow-lg hover:shadow-black/10">
@@ -225,21 +236,23 @@ export default function PlaidConnect({
                 </div>
               </div>
             </div> */}
-           {!isEditMode && <button
-              className="absolute top-50% right-4  bg-blue-600 hover:bg-blue-600/80 border-none text-white w-8 h-8 rounded-lg cursor-pointer text-base transition-all duration-200 z-[3]"
-              title="Remove"
-              onClick={() => {
-                setIsPlaidCharge(false);
-                setChargeName("");
-                setEditableTotalAmount(0);
-                setIsDynamic(false);
-                setRecurringType(false);
-                setStartTiming("now");
-                setSelectedTransaction(null);
-              }}
-            >
-              ×
-            </button>}
+            {!isEditMode && (
+              <button
+                className="absolute top-50% right-4  bg-blue-600 hover:bg-blue-600/80 border-none text-white w-8 h-8 rounded-lg cursor-pointer text-base transition-all duration-200 z-[3]"
+                title="Remove"
+                onClick={() => {
+                  setIsPlaidCharge(false);
+                  setChargeName("");
+                  setEditableTotalAmount(0);
+                  setIsDynamic(false);
+                  setRecurringType(false);
+                  setStartTiming("now");
+                  setSelectedTransaction(null);
+                }}
+              >
+                ×
+              </button>
+            )}
           </div>
         )}
 
@@ -260,7 +273,11 @@ export default function PlaidConnect({
     <>
       <PlaidConnectBanner loading={loading} handleConnect={handleConnect} />
       {/* <PlaidConnectFAB /> */}
-
+      {/* <PremiumModal isOpen={showPremiumPrompt} setIsOpen={setShowPremiumPrompt}/> */}
+      <SplitifyPremiumModal
+        isOpen={showPremiumPrompt}
+        onClose={()=>setShowPremiumPrompt(false)}
+      />
       {linkToken && (
         <PlaidLinkOpener
           key={linkKey} // <-- re-mount per token

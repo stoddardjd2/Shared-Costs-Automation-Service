@@ -19,6 +19,8 @@ const config = new Configuration({
 const plaid = new PlaidApi(config);
 
 
+
+
 const createLinkToken = async (req, res) => {
   console.log("create link token");
   try {
