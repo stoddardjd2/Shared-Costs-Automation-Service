@@ -340,7 +340,7 @@ export default function SplitifyPremiumModal({
           )}
 
           {/* Footer */}
-          <div className="flex flex-col items-center gap-2 border-t border-gray-100 px-6 py-5 sm:px-8 flex-none">
+          <div className="flex flex-col items-center gap-2 px-6 py-5 sm:px-8 flex-none">
             <p className="text-xs text-gray-500 text-center max-w-3xl">
               {featureCopy.dataAssurance}
             </p>
@@ -592,7 +592,7 @@ function CheckoutForm({ amountLabel, onSuccess, userEmail, userName }) {
             <Loader2 className="h-4 w-4 animate-spin" /> Processing…
           </>
         ) : (
-          <>Pay {amountLabel}</>
+          <>Subscribe</>
         )}
       </button>
 
