@@ -48,3 +48,20 @@ export const createSubscription = async (planKey, interval, currency) => {
     },
   });
 };
+
+export const handleCancelSubscription = async () => {
+  const endpoint = `/stripe/create-subscription`;
+  return await apiRequest(endpoint, {
+    method: "POST",
+    body: {
+      atPeriodEnd: true,
+    },
+  });
+};
+
+export const handleCreatePortalSession = async () => {
+  const endpoint = `/stripe/create-portal-session`;
+  return await apiRequest(endpoint, {
+    method: "GET",
+  });
+};

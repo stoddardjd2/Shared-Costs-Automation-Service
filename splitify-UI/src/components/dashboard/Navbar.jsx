@@ -21,6 +21,7 @@ import { useData } from "../../contexts/DataContext";
 import PaymentMethodPrompt from "./PaymentMethodPrompt";
 import PwaInstallPrompt from "./PwaInstallPrompt";
 import SplitifyPremiumModal from "../premium/SplitifyPremiumModal";
+import { handleCreatePortalSession } from "../../queries/stripe";
 const Navbar = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showPaymentMethodPrompt, setShowPaymentMethodPrompt] = useState(false);
@@ -53,7 +54,7 @@ const Navbar = () => {
 
   const getPlanColor = (plan) => {
     switch (plan.toLowerCase()) {
-      case "pro":
+      case "plaid":
         return "bg-gradient-to-r from-purple-500 to-purple-600";
       case "premium":
         return "bg-gradient-to-r from-yellow-500 to-yellow-600";
@@ -278,13 +279,22 @@ const Navbar = () => {
 
                   {/* premium */}
                   <button
-                    onClick={() => {
-                      setShowPremiumPrompt(!showPremiumPrompt);
+                    onClick={async () => {
+                      if (userData.plan == "free") {
+                        setShowPremiumPrompt(!showPremiumPrompt);
+                      } else {
+                        // get url from stripe to manage subscription
+                        const res = await handleCreatePortalSession();
+                        window.location = res.url;
+                      }
                       setShowUserMenu(false);
                     }}
                     className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                   >
-                    <Crown className="w-4 h-4 mr-3" /> Get Premium
+                    <Crown className="w-4 h-4 mr-3" />{" "}
+                    {userData.plan == "free"
+                      ? "Get Premium"
+                      : "Manage Subscription"}
                   </button>
 
                   {userData.plan === "Free" && (

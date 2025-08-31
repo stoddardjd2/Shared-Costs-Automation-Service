@@ -78,20 +78,16 @@ async function startServer() {
     });
     app.use(limiter);
 
-    // Body parsing middleware
-    app.use(express.json({ limit: "10mb" }));
-
+    // app.use((req, res, next) => {
+    //   console.log("REQ", req.method, req.originalUrl);
+    //   next();
+    // });
     // Custom body parser for Stripe webhooks
     app.use(
       express.json({
-        limit: "10mb",
         verify: (req, res, buf) => {
-          // Look for the stripe-signature header and the specific path
-          if (
-            req.headers["stripe-signature"] &&
-            req.originalUrl === "api/stripe/webhooks"
-          ) {
-            req.rawBody = buf;
+          if (req.originalUrl?.startsWith("/api/stripe/webhooks")) {
+            req.rawBody = buf; // needed for signature verification
           }
         },
       })

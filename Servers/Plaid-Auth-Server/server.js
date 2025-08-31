@@ -1,10 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const {
-  Configuration,
-  PlaidApi,
-  PlaidEnvironments,
-} = require("plaid");
+const { Configuration, PlaidApi, PlaidEnvironments } = require("plaid");
 require("dotenv").config();
 
 const app = express();
@@ -24,10 +20,18 @@ const plaid = new PlaidApi(config);
 
 // Middleware
 app.use(cors());
-app.use(express.json());
-
+app.use(
+  express.json({
+    verify: (req, res, buf) => {
+      // for stripewebhook to work
+      if (req.originalUrl === "/api/stripe/webhooks") {
+        req.rawBody = buf; // Buffer
+      }
+    },
+  })
+);
 app.post("/api/sandbox/create_link_token", async (req, res) => {
-  console.log("create link token")
+  console.log("create link token");
   try {
     const body = req.body || {};
     const fallbackId =

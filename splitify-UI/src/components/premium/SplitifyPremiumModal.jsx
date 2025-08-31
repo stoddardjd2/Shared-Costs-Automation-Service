@@ -55,8 +55,6 @@ export default function SplitifyPremiumModal({
   const { userData } = useData();
   const userEmail = userData?.email || "";
   const userName = userData?.name || "";
-
-  console.log("userName", userName);
   const [billing, setBilling] = useState(pricing?.defaultBilling || "monthly");
   const closeBtnRef = useRef(null);
 
@@ -145,7 +143,6 @@ export default function SplitifyPremiumModal({
     setIsFetchingCS(true);
     try {
       setSelection({ planKey, billing });
-
       // Hit your backend to create a Subscription and return a clientSecret
       const res = await createSubscription(planKey, billing, ccy);
 
@@ -179,7 +176,7 @@ export default function SplitifyPremiumModal({
         {[
           "Dynamic cost tracking (auto-adjust requests)",
           "Find transactions from your bank to easily set up new requests",
-          // "Filter & choose what to use—your control",
+          "Filter & choose what to use—your control",
           "Bank-grade encryption via Plaid",
         ].map((f) => (
           <li key={f} className="flex items-start gap-2">
@@ -289,7 +286,7 @@ export default function SplitifyPremiumModal({
             <h2 className="text-xl sm:text-2xl font-semibold tracking-tight">
               Complete your purchase
             </h2>
-            <p className="text-sm text-gray-600">
+            <p className="mt-1 text-sm text-gray-600">
               {selection?.planKey === "premium" ? "Premium" : "Plaid"} •{" "}
               {billing === "monthly" ? "Monthly" : "Annual"} —{" "}
               {formatPrice(pricing?.[selection?.planKey]?.[billing])}
@@ -321,7 +318,7 @@ export default function SplitifyPremiumModal({
           ) : (
             <Elements
               // ✅ Minimal: remount when email changes so prefill is applied
-              key={`${userEmail || "no-email"}|${userName || "no-name"}`}
+              key={userEmail || "no-email"}
               stripe={stripePromise}
               options={{ clientSecret, appearance, loader: "auto" }}
             >
@@ -340,7 +337,7 @@ export default function SplitifyPremiumModal({
           )}
 
           {/* Footer */}
-          <div className="flex flex-col items-center gap-2 px-6 py-5 sm:px-8 flex-none">
+          <div className="flex flex-col items-center gap-2 border-t border-gray-100 px-6 py-5 sm:px-8 flex-none">
             <p className="text-xs text-gray-500 text-center max-w-3xl">
               {featureCopy.dataAssurance}
             </p>
@@ -492,8 +489,9 @@ function CheckoutForm({ amountLabel, onSuccess, userEmail, userName }) {
 
     if (!stripe || !elements) return;
 
-    setSubmitting(true);
     // Confirm the payment for the Subscription’s latest_invoice.payment_intent
+
+    console.log("await confrim");
     const { error: stripeError } = await stripe.confirmPayment({
       elements,
       confirmParams: {
@@ -505,10 +503,14 @@ function CheckoutForm({ amountLabel, onSuccess, userEmail, userName }) {
     if (stripeError) {
       setError(stripeError.message || "Payment failed.");
       setSubmitting(false);
+      console.log("Payment failed");
+
       return;
     }
 
     // Success!
+    console.log("Payment Succeeded");
+
     setSubmitting(false);
     onSuccess?.();
   };
@@ -516,10 +518,10 @@ function CheckoutForm({ amountLabel, onSuccess, userEmail, userName }) {
   const paymentElementOptions = {
     layout: "tabs",
     paymentMethodOrder: [
-      "card", // ← put first so the name field is visible
       "apple_pay",
       "google_pay",
       "link",
+      "card",
       "us_bank_account",
       "sepa_debit",
       "bancontact",
@@ -537,6 +539,10 @@ function CheckoutForm({ amountLabel, onSuccess, userEmail, userName }) {
       "paypal",
       "cashapp",
     ],
+    wallets: {
+      applePay: "auto",
+      googlePay: "auto",
+    },
     fields: {
       billingDetails: {
         name: "auto",
@@ -545,6 +551,7 @@ function CheckoutForm({ amountLabel, onSuccess, userEmail, userName }) {
         address: "auto",
       },
     },
+    // ✅ Minimal: prefill name + email for PaymentElement billing details
     defaultValues: {
       billingDetails: {
         name: userName || undefined,
@@ -592,7 +599,7 @@ function CheckoutForm({ amountLabel, onSuccess, userEmail, userName }) {
             <Loader2 className="h-4 w-4 animate-spin" /> Processing…
           </>
         ) : (
-          <>Subscribe</>
+          <>Pay {amountLabel}</>
         )}
       </button>
 

@@ -276,6 +276,7 @@ const payoutAccount = async (req, res, next) => {
 // }
 
 async function createSubscription(req, res) {
+  console.log("createSubscription called with body:", req.body);
   const isProd = process.env.NODE_ENV === "production";
 
   try {
@@ -393,26 +394,26 @@ const PRICE_TO_PLAN = {
   [process.env.STRIPE_PRICE_PLAID_MONTHLY]: {
     planKey: "plaid",
     interval: "monthly",
-    role: "plaid",
+    plan: "plaid",
   },
   [process.env.STRIPE_PRICE_PLAID_ANNUAL]: {
     planKey: "plaid",
     interval: "annual",
-    role: "plaid",
+    plan: "plaid",
   },
   [process.env.STRIPE_PRICE_PREMIUM_MONTHLY]: {
     planKey: "premium",
     interval: "monthly",
-    role: "premium",
+    plan: "premium",
   },
   [process.env.STRIPE_PRICE_PREMIUM_ANNUAL]: {
     planKey: "premium",
     interval: "annual",
-    role: "premium",
+    plan: "premium",
   },
 };
 
-// Helper to infer plan/interval/role from subscription
+// Helper to infer plan/interval from subscription
 function inferPlanFromSubscription(sub) {
   const item = sub?.items?.data?.[0];
   const price = item?.price;
@@ -427,15 +428,20 @@ function inferPlanFromSubscription(sub) {
   if (price?.recurring?.interval === "year") interval = "annual";
   if (price?.recurring?.interval === "month") interval = "monthly";
 
-  return { planKey: undefined, interval, role: undefined, priceId };
+  return { planKey: undefined, interval, plan: undefined, priceId };
 }
 
 async function handleStripeWebHook(req, res) {
+  console.log("stripe webhook received:", req.body);
+
   const sig = req.headers["stripe-signature"];
+  const raw = req.rawBody;
+
   let event;
+
   try {
     event = stripe.webhooks.constructEvent(
-      req.body,
+      raw,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
@@ -459,7 +465,7 @@ async function handleStripeWebHook(req, res) {
           const user = await User.findOne({ stripeCustomerId: customerId });
           if (!user) break;
 
-          const { planKey, interval, role } = inferPlanFromSubscription(sub);
+          const { planKey, interval, plan } = inferPlanFromSubscription(sub);
 
           await User.updateOne(
             { _id: user._id },
@@ -482,7 +488,7 @@ async function handleStripeWebHook(req, res) {
                 "subscription.defaultPaymentMethodId":
                   sub.default_payment_method || null,
                 isPremium: ["active", "trialing"].includes(sub.status),
-                role: role || "user",
+                plan: plan || "free",
               },
             }
           );
@@ -498,7 +504,7 @@ async function handleStripeWebHook(req, res) {
         const user = await User.findOne({ stripeCustomerId: customerId });
         if (!user) break;
 
-        const { planKey, interval, role } = inferPlanFromSubscription(sub);
+        const { planKey, interval, plan } = inferPlanFromSubscription(sub);
 
         await User.updateOne(
           { _id: user._id },
@@ -520,7 +526,7 @@ async function handleStripeWebHook(req, res) {
               "subscription.defaultPaymentMethodId":
                 sub.default_payment_method || null,
               isPremium: ["active", "trialing"].includes(sub.status),
-              role: role || null,
+              plan: plan || "free",
             },
           }
         );
@@ -542,7 +548,6 @@ async function handleStripeWebHook(req, res) {
             $set: {
               "subscription.status": sub?.status || "past_due",
               isPremium: ["active", "trialing"].includes(sub?.status || ""),
-              // keep existing role (don’t unset until canceled)
             },
           }
         );
@@ -562,7 +567,7 @@ async function handleStripeWebHook(req, res) {
             $set: {
               "subscription.status": "canceled",
               isPremium: false,
-              role: "user", // remove role on cancel
+              plan: "free", // remove plan on cancel
             },
           }
         );
@@ -581,6 +586,25 @@ async function handleStripeWebHook(req, res) {
   }
 }
 
+async function createPortalSession(req, res) {
+  try {
+    const user = req.user; // your auth sets this
+    if (!user?.stripeCustomerId) {
+      return res.status(400).json({ error: "Missing stripeCustomerId" });
+    }
+
+    const session = await stripe.billingPortal.sessions.create({
+      customer: user.stripeCustomerId,
+      return_url: process.env.APP_PORTAL_RETURN_URL,
+    });
+
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Could not create portal session" });
+  }
+}
+
 module.exports = {
   createAccount,
   createAccountLink,
@@ -589,4 +613,5 @@ module.exports = {
   createSubscription,
   payoutAccount,
   handleStripeWebHook,
+  createPortalSession,
 };

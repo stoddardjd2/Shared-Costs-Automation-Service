@@ -9,6 +9,7 @@ const {
   payoutAccount,
   createSubscription,
   handleStripeWebHook,
+  createPortalSession,
 } = require("../controllers/stripeController");
 const { protect, authorize } = require("../middleware/auth");
 
@@ -28,7 +29,11 @@ const { protect, authorize } = require("../middleware/auth");
 // POST /api/billing/create-subscription
 // body: { planKey: "plaid" | "premium", interval: "monthly" | "annual", currency: "USD" }
 
+router.post("/webhooks", handleStripeWebHook);
+
+// Protected routes after this middleware
 router.use(protect);
 router.post("/create-subscription", createSubscription);
-router.post("/webhooks", handleStripeWebHook);
+router.get("/create-portal-session", createPortalSession);
+
 module.exports = router;
