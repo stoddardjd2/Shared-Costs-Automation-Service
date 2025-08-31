@@ -3,6 +3,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2022-11-15",
 });
 
+const {
+  getOrCreateStripeCustomerForUser,
+} = require("../stripe/createSubscriptionHelper");
+const User = require("../models/User");
+
 // Create Express Connected Account
 const createAccount = async (req, res, next) => {
   console.log("createAccount called with body:", req.body);
@@ -16,9 +21,9 @@ const createAccount = async (req, res, next) => {
       capabilities: {
         // card_payments: { requested: true },
         // transfers: { requested: true },
-        // us_bank_account_ach_payments: { requested: true }, 
+        // us_bank_account_ach_payments: { requested: true },
       },
-    //   ssn_last_4: "1234", // Only last 4 digits initially
+      //   ssn_last_4: "1234", // Only last 4 digits initially
       business_type: "individual", // or 'company' as appropriate
       business_profile: {
         // Since they don't have a business, use product description
@@ -157,10 +162,431 @@ const payoutAccount = async (req, res, next) => {
   }
 };
 
+// async function createSubscription(req, res) {
+//   const isProd = process.env.NODE_ENV === "production";
+
+//   try {
+//     const { planKey, interval, currency = "usd" } = req.body || {};
+//     const userId = req?.user?._id;
+
+//     // 1) Basic input validation
+//     if (!userId) {
+//       return res.status(401).json({ error: "Unauthenticated user" });
+//     }
+//     if (!planKey || !interval) {
+//       return res.status(400).json({ error: "Missing planKey or interval" });
+//     }
+
+//     // 2) Map UI plans -> env Price IDs
+//     const PRICE_IDS = {
+//       plaid: {
+//         monthly: process.env.STRIPE_PRICE_PLAID_MONTHLY,
+//         annual: process.env.STRIPE_PRICE_PLAID_ANNUAL,
+//       },
+//       premium: {
+//         monthly: process.env.STRIPE_PRICE_PREMIUM_MONTHLY,
+//         annual: process.env.STRIPE_PRICE_PREMIUM_ANNUAL,
+//       },
+//     };
+//     const priceId = PRICE_IDS?.[planKey]?.[interval];
+
+//     if (!priceId || !/^price_/.test(priceId)) {
+//       return res.status(400).json({
+//         error: `Invalid plan/interval or missing env Price ID for ${planKey}/${interval}`,
+//       });
+//     }
+
+//     // 3) Verify the Price exists and mode matches (test vs live)
+//     let priceObj;
+//     try {
+//       priceObj = await stripe.prices.retrieve(priceId);
+//     } catch (e) {
+//       const msg = `Stripe price not found: ${priceId}`;
+//       if (!isProd) console.error(msg, e);
+//       return res.status(400).json({ error: msg });
+//     }
+//     const usingLiveKey = (process.env.STRIPE_SECRET_KEY || "").startsWith(
+//       "sk_live_"
+//     );
+//     if (usingLiveKey !== !!priceObj.livemode) {
+//       return res.status(400).json({
+//         error:
+//           "Stripe mode mismatch: your secret key and the Price ID are from different environments (test vs live).",
+//       });
+//     }
+
+//     // 4) Ensure or create a Stripe customer
+//     const customer = await getOrCreateStripeCustomerForUser(userId, stripe);
+//     if (!customer?.id) {
+//       return res
+//         .status(500)
+//         .json({ error: "Could not resolve Stripe customer" });
+//     }
+
+//     // 5) Create the subscription in "incomplete" so we can confirm payment via Payment Element
+//     const subscription = await stripe.subscriptions.create({
+//       customer: customer.id,
+//       items: [{ price: priceId }],
+//       payment_behavior: "default_incomplete",
+//       payment_settings: {
+//         payment_method_types: ["card"], // 👈 force card for subscription PI
+//         save_default_payment_method: "on_subscription",
+//         automatic_payment_methods:{enabled: true}
+//       },
+//       // If you use trials, uncomment below and handle SetupIntent flow instead of PaymentIntent.
+//       // trial_period_days: Number(process.env.STRIPE_TRIAL_DAYS) || undefined,
+//       expand: ["latest_invoice.payment_intent", "latest_invoice.subscription"],
+//       // (Optional) Set default currency on prices instead; currency here is ignored if price is currency-specific
+//       // collection_method, days_until_due, default_tax_rates, etc. can be added as needed
+//     });
+
+//     // 6) Extract client secret (pay-now flow)
+//     const paymentIntent = subscription?.latest_invoice?.payment_intent;
+//     if (!paymentIntent?.client_secret) {
+//       // This can happen if you're using a pure trial (no immediate payment)
+//       const detail =
+//         "No client_secret present. If you enabled a free trial, create a SetupIntent flow first, or remove the trial for pay-now.";
+//       if (!isProd) console.error(detail, { subscriptionId: subscription?.id });
+//       return res
+//         .status(400)
+//         .json({ error: detail, subscriptionId: subscription?.id });
+//     }
+
+//     return res.json({
+//       status: "success",
+//       clientSecret: paymentIntent.client_secret,
+//       subscriptionId: subscription.id,
+//     });
+//   } catch (err) {
+//     console.log("err", err);
+//     // Rich diagnostics for Stripe + network errors
+//     const payload = {
+//       error: err?.message || "Internal server error",
+//       type: err?.type,
+//       code: err?.code,
+//       param: err?.param,
+//       statusCode: err?.statusCode,
+//     };
+//     if (!isProd)
+//       console.error("Error in createSubscription:", payload, err?.stack);
+//     return res
+//       .status(err?.statusCode || 500)
+//       .json(isProd ? { error: payload.error } : payload);
+//   }
+// }
+
+async function createSubscription(req, res) {
+  const isProd = process.env.NODE_ENV === "production";
+
+  try {
+    const { planKey, interval, currency = "usd" } = req.body || {};
+    const userId = req?.user?._id;
+
+    // 1) Basic input validation
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthenticated user" });
+    }
+    if (!planKey || !interval) {
+      return res.status(400).json({ error: "Missing planKey or interval" });
+    }
+
+    // 2) Map UI plans -> env Price IDs
+    const PRICE_IDS = {
+      plaid: {
+        monthly: process.env.STRIPE_PRICE_PLAID_MONTHLY,
+        annual: process.env.STRIPE_PRICE_PLAID_ANNUAL,
+      },
+      premium: {
+        monthly: process.env.STRIPE_PRICE_PREMIUM_MONTHLY,
+        annual: process.env.STRIPE_PRICE_PREMIUM_ANNUAL,
+      },
+    };
+    const priceId = PRICE_IDS?.[planKey]?.[interval];
+
+    if (!priceId || !/^price_/.test(priceId)) {
+      return res.status(400).json({
+        error: `Invalid plan/interval or missing env Price ID for ${planKey}/${interval}`,
+      });
+    }
+
+    // 3) Verify the Price exists and mode matches (test vs live)
+    let priceObj;
+    try {
+      priceObj = await stripe.prices.retrieve(priceId);
+    } catch (e) {
+      const msg = `Stripe price not found: ${priceId}`;
+      if (!isProd) console.error(msg, e);
+      return res.status(400).json({ error: msg });
+    }
+    const usingLiveKey = (process.env.STRIPE_SECRET_KEY || "").startsWith(
+      "sk_live_"
+    );
+    if (usingLiveKey !== !!priceObj.livemode) {
+      return res.status(400).json({
+        error:
+          "Stripe mode mismatch: your secret key and the Price ID are from different environments (test vs live).",
+      });
+    }
+
+    // 4) Ensure or create a Stripe customer
+    const customer = await getOrCreateStripeCustomerForUser(userId, stripe);
+    if (!customer?.id) {
+      return res
+        .status(500)
+        .json({ error: "Could not resolve Stripe customer" });
+    }
+
+    // 5) Create the subscription in "incomplete" so we can confirm payment via Payment Element
+    const subscription = await stripe.subscriptions.create({
+      customer: customer.id,
+      items: [{ price: priceId }],
+      payment_behavior: "default_incomplete",
+      payment_settings: {
+        // ✅ Specify all payment method types you want to support for subscriptions
+        payment_method_types: ["card", "us_bank_account"],
+        save_default_payment_method: "on_subscription",
+      },
+      // If you use trials, uncomment below and handle SetupIntent flow instead of PaymentIntent.
+      // trial_period_days: Number(process.env.STRIPE_TRIAL_DAYS) || undefined,
+      expand: ["latest_invoice.payment_intent", "latest_invoice.subscription"],
+      // (Optional) Set default currency on prices instead; currency here is ignored if price is currency-specific
+      // collection_method, days_until_due, default_tax_rates, etc. can be added as needed
+    });
+
+    // 6) Extract client secret (pay-now flow)
+    const paymentIntent = subscription?.latest_invoice?.payment_intent;
+    if (!paymentIntent?.client_secret) {
+      // This can happen if you're using a pure trial (no immediate payment)
+      const detail =
+        "No client_secret present. If you enabled a free trial, create a SetupIntent flow first, or remove the trial for pay-now.";
+      if (!isProd) console.error(detail, { subscriptionId: subscription?.id });
+      return res
+        .status(400)
+        .json({ error: detail, subscriptionId: subscription?.id });
+    }
+
+    return res.json({
+      status: "success",
+      clientSecret: paymentIntent.client_secret,
+      subscriptionId: subscription.id,
+    });
+  } catch (err) {
+    console.log("err", err);
+    // Rich diagnostics for Stripe + network errors
+    const payload = {
+      error: err?.message || "Internal server error",
+      type: err?.type,
+      code: err?.code,
+      param: err?.param,
+      statusCode: err?.statusCode,
+    };
+    if (!isProd)
+      console.error("Error in createSubscription:", payload, err?.stack);
+    return res
+      .status(err?.statusCode || 500)
+      .json(isProd ? { error: payload.error } : payload);
+  }
+}
+
+// Map Stripe Price IDs -> planKey, interval, role
+const PRICE_TO_PLAN = {
+  [process.env.STRIPE_PRICE_PLAID_MONTHLY]: {
+    planKey: "plaid",
+    interval: "monthly",
+    role: "plaid",
+  },
+  [process.env.STRIPE_PRICE_PLAID_ANNUAL]: {
+    planKey: "plaid",
+    interval: "annual",
+    role: "plaid",
+  },
+  [process.env.STRIPE_PRICE_PREMIUM_MONTHLY]: {
+    planKey: "premium",
+    interval: "monthly",
+    role: "premium",
+  },
+  [process.env.STRIPE_PRICE_PREMIUM_ANNUAL]: {
+    planKey: "premium",
+    interval: "annual",
+    role: "premium",
+  },
+};
+
+// Helper to infer plan/interval/role from subscription
+function inferPlanFromSubscription(sub) {
+  const item = sub?.items?.data?.[0];
+  const price = item?.price;
+  const priceId = price?.id;
+
+  if (priceId && PRICE_TO_PLAN[priceId]) {
+    return { ...PRICE_TO_PLAN[priceId], priceId };
+  }
+
+  // fallback
+  let interval;
+  if (price?.recurring?.interval === "year") interval = "annual";
+  if (price?.recurring?.interval === "month") interval = "monthly";
+
+  return { planKey: undefined, interval, role: undefined, priceId };
+}
+
+async function handleStripeWebHook(req, res) {
+  const sig = req.headers["stripe-signature"];
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    console.error("⚠️  Webhook signature verification failed.", err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  try {
+    switch (event.type) {
+      case "invoice.payment_succeeded": {
+        const invoice = event.data.object;
+        if (
+          invoice.billing_reason === "subscription_create" ||
+          invoice.billing_reason === "subscription_cycle"
+        ) {
+          const subId = invoice.subscription;
+          const customerId = invoice.customer;
+          const sub = await stripe.subscriptions.retrieve(subId);
+
+          const user = await User.findOne({ stripeCustomerId: customerId });
+          if (!user) break;
+
+          const { planKey, interval, role } = inferPlanFromSubscription(sub);
+
+          await User.updateOne(
+            { _id: user._id },
+            {
+              $set: {
+                "subscription.id": sub.id,
+                "subscription.planKey":
+                  planKey || user.subscription?.planKey || null,
+                "subscription.interval":
+                  interval || user.subscription?.interval || null,
+                "subscription.status": sub.status,
+                "subscription.currentPeriodStart": new Date(
+                  sub.current_period_start * 1000
+                ),
+                "subscription.currentPeriodEnd": new Date(
+                  sub.current_period_end * 1000
+                ),
+                "subscription.cancelAtPeriodEnd": !!sub.cancel_at_period_end,
+                "subscription.latestInvoiceId": invoice.id,
+                "subscription.defaultPaymentMethodId":
+                  sub.default_payment_method || null,
+                isPremium: ["active", "trialing"].includes(sub.status),
+                role: role || "user",
+              },
+            }
+          );
+        }
+        break;
+      }
+
+      case "customer.subscription.updated":
+      case "customer.subscription.created": {
+        const sub = event.data.object;
+        const customerId = sub.customer;
+
+        const user = await User.findOne({ stripeCustomerId: customerId });
+        if (!user) break;
+
+        const { planKey, interval, role } = inferPlanFromSubscription(sub);
+
+        await User.updateOne(
+          { _id: user._id },
+          {
+            $set: {
+              "subscription.id": sub.id,
+              "subscription.planKey":
+                planKey || user.subscription?.planKey || null,
+              "subscription.interval":
+                interval || user.subscription?.interval || null,
+              "subscription.status": sub.status,
+              "subscription.currentPeriodStart": new Date(
+                sub.current_period_start * 1000
+              ),
+              "subscription.currentPeriodEnd": new Date(
+                sub.current_period_end * 1000
+              ),
+              "subscription.cancelAtPeriodEnd": !!sub.cancel_at_period_end,
+              "subscription.defaultPaymentMethodId":
+                sub.default_payment_method || null,
+              isPremium: ["active", "trialing"].includes(sub.status),
+              role: role || null,
+            },
+          }
+        );
+        break;
+      }
+
+      case "invoice.payment_failed": {
+        const invoice = event.data.object;
+        const customerId = invoice.customer;
+        const subId = invoice.subscription;
+
+        const sub = subId ? await stripe.subscriptions.retrieve(subId) : null;
+        const user = await User.findOne({ stripeCustomerId: customerId });
+        if (!user) break;
+
+        await User.updateOne(
+          { _id: user._id },
+          {
+            $set: {
+              "subscription.status": sub?.status || "past_due",
+              isPremium: ["active", "trialing"].includes(sub?.status || ""),
+              // keep existing role (don’t unset until canceled)
+            },
+          }
+        );
+        break;
+      }
+
+      case "customer.subscription.deleted": {
+        const sub = event.data.object;
+        const customerId = sub.customer;
+
+        const user = await User.findOne({ stripeCustomerId: customerId });
+        if (!user) break;
+
+        await User.updateOne(
+          { _id: user._id },
+          {
+            $set: {
+              "subscription.status": "canceled",
+              isPremium: false,
+              role: "user", // remove role on cancel
+            },
+          }
+        );
+        break;
+      }
+
+      default:
+        // ignore others
+        break;
+    }
+
+    res.json({ received: true });
+  } catch (err) {
+    console.error("Webhook handler error:", err);
+    res.status(500).send("Webhook handler failed");
+  }
+}
+
 module.exports = {
   createAccount,
   createAccountLink,
   returnAccountStatus,
   webHookHandler,
+  createSubscription,
   payoutAccount,
+  handleStripeWebHook,
 };

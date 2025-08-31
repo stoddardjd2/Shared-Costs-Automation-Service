@@ -10,7 +10,7 @@ export default defineConfig({
     svgr(),
     VitePWA({
       registerType: "autoUpdate", // SW updates in background
-      devOptions: { enabled: true }, 
+      // devOptions: { enabled: true }, 
       includeAssets: [
         "favicon-16x16.png",
         "favicon-32x32.png",

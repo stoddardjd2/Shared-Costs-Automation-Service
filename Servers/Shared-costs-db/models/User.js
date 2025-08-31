@@ -181,11 +181,21 @@ const userSchema = new Schema(
         markedAsPaidDate: Date,
       },
     ],
-    totalPaymentsMade: Number,
-    totalMarkedAsPaid: Number,
-    totalAmountPaid: Number,
-    lastPaymentDate: Date,
-    lastMarkedAsPaidDate: Date,
+    // Example Mongoose fields on User
+    stripeCustomerId: String,
+    subscription: {
+      id: String,
+      planKey: String, // "plaid" | "premium"
+      interval: String, // "monthly" | "annual"
+      status: String, // "active" | "trialing" | "past_due" | "incomplete" | "canceled" ...
+      currentPeriodStart: Date,
+      currentPeriodEnd: Date,
+      cancelAtPeriodEnd: Boolean,
+      latestInvoiceId: String,
+      defaultPaymentMethodId: String,
+    },
+    isPremium: Boolean, // derived convenience flag for your app
+
     plaid: {
       isEnabled: Boolean,
       enabledOn: Date,

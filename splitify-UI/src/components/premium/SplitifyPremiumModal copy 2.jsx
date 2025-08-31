@@ -13,9 +13,8 @@ import {
   Loader2,
 } from "lucide-react";
 
-// ⬇️ Stripe imports
+// ⬇️ NEW: Stripe imports
 import { loadStripe } from "@stripe/stripe-js";
-import { useData } from "../../contexts/DataContext";
 import {
   Elements,
   PaymentElement,
@@ -51,21 +50,17 @@ export default function SplitifyPremiumModal({
   showPlaidOnly = true,
   showPremium = true,
 }) {
-  // ✅ Moved inside component (fixes broken top-level hook)
-  const { userData } = useData();
-  const userEmail = userData?.email || "";
-  const userName = userData?.name || "";
-
-  console.log("userName", userName);
   const [billing, setBilling] = useState(pricing?.defaultBilling || "monthly");
   const closeBtnRef = useRef(null);
 
-  // ⬇️ step & checkout state
+  // ⬇️ NEW: step & checkout state
   const [step, setStep] = useState("choose"); // "choose" | "pay"
   const [selection, setSelection] = useState(null); // { planKey, billing }
   const [clientSecret, setClientSecret] = useState(null);
   const [isFetchingCS, setIsFetchingCS] = useState(false);
   const [fetchError, setFetchError] = useState(null);
+
+  console.log("step", step);
 
   useEffect(() => {
     if (isOpen) {
@@ -137,7 +132,7 @@ export default function SplitifyPremiumModal({
     );
   };
 
-  // ⬇️ start checkout – fetch a clientSecret for Payment Element
+  // ⬇️ NEW: start checkout – fetch a clientSecret for Payment Element
   const startCheckout = async (planKey) => {
     setFetchError(null);
     setStep("pay");
@@ -148,6 +143,7 @@ export default function SplitifyPremiumModal({
 
       // Hit your backend to create a Subscription and return a clientSecret
       const res = await createSubscription(planKey, billing, ccy);
+      console.log("RES", res);
 
       if (!res?.clientSecret) {
         throw new Error("Missing clientSecret from server response");
@@ -156,7 +152,6 @@ export default function SplitifyPremiumModal({
       setClientSecret(res.clientSecret);
     } catch (err) {
       setFetchError(err?.message || "Something went wrong");
-      setStep("choose");
     } finally {
       setIsFetchingCS(false);
     }
@@ -179,7 +174,7 @@ export default function SplitifyPremiumModal({
         {[
           "Dynamic cost tracking (auto-adjust requests)",
           "Find transactions from your bank to easily set up new requests",
-          // "Filter & choose what to use—your control",
+          "Filter & choose what to use—your control",
           "Bank-grade encryption via Plaid",
         ].map((f) => (
           <li key={f} className="flex items-start gap-2">
@@ -257,7 +252,7 @@ export default function SplitifyPremiumModal({
     </div>
   );
 
-  // ⬇️ Payment step wrapper
+  // ⬇️ NEW: Payment step wrapper
   const PaymentStep = () => {
     const appearance = {
       theme: "stripe",
@@ -268,9 +263,9 @@ export default function SplitifyPremiumModal({
     };
 
     return (
-      <div className="flex flex-col h-full min-h-0">
+      <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="relative flex items-center gap-4 border-b border-gray-100 p-6 sm:p-8 flex-none">
+        <div className="relative flex items-start gap-4 border-b border-gray-100 p-6 sm:p-8 flex-none">
           <button
             onClick={() => {
               setStep("choose");
@@ -289,7 +284,7 @@ export default function SplitifyPremiumModal({
             <h2 className="text-xl sm:text-2xl font-semibold tracking-tight">
               Complete your purchase
             </h2>
-            <p className="text-sm text-gray-600">
+            <p className="mt-1 text-sm text-gray-600">
               {selection?.planKey === "premium" ? "Premium" : "Plaid"} •{" "}
               {billing === "monthly" ? "Monthly" : "Annual"} —{" "}
               {formatPrice(pricing?.[selection?.planKey]?.[billing])}
@@ -314,14 +309,12 @@ export default function SplitifyPremiumModal({
           ) : null}
 
           {!clientSecret ? (
-            <div className="flex h-full items-center justify-center py-16 text-gray-500">
+            <div className="flex items-center justify-center py-16 text-gray-500">
               <Loader2 className="h-5 w-5 animate-spin mr-2" />
               Initializing secure payment…
             </div>
           ) : (
             <Elements
-              // ✅ Minimal: remount when email changes so prefill is applied
-              key={`${userEmail || "no-email"}|${userName || "no-name"}`}
               stripe={stripePromise}
               options={{ clientSecret, appearance, loader: "auto" }}
             >
@@ -329,25 +322,23 @@ export default function SplitifyPremiumModal({
                 amountLabel={`${formatPrice(
                   pricing?.[selection?.planKey]?.[billing]
                 )} / ${billing === "monthly" ? "mo" : "yr"}`}
-                // ✅ Minimal: pass prefill values to inner form
-                userEmail={userEmail}
-                userName={userName}
                 onSuccess={() => {
+                  // close modal or show success UI
                   onClose?.();
                 }}
               />
             </Elements>
           )}
+        </div>
 
-          {/* Footer */}
-          <div className="flex flex-col items-center gap-2 border-t border-gray-100 px-6 py-5 sm:px-8 flex-none">
-            <p className="text-xs text-gray-500 text-center max-w-3xl">
-              {featureCopy.dataAssurance}
-            </p>
-            <p className="text-[11px] text-gray-400 text-center">
-              Cancel anytime. Prices shown in {ccy}. Taxes may apply.
-            </p>
-          </div>
+        {/* Footer */}
+        <div className="flex flex-col items-center gap-2 border-t border-gray-100 px-6 py-5 sm:px-8 flex-none">
+          <p className="text-xs text-gray-500 text-center max-w-3xl">
+            {featureCopy.dataAssurance}
+          </p>
+          <p className="text-[11px] text-gray-400 text-center">
+            Cancel anytime. Prices shown in {ccy}. Taxes may apply.
+          </p>
         </div>
       </div>
     );
@@ -371,10 +362,10 @@ export default function SplitifyPremiumModal({
         {/* Align top on mobile, center on sm+ */}
         <div className="flex min-h-dvh items-start sm:items-center justify-center">
           {/* Panel */}
-          <div className="w-full max-w-5xl bg-white shadow-2xl ring-1 ring-black/5 min-h-[100svh] sm:min-h-0 max-h-[100svh] sm:max-h-[85vh] flex flex-col overflow-hidden sm:m-10 sm:rounded-xl">
+          <div className="w-full max-w-5xl bg-white shadow-2xl ring-1 ring-black/5 min-h-[100dvh] sm:min-h-0 max-h-[100dvh] flex flex-col overflow-hidden  sm:m-10 sm:rounded-xl">
             {/* CHOOSE STEP */}
             {step === "choose" && (
-              <div className="flex-1 min-h-0 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto">
                 {/* Header */}
                 <div className="relative flex items-start gap-4 border-b border-gray-100 p-6 sm:p-8 flex-none">
                   <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
@@ -459,7 +450,7 @@ export default function SplitifyPremiumModal({
                 </div>
 
                 {/* Footer */}
-                <div className="flex flex-col items-center gap-2 px-6 py-5 sm:px-8 flex-none">
+                <div className="flex flex-col items-center gap-2 border-t border-gray-100 px-6 py-5 sm:px-8 flex-none">
                   <p className="text-xs text-gray-500 text-center max-w-3xl">
                     {featureCopy.dataAssurance}
                   </p>
@@ -480,7 +471,7 @@ export default function SplitifyPremiumModal({
 }
 
 /* --------- Stripe Checkout Form (inside Elements) ---------- */
-function CheckoutForm({ amountLabel, onSuccess, userEmail, userName }) {
+function CheckoutForm({ amountLabel, onSuccess }) {
   const stripe = useStripe();
   const elements = useElements();
   const [submitting, setSubmitting] = useState(false);
@@ -497,6 +488,7 @@ function CheckoutForm({ amountLabel, onSuccess, userEmail, userName }) {
     const { error: stripeError } = await stripe.confirmPayment({
       elements,
       confirmParams: {
+        // Optional: You can set a return_url to handle 3DS externally; we’ll stay in-modal.
         // return_url: `${window.location.origin}/billing/return`,
       },
       redirect: "if_required",
@@ -513,55 +505,11 @@ function CheckoutForm({ amountLabel, onSuccess, userEmail, userName }) {
     onSuccess?.();
   };
 
-  const paymentElementOptions = {
-    layout: "tabs",
-    paymentMethodOrder: [
-      "card", // ← put first so the name field is visible
-      "apple_pay",
-      "google_pay",
-      "link",
-      "us_bank_account",
-      "sepa_debit",
-      "bancontact",
-      "ideal",
-      "giropay",
-      "eps",
-      "p24",
-      "sofort",
-      "blik",
-      "affirm",
-      "klarna",
-      "afterpay_clearpay",
-      "alipay",
-      "wechat_pay",
-      "paypal",
-      "cashapp",
-    ],
-    fields: {
-      billingDetails: {
-        name: "auto",
-        email: "auto",
-        phone: "auto",
-        address: "auto",
-      },
-    },
-    defaultValues: {
-      billingDetails: {
-        name: userName || undefined,
-        email: userEmail || undefined,
-      },
-    },
-    business: { name: "Splitify" },
-  };
-
   return (
     <form onSubmit={handleSubmit} className="h max-w-xl mx-auto space-y-6">
       <div className="rounded-xl border border-gray-200 p-4">
-        {/* ✅ Minimal: prefill Link's email explicitly */}
         <div className="mb-3">
-          <LinkAuthenticationElement
-            options={{ defaultValues: { email: userEmail || "" } }}
-          />
+          <LinkAuthenticationElement />
         </div>
 
         {/* Optional address for invoices/tax */}
@@ -572,7 +520,7 @@ function CheckoutForm({ amountLabel, onSuccess, userEmail, userName }) {
         </div>
 
         <div>
-          <PaymentElement options={paymentElementOptions} />
+          <PaymentElement />
         </div>
       </div>
 

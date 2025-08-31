@@ -26,7 +26,7 @@ const requestRoutes = require("./routes/requestRoutes");
 const supportRoutes = require("./routes/supportRoutes");
 const plaidRoutes = require("./routes/plaidRoutes");
 const adminRoutes = require("./routes/adminRoutes");
-// const stripeRoutes = require("./routes/stripeRoutes");
+const stripeRoutes = require("./routes/stripeRoutes");
 
 // Import error handler
 const { errorHandler, notFound } = require("./utils/errorHandler");
@@ -120,7 +120,7 @@ async function startServer() {
     app.use("/api/support", supportRoutes);
     app.use("/api/plaid", plaidRoutes);
     app.use("/api/admin", adminRoutes);
-    // app.use("/api/stripe", stripeRoutes);
+    app.use("/api/stripe", stripeRoutes);
 
     // Error handling middleware
     app.use(notFound);

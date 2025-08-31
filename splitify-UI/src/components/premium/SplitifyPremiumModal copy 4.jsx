@@ -13,7 +13,7 @@ import {
   Loader2,
 } from "lucide-react";
 
-// ⬇️ Stripe imports
+// ⬇️ NEW: Stripe imports
 import { loadStripe } from "@stripe/stripe-js";
 import { useData } from "../../contexts/DataContext";
 import {
@@ -26,7 +26,7 @@ import {
 } from "@stripe/react-stripe-js";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
-
+const {userData} = useData();
 const DEFAULT_PRICING = {
   currency: "USD",
   trialDays: null,
@@ -51,21 +51,17 @@ export default function SplitifyPremiumModal({
   showPlaidOnly = true,
   showPremium = true,
 }) {
-  // ✅ Moved inside component (fixes broken top-level hook)
-  const { userData } = useData();
-  const userEmail = userData?.email || "";
-  const userName = userData?.name || "";
-
-  console.log("userName", userName);
   const [billing, setBilling] = useState(pricing?.defaultBilling || "monthly");
   const closeBtnRef = useRef(null);
 
-  // ⬇️ step & checkout state
+  // ⬇️ NEW: step & checkout state
   const [step, setStep] = useState("choose"); // "choose" | "pay"
   const [selection, setSelection] = useState(null); // { planKey, billing }
   const [clientSecret, setClientSecret] = useState(null);
   const [isFetchingCS, setIsFetchingCS] = useState(false);
   const [fetchError, setFetchError] = useState(null);
+
+  console.log("step", step);
 
   useEffect(() => {
     if (isOpen) {
@@ -137,7 +133,7 @@ export default function SplitifyPremiumModal({
     );
   };
 
-  // ⬇️ start checkout – fetch a clientSecret for Payment Element
+  // ⬇️ NEW: start checkout – fetch a clientSecret for Payment Element
   const startCheckout = async (planKey) => {
     setFetchError(null);
     setStep("pay");
@@ -148,6 +144,7 @@ export default function SplitifyPremiumModal({
 
       // Hit your backend to create a Subscription and return a clientSecret
       const res = await createSubscription(planKey, billing, ccy);
+      console.log("RES", res);
 
       if (!res?.clientSecret) {
         throw new Error("Missing clientSecret from server response");
@@ -156,7 +153,6 @@ export default function SplitifyPremiumModal({
       setClientSecret(res.clientSecret);
     } catch (err) {
       setFetchError(err?.message || "Something went wrong");
-      setStep("choose");
     } finally {
       setIsFetchingCS(false);
     }
@@ -179,7 +175,7 @@ export default function SplitifyPremiumModal({
         {[
           "Dynamic cost tracking (auto-adjust requests)",
           "Find transactions from your bank to easily set up new requests",
-          // "Filter & choose what to use—your control",
+          "Filter & choose what to use—your control",
           "Bank-grade encryption via Plaid",
         ].map((f) => (
           <li key={f} className="flex items-start gap-2">
@@ -257,7 +253,7 @@ export default function SplitifyPremiumModal({
     </div>
   );
 
-  // ⬇️ Payment step wrapper
+  // ⬇️ NEW: Payment step wrapper
   const PaymentStep = () => {
     const appearance = {
       theme: "stripe",
@@ -289,7 +285,7 @@ export default function SplitifyPremiumModal({
             <h2 className="text-xl sm:text-2xl font-semibold tracking-tight">
               Complete your purchase
             </h2>
-            <p className="text-sm text-gray-600">
+            <p className="mt-1 text-sm text-gray-600">
               {selection?.planKey === "premium" ? "Premium" : "Plaid"} •{" "}
               {billing === "monthly" ? "Monthly" : "Annual"} —{" "}
               {formatPrice(pricing?.[selection?.planKey]?.[billing])}
@@ -320,8 +316,6 @@ export default function SplitifyPremiumModal({
             </div>
           ) : (
             <Elements
-              // ✅ Minimal: remount when email changes so prefill is applied
-              key={`${userEmail || "no-email"}|${userName || "no-name"}`}
               stripe={stripePromise}
               options={{ clientSecret, appearance, loader: "auto" }}
             >
@@ -329,10 +323,8 @@ export default function SplitifyPremiumModal({
                 amountLabel={`${formatPrice(
                   pricing?.[selection?.planKey]?.[billing]
                 )} / ${billing === "monthly" ? "mo" : "yr"}`}
-                // ✅ Minimal: pass prefill values to inner form
-                userEmail={userEmail}
-                userName={userName}
                 onSuccess={() => {
+                  // close modal or show success UI
                   onClose?.();
                 }}
               />
@@ -480,7 +472,7 @@ export default function SplitifyPremiumModal({
 }
 
 /* --------- Stripe Checkout Form (inside Elements) ---------- */
-function CheckoutForm({ amountLabel, onSuccess, userEmail, userName }) {
+function CheckoutForm({ amountLabel, onSuccess }) {
   const stripe = useStripe();
   const elements = useElements();
   const [submitting, setSubmitting] = useState(false);
@@ -497,6 +489,7 @@ function CheckoutForm({ amountLabel, onSuccess, userEmail, userName }) {
     const { error: stripeError } = await stripe.confirmPayment({
       elements,
       confirmParams: {
+        // Optional: You can set a return_url to handle 3DS externally; we’ll stay in-modal.
         // return_url: `${window.location.origin}/billing/return`,
       },
       redirect: "if_required",
@@ -516,10 +509,10 @@ function CheckoutForm({ amountLabel, onSuccess, userEmail, userName }) {
   const paymentElementOptions = {
     layout: "tabs",
     paymentMethodOrder: [
-      "card", // ← put first so the name field is visible
       "apple_pay",
       "google_pay",
       "link",
+      "card",
       "us_bank_account",
       "sepa_debit",
       "bancontact",
@@ -536,19 +529,24 @@ function CheckoutForm({ amountLabel, onSuccess, userEmail, userName }) {
       "wechat_pay",
       "paypal",
       "cashapp",
+      // add others you enable later; Stripe will ignore unknown/unsupported entries
     ],
+    wallets: {
+      applePay: "auto", // requires Apple Pay domain verification in Stripe
+      googlePay: "auto",
+    },
     fields: {
       billingDetails: {
         name: "auto",
-        email: "auto",
+        // email: "auto",
         phone: "auto",
         address: "auto",
       },
     },
     defaultValues: {
       billingDetails: {
-        name: userName || undefined,
-        email: userEmail || undefined,
+        // If you have a logged-in user’s email, you can prefill it here:
+        email: userData?.email || undefined,
       },
     },
     business: { name: "Splitify" },
@@ -557,11 +555,8 @@ function CheckoutForm({ amountLabel, onSuccess, userEmail, userName }) {
   return (
     <form onSubmit={handleSubmit} className="h max-w-xl mx-auto space-y-6">
       <div className="rounded-xl border border-gray-200 p-4">
-        {/* ✅ Minimal: prefill Link's email explicitly */}
         <div className="mb-3">
-          <LinkAuthenticationElement
-            options={{ defaultValues: { email: userEmail || "" } }}
-          />
+          <LinkAuthenticationElement />
         </div>
 
         {/* Optional address for invoices/tax */}
