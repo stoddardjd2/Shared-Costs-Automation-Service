@@ -1,12 +1,10 @@
 import PlaidConnectBanner from "./PlaidConnectBanner";
-import PlaidConnectFAB from "./PlaidConnectFAB";
 import { useState, useEffect } from "react";
 import { usePlaidLink } from "react-plaid-link";
 import { plaidAPI, savePlaidAccessToken } from "../../queries/plaidService";
 import PlaidTransactionsModal from "./PlaidTransactionsModal";
 import { useData } from "../../contexts/DataContext";
 import { Banknote, Landmark, CreditCard } from "lucide-react";
-import PremiumModal from "../premium/premiumModal";
 import SplitifyPremiumModal from "../premium/SplitifyPremiumModal";
 
 export default function PlaidConnect({
