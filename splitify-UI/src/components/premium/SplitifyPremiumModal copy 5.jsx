@@ -51,20 +51,19 @@ export default function SplitifyPremiumModal({
   showPlaidOnly = true,
   showPremium = true,
 }) {
+  // ✅ Moved inside component (fixes broken top-level hook)
   const { userData, setUserData } = useData();
   const userEmail = userData?.email || "";
   const userName = userData?.name || "";
   const [billing, setBilling] = useState(pricing?.defaultBilling || "monthly");
   const closeBtnRef = useRef(null);
 
-  // steps: "choose" | "pay" | "success"
-  const [step, setStep] = useState("choose");
+  // ⬇️ step & checkout state
+  const [step, setStep] = useState("choose"); // "choose" | "pay"
   const [selection, setSelection] = useState(null); // { planKey, billing }
   const [clientSecret, setClientSecret] = useState(null);
   const [isFetchingCS, setIsFetchingCS] = useState(false);
   const [fetchError, setFetchError] = useState(null);
-
-  // success info for confirmation screen
   const [successInfo, setSuccessInfo] = useState(null); // { planKey, billing, amount, currency }
 
   useEffect(() => {
@@ -89,7 +88,6 @@ export default function SplitifyPremiumModal({
       setClientSecret(null);
       setIsFetchingCS(false);
       setFetchError(null);
-      setSuccessInfo(null);
     }
   }, [isOpen]);
 
@@ -142,8 +140,8 @@ export default function SplitifyPremiumModal({
   const startCheckout = async (planKey) => {
     setFetchError(null);
     setStep("pay");
-    setIsFetchingCS(true);
 
+    setIsFetchingCS(true);
     try {
       setSelection({ planKey, billing });
       // Hit your backend to create a Subscription and return a clientSecret
@@ -152,6 +150,7 @@ export default function SplitifyPremiumModal({
       if (!res?.clientSecret) {
         throw new Error("Missing clientSecret from server response");
       }
+
       setClientSecret(res.clientSecret);
     } catch (err) {
       setFetchError(err?.message || "Something went wrong");
@@ -256,6 +255,84 @@ export default function SplitifyPremiumModal({
     </div>
   );
 
+  function SuccessStep({ info, onClose, onGoToBilling }) {
+    console.log("scuess  step info:", info);
+    const { planKey, billing, amount, currency = "USD" } = info || {};
+    const format = (n) => {
+      try {
+        return new Intl.NumberFormat(undefined, {
+          style: "currency",
+          currency,
+        }).format(n);
+      } catch {
+        return `$${n}`;
+      }
+    };
+
+    return (
+      <div className="flex flex-col h-full">
+        {/* Header */}
+        <div className="relative flex items-center gap-4 border-b border-gray-100 p-6 sm:p-8">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-green-600 text-white shadow-sm">
+            <Check className="h-5 w-5" />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-xl sm:text-2xl font-semibold tracking-tight">
+              Payment successful
+            </h2>
+            <p className="mt-1 text-sm text-gray-600">
+              {planKey === "premium" ? "Premium" : "Plaid"} •{" "}
+              {billing === "monthly" ? "Monthly" : "Annual"} —{" "}
+              {typeof amount === "number" ? format(amount) : ""}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="absolute right-4 top-4 inline-flex items-center justify-center rounded-full p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto p-6 sm:p-8">
+          <div className="mx-auto max-w-xl text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-50 text-green-700">
+              <Check className="h-8 w-8" />
+            </div>
+            <h3 className="text-lg font-semibold">You’re all set!</h3>
+            <p className="mt-2 text-sm text-gray-600">
+              Your purchase was accepted and your subscription is now active.
+              You’ll receive an email receipt shortly.
+            </p>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <button
+                onClick={onGoToBilling}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 text-white px-5 py-2.5 font-medium shadow-sm hover:shadow-md hover:brightness-105"
+              >
+                Manage subscription
+              </button>
+              <button
+                onClick={onClose}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white text-gray-700 ring-1 ring-inset ring-gray-200 px-5 py-2.5 font-medium hover:bg-gray-50"
+              >
+                Continue
+              </button>
+            </div>
+
+            <p className="mt-4 text-xs text-gray-500">
+              Tip: You can update billing details or cancel anytime from your
+              Billing page.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ⬇️ Payment step wrapper
   const PaymentStep = () => {
     const appearance = {
       theme: "stripe",
@@ -318,26 +395,19 @@ export default function SplitifyPremiumModal({
             </div>
           ) : (
             <Elements
-              // ⬇️ Remount when email changes so prefill is applied
+              // ✅ Minimal: remount when email changes so prefill is applied
               key={userEmail || "no-email"}
               stripe={stripePromise}
               options={{ clientSecret, appearance, loader: "auto" }}
             >
               <CheckoutForm
-                planKey={selection?.planKey}
-                billing={billing}
-                price={pricing?.[selection?.planKey]?.[billing]}
                 amountLabel={`${formatPrice(
                   pricing?.[selection?.planKey]?.[billing]
                 )} / ${billing === "monthly" ? "mo" : "yr"}`}
+                // ✅ Minimal: pass prefill values to inner form
                 userEmail={userEmail}
                 userName={userName}
                 onSuccess={(info) => {
-                  setUserData((prevUserData) => ({
-                    ...prevUserData,
-                    plan: planKey,
-                  }));
-
                   setSuccessInfo(info);
                   setStep("success");
                 }}
@@ -484,87 +554,16 @@ export default function SplitifyPremiumModal({
               <SuccessStep
                 info={successInfo}
                 onClose={onClose}
-                setUserData={setUserData}
                 onGoToBilling={() => {
-                  // Customize for your router or redirect:
+                  // optional: route to your billing page (customize this for your app/router)
+                  // e.g., if using react-router: navigate("/billing");
+                  // or a hard redirect:
                   // window.location.href = "/billing";
                   onClose?.();
                 }}
               />
             )}
           </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* --------- Success Step ---------- */
-function SuccessStep({ info, onClose, onGoToBilling }) {
-  const { planKey, billing, amount, currency = "USD" } = info || {};
-  const format = (n) => {
-    try {
-      return new Intl.NumberFormat(undefined, {
-        style: "currency",
-        currency,
-      }).format(n);
-    } catch {
-      return `$${n}`;
-    }
-  };
-
-  // update user data to have plan
-
-  return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="relative flex items-center gap-4 border-b border-gray-100 p-6 sm:p-8">
-        <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-green-600 text-white shadow-sm">
-          <Check className="h-5 w-5" />
-        </div>
-        <div className="flex-1">
-          <h2 className="text-xl sm:text-2xl font-semibold tracking-tight">
-            Payment successful
-          </h2>
-          <p className="mt-1 text-sm text-gray-600">
-            {planKey === "premium" ? "Premium" : "Plaid"} •{" "}
-            {billing === "monthly" ? "Monthly" : "Annual"}{" "}
-            {typeof amount === "number" ? `— ${format(amount)}` : ""}
-          </p>
-        </div>
-        <button
-          onClick={onClose}
-          aria-label="Close"
-          className="absolute right-4 top-4 inline-flex items-center justify-center rounded-full p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
-        >
-          <X className="h-5 w-5" />
-        </button>
-      </div>
-
-      {/* Body */}
-      <div className="flex-1 overflow-y-auto p-6 sm:p-8">
-        <div className="mx-auto max-w-xl text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-50 text-green-700">
-            <Check className="h-8 w-8" />
-          </div>
-          <h3 className="text-lg font-semibold">You’re all set!</h3>
-          <p className="mt-2 text-sm text-gray-600">
-            Your purchase was accepted and your subscription is now active.
-            You’ll receive an email receipt shortly.
-          </p>
-
-          <div className="mt-6 flex justify-center">
-            <button
-              onClick={onClose}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-white text-gray-700 ring-1 ring-inset ring-gray-200 px-5 py-2.5 font-medium hover:bg-gray-50"
-            >
-              Continue
-            </button>
-          </div>
-
-          <p className="mt-4 text-xs text-gray-500">
-            Tip: You can update billing details or cancel anytime from settings.
-          </p>
         </div>
       </div>
     </div>
@@ -583,27 +582,20 @@ function CheckoutForm({
 }) {
   const stripe = useStripe();
   const elements = useElements();
-
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  // Prevent early submit until PaymentElement is fully ready
-  const [paymentReady, setPaymentReady] = useState(false);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (submitting) return; // hard guard against double-clicks
     setError(null);
-
-    // Block if Stripe/Elements not ready or PaymentElement not ready
-    if (!stripe || !elements || !paymentReady) return;
+    if (!stripe || !elements) return;
 
     setSubmitting(true);
 
     const { error: stripeError } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        // Optional: add a return_url for off-session or redirect-based flows
+        // Optionally use a return_url if you expect an external redirect
         // return_url: `${window.location.origin}/billing/return`,
       },
       redirect: "if_required",
@@ -615,114 +607,15 @@ function CheckoutForm({
       return;
     }
 
-    // Success — show success confirmation UI
+    // Success: bubble up details for confirmation UI
     onSuccess?.({
       planKey,
       billing,
       amount: typeof price === "number" ? price : undefined,
       currency: "USD",
+      // You could also pass more (e.g., latest invoice id) if your backend returns it
     });
 
     setSubmitting(false);
   };
-
-  const paymentElementOptions = {
-    layout: "tabs",
-    paymentMethodOrder: [
-      "apple_pay",
-      "google_pay",
-      "link",
-      "card",
-      "us_bank_account",
-      "sepa_debit",
-      "bancontact",
-      "ideal",
-      "giropay",
-      "eps",
-      "p24",
-      "sofort",
-      "blik",
-      "affirm",
-      "klarna",
-      "afterpay_clearpay",
-      "alipay",
-      "wechat_pay",
-      "paypal",
-      "cashapp",
-    ],
-    wallets: {
-      applePay: "auto",
-      googlePay: "auto",
-    },
-    fields: {
-      billingDetails: {
-        name: "auto",
-        email: "auto",
-        phone: "auto",
-        address: "auto",
-      },
-    },
-    defaultValues: {
-      billingDetails: {
-        name: userName || undefined,
-        email: userEmail || undefined,
-      },
-    },
-    business: { name: "Splitify" },
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="h max-w-xl mx-auto space-y-6">
-      <div className="rounded-xl border border-gray-200 p-4">
-        {/* Prefill Link's email explicitly */}
-        <div className="mb-3">
-          <LinkAuthenticationElement
-            options={{ defaultValues: { email: userEmail || "" } }}
-          />
-        </div>
-
-        {/* Optional address for invoices/tax */}
-        <div className="mb-3">
-          <AddressElement
-            options={{ mode: "billing", fields: { phone: "auto" } }}
-          />
-        </div>
-
-        <div>
-          <PaymentElement
-            options={paymentElementOptions}
-            onReady={() => setPaymentReady(true)}
-            onEscape={() => {}}
-            onBlur={() => {}}
-            onFocus={() => {}}
-            onChange={() => {}}
-          />
-        </div>
-      </div>
-
-      {error ? (
-        <div className="rounded-lg bg-red-50 text-red-700 p-3 text-sm">
-          {error}
-        </div>
-      ) : null}
-
-      <button
-        type="submit"
-        disabled={!stripe || !paymentReady || submitting}
-        className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 text-white px-5 py-2.5 font-medium shadow-sm hover:shadow-md hover:brightness-105 disabled:opacity-60 disabled:cursor-not-allowed"
-      >
-        {submitting ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" /> Processing…
-          </>
-        ) : (
-          <>Pay {amountLabel}</>
-        )}
-      </button>
-
-      <p className="text-xs text-gray-500 text-center">
-        Payments secured by Stripe.
-      </p>
-    </form>
-  );
 }
