@@ -17,6 +17,7 @@ import { DataProvider } from "./contexts/DataContext";
 import PaymentPage from "./payment-components/PaymentPage";
 import GlobalNavbar from "./components/global/GlobalNavbar";
 import LandingPage from "./components/global/landing-pages/Claude/LandingPage";
+import LandingPageOfficial from "./components/global/landing-pages/figma/LandingPage";
 import LandingPage2 from "./components/global/landing-pages/Claude/LandingPage2";
 import LandingPage3 from "./components/global/landing-pages/GPT/LandingPage3.jsx";
 import LandingPage4 from "./components/global/landing-pages/GPT/LandingPage4.jsx";
@@ -30,6 +31,8 @@ import TermsAndConditions from "./components/global/about/TermsAndConditions.jsx
 import PaymentPortal from "./components/global/PaymentPortal.jsx";
 import PlaidSandboxDemo from "./components/plaid/PlaidSandboxDemo.jsx";
 import PlaidSandboxDemoUserFlow from "./components/plaid/PlaidSandboxDemoUserFlow.jsx";
+import LandingPageCustom from "./components/global/landing-pages/LandingPageCustom.jsx";
+import FixedBackgroundSection from "./components/global/landing-pages/figma/sections/section-4/FixedBackgroundSection.jsx";
 const App = () => {
   const navigate = useNavigate();
   return (
@@ -81,7 +84,7 @@ const App = () => {
                   createFreeAccount: true,
                   // signup: true,
                   isFullScreenMobileMode: true,
-                  login:true,
+                  login: true,
                 }}
               />
               <Outlet />
@@ -89,12 +92,15 @@ const App = () => {
             </>
           }
         >
-          <Route index element={<LandingPage />} />
+          <Route index element={<LandingPageOfficial />} />
+          <Route path="1" element={<LandingPage />} />
           <Route path="2" element={<LandingPage2 />} />
           <Route path="3" element={<LandingPage3 />} />
           <Route path="4" element={<LandingPage4 />} />
           <Route path="5" element={<LandingPage5 />} />
           <Route path="6" element={<LandingPage6 />} />
+          <Route path="7" element={<LandingPageCustom />} />
+          <Route path="test" element={<FixedBackgroundSection />} />
           {/* Fallback route - must be last */}
         </Route>
 
@@ -160,8 +166,11 @@ const App = () => {
           }
         ></Route>
         {/* <Route path="/" element={<Navigate to="/dashboard" replace />} /> */}
-        <Route path="/plaidSandboxDemo" element={<PlaidSandboxDemo/>} />
-        <Route path="/PlaidSandboxDemoUserFlow" element={<PlaidSandboxDemoUserFlow/>} />
+        <Route path="/plaidSandboxDemo" element={<PlaidSandboxDemo />} />
+        <Route
+          path="/PlaidSandboxDemoUserFlow"
+          element={<PlaidSandboxDemoUserFlow />}
+        />
 
         <Route path="*" element={<Navigate to="/landing" replace />} />
       </Routes>

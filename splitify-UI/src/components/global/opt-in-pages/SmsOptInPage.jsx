@@ -72,7 +72,7 @@ export default function SmsOptInPage() {
         type: "success",
         text: "You're all set! Text notifications are now enabled.",
       });
-      window.close();
+      // window.close();
       setConfirmedPhone(rawPhone);
       setIsConfirmed(true);
     } catch (err) {

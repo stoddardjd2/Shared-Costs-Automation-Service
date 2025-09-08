@@ -5,6 +5,9 @@ import "./index.css";
 import App from "./App";
 import { useEffect } from "react";
 import { registerSW } from "virtual:pwa-register";
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+
+const theme = createTheme();
 
 // google analytics
 export default function Analytics() {
@@ -27,6 +30,7 @@ export default function Analytics() {
   return null;
 }
 
+
 // registerSW({
 //   immediate: true, // optional
 //   onNeedRefresh() {
@@ -42,7 +46,9 @@ root.render(
   <React.StrictMode>
     <BrowserRouter>
       <Analytics />
-      <App />
+      <ThemeProvider theme={theme}>
+        <App />
+      </ThemeProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

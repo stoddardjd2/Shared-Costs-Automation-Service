@@ -331,15 +331,17 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                   View payment history or update future requests
                 </p>
               </div>
-              <div className="flex flex-wrap items-center justify-end">
-                <PauseRequestBtn
-                  requestId={cost._id}
-                  isPausedPassed={cost?.isPaused}
-                />
-                <CancelRequestBtn
-                  requestId={cost._id}
-                  onDeleteSuccess={onClose}
-                />
+              <div className="flex flex-wrap items-end justify-end">
+                <div className="flex justify-end ml-6">
+                  <PauseRequestBtn
+                    requestId={cost._id}
+                    isPausedPassed={cost?.isPaused}
+                  />
+                  <CancelRequestBtn
+                    requestId={cost._id}
+                    onDeleteSuccess={onClose}
+                  />
+                </div>
               </div>
             </div>
 
@@ -398,12 +400,20 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                         <div
                           className={` px-4 pt-3 flex items-center justify-between`}
                         >
-                          <span className="text-gray-900 font-semibold text-lg">
-                            ${payment.totalAmountOwed.toFixed(2)}{" "}
-                            <span className="text-sm font-medium  text-gray-500 false">
-                              Total Owed
+                          {payment.totalAmountOwed == 0 ? (
+                            <span className="text-gray-900 ml-2 font-semibold text-lg">
+                              <span className="text-sm font-medium  text-gray-500 false">
+                                All Paid
+                              </span>
                             </span>
-                          </span>
+                          ) : (
+                            <span className="text-gray-900 ml-2 font-semibold text-lg">
+                              ${payment.totalAmountOwed.toFixed(2)}{" "}
+                              <span className="text-sm font-medium  text-gray-500 false">
+                                Total Owed
+                              </span>
+                            </span>
+                          )}
 
                           <div className="flex items-center gap-3">
                             <div
@@ -416,7 +426,7 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                                     <span className="mr-1 text-sm text-gray-500 false">
                                       Due{" "}
                                     </span>
-                                    <span className="text-lg">
+                                    <span className="text-lg text-gray-900">
                                       {new Date(
                                         payment.dueDate
                                       ).toLocaleDateString()}

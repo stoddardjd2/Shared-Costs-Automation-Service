@@ -1,5 +1,5 @@
 const sendEmailRequest = require("./sendEmailRequest");
-const sentTextMessage = require("./sendTextMessage");
+const sendTextMessage = require("./sendTextMessage");
 const User = require("../models/User");
 
 async function sendRequestsRouter(reminderData) {
@@ -86,7 +86,7 @@ To complete your payment, visit: ${finalUrl}
 Sent via Splitify
 Split expenses. Automate follow-ups.`;
 
-  sentTextMessage(user.phone, "+18333702013", message);
+  sendTextMessage(user.phone, "+18333702013", message);
   return true;
 }
 module.exports = sendRequestsRouter;

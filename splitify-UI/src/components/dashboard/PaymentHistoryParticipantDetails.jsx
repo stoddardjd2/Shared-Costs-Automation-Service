@@ -1,6 +1,14 @@
 import { useState } from "react";
 import RequestButton from "./RequestButton";
-import { Check, Timer, Hourglass, Pause, Send } from "lucide-react";
+import {
+  Check,
+  Timer,
+  Hourglass,
+  Pause,
+  Send,
+  Repeat,
+  RefreshCw,
+} from "lucide-react";
 import { handleToggleMarkAsPaid } from "../../queries/requests";
 import { useData } from "../../contexts/DataContext";
 export default function PaymentHistoryParticipantDetails({
@@ -9,9 +17,13 @@ export default function PaymentHistoryParticipantDetails({
   paymentHistoryRequest,
   user,
 }) {
+  const REMINDER_FREQUENCY_DAYS = 7;
+
   const [isPaid, setIsPaid] = useState(
     participant.paymentAmount >= participant.amount || participant.markedAsPaid
   );
+  const isPaidEscapeLocalState =
+    participant.paymentAmount >= participant.amount || participant.markedAsPaid;
   const { setCosts } = useData();
 
   // Get subtle status indicator color
@@ -32,9 +44,15 @@ export default function PaymentHistoryParticipantDetails({
     return dueDate < today ? "overdue" : "pending";
   };
 
-  const monthDay = (input) => {
-    const d = input && input.$date ? new Date(input.$date) : new Date(input);
-    if (isNaN(d)) return "";
+  const monthDay = (input, daysToAdd = 0) => {
+    const raw = input && input.$date ? input.$date : input;
+    const base = new Date(raw);
+    if (Number.isNaN(base)) return "";
+
+    // Add days in UTC to avoid DST edge cases
+    const d = new Date(base);
+    if (daysToAdd) d.setUTCDate(d.getUTCDate() + daysToAdd);
+
     return new Intl.DateTimeFormat("en-US", {
       month: "short",
       day: "numeric",
@@ -61,44 +79,45 @@ export default function PaymentHistoryParticipantDetails({
   return (
     <div className="flex flex-col gap-[13px] border border-b-2 p-3 rounded-xl">
       <div className="flex gap-4 flex-wrap justify-between">
-        <div className="flex gap-4 min-w-[200px]">
-          <Avatar user={user} color={getStatusIndicatorColor()} />
-          <div className="flex-col flex justify-between">
-            <div className="font-semibold">{user.name}</div>
-            <div className="text-sm text-gray-800">${participant.amount}</div>
+        <div className="flex justify-between w-full">
+          <div className="flex gap-4 min-w-[200px] max-w-[300px]">
+            <Avatar user={user} color={getStatusIndicatorColor()} />
+            <div className="flex-col flex justify-between">
+              <div className="font-semibold">{user.name}</div>
+              <div className="text-sm text-gray-800">${participant.amount}</div>
+            </div>
           </div>
+          <MarkAsPaidButton
+            participant={participant}
+            // status={getParticipantStatus()}
+            costId={costId}
+            paymentHistoryRequest={paymentHistoryRequest}
+            isPaid={isPaid}
+            setCosts={setCosts}
+            setIsPaid={setIsPaid}
+          />
         </div>
 
-        <div className="flex gap-5 justify-between items-center sm:justify-end flex-grow">
-          {/* <RequestButton
-            costId={costId}
-            participantUserId={participant._id}
-            className="text-sm flex-shrink-0"
-            loadingText="Sending..."
-            successText="Sent!"
-            paymentHistoryRequest={paymentHistoryRequest}
-            participant={participant}
-            isPaid={isPaid}
-          >
-            Resend
-          </RequestButton> */}
-          <div className="h-10  border border-white/30 text-blue-600 px-3 py-3 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-4 shadow-none disabled:opacity-50 disabled:cursor-auto text-sm flex-shrink-0">
-            <Send className="w-6 h-6 " />
-            {console.log("date", participant)}
-            <span>Last Sent {monthDay(participant?.requestSentDate)}</span>
+        {!isPaidEscapeLocalState && (
+          <div className="flex gap-5 justify-between w-full">
+            <div className="h-10 w-full justify-between border border-white/30 text-gray-600 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-4 shadow-none disabled:opacity-50 disabled:cursor-auto text-sm flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <Send className="w-6 h-6 " />
+                <span>Last Sent {monthDay(participant?.requestSentDate)}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <RefreshCw className="w-6 h-6 " />
+                <span>
+                  Next{" "}
+                  {monthDay(
+                    participant?.requestSentDate,
+                    REMINDER_FREQUENCY_DAYS
+                  )}
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="min-w-[100px]">
-            <MarkAsPaidButton
-              participant={participant}
-              // status={getParticipantStatus()}
-              costId={costId}
-              paymentHistoryRequest={paymentHistoryRequest}
-              isPaid={isPaid}
-              setCosts={setCosts}
-              setIsPaid={setIsPaid}
-            />
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
@@ -130,6 +149,12 @@ function MarkAsPaidButton({
 }) {
   async function handleMarkAsPaid() {
     setIsPaid(!isPaid);
+    console.log(
+      "toggle with:",
+      costId,
+      paymentHistoryRequest._id,
+      participant._id
+    );
     try {
       const res = await handleToggleMarkAsPaid(
         costId,
@@ -146,7 +171,7 @@ function MarkAsPaidButton({
   }
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center justify-end gap-3">
       <button
         onClick={handleMarkAsPaid}
         className={`${

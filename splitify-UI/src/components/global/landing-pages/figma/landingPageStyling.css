@@ -1,0 +1,57 @@
+/* LandingPage.module.css */
+:where(.landing-page) h1 {
+  font-size: 4.5rem;
+  font-weight: bold;
+  color: #1d1d1d;
+  line-height: 1.2;
+}
+
+:where(.landing-page) h2 {
+  font-size: 4rem;
+  font-weight: bold;
+  color: #1d1d1d;
+  line-height: 1.2;
+}
+
+:where(.landing-page) h3 {
+  font-size: 2rem;
+  font-weight: bold;
+  line-height: 1.2;
+  color: #1d1d1d;
+}
+
+:where(.landing-page) p {
+  font-size: 1.25rem;
+  line-height: 1.45;
+  font-weight: 400;
+  color: #3c3c3c;
+}
+
+/* Utility helpers */
+:where(.landing-page) .small {
+  font-size: 1.125rem;
+}
+
+:where(.landing-page) .smaller {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+:where(.landing-page) .feature {
+  font-size: 1.5rem;
+}
+
+/* Gradient text */
+:where(.landing-page) .gradient-text {
+  background: linear-gradient(90deg, #72a2b3 60.1%, #033547 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+:where(.landing-page) .gradient-text-2 {
+  background: linear-gradient(90deg, #72a2b3 40.1%, #033547 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

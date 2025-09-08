@@ -78,10 +78,7 @@ async function startServer() {
     });
     app.use(limiter);
 
-    // app.use((req, res, next) => {
-    //   console.log("REQ", req.method, req.originalUrl);
-    //   next();
-    // });
+
     // Custom body parser for Stripe webhooks
     app.use(
       express.json({

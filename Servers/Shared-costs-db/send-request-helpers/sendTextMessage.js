@@ -10,6 +10,8 @@ async function sendReminder( to, from, body ) {
     // messaging_profile_id: process.env.TELNYX_MESSAGING_PROFILE_ID,
     // webhook_url: "https://your-domain.com/webhooks/telnyx/dlr" // optional per-message DLR
   });
+  console.log("TEXT MESSAGE SENT, RESPONSE:", res);
+  console.log("sending to, from, body", to, from, body);
   return res.data;
 }
 

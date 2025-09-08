@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Request = require("../models/Request");
 
-const sentTextMessage = require("../send-request-helpers/sendTextMessage");
+const sendTextMessage = require("../send-request-helpers/sendTextMessage");
 
 const {
   startReminderScheduler,
@@ -152,20 +152,31 @@ router.post("/override-and-test-scheduler/:id", async (req, res) => {
 router.post("/send-text", async (req, res) => {
   const { to } = req.body;
 console.log("sending to", to)
-  const message = `Hi Jared,
-kevin sent you a payment request.
+//   const message = `Hi Julian,
+// Cole sent you a payment request.
 
-AMOUNT REQUESTED: $32
-FOR: Netflix
+// AMOUNT REQUESTED: $9.99
+// FOR: Netflix
 
-To complete your payment, visit: https://splitifyofficial.netlify.app/dashboard
+// To complete your payment, visit: https://splitify.io/payment?id=21421
+
+// Sent via Splitify
+// `;
+
+  const message = `Hi John,
+you have an overdue bill for Julian.
+
+AMOUNT DUE: $9.99
+FOR: Electricity Bill
+
+To complete your payment, visit: https://splitify.io/payment?id=24221
 
 Sent via Splitify
 `;
 
   try {
     console.log("🔧 Manually sending text");
-    await sentTextMessage(to, "+18333702013", message);
+    await sendTextMessage(to, "+18333702013", message);
 
     res.json({
       success: true,

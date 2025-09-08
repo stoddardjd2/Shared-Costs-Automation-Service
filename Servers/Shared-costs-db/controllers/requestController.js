@@ -541,6 +541,7 @@ const handlePayment = async (req, res) => {
 };
 
 const handleToggleMarkAsPaid = async (req, res) => {
+  console.log("Toggling mark as paid with data:", req.params);
   try {
     const { requestId, paymentHistoryId, userId } = req.params;
 
