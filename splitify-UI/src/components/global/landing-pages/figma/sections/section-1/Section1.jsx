@@ -5,13 +5,13 @@ import CtaBtn from "../../builders/CtaBtn";
 export default function Section1() {
   return (
     <section className={`bg-[#ACC8D2] relative`}>
-      <div className="absolute left-0 rounded-banner top-[-130px] bg-[#ACC8D2] w-full">
+      <div className="absolute z-0 left-0 rounded-banner shadow-[0_-10px_20px_rgba(0,0,0,0.25)] top-[-130px] bg-[#ACC8D2] w-full">
         <BrandsBanner />
       </div>
 
       <Layout className={`
         
-        pt-[4vw] sm:"!pt-0"
+        pt-[4vw] sm:!pt-0 z-10 relative bg-[#ACC8D2]
         
         `}>
         <div className="col-span-12">
