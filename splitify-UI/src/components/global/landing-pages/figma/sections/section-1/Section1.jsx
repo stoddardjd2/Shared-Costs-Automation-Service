@@ -11,14 +11,14 @@ export default function Section1() {
 
       <Layout className={`
         
-        pt-[2vw] sm:"!pt-0"
+        pt-[4vw] sm:"!pt-0"
         
         `}>
         <div className="col-span-12">
           <div className={`"
             w-full sm:w-6/12
              mx-auto text-center"`}>
-            <h2 className="mb-[20px] text-center">
+            <h2 className="mb-[20px]  text-center">
               Splitify <span className="gradient-text">saves you</span> time and
               stress.
             </h2>
