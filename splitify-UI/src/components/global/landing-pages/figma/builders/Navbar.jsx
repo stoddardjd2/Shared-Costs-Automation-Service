@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import SmartSplitLogo from "../../../../../assets/SmartSplitLogo.svg?react";
-
+import { useNavigate } from "react-router-dom";
+import { trackCreateAccount } from "../../../../../googleAnalytics/googleAnalyticsHelpers";
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [transitionComplete, setTransitionComplete] = useState(false);
   const fadeTimerRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = (event) => {
@@ -152,6 +154,9 @@ const Navbar = () => {
               <div className="flex items-center gap-2 sm:gap-4">
                 {/* Hide Login on very small screens to keep it clean */}
                 <button
+                  onClick={() => {
+                    navigate("/login");
+                  }}
                   className={`px-4 py-2 rounded-lg font-semibold transition-transform duration-300 hover:-translate-y-0.5 text-sm border-2 ${
                     isScrolled
                       ? `${
@@ -169,6 +174,10 @@ const Navbar = () => {
                   className={`px-3 sm:px-7 py-2 sm:py-3 rounded-lg text-white font-semibold transition-transform duration-300 hover:-translate-y-0.5 text-sm sm:text-base shadow-md ${
                     isScrolled ? "bg-blue-600" : "bg-white/20"
                   }`}
+                  onClick={() => {
+                    navigate("/signup");
+                    trackCreateAccount("navbar");
+                  }}
                 >
                   <span className="hidden sm:inline">
                     Create Your Free Account

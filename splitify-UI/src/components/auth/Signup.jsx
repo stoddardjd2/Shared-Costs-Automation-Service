@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createUser } from "../../queries/auth";
 import {
   Eye,
@@ -30,6 +30,12 @@ const Signup = () => {
   const [notification, setNotification] = useState(null);
   const [consent, setConsent] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.getElementById("root")?.scrollTo({
+      top: 0,
+    });
+  }, []);
 
   const showNotification = (message, type = "error") => {
     setNotification({ message, type });
@@ -183,7 +189,7 @@ const Signup = () => {
             Create your account
           </h2>
           <p className="text-gray-600">
-            Join us and start managing your expenses
+            Join to start managing your group bills the easy way.
           </p>
         </div>
 
@@ -463,7 +469,7 @@ const Signup = () => {
                   className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 /> */}
                 <label htmlFor="consent" className="text-xs text-gray-400">
-                   By signing up you agree to our
+                  By signing up you agree to our
                   <a
                     className="text-[#1865f2]"
                     href="/about/termsAndConditions"

@@ -27,6 +27,10 @@ const Loginv2 = () => {
   // Email validation regex
 
   useEffect(() => {
+    // scroll top
+    document.getElementById("root")?.scrollTo({
+      top: 0,
+    });
     // check token and get user data and requests for user
     const checkToken = async () => {
       const token = localStorage.getItem("token");

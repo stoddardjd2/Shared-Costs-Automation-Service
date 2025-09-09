@@ -26,7 +26,7 @@ const GlobalNavbar = ({
 
   function handleCreateAccount() {
     navigate("/signup");
-    trackCreateAccount(1);
+    trackCreateAccount("navbar");
   }
 
   const navigate = useNavigate();
