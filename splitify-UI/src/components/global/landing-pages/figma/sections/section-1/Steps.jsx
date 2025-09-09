@@ -131,7 +131,7 @@ export default function Steps({
       },
       {
         root: null,
-        threshold: 0.15,
+        threshold: 0.55,
         rootMargin: "0px 0px -10% 0px",
       }
     );
