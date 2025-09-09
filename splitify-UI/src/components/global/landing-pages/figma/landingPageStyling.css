@@ -78,7 +78,7 @@
 @media (max-width: 480px) {
   :where(.landing-page) h1 { font-size: 2rem; }       /* ~32px */
   :where(.landing-page) h2 { font-size: 1.75rem; }    /* ~28px */
-  :where(.landing-page) h3 { font-size: 1.25rem; }    /* ~20px */
+  :where(.landing-page) h3 { font-size: 1.45rem; }    /* ~23px */
   :where(.landing-page) p { font-size: 1.125rem; }    /* locked at 18px */
   :where(.landing-page) .small { font-size: 1rem; }   /* 16px */
   :where(.landing-page) .smaller { font-size: 0.9375rem; } /* 15px, only for tiny labels */
