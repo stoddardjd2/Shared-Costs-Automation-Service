@@ -33,20 +33,21 @@ function ScrollScale({
   children,
   className = "",
   containerRef, // kept for API compatibility
-  minScale = 0.6,
+  minScaleDefault = 0.6,
   maxScale = 1,
   falloff = 0.6,
   smoothMs = 120,
   powerDefault = 5.0,
 }) {
+  const [power, setPower] = useState(powerDefault);
+  const [minScale, setMinScale] = useState(minScaleDefault);
+
   const ref = useRef(null);
   const rafRef = useRef(0);
   const activeRef = useRef(false);
 
   const animScaleRef = useRef(minScale);
   const lastTimeRef = useRef(performance.now());
-
-  const [power, setPower] = useState(powerDefault);
 
   useEffect(() => {
     // Tailwind `sm` = 640px
@@ -56,8 +57,10 @@ function ScrollScale({
     const handleChange = (e) => {
       if (e.matches) {
         setPower(powerDefault); // screen >= sm
+        setMinScale(minScaleDefault);
       } else {
-        setPower(10); // screen < sm
+        setPower(20); // screen < sm
+        setMinScale(0.9);
       }
     };
 
@@ -65,10 +68,10 @@ function ScrollScale({
     handleChange(mediaQuery);
 
     // Listen for changes
-    mediaQuery.addEventListener("power-change", handleChange);
+    mediaQuery.addEventListener("change", handleChange);
 
     return () => {
-      mediaQuery.removeEventListener("power-change", handleChange);
+      mediaQuery.removeEventListener("change", handleChange);
     };
   }, []);
 
@@ -259,7 +262,7 @@ export default function Section4() {
             </ScrollScale>
           </div>
         </Layout>
-        <Footer/>
+        <Footer />
       </FixedBackgroundSection>
     </section>
   );

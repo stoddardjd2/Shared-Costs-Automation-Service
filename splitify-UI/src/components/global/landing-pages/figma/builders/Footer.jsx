@@ -27,7 +27,7 @@ export default function Footer() {
     });
   };
   return (
-    <footer className="bg-[#f5f5f5] text-white py-6 border-t border-gray-200 rounded-banner">
+    <footer className="bg-[#f7f7f7] pt-8 text-white py-6 border-t border-gray-200 rounded-banner">
       <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row md:items-start md:justify-between gap-6">
         {/* Left: Brand + Links */}
         <div className="flex-1 flex flex-col md:flex-row gap-6">

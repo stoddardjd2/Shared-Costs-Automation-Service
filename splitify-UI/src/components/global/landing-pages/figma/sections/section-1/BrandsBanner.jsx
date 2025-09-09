@@ -2,8 +2,9 @@
 import { logos } from "./brandLogos";
 
 export default function BrandsBanner({
-  speed = 60,
-  spacing = 16, // 👈 px — make smaller/greater to tighten/loosen
+  speed = 15,
+  spacing = 16, 
+  direction = "rtl", //"ltr" or "rtl"
   className = "",
 }) {
   return (
@@ -16,7 +17,9 @@ export default function BrandsBanner({
 
       {/* Track: two rows back-to-back (200% width) */}
       <div
-        className="group flex w-[200%] animate-marquee-ltr will-change-transform"
+        className={`group flex w-[200%] ${
+          direction === "rtl" ? "animate-marquee-rtl" : "animate-marquee-ltr"
+        } will-change-transform`}
         style={{ animationDuration: `${speed}s` }}
       >
         <Row items={logos} spacing={spacing} />
@@ -26,7 +29,28 @@ export default function BrandsBanner({
       {/* Reduced motion */}
       <style>{`
         @media (prefers-reduced-motion: reduce) {
-          .animate-marquee-ltr { animation: none !important; transform: none !important; }
+          .animate-marquee-ltr,
+          .animate-marquee-rtl {
+            animation: none !important;
+            transform: none !important;
+          }
+        }
+
+        /* Keyframes */
+        @keyframes marquee-ltr {
+          0% { transform: translateX(-50%); }
+          100% { transform: translateX(0%); }
+        }
+        @keyframes marquee-rtl {
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
+        }
+
+        .animate-marquee-ltr {
+          animation: marquee-ltr linear infinite;
+        }
+        .animate-marquee-rtl {
+          animation: marquee-rtl linear infinite;
         }
       `}</style>
     </div>
@@ -34,35 +58,22 @@ export default function BrandsBanner({
 }
 
 function Row({ items, spacing, ariaHidden = false }) {
-  // We use per-item horizontal margins = spacing/2
-  // and compute each cell width so the entire row is exactly 100% wide.
-  // Math: total horizontal margins = items.length * spacing
-  // basis = (100% - items*spacing) / items
   const cells = items.length;
   return (
     <ul
-      className={`flex w-full items-center 
-        py-12 sm:py-12
-        `}
+      className="flex w-full items-center py-12 sm:py-12"
       aria-hidden={ariaHidden || undefined}
-      style={
-        {
-          "--cells": cells,
-          "--gap": `${spacing}px`,
-          "--half-gap": `${spacing / 2}px`,
-          "--cell-basis":
-            `calc((100% - (var(--gap) * var(--cells))) / var(--cells))`,
-        } 
-      }
+      style={{
+        "--cells": cells,
+        "--gap": `${spacing}px`,
+        "--half-gap": `${spacing / 2}px`,
+        "--cell-basis": `calc((100% - (var(--gap) * var(--cells))) / var(--cells))`,
+      }}
     >
       {items.map((item, i) => (
         <li
           key={i}
-          className="
-            flex items-center justify-center
-            basis-[var(--cell-basis)]
-            mx-[var(--half-gap)]
-          "
+          className="flex items-center justify-center basis-[var(--cell-basis)] mx-[var(--half-gap)]"
         >
           <Brand item={item} />
         </li>
@@ -71,15 +82,8 @@ function Row({ items, spacing, ariaHidden = false }) {
   );
 }
 
-/**
- * Brand renderer
- * - If your logos are React SVG components: pass the component
- * - If your logos are image URLs: pass strings
- * - If they’re JSX nodes: pass directly
- */
 function Brand({ item }) {
   if (typeof item === "string") {
-    // URL string → <img>
     return (
       <img
         src={item}
@@ -90,14 +94,11 @@ function Brand({ item }) {
     );
   }
   if (typeof item === "function") {
-    // React component (e.g., imported SVG)
     const Logo = item;
     return <Logo className="h-6 md:h-7 lg:h-8" />;
   }
-  // Already JSX?
   if (item && typeof item === "object" && item.type) return item;
 
-  // Fallback: simple text label
   return (
     <span className="whitespace-nowrap text-[1.1rem] font-medium text-[#171717]">
       {String(item)}
