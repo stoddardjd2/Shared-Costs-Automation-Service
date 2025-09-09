@@ -41,13 +41,13 @@ sm:[background:radial-gradient(62.5%_175.13%_at_87.01%_48.68%,_#fff_0%,_#075C7B_
             *UPDATE* New users can now use Splitify free of charge with
             unlimited requests and texts.
           </p>
-          <h1 className="flex flex-col items-center sm:items-start text-white mb-[18px]">
+          <h1 className=" text-white mb-[18px]">
             {/* <span>Bills split.</span>
             <span>Texts & emails sent.</span>
             <span>Follow-ups handled.</span>
             <span>Stress, gone.</span> */}
-            Splitify handles shared bills for you, so you can{" "}
-            <div className="gradient-text w-fit brightness-150 ">relax.</div>
+            Splitify handles your shared bills, so you can{" "}
+            <span className="gradient-text w-fit brightness-150 ">relax.</span>
           </h1>
           {/* <p className="text-white">
             Splitify takes care of shared bills—handling requests, sending
