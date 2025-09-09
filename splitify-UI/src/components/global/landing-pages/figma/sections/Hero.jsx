@@ -67,9 +67,9 @@ export default function Hero() {
             <img
               className={`absolute 
                 top-[50px]
-              right-[-20px] sm:right-[10px]  
+              right-[-10px]  
               w-[163px] z-2`}
-              src={heroPhoneImg}
+              src={heroPhoneImg2}
             />
           </div>
         </div>
@@ -96,7 +96,7 @@ export default function Hero() {
               bottom-[-250px] sm:bottom-[-40px] 
               right-[-20px] sm:right-[10px]  
               w-[223px] z-2`}
-            src={heroPhoneImg}
+            src={heroPhoneImg2}
           />
         </div>
       </div>
