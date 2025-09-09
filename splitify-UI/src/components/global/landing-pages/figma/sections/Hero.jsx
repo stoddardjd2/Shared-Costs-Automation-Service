@@ -19,7 +19,9 @@ export default function Hero() {
       style={{ backgroundAttachment: "fixed" }}
     >
       <div
-        className={`max-w-[1440px] grid grid-cols-12 gap-5 
+        className={`max-w-[1440px] grid grid-cols-12 gap-5
+          px-4 sm:px-10
+          [box-sizing:border-box] 
           items-start sm:items-center
           mt-20 sm:mt-0 
           justify-center`}
@@ -74,28 +76,30 @@ export default function Hero() {
           </div>
         </div>
 
+        {/* large view */}
         <div
           className={`relative  
            hidden sm:inline
-          col-span-12 sm:col-span-6 
+          col-span-6 
           sm:ml-10
-          w-11/12 sm:w-full
           mx-auto sm:mx-0
-          h-[00px] sm:h-auto
           `}
         >
           <img
             className={`
-          absolute sm:static
+          static
           bottom-[-300px] sm:top-auto
+          right-[20px]
+          translate-x-[-20px]
+
             `}
             src={heroDashboardTabletBorderImg}
           />
           <img
             className={`absolute 
               bottom-[-250px] sm:bottom-[-40px] 
-              right-[-20px] sm:right-[10px]  
-              w-[223px] z-2`}
+              right-[0px]  
+              w-[20vw] z-2`}
             src={heroPhoneImg2}
           />
         </div>

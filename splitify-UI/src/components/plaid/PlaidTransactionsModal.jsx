@@ -412,7 +412,7 @@ export default function PlaidTransactionsModal({
                           {formatAmount(transaction.amount)}
                         </div>
                         <div className="flex gap-3">
-                          <div className="text-xs text-slate-400 capitalize">
+                          <div className="hidden sm:flex text-xs text-slate-400 capitalize">
                             {transaction.billingFrequency}
                           </div>
 
@@ -420,6 +420,7 @@ export default function PlaidTransactionsModal({
                             {formatDate(transaction.date)}
                           </div>
                         </div>
+                        
                       </div>
                     </div>
                   ))}

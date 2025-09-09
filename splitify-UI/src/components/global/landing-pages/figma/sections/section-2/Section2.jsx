@@ -1,6 +1,8 @@
 import Layout from "../../builders/Layout";
 import CtaBtn from "../../builders/CtaBtn";
 import Chart from "../../../../../../assets/landing-page/chart.svg?react";
+import bankConnectionDemo from './bank-connection-demo.png'
+
 import { useEffect, useRef } from "react";
 export default function Section2() {
   return (
@@ -12,7 +14,7 @@ export default function Section2() {
         <div
           className={`
           col-span-12 sm:col-span-6 
-          col-start-1`}
+          col-start-1 my-auto`}
         >
           <h2
             className={`
@@ -20,7 +22,7 @@ export default function Section2() {
             mb-[20px]`}
           >
             Bills can change. 
-            <br className="sm:hidden inline"/>
+            <br className=""/>
              Splitify adapts.
           </h2>
           <p
@@ -30,9 +32,7 @@ export default function Section2() {
 
             `}
           >
-            Splitify can track costs that change between billing cycles, meaning
-            you no longer have to worry about checking and calculating splits
-            everytime. Perfect for utilites.
+            Connect your bank account so Splitify can track costs that change between billing cycles. Perfect for utilites.
           </p>
           <CtaBtn text="Track My Bills" className={`
             mx-auto sm:mx-0
@@ -40,14 +40,15 @@ export default function Section2() {
         </div>
         <div
           className={`
-        col-start-3 sm:col-start-9 
-        col-span-8 sm:col-span-4
+        col-start-1 sm:col-start-9 
+        col-span-12 sm:col-span-4
+        w-11/12 sm:w-full
         mx-auto sm:mx-0 
         mt-20 sm:mt-0
-         hidden sm:flex 
           items-center`}
         >
-          <PriceChart />
+          <img src={bankConnectionDemo} alt="bank connection demo"/>
+          {/* <PriceChart /> */}
         </div>
       </Layout>
     </section>

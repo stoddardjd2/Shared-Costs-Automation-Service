@@ -14,7 +14,7 @@ export default function CtaBtn({
         ${className}`}
       onClick={() => {
         navigate("/signup");
-        trackCreateAccount("1.0");
+        trackCreateAccount("CTA-BTN-1.0");
       }}
     >
       <p className="text-white">{text}</p>

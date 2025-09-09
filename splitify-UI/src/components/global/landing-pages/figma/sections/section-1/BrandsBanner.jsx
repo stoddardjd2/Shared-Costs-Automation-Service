@@ -2,7 +2,7 @@
 import { logos } from "./brandLogos";
 
 export default function BrandsBanner({
-  speed = 15,
+  speed = 20,
   spacing = 16, 
   direction = "rtl", //"ltr" or "rtl"
   className = "",

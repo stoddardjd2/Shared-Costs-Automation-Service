@@ -172,7 +172,7 @@ const Navbar = () => {
 
                 <button
                   className={`px-3 sm:px-7 py-2 sm:py-3 rounded-lg text-white font-semibold transition-transform duration-300 hover:-translate-y-0.5 text-sm sm:text-base shadow-md ${
-                    isScrolled ? "bg-blue-600" : "bg-white/20"
+                    isScrolled ? "bg-blue-600" : "bg-white/[8%]"
                   }`}
                   onClick={() => {
                     navigate("/signup");
