@@ -8,35 +8,49 @@ export default function Section3() {
                 bg-[#ACC8D2]`}
     >
       <Layout>
-        <div className={`
+        <div
+          className={`
         sm:col-start-1 
         order-2 sm:order-1
         mt-20 sm:mt-0
         col-span-12 sm:col-span-3 
-          flex items-center`}>
-          <img src={phoneImg} alt="overdue messages via text example" className={`
+          flex items-center`}
+        >
+          <img
+            src={phoneImg}
+            alt="overdue messages via text example"
+            className={`
             w-11/12 sm:w-12/12
              mx-auto sm:mx-0
-            `}/>
+            `}
+          />
         </div>
-        <div className={`
+        <div
+          className={`
           
           col-span-12 sm:col-span-8 
           sm:col-start-5 
           flex justify-center flex-col
           text-center sm:text-left
-          `}>
+          `}
+        >
           <h2 className="mb-[20px]">
             Splitify handles the talking, so you can{" "}
             <span className="gradient-text">Relax.</span>
           </h2>
-          <p className="w-5/6">
-            Splitify saves you time and stress with its intelligent features
-            that you can’t find anywhere else. Say goodbye to awkward
-            conversations.
+          <p
+            className={`
+            
+            w-full sm:w-5/6`}
+          >
+            Splitify sends text and email messages for you, so you don't have to
+            do a thing. Just add a bill and hit send.
           </p>
-          <CtaBtn text="Send a Request" className={`
-            mx-auto sm:mx-0`} />
+          <CtaBtn
+            text="Send a Request"
+            className={`
+            mx-auto sm:mx-0`}
+          />
         </div>
       </Layout>
     </section>

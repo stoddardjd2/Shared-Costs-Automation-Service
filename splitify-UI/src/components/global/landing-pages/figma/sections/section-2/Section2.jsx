@@ -19,7 +19,9 @@ export default function Section2() {
             text-center sm:text-left
             mb-[20px]`}
           >
-            Bills can change. Splitify adapts.
+            Bills can change. 
+            <br className="sm:hidden inline"/>
+             Splitify adapts.
           </h2>
           <p
             className={`
@@ -32,7 +34,7 @@ export default function Section2() {
             you no longer have to worry about checking and calculating splits
             everytime. Perfect for utilites.
           </p>
-          <CtaBtn text="Handle My Bills" className={`
+          <CtaBtn text="Track My Bills" className={`
             mx-auto sm:mx-0
             `} />
         </div>
