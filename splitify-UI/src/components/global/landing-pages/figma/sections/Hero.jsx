@@ -55,7 +55,7 @@ export default function Hero() {
           />
 
           {/* FOR SMALL VIEW */}
-          <div className={`sm:hidden w-full relative h-[400px]`}>
+          <div className={`sm:hidden w-10/12 mx-auto relative h-[400px]`}>
             <img
               className={`
                 mt-[60px]
@@ -66,9 +66,9 @@ export default function Hero() {
             />
             <img
               className={`absolute 
-                top-[30px]
+                top-[50px]
               right-[-20px] sm:right-[10px]  
-              w-[223px] z-2`}
+              w-[163px] z-2`}
               src={heroPhoneImg}
             />
           </div>
