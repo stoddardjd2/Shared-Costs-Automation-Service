@@ -59,7 +59,7 @@ function ScrollScale({
         setPower(powerDefault); // screen >= sm
         setMinScale(minScaleDefault);
       } else {
-        setPower(20); // screen < sm
+        setPower(4); // screen < sm
         setMinScale(0.9);
       }
     };
@@ -190,27 +190,34 @@ export default function Section4() {
   const gridRef = useRef(null);
 
   return (
-    <section className={`shadow-[0_-10px_30px_rgba(0,0,0,0.25)]`}>
+    <section
+      className={`
+      mt-5
+      // shadow-[0_-10px_30px_rgba(0,0,0,0.25)]
+    `}
+    >
       <FixedBackgroundSection>
         <Layout>
-          <div className="col-span-12 rounded-xl">
-            <div className="w-9/12 text-center mx-auto">
-              <h2 className="mb-[20px] text-white">
-                Designed to{" "}
-                <span className="gradient-text brightness-[1.6]">
-                  save your time.
-                </span>
-              </h2>
-              <p className="w-5/6 mx-auto text-white">
-                Splitify makes managing group bills easy. Scroll to see how.
-              </p>
-            </div>
-          </div>
-
           <div
             ref={gridRef}
-            className="mt-10 sm:mt-20 sm:my-40 col-span-12 grid grid-cols-12 gap-y-[0px] sm:gap-y-[270px]"
+            className="col-span-12 grid grid-cols-12 gap-y-[0px] sm:gap-y-[270px]"
           >
+            <ScrollScale className="col-span-12 my-20 sm:my-40 " containerRef={gridRef}>
+              <div className="col-span-12 rounded-xl mt-5">
+                <div className="w-9/12 text-center mx-auto">
+                  <h1 className="mb-[20px] text-white">
+                    Designed to{" "}
+                    <span className="gradient-text brightness-[1.6]">
+                      save your time.
+                    </span>
+                  </h1>
+                  <p className="w-5/6 mx-auto text-white">
+                    Splitify makes managing group bills easy. Scroll to see how.
+                  </p>
+                </div>
+              </div>
+            </ScrollScale>
+
             <ScrollScale className="col-span-12" containerRef={gridRef}>
               <View
                 image={DashboardImg}

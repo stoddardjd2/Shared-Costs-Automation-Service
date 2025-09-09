@@ -1,11 +1,11 @@
 import Layout from "../../builders/Layout";
 import CtaBtn from "../../builders/CtaBtn";
 import phoneImg from "../../../../../../assets/landing-page/phone-tilt-overdue-mild.png";
-
+import phoneImgFlat from './overdue-text-flat.png'
 export default function Section3() {
   return (
     <section
-      className={` flex items-center
+      className={` flex items-center relative
                 bg-[#ACC8D2]`}
     >
       <Layout>
@@ -22,8 +22,18 @@ export default function Section3() {
             src={phoneImg}
             alt="overdue messages via text example"
             className={`
-            w-11/12 sm:w-12/12
              mx-auto sm:mx-0
+              max-h-[80vh]
+              hidden sm:flex
+            `}
+          />
+          <img
+            src={phoneImgFlat}
+            alt="overdue messages via text example"
+            className={`
+             mx-auto sm:mx-0
+              max-h-[80vh]
+              flex sm:hidden
             `}
           />
         </div>
@@ -55,6 +65,9 @@ export default function Section3() {
           />
         </div>
       </Layout>
+
+      {/* rounded overlay on bottom */}
+      <div class="absolute z-20 bottom-[-55px] h-[55px] rounded-b-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.25)] bg-[#ACC8D2] w-full"></div>
     </section>
   );
 }

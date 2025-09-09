@@ -1,5 +1,5 @@
 
-export default function Layout({ children, className }) {
+export default function Layout({ children, className="" }) {
   return (
     <div className="w-full h-full flex justify-center overflow-hidden">
       <div

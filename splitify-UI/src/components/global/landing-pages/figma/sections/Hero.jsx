@@ -13,14 +13,15 @@ export default function Hero() {
         
         sm:h-[1100px] 
         [background:radial-gradient(52.87%_92.69%_at_53.89%_92.69%,_#075C7B_31.33%,_#022B3A_71.02%,_#0C0C0C_100%)]
-        sm:[background:radial-gradient(62.5%_175.13%_at_97.01%_48.68%,_#fff_0%,_#075C7B_31.33%,_#022B3A_71.02%,_#0C0C0C_100%),_radial-gradient(58.45%_56.88%_at_46.87%_72.42%,_#fff_0%,_#4167BC_29.12%,_#1F386F_50.48%,_#0C0C0C_100%)]
+sm:[background:radial-gradient(62.5%_175.13%_at_87.01%_48.68%,_#fff_0%,_#075C7B_31.33%,_#022B3A_71.02%,_#0C0C0C_100%),_radial-gradient(58.45%_56.88%_at_36.87%_72.42%,_#fff_0%,_#4167BC_29.12%,_#1F386F_50.48%,_#0C0C0C_100%)]
         
     `}
+    // [background:radial-gradient(62.5%_175.13%_at_97.01%_48.68%,_#fff_0%,_#075C7B_31.33%,_#022B3A_71.02%,_#0C0C0C_100%),_radial-gradient(58.45%_56.88%_at_46.87%_72.42%,_#fff_0%,_#4167BC_29.12%,_#1F386F_50.48%,_#0C0C0C_100%)]m
       style={{ backgroundAttachment: "fixed" }}
     >
       <div
-        className={`max-w-[1440px] grid grid-cols-12 gap-5
-          px-4 sm:px-10
+        className={`max-w-[1600px] grid grid-cols-12 gap-5
+          px-4 sm:px-5
           [box-sizing:border-box] 
           items-start sm:items-center
           mt-20 sm:mt-0 
@@ -44,11 +45,11 @@ export default function Hero() {
             <span>Bills split.</span>
             <span>Texts & emails sent.</span>
             <span>Follow-ups handled.</span>
+            <span>Stress, gone.</span>
           </h1>
           <p className="text-white">
-            Stop stressing about bills. Splitify handles requests, follow-ups,
-            and tracking - so you don’t have to. Oh, and it can automatically
-            detect and adjust when costs change.
+            Splitify takes care of group bills—handling requests, sending
+            reminders, and keeping bills updated as costs change.
           </p>
           <CtaBtn
             className={`mt-[30px]
@@ -99,7 +100,7 @@ export default function Hero() {
             className={`absolute 
               bottom-[-250px] sm:bottom-[-40px] 
               right-[0px]  
-              w-[20vw] z-2`}
+              w-[15vw] z-2`}
             src={heroPhoneImg2}
           />
         </div>

@@ -1,7 +1,8 @@
 import Layout from "../../builders/Layout";
 import CtaBtn from "../../builders/CtaBtn";
 import Chart from "../../../../../../assets/landing-page/chart.svg?react";
-import bankConnectionDemo from './bank-connection-demo.png'
+import bankConnectionDemo from "./bank-connection-demo.png";
+import bankConnectionDemoFlat from "./bank-connection-demo-flat.png";
 
 import { useEffect, useRef } from "react";
 export default function Section2() {
@@ -21,9 +22,9 @@ export default function Section2() {
             text-center sm:text-left
             mb-[20px]`}
           >
-            Bills can change. 
-            <br className=""/>
-             Splitify adapts.
+            Bills can change.
+            <br className="" />
+            Splitify adapts.
           </h2>
           <p
             className={`
@@ -32,11 +33,16 @@ export default function Section2() {
 
             `}
           >
-            Connect your bank account so Splitify can track costs that change between billing cycles. Perfect for utilites.
+            Connect your bank so Splitify can detect when expenses like
+            utilities and subscriptions increase or decrease, then automatically
+            update your splits with the new amounts.
           </p>
-          <CtaBtn text="Track My Bills" className={`
+          <CtaBtn
+            text="Track My Bills"
+            className={`
             mx-auto sm:mx-0
-            `} />
+            `}
+          />
         </div>
         <div
           className={`
@@ -47,7 +53,8 @@ export default function Section2() {
         mt-20 sm:mt-0
           items-center`}
         >
-          <img src={bankConnectionDemo} alt="bank connection demo"/>
+          <img src={bankConnectionDemo} className="hidden sm:flex max-h-[80vh] mx-auto sm:mx-0" alt="bank connection demo" />
+          <img src={bankConnectionDemoFlat} className="flex sm:hidden max-h-[80vh] mx-auto sm:mx-0" alt="bank connection demo" />
           {/* <PriceChart /> */}
         </div>
       </Layout>
