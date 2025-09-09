@@ -11,7 +11,7 @@ import Section5 from "./sections/section-5/Section5";
 import Navbar from "./builders/Navbar";
 export default function LandingPage() {
   return (
-    <div className={`landing-page`}>
+    <div className={`landing-page relative`}>
       <Navbar
         onLoginClick={() => (window.location.href = "/login")}
         onCreateAccountClick={() => (window.location.href = "/signup")}
@@ -19,7 +19,7 @@ export default function LandingPage() {
       <Hero />
       <Section1 />
       <Section2 />
-      <Section3 />
+        <Section3 />
       <Section4 />
 
       {/* <Section5 /> */}

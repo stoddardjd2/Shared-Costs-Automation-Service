@@ -4,7 +4,7 @@ const FixedBackgroundSection = ({children}) => {
   return (
     <div
       className={`relative
-      //  bg-scroll-gradient
+      bg-scroll-gradient
        `}
       style={{
         minHeight: "100vh",

@@ -187,7 +187,7 @@ export default function Section4() {
   const gridRef = useRef(null);
 
   return (
-    <section className={``}>
+    <section className={`shadow-[0_-10px_30px_rgba(0,0,0,0.25)]`}>
       <FixedBackgroundSection>
         <Layout>
           <div className="col-span-12 rounded-xl">
@@ -206,7 +206,7 @@ export default function Section4() {
 
           <div
             ref={gridRef}
-            className="mt-20 sm:my-40 col-span-12 grid grid-cols-12 gap-y-[0px] sm:gap-y-[270px]"
+            className="mt-10 sm:mt-20 sm:my-40 col-span-12 grid grid-cols-12 gap-y-[0px] sm:gap-y-[270px]"
           >
             <ScrollScale className="col-span-12" containerRef={gridRef}>
               <View
