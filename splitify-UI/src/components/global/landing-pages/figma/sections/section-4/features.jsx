@@ -1,6 +1,80 @@
 export const features1 = [
   {
-    label: "Cost Tracking Active",
+    label: "Alerts For Overdue Payments",
+    svg: (
+      <svg
+        width="25"
+        height="19"
+        viewBox="0 0 25 19"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M1.31396 10.3403L8.0832 17.0625L23.314 1.9375"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    label: "Send New Request",
+    svg: (
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M14.5358 21.6861C14.5738 21.7807 14.6398 21.8615 14.7251 21.9176C14.8103 21.9737 14.9107 22.0023 15.0126 21.9997C15.1146 21.9971 15.2134 21.9633 15.2956 21.903C15.3779 21.8426 15.4397 21.7586 15.4728 21.6621L21.9728 2.66206C22.0048 2.57345 22.0109 2.47756 21.9904 2.38561C21.9699 2.29366 21.9236 2.20945 21.857 2.14283C21.7904 2.07622 21.7062 2.02995 21.6143 2.00945C21.5223 1.98894 21.4264 1.99505 21.3378 2.02706L2.33781 8.52706C2.2413 8.56015 2.15723 8.62197 2.09688 8.70423C2.03652 8.78648 2.00278 8.88523 2.00016 8.98722C1.99755 9.0892 2.0262 9.18955 2.08226 9.27478C2.13833 9.36002 2.21912 9.42606 2.31381 9.46406L10.2438 12.6441C10.4945 12.7444 10.7223 12.8945 10.9134 13.0853C11.1045 13.2761 11.255 13.5036 11.3558 13.7541L14.5358 21.6861Z"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M21.8541 2.14697L10.9141 13.086"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    label: "Search All Requests",
+    svg: (
+      <svg
+        viewBox="0 0 24 24"
+        className="scale-75"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+        <g
+          id="SVGRepo_tracerCarrier"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        ></g>
+        <g id="SVGRepo_iconCarrier">
+          {" "}
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M17.0392 15.6244C18.2714 14.084 19.0082 12.1301 19.0082 10.0041C19.0082 5.03127 14.9769 1 10.0041 1C5.03127 1 1 5.03127 1 10.0041C1 14.9769 5.03127 19.0082 10.0041 19.0082C12.1301 19.0082 14.084 18.2714 15.6244 17.0392L21.2921 22.707C21.6828 23.0977 22.3163 23.0977 22.707 22.707C23.0977 22.3163 23.0977 21.6828 22.707 21.2921L17.0392 15.6244ZM10.0041 17.0173C6.1308 17.0173 2.99087 13.8774 2.99087 10.0041C2.99087 6.1308 6.1308 2.99087 10.0041 2.99087C13.8774 2.99087 17.0173 6.1308 17.0173 10.0041C17.0173 13.8774 13.8774 17.0173 10.0041 17.0173Z"
+            fill="#ffffff"
+          ></path>{" "}
+        </g>
+      </svg>
+    ),
+  },
+  {
+    label: "Cost Tracking Status",
     svg: (
       <svg
         width="34"
@@ -27,52 +101,56 @@ export const features1 = [
     ),
   },
   {
-    label: "Payments Completed",
+    label: "View Request Details",
     svg: (
       <svg
-        width="25"
-        height="19"
-        viewBox="0 0 25 19"
-        fill="none"
+        viewBox="0 -2 20 20"
+        className="scale-75"
+        version="1.1"
         xmlns="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        fill="#000000"
       >
-        <path
-          d="M1.31396 10.3403L8.0832 17.0625L23.314 1.9375"
-          stroke="white"
-          stroke-width="2"
+        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+        <g
+          id="SVGRepo_tracerCarrier"
           stroke-linecap="round"
           stroke-linejoin="round"
-        />
+        ></g>
+        <g id="SVGRepo_iconCarrier">
+          {" "}
+          <title>align_text_left [#910]</title>{" "}
+          <desc>Created with Sketch.</desc> <defs> </defs>{" "}
+          <g
+            id="Page-1"
+            stroke="none"
+            stroke-width="1"
+            fill="none"
+            fill-rule="evenodd"
+          >
+            {" "}
+            <g
+              id="Dribbble-Light-Preview"
+              transform="translate(-60.000000, -4201.000000)"
+              fill="#ffffff"
+            >
+              {" "}
+              <g id="icons" transform="translate(56.000000, 160.000000)">
+                {" "}
+                <path
+                  d="M4,4057 L24,4057 L24,4055 L4,4055 L4,4057 Z M4,4043 L24,4043 L24,4041 L4,4041 L4,4043 Z M4,4050 L18,4050 L18,4048 L4,4048 L4,4050 Z"
+                  id="align_text_left-[#910]"
+                >
+                  {" "}
+                </path>{" "}
+              </g>{" "}
+            </g>{" "}
+          </g>{" "}
+        </g>
       </svg>
     ),
   },
-  {
-    label: "Follow-ups Sent",
-    svg: (
-      <svg
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M14.5358 21.6861C14.5738 21.7807 14.6398 21.8615 14.7251 21.9176C14.8103 21.9737 14.9107 22.0023 15.0126 21.9997C15.1146 21.9971 15.2134 21.9633 15.2956 21.903C15.3779 21.8426 15.4397 21.7586 15.4728 21.6621L21.9728 2.66206C22.0048 2.57345 22.0109 2.47756 21.9904 2.38561C21.9699 2.29366 21.9236 2.20945 21.857 2.14283C21.7904 2.07622 21.7062 2.02995 21.6143 2.00945C21.5223 1.98894 21.4264 1.99505 21.3378 2.02706L2.33781 8.52706C2.2413 8.56015 2.15723 8.62197 2.09688 8.70423C2.03652 8.78648 2.00278 8.88523 2.00016 8.98722C1.99755 9.0892 2.0262 9.18955 2.08226 9.27478C2.13833 9.36002 2.21912 9.42606 2.31381 9.46406L10.2438 12.6441C10.4945 12.7444 10.7223 12.8945 10.9134 13.0853C11.1045 13.2761 11.255 13.5036 11.3558 13.7541L14.5358 21.6861Z"
-          stroke="white"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-        <path
-          d="M21.8541 2.14697L10.9141 13.086"
-          stroke="white"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-      </svg>
-    ),
-  },
+
   // {
   //   label: "Create Request",
   //   svg: (
@@ -202,60 +280,259 @@ export const features2 = [
       </svg>
     ),
   },
+  {
+    label: "Follow-ups Sent",
+    svg: (
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M14.5358 21.6861C14.5738 21.7807 14.6398 21.8615 14.7251 21.9176C14.8103 21.9737 14.9107 22.0023 15.0126 21.9997C15.1146 21.9971 15.2134 21.9633 15.2956 21.903C15.3779 21.8426 15.4397 21.7586 15.4728 21.6621L21.9728 2.66206C22.0048 2.57345 22.0109 2.47756 21.9904 2.38561C21.9699 2.29366 21.9236 2.20945 21.857 2.14283C21.7904 2.07622 21.7062 2.02995 21.6143 2.00945C21.5223 1.98894 21.4264 1.99505 21.3378 2.02706L2.33781 8.52706C2.2413 8.56015 2.15723 8.62197 2.09688 8.70423C2.03652 8.78648 2.00278 8.88523 2.00016 8.98722C1.99755 9.0892 2.0262 9.18955 2.08226 9.27478C2.13833 9.36002 2.21912 9.42606 2.31381 9.46406L10.2438 12.6441C10.4945 12.7444 10.7223 12.8945 10.9134 13.0853C11.1045 13.2761 11.255 13.5036 11.3558 13.7541L14.5358 21.6861Z"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M21.8541 2.14697L10.9141 13.086"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    label: "Payment Status",
+    svg: (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        stroke="#ffffff"
+      >
+        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+        <g
+          id="SVGRepo_tracerCarrier"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        ></g>
+        <g id="SVGRepo_iconCarrier">
+          {" "}
+          <path
+            d="M4 12.6111L8.92308 17.5L20 6.5"
+            stroke="#ffffff"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></path>{" "}
+        </g>
+      </svg>
+    ),
+  },
 ];
-
 
 export const features3 = [
   {
-    label: "Enable Cost Tracking",
+    label: "Select Charge From Bank",
     svg: (
-      <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M22.667 9.9165H31.167V18.4165" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M31.1663 9.9165L19.1247 21.9582L12.0413 14.8748L2.83301 24.0832" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 512 512"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <g clip-path="url(#clip0_163_2)">
+          <path
+            d="M511.999 490.667C511.999 496.325 509.752 501.751 505.751 505.752C501.75 509.753 496.324 512 490.666 512H21.3326C15.6746 512 10.2484 509.753 6.24761 505.752C2.24684 501.751 -0.000776777 496.325 -0.000776777 490.667C-0.000776777 485.009 2.24684 479.583 6.24761 475.582C10.2484 471.581 15.6746 469.334 21.3326 469.334H490.666C496.324 469.334 501.75 471.581 505.751 475.582C509.752 479.583 511.999 485.009 511.999 490.667ZM6.20722 182.443C1.61037 173.916 -0.519291 164.278 0.057259 154.608C0.633809 144.939 3.89375 135.621 9.47122 127.702C18.5861 114.328 30.7927 103.351 45.0552 95.7015L205.077 12.4162C220.805 4.23766 238.272 -0.0322266 255.999 -0.0322266C273.727 -0.0322266 291.194 4.23766 306.922 12.4162L466.922 95.7655C481.184 103.415 493.391 114.392 502.506 127.766C508.083 135.685 511.343 145.003 511.92 154.672C512.496 164.342 510.367 173.98 505.77 182.507C500.821 191.869 493.398 199.693 484.31 205.129C475.223 210.564 464.818 213.402 454.229 213.334H447.999V384H469.333C474.991 384 480.417 386.248 484.418 390.249C488.418 394.249 490.666 399.676 490.666 405.334C490.666 410.992 488.418 416.418 484.418 420.419C480.417 424.419 474.991 426.667 469.333 426.667H42.6659C37.0079 426.667 31.5817 424.419 27.5809 420.419C23.5802 416.418 21.3326 410.992 21.3326 405.334C21.3326 399.676 23.5802 394.249 27.5809 390.249C31.5817 386.248 37.0079 384 42.6659 384H63.9992V213.334H57.7699C47.1706 213.4 36.7567 210.554 27.6641 205.107C18.5714 199.659 11.1493 191.82 6.20722 182.443ZM106.666 384H170.666V213.334H106.666V384ZM213.333 213.334V384H298.666V213.334H213.333ZM405.333 213.334H341.333V384H405.333V213.334ZM44.0099 162.667C45.3484 165.135 47.3403 167.187 49.7674 168.598C52.1944 170.009 54.963 170.725 57.7699 170.667H454.229C457.035 170.725 459.804 170.009 462.231 168.598C464.658 167.187 466.65 165.135 467.989 162.667C468.964 161.036 469.435 159.154 469.344 157.256C469.253 155.358 468.603 153.53 467.477 152C462.308 144.318 455.363 137.996 447.231 133.568L287.231 50.2189C277.589 45.2146 266.884 42.6023 256.021 42.6023C245.157 42.6023 234.452 45.2146 224.81 50.2189L64.8099 133.568C56.6816 138.01 49.7385 144.338 44.5646 152.022C43.4358 153.545 42.7811 155.367 42.6825 157.261C42.5838 159.154 43.0455 161.034 44.0099 162.667Z"
+            fill="white"
+          />
+        </g>
+        <defs>
+          <clipPath id="clip0_163_2">
+            <rect width="512" height="512" fill="white" />
+          </clipPath>
+        </defs>
+      </svg>
     ),
   },
+  {
+    label: "Enable Cost Tracking",
+    svg: (
+      <svg
+        width="34"
+        height="34"
+        viewBox="0 0 34 34"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M22.667 9.9165H31.167V18.4165"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M31.1663 9.9165L19.1247 21.9582L12.0413 14.8748L2.83301 24.0832"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    ),
+  },
+
   {
     label: "Set Frequency",
     svg: (
-   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M12 6V12L16 14" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M12 6V12L16 14"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    ),
+  },
+  // {
+  //   label: "Calculate Splits",
+  //   svg: (
+  //     <svg
+  //       width="25"
+  //       height="25"
+  //       viewBox="0 0 25 25"
+  //       fill="none"
+  //       xmlns="http://www.w3.org/2000/svg"
+  //     >
+  //       <path
+  //         fill-rule="evenodd"
+  //         clip-rule="evenodd"
+  //         d="M6.15707 9.32908C5.51555 8.6876 5.32363 7.72283 5.67079 6.88467C6.01796 6.0465 6.83585 5.5 7.74307 5.5C8.65028 5.5 9.46817 6.0465 9.81534 6.88467C10.1625 7.72283 9.97058 8.6876 9.32907 9.32908C8.45313 10.205 7.033 10.205 6.15707 9.32908Z"
+  //         stroke="white"
+  //         stroke-width="1.5"
+  //         stroke-linecap="round"
+  //         stroke-linejoin="round"
+  //       />
+  //       <path
+  //         fill-rule="evenodd"
+  //         clip-rule="evenodd"
+  //         d="M15.6707 18.8433C15.0292 18.2018 14.8373 17.2371 15.1845 16.3989C15.5316 15.5607 16.3495 15.0142 17.2567 15.0142C18.164 15.0142 18.9818 15.5607 19.329 16.3989C19.6762 17.2371 19.4843 18.2018 18.8427 18.8433C17.9668 19.7192 16.5467 19.7192 15.6707 18.8433Z"
+  //         stroke="white"
+  //         stroke-width="1.5"
+  //         stroke-linecap="round"
+  //       />
+  //       <path
+  //         d="M18.8433 6.15723L6.15625 18.8442"
+  //         stroke="white"
+  //         stroke-width="1.5"
+  //         stroke-linecap="round"
+  //       />
+  //     </svg>
+  //   ),
+  // },
+  {
+    label: "Schedule Request",
+    svg: (
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M8 2V6"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M16 2V6"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M3 10H21"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
     ),
   },
   {
-    label: "Calculate Splits",
-    svg: (
-   <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path fill-rule="evenodd" clip-rule="evenodd" d="M6.15707 9.32908C5.51555 8.6876 5.32363 7.72283 5.67079 6.88467C6.01796 6.0465 6.83585 5.5 7.74307 5.5C8.65028 5.5 9.46817 6.0465 9.81534 6.88467C10.1625 7.72283 9.97058 8.6876 9.32907 9.32908C8.45313 10.205 7.033 10.205 6.15707 9.32908Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-<path fill-rule="evenodd" clip-rule="evenodd" d="M15.6707 18.8433C15.0292 18.2018 14.8373 17.2371 15.1845 16.3989C15.5316 15.5607 16.3495 15.0142 17.2567 15.0142C18.164 15.0142 18.9818 15.5607 19.329 16.3989C19.6762 17.2371 19.4843 18.2018 18.8427 18.8433C17.9668 19.7192 16.5467 19.7192 15.6707 18.8433Z" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-<path d="M18.8433 6.15723L6.15625 18.8442" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-</svg>
-
-    ),
-  },  {
-    label: "Schedule Request",
-    svg: (
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M8 2V6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M16 2V6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M3 10H21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-
-
-    ),
-  },  {
     label: "Allow others to mark as paid",
-    svg: (<svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M16.2812 21V19C16.2812 17.9391 15.8598 16.9217 15.1097 16.1716C14.3595 15.4214 13.3421 15 12.2812 15H6.28125C5.22038 15 4.20297 15.4214 3.45282 16.1716C2.70268 16.9217 2.28125 17.9391 2.28125 19V21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M16.2812 3.12793C17.139 3.3503 17.8986 3.85119 18.4409 4.55199C18.9832 5.25279 19.2774 6.11382 19.2774 6.99993C19.2774 7.88604 18.9832 8.74707 18.4409 9.44787C17.8986 10.1487 17.139 10.6496 16.2812 10.8719" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M22.2812 20.9999V18.9999C22.2806 18.1136 21.9856 17.2527 21.4426 16.5522C20.8996 15.8517 20.1394 15.3515 19.2812 15.1299" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M9.28125 11C11.4904 11 13.2812 9.20914 13.2812 7C13.2812 4.79086 11.4904 3 9.28125 3C7.07211 3 5.28125 4.79086 5.28125 7C5.28125 9.20914 7.07211 11 9.28125 11Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-),
+    svg: (
+      <svg
+        width="25"
+        height="24"
+        viewBox="0 0 25 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M16.2812 21V19C16.2812 17.9391 15.8598 16.9217 15.1097 16.1716C14.3595 15.4214 13.3421 15 12.2812 15H6.28125C5.22038 15 4.20297 15.4214 3.45282 16.1716C2.70268 16.9217 2.28125 17.9391 2.28125 19V21"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M16.2812 3.12793C17.139 3.3503 17.8986 3.85119 18.4409 4.55199C18.9832 5.25279 19.2774 6.11382 19.2774 6.99993C19.2774 7.88604 18.9832 8.74707 18.4409 9.44787C17.8986 10.1487 17.139 10.6496 16.2812 10.8719"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M22.2812 20.9999V18.9999C22.2806 18.1136 21.9856 17.2527 21.4426 16.5522C20.8996 15.8517 20.1394 15.3515 19.2812 15.1299"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M9.28125 11C11.4904 11 13.2812 9.20914 13.2812 7C13.2812 4.79086 11.4904 3 9.28125 3C7.07211 3 5.28125 4.79086 5.28125 7C5.28125 9.20914 7.07211 11 9.28125 11Z"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    ),
   },
 ];

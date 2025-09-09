@@ -4,14 +4,14 @@ import CtaBtn from "../../builders/CtaBtn";
 export default function Section6() {
   return (
     <section className={`bg-[#ACC8D2]`}>
-      <Layout>
+      <Layout className="!pb-0 sm:!pb-4">
         <div className="col-span-12">
           <div
             className={`
-             sm:w-5/12
+                sm:max-w-[500px]
              mx-auto`}
           >
-            <h2 className="mx-auto mb-[10px] text-center sm:ml-[20px] sm:text-center">How it works.</h2>
+            <h2 className="mx-auto mb-[10px] text-center sm:mx-auto sm:text-center">How it works.</h2>
             <Steps />
           </div>
           <CtaBtn text="Try Now Free" className={"mx-auto"} />

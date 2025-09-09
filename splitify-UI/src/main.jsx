@@ -4,7 +4,6 @@ import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import App from "./App";
 import { useEffect } from "react";
-import { registerSW } from "virtual:pwa-register";
 
 // google analytics
 export default function Analytics() {
@@ -26,16 +25,6 @@ export default function Analytics() {
 
   return null;
 }
-
-// registerSW({
-//   immediate: true, // optional
-//   onNeedRefresh() {
-//     alert("PWA");
-//     // show "update available" UI if you want, then:
-//     // updateSW()
-//   },
-//   onOfflineReady() {},
-// });
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(

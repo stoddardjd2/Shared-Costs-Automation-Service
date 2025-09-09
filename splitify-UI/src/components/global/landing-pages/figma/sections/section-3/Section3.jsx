@@ -13,7 +13,7 @@ export default function Section3() {
           className={`
         sm:col-start-1 
         order-2 sm:order-1
-        mt-20 sm:mt-0
+        mt-[35px] sm:mt-0
         col-span-12 sm:col-span-4 
           flex items-center
           `}
@@ -66,8 +66,7 @@ export default function Section3() {
         </div>
       </Layout>
 
-      {/* rounded overlay on bottom */}
-      <div class="absolute z-20 bottom-[-55px] h-[55px] rounded-b-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.25)] bg-[#ACC8D2] w-full"></div>
+  
     </section>
   );
 }

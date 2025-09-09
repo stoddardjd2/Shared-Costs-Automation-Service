@@ -191,6 +191,7 @@ export default function Section4() {
 
   return (
     <section
+      id="features"
       className={`
       mt-5
       // shadow-[0_-10px_30px_rgba(0,0,0,0.25)]
@@ -202,7 +203,10 @@ export default function Section4() {
             ref={gridRef}
             className="col-span-12 grid grid-cols-12 gap-y-[0px] sm:gap-y-[270px]"
           >
-            <ScrollScale className="col-span-12 my-20 sm:my-40 " containerRef={gridRef}>
+            <ScrollScale
+              className="col-span-12 my-20 sm:my-40 "
+              containerRef={gridRef}
+            >
               <div className="col-span-12 rounded-xl mt-5">
                 <div className="w-9/12 text-center mx-auto">
                   <h1 className="mb-[20px] text-white">
@@ -223,6 +227,7 @@ export default function Section4() {
                 image={DashboardImg}
                 features={features1}
                 header={"View all your bills in one place."}
+                text={"Make Bills Easy"}
                 body={
                   "Get alerted when you have overdue payments, view request details, and send new requests - all in one place."
                 }
@@ -234,6 +239,7 @@ export default function Section4() {
                 image={HistoryImg}
                 features={features2}
                 header={"View payment history & manage your requests."}
+                text={"Manage Your Payments"}
                 body={
                   "View all payment requests, mark requests as paid, and adjust request details."
                 }
@@ -245,6 +251,7 @@ export default function Section4() {
                 image={SplitImg}
                 features={features3}
                 header={"Split bills & send requests in seconds."}
+                text={"Split a Bill"}
                 body={
                   "Splitify makes it easy to split bills by automatically calculating costs per person."
                 }
@@ -269,7 +276,6 @@ export default function Section4() {
             </ScrollScale>
           </div>
         </Layout>
-        <Footer />
       </FixedBackgroundSection>
     </section>
   );

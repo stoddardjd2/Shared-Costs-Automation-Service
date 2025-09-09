@@ -1,14 +1,11 @@
 import Layout from "../../builders/Layout";
-import BrandsBanner from "./BrandsBanner";
+import BrandsBanner from "../../builders/BrandsBanner";
 import Steps from "../section-6/Steps";
 import CtaBtn from "../../builders/CtaBtn";
 export default function Section1() {
   return (
     <section className={`bg-[#ACC8D2] relative`}>
-      <div className="absolute z-0 left-0 rounded-banner shadow-[0_-5px_20px_rgba(0,0,0,0.25)] top-[-130px] bg-[#ACC8D2] w-full">
-        <BrandsBanner />
-      </div>
-
+   
       <Layout
         className={`
         
@@ -33,7 +30,7 @@ export default function Section1() {
               <div>Tired of chasing payments?</div>
 
               <div className="mt-[15px]">
-                We've got you covered. Splitify solves what others couldn't.
+                Splitify is the solution for you.
               </div>
               <CtaBtn text="Try For Free" className={"mx-auto"} />
 
@@ -42,6 +39,7 @@ export default function Section1() {
               <div>Let Splitify do the work for you.</div> */}
             </p>
           </div>
+          
         </div>
       </Layout>
     </section>

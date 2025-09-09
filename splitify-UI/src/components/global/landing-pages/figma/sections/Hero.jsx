@@ -16,7 +16,7 @@ export default function Hero() {
 sm:[background:radial-gradient(62.5%_175.13%_at_87.01%_48.68%,_#fff_0%,_#075C7B_31.33%,_#022B3A_71.02%,_#0C0C0C_100%),_radial-gradient(58.45%_56.88%_at_36.87%_72.42%,_#fff_0%,_#4167BC_29.12%,_#1F386F_50.48%,_#0C0C0C_100%)]
         
     `}
-    // [background:radial-gradient(62.5%_175.13%_at_97.01%_48.68%,_#fff_0%,_#075C7B_31.33%,_#022B3A_71.02%,_#0C0C0C_100%),_radial-gradient(58.45%_56.88%_at_46.87%_72.42%,_#fff_0%,_#4167BC_29.12%,_#1F386F_50.48%,_#0C0C0C_100%)]m
+      // [background:radial-gradient(62.5%_175.13%_at_97.01%_48.68%,_#fff_0%,_#075C7B_31.33%,_#022B3A_71.02%,_#0C0C0C_100%),_radial-gradient(58.45%_56.88%_at_46.87%_72.42%,_#fff_0%,_#4167BC_29.12%,_#1F386F_50.48%,_#0C0C0C_100%)]m
       style={{ backgroundAttachment: "fixed" }}
     >
       <div
@@ -41,22 +41,28 @@ sm:[background:radial-gradient(62.5%_175.13%_at_87.01%_48.68%,_#fff_0%,_#075C7B_
             *UPDATE* New users can now use Splitify free of charge with
             unlimited requests and texts.
           </p>
-          <h1 className="flex flex-col text-white mb-[18px]">
-            <span>Bills split.</span>
+          <h1 className="flex flex-col items-center sm:items-start text-white mb-[18px]">
+            {/* <span>Bills split.</span>
             <span>Texts & emails sent.</span>
             <span>Follow-ups handled.</span>
-            <span>Stress, gone.</span>
+            <span>Stress, gone.</span> */}
+            Splitify handles shared bills for you, so you can{" "}
+            <div className="gradient-text w-fit brightness-150 ">relax.</div>
           </h1>
-          <p className="text-white">
-            Splitify takes care of group bills—handling requests, sending
+          {/* <p className="text-white">
+            Splitify takes care of shared bills—handling requests, sending
             reminders, and keeping bills updated as costs change.
+          </p> */}
+          <p className="text-white ">
+            Bills split, texts & emails sent, follow-ups handled, changing costs
+            automtically kept updated.
           </p>
+
           <CtaBtn
             className={`mt-[30px]
             mx-auto sm:mx-0
             `}
           />
-
           {/* FOR SMALL VIEW */}
           <div className={`sm:hidden w-10/12 mx-auto relative h-[400px]`}>
             <img

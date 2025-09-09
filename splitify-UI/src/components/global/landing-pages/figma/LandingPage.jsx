@@ -1,6 +1,6 @@
 import Hero from "./sections/Hero";
 import "./landingPageStyling.css";
-import BrandsBanner from "./sections/section-1/BrandsBanner";
+import BrandsBanner from "./builders/BrandsBanner";
 import Steps from "./sections/section-6/Steps";
 import CtaBtn from "./builders/CtaBtn";
 import Section1 from "./sections/section-1/Section1";
@@ -10,6 +10,7 @@ import Section4 from "./sections/section-4/Section4";
 import Section5 from "./sections/section-5/Section5";
 import Navbar from "./builders/Navbar";
 import Section6 from "./sections/section-6/Seection6";
+import Footer from "./builders/Footer";
 export default function LandingPage() {
   return (
     <div className={`landing-page relative`}>
@@ -18,11 +19,24 @@ export default function LandingPage() {
         onCreateAccountClick={() => (window.location.href = "/signup")}
       />
       <Hero />
-      <Section1 />
-      <Section6 />
-      <Section2 />
+      <div className="relative">
+        <div className="absolute z-0 left-0 bottom-0 rounded-banner shadow-[0_-5px_20px_rgba(0,0,0,0.25)] top-[-130px] bg-[#ACC8D2] w-full">
+          <BrandsBanner />
+        </div>
+        <div className="relative z-10">
+          <Section2 />
+        </div>
+      </div>
       <Section3 />
+      <div className="relative">
+        <Section6 />
+        {/* rounded overlay on bottom */}
+        <div class="absolute z-20 bottom-[-55px] h-[55px] rounded-b-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.25)] bg-[#ACC8D2] w-full"></div>
+      </div>
+
       <Section4 />
+      {/* <Section1 /> */}
+      <Footer />
 
       {/* <Section5 /> */}
     </div>

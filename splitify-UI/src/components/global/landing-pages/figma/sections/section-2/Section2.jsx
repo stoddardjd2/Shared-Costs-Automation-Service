@@ -8,10 +8,11 @@ import { useEffect, useRef } from "react";
 export default function Section2() {
   return (
     <section
+      id="about"
       className={`flex items-center
                 bg-[#ACC8D2]`}
     >
-      <Layout>
+      <Layout className="sm:py-20 pt-0">
         <div
           className={`
           col-span-12 sm:col-span-6 
@@ -50,11 +51,19 @@ export default function Section2() {
         col-span-12 sm:col-span-4
         w-11/12 sm:w-full
         mx-auto sm:mx-0 
-        mt-20 sm:mt-0
+        mt-[35px] sm:mt-0
           items-center`}
         >
-          <img src={bankConnectionDemo} className="hidden sm:flex max-h-[80vh] mx-auto sm:mx-0" alt="bank connection demo" />
-          <img src={bankConnectionDemoFlat} className="flex sm:hidden max-h-[80vh] mx-auto sm:mx-0" alt="bank connection demo" />
+          <img
+            src={bankConnectionDemo}
+            className="hidden sm:flex max-h-[80vh] mx-auto sm:mx-0"
+            alt="bank connection demo"
+          />
+          <img
+            src={bankConnectionDemoFlat}
+            className="flex sm:hidden max-h-[80vh] mx-auto sm:mx-0"
+            alt="bank connection demo"
+          />
           {/* <PriceChart /> */}
         </div>
       </Layout>

@@ -1,7 +1,9 @@
-export default function View({ image, features, header, body }) {
+import CtaBtn from "../../builders/CtaBtn";
+
+export default function View({ image, features, header, body, text }) {
   return (
     <>
-      <div className="col-span-12 hidden sm:grid grid-cols-12 gap-y-[270px]">
+      <div className="col-span-12 hidden xl:grid grid-cols-12 gap-y-[270px]">
         <div className="col-span-6 size-[555px] relative bg-feature-gradient rounded-3xl shadow-2xl">
           <img
             src={image}
@@ -17,12 +19,13 @@ export default function View({ image, features, header, body }) {
           <div className="flex flex-col gap-[16px] w-8/12 mx-auto">
             <h3 className="text-white">{header}</h3>
             <p className="text-[#EAEAEA] medium-body">{body}</p>
+            <CtaBtn className={""} text={text} />
           </div>
         </div>
       </div>
 
       {/* small screen*/}
-      <div className="sm:hidden col-span-12 grid grid-cols-12 gap-y-[50px]">
+      <div className="xl:hidden max-w-[500px] mx-auto col-span-12 grid grid-cols-12 gap-y-[50px]">
         <div className="col-span-12 my-auto">
           <div className="flex flex-col gap-[16px] w-12/12 mx-auto text-center">
             <h3 className="text-white">{header}</h3>
@@ -31,9 +34,9 @@ export default function View({ image, features, header, body }) {
         </div>
 
         <div className="flex-wrap col-span-12 justify-center items-center gap-4 flex">
-            {features.map((feature, index) => (
-              <Feature svg={feature.svg} label={feature.label} key={index} />
-            ))}
+          {features.map((feature, index) => (
+            <Feature svg={feature.svg} label={feature.label} key={index} />
+          ))}
         </div>
 
         <img src={image} className="w-[320px] mx-auto col-span-12"></img>
