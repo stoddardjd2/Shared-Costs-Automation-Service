@@ -6,7 +6,7 @@ export default {
       backgroundImage: {
         "section-gradient": "linear-gradient(180deg, #ACC8D2 0%, #E0EAEE 100%)",
         "section-gradient-reverse":
-          "linear-gradient(180deg,#E0EAEE 100%,#ACC8D2 0%)",
+          "linear-gradient(180deg,#E0EAEE 0%,#ACC8D2 100%)",
         "scroll-gradient":
           "radial-gradient(137.99% 51.6% at 0% 100%, #000000 0%, #075C7B 41.39%, #022B3A 91.02%)",
         // "feature-gradient": "radial-gradient(137.99% 51.6% at 50% 100%, #ACACAC 0%, #075C7B 41.39%, #022B3A 71.02%, #0C0C0C 100%)"

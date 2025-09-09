@@ -1,12 +1,13 @@
 import Layout from "../../builders/Layout";
 import CtaBtn from "../../builders/CtaBtn";
-import { useEffect, useRef, useLayoutEffect } from "react";
+import { useEffect, useRef, useLayoutEffect, useState } from "react";
 import FixedBackgroundSection from "./FixedBackgroundSection.jsx";
 import View from "./View.jsx";
 import { features1, features2, features3 } from "./features.jsx";
 import HistoryImg from "./history-demo-phone.png";
 import DashboardImg from "./dashboard-demo-phone.png";
 import SplitImg from "./split-demo-phone.png";
+import Footer from "../../builders/Footer.jsx";
 
 /**
  * ScrollScale (smooth)
@@ -36,7 +37,7 @@ function ScrollScale({
   maxScale = 1,
   falloff = 0.6,
   smoothMs = 120,
-  power = 5.0,
+  powerDefault = 5.0,
 }) {
   const ref = useRef(null);
   const rafRef = useRef(0);
@@ -44,6 +45,32 @@ function ScrollScale({
 
   const animScaleRef = useRef(minScale);
   const lastTimeRef = useRef(performance.now());
+
+  const [power, setPower] = useState(powerDefault);
+
+  useEffect(() => {
+    // Tailwind `sm` = 640px
+    const mediaQuery = window.matchMedia("(min-width: 640px)");
+
+    // Handler for changes
+    const handleChange = (e) => {
+      if (e.matches) {
+        setPower(powerDefault); // screen >= sm
+      } else {
+        setPower(10); // screen < sm
+      }
+    };
+
+    // Run it once on mount
+    handleChange(mediaQuery);
+
+    // Listen for changes
+    mediaQuery.addEventListener("power-change", handleChange);
+
+    return () => {
+      mediaQuery.removeEventListener("power-change", handleChange);
+    };
+  }, []);
 
   // Set minScale BEFORE first paint to avoid any jump from 1 -> min
   useLayoutEffect(() => {
@@ -167,8 +194,8 @@ export default function Section4() {
             <div className="w-9/12 text-center mx-auto">
               <h2 className="mb-[20px] text-white">
                 Designed to{" "}
-                <span className="gradient-text brightness-125">
-                  ease your mind.
+                <span className="gradient-text brightness-[1.6]">
+                  save your time.
                 </span>
               </h2>
               <p className="w-5/6 mx-auto text-white">
@@ -179,7 +206,7 @@ export default function Section4() {
 
           <div
             ref={gridRef}
-            className="my-10 sm:my-40 col-span-12 grid grid-cols-12 gap-y-[0px] sm:gap-y-[270px]"
+            className="mt-20 sm:my-40 col-span-12 grid grid-cols-12 gap-y-[0px] sm:gap-y-[270px]"
           >
             <ScrollScale className="col-span-12" containerRef={gridRef}>
               <View
@@ -214,19 +241,25 @@ export default function Section4() {
               />
             </ScrollScale>
 
-            <ScrollScale className="col-span-12" containerRef={gridRef}>
+            <ScrollScale
+              className="my-[150px] col-span-12"
+              containerRef={gridRef}
+            >
               <div className="col-span-12 mx-auto text-center">
-                <h2 className="flex flex-col mb-[23px] text-white">
+                <h1 className="flex flex-col mb-[23px] text-white">
                   <span>Less Stress.</span>
                   <span>More Time.</span>
                   <span>Start For Free.</span>
-                </h2>
-                <p className="text-[#EAEAEA]">Say goodbye to being the group bill manager.</p>
+                </h1>
+                <p className="text-[#EAEAEA]">
+                  Say goodbye to being the group bill manager.
+                </p>
                 <CtaBtn text={"Sign Up Free"} className={"mx-auto"} />
               </div>
             </ScrollScale>
           </div>
         </Layout>
+        <Footer/>
       </FixedBackgroundSection>
     </section>
   );

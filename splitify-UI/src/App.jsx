@@ -76,7 +76,7 @@ const App = () => {
           path="/landing"
           element={
             <>
-              <GlobalNavbar
+              {/* <GlobalNavbar
                 options={{
                   // features: true,
                   // security: true,
@@ -85,10 +85,11 @@ const App = () => {
                   // signup: true,
                   isFullScreenMobileMode: true,
                   login: true,
+                  isLandingPage: true,
                 }}
-              />
+              /> */}
               <Outlet />
-              <GlobalFooter />
+              {/* <GlobalFooter /> */}
             </>
           }
         >

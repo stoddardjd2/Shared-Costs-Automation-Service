@@ -153,7 +153,9 @@ export default function Steps({
     <section
       ref={containerRef}
       className={[
-        "relative w-full grid gap-x-8",
+       `relative w-full grid 
+       gap-x-0 sm:gap-x-8
+       `,
         // Tailwind sees both options statically
         isRight ? "grid-cols-[64px_1fr]" : "grid-cols-[1fr_64px]",
         className,

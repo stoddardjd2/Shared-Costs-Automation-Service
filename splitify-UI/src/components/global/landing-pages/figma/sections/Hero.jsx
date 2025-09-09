@@ -1,5 +1,6 @@
 // import heroDashboardPcImg from "../../../../../assets/landing-page/hero-dashboard-pc.png";
 import heroDashboardTabletImg from "../../../../../assets/landing-page/hero-dashboard-tablet-zoom.png";
+import heroDashboardTabletBorderImg from "../../../../../assets/landing-page/hero-dashboard-tablet-border.png";
 import heroPhoneImg from "../../../../../assets/landing-page/hero-phone.png";
 import heroPhoneImg2 from "../../../../../assets/landing-page/hero-phone-2.png";
 import Body from "../builders/Body";
@@ -7,18 +8,32 @@ import CtaBtn from "../builders/CtaBtn";
 export default function Hero() {
   return (
     <section
-      className={` h-[1100px] justify-center flex overflow-hidden relative
-        [background:radial-gradient(62.5%_175.13%_at_97.01%_48.68%,_#fff_0%,_#075C7B_31.33%,_#022B3A_71.02%,_#0C0C0C_100%),_radial-gradient(58.45%_56.88%_at_46.87%_72.42%,_#fff_0%,_#4167BC_29.12%,_#1F386F_50.48%,_#0C0C0C_100%)]
-         bg-no-repeat"
+      className={` 
+        justify-center flex overflow-hidden relative bg-no-repeat
+        
+        sm:h-[1100px] 
+        [background:radial-gradient(52.87%_92.69%_at_53.89%_92.69%,_#075C7B_31.33%,_#022B3A_71.02%,_#0C0C0C_100%)]
+        sm:[background:radial-gradient(62.5%_175.13%_at_97.01%_48.68%,_#fff_0%,_#075C7B_31.33%,_#022B3A_71.02%,_#0C0C0C_100%),_radial-gradient(58.45%_56.88%_at_46.87%_72.42%,_#fff_0%,_#4167BC_29.12%,_#1F386F_50.48%,_#0C0C0C_100%)]
+        
     `}
-    style={{backgroundAttachment:"fixed"}}
+      style={{ backgroundAttachment: "fixed" }}
     >
       <div
-        className="max-w-[1440px] grid grid-cols-12 gap-5 items-center justify-center
-       
-      "
+        className={`max-w-[1440px] grid grid-cols-12 gap-5 
+          items-start sm:items-center
+          mt-20 sm:mt-0 
+          justify-center`}
       >
-        <div className="col-span-6 flex flex-col pl-[20px] h-[608px]">
+        <div
+          className={`
+          flex flex-col 
+          px-[10px] sm:pl-[20px] 
+          col-span-12 sm:col-span-6 
+          justify-center sm:justify-start 
+          sm:h-[608px]
+          text-center sm:text-left
+          `}
+        >
           <p className="text-white smaller font-thin mb-5">
             *UPDATE* New users can now use Splitify free of charge with
             unlimited requests and texts.
@@ -33,13 +48,54 @@ export default function Hero() {
             and tracking - so you don’t have to. Oh, and it can automatically
             detect and adjust when costs change.
           </p>
-          <CtaBtn className={"mt-[50px]"} />
+          <CtaBtn
+            className={`mt-[30px]
+            mx-auto sm:mx-0
+            `}
+          />
+
+          {/* FOR SMALL VIEW */}
+          <div className={`sm:hidden w-full relative h-[400px]`}>
+            <img
+              className={`
+                mt-[60px]
+                absolute
+                  top-[30px]
+            `}
+              src={heroDashboardTabletBorderImg}
+            />
+            <img
+              className={`absolute 
+                top-[30px]
+              right-[-20px] sm:right-[10px]  
+              w-[223px] z-2`}
+              src={heroPhoneImg}
+            />
+          </div>
         </div>
 
-        <div className="relative col-span-6 ml-10">
-          <img className="" src={heroDashboardTabletImg} />
+        <div
+          className={`relative  
+           hidden sm:inline
+          col-span-12 sm:col-span-6 
+          sm:ml-10
+          w-11/12 sm:w-full
+          mx-auto sm:mx-0
+          h-[00px] sm:h-auto
+          `}
+        >
           <img
-            className="absolute bottom-[-40px] right-[10px] w-[223px] z-2"
+            className={`
+          absolute sm:static
+          bottom-[-300px] sm:top-auto
+            `}
+            src={heroDashboardTabletBorderImg}
+          />
+          <img
+            className={`absolute 
+              bottom-[-250px] sm:bottom-[-40px] 
+              right-[-20px] sm:right-[10px]  
+              w-[223px] z-2`}
             src={heroPhoneImg}
           />
         </div>

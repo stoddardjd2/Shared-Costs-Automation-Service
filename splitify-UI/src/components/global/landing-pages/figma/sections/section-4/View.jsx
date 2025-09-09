@@ -23,7 +23,6 @@ export default function View({ image, features, header, body }) {
 
       {/* small screen*/}
       <div className="sm:hidden col-span-12 grid grid-cols-12 gap-y-[50px]">
-        
         <div className="col-span-12 my-auto">
           <div className="flex flex-col gap-[16px] w-12/12 mx-auto text-center">
             <h3 className="text-white">{header}</h3>

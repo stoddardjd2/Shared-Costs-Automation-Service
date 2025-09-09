@@ -41,7 +41,9 @@ function Row({ items, spacing, ariaHidden = false }) {
   const cells = items.length;
   return (
     <ul
-      className="flex w-full items-center py-12"
+      className={`flex w-full items-center 
+        py-12 sm:py-12
+        `}
       aria-hidden={ariaHidden || undefined}
       style={
         {

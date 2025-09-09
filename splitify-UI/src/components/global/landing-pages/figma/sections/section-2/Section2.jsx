@@ -6,19 +6,45 @@ export default function Section2() {
   return (
     <section
       className={`flex items-center
-                bg-section-gradient-reverse`}
+                bg-[#ACC8D2]`}
     >
       <Layout>
-        <div className="col-span-6 col-start-1">
-          <h2 className="mb-[20px]">Bills can change. Splitify adapts.</h2>
-          <p className="w-5/6">
+        <div
+          className={`
+          col-span-12 sm:col-span-6 
+          col-start-1`}
+        >
+          <h2
+            className={`
+            text-center sm:text-left
+            mb-[20px]`}
+          >
+            Bills can change. Splitify adapts.
+          </h2>
+          <p
+            className={`
+              sm:w-5/6
+              text-center sm:text-left
+
+            `}
+          >
             Splitify can track costs that change between billing cycles, meaning
             you no longer have to worry about checking and calculating splits
             everytime. Perfect for utilites.
           </p>
-          <CtaBtn text="Try Now Free" />
+          <CtaBtn text="Handle My Bills" className={`
+            mx-auto sm:mx-0
+            `} />
         </div>
-        <div className="col-start-9 col-span-4 flex items-center">
+        <div
+          className={`
+        col-start-3 sm:col-start-9 
+        col-span-8 sm:col-span-4
+        mx-auto sm:mx-0 
+        mt-20 sm:mt-0
+         hidden sm:flex 
+          items-center`}
+        >
           <PriceChart />
         </div>
       </Layout>

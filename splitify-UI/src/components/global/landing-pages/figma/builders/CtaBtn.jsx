@@ -9,7 +9,7 @@ export default function CtaBtn({
 
   return (
     <button
-      className={`group mt-[35px] w-[190px] h-[55px] [drop-shadow(0px_4px_31.8px_#000000)] 
+      className={`group flex-shrink-0 mt-[35px] w-[190px] h-[55px] [drop-shadow(0px_4px_31.8px_#000000)] 
         bg-blue-600 text-white rounded-[10px] text-body flex items-center justify-center gap-4
         ${className}`}
       onClick={() => {
