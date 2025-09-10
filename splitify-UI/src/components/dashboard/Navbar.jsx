@@ -22,6 +22,7 @@ import PaymentMethodPrompt from "./PaymentMethodPrompt";
 import PwaInstallPrompt from "./PwaInstallPrompt";
 import SplitifyPremiumModal from "../premium/SplitifyPremiumModal";
 import { handleCreatePortalSession } from "../../queries/stripe";
+import { clearUserId } from "../../googleAnalytics/googleAnalyticsHelpers";
 const Navbar = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showPaymentMethodPrompt, setShowPaymentMethodPrompt] = useState(false);
@@ -50,6 +51,9 @@ const Navbar = () => {
     setShowUserMenu(false);
     localStorage.removeItem("token");
     navigate("/login");
+
+    //clear google anayltics id
+    clearUserId();
   };
 
   const getPlanColor = (plan) => {

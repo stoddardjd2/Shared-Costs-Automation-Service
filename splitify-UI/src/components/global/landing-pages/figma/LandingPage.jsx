@@ -11,7 +11,13 @@ import Section5 from "./sections/section-5/Section5";
 import Navbar from "./builders/Navbar";
 import Section6 from "./sections/section-6/Seection6";
 import Footer from "./builders/Footer";
+import { useEffect } from "react";
+import { pageview } from "../../../../googleAnalytics/googleAnalyticsHelpers";
 export default function LandingPage() {
+  useEffect(() => {
+    pageview(null, "Landing_Page")
+  });
+
   return (
     <div className={`landing-page relative`}>
       <Navbar

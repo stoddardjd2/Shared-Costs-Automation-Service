@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
+// server.js
 const { validationResult } = require("express-validator");
 const sendRequestsRouter = require("../send-request-helpers/sendRequestsRouter");
 const crypto = require("crypto");
@@ -8,12 +9,42 @@ const Request = require("../models/Request");
 const { normalizePhone } = require("../utils/general");
 const { ObjectId } = require("mongodb");
 const { mongoose } = require("mongoose");
+const passport = require("passport");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
 // Generate JWT Token
-const generateToken = (id) => {
+const generateToken = (id, googleProfile) => {
+  if (googleProfile) {
+    // for google login/signuip:
+    return jwt.sign(
+      {
+        id,
+        sub: googleProfile.sub,
+        email: googleProfile.email,
+        name: googleProfile.name,
+        picture: googleProfile.picture,
+        provider: "google",
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d", issuer: "your-app", audience: "your-app-web" }
+    );
+  }
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE || "7d",
   });
 };
+function base64url(input) {
+  return input
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
+}
+function sha256(buffer) {
+  return crypto.createHash("sha256").update(buffer).digest();
+}
+function randomString(bytes = 32) {
+  return base64url(crypto.randomBytes(bytes));
+}
 
 const getUserData = async (req, res) => {
   try {
@@ -989,6 +1020,85 @@ const addPaymentMethod = async (req, res) => {
   }
 };
 
+async function handleGoogleAuthVerify(req, res) {
+  console.log("google auth");
+  try {
+    const googleAuthURL = "https://accounts.google.com/o/oauth2/v2/auth";
+    const params = new URLSearchParams({
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      redirect_uri: `${process.env.BASE_URL}/auth/google/callback`,
+      response_type: "code",
+      scope: "profile email",
+      access_type: "offline",
+      prompt: "consent",
+    });
+
+    res.redirect(`${googleAuthURL}?${params}`);
+  } catch (e) {
+    console.error(e);
+    return res.status(401).json({ error: "error with google auth verify" });
+  }
+}
+
+async function handleGoogleCallback(req, res) {
+  console.log("google oauth calback");
+  const { code } = req.query;
+
+  if (!code) {
+    return res.redirect("/login?error=no_code");
+  }
+
+  try {
+    // Exchange code for access token
+    const tokenResponse = await axios.post(
+      "https://oauth2.googleapis.com/token",
+      {
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        code,
+        grant_type: "authorization_code",
+        redirect_uri: `${process.env.CLIENT_URL}/signup`,
+      }
+    );
+
+    const { access_token } = tokenResponse.data;
+
+    // Get user profile
+    const profileResponse = await axios.get(
+      "https://www.googleapis.com/oauth2/v2/userinfo",
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
+
+    const profile = profileResponse.data;
+    const user = {
+      id: profile.id,
+      name: profile.name,
+      email: profile.email,
+      photo: profile.picture,
+    };
+
+    // Generate JWT token
+    const token = generateToken(user);
+
+    // Set HTTP-only cookie
+    res.cookie("auth_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // HTTPS in production
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      sameSite: "lax",
+    });
+
+    res.redirect("/dashboard");
+  } catch (error) {
+    console.error("OAuth callback error:", error);
+    res.redirect("/login?error=auth_failed");
+  }
+}
+
 module.exports = {
   getUsers,
   getUser,
@@ -1005,4 +1115,6 @@ module.exports = {
   approveSmsMessages,
   addPaymentMethod,
   updateContactForUser,
+  handleGoogleAuthVerify,
+  handleGoogleCallback,
 };

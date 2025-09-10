@@ -176,7 +176,7 @@ const Navbar = () => {
                   }`}
                   onClick={() => {
                     navigate("/signup");
-                    trackCreateAccount("navbar");
+                    trackCreateAccount("landing-navbar-CTA");
                   }}
                 >
                   <span className="hidden sm:inline">

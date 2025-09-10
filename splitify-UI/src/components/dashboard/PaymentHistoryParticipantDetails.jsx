@@ -45,6 +45,7 @@ export default function PaymentHistoryParticipantDetails({
   };
 
   const monthDay = (input, daysToAdd = 0) => {
+    try{
     const raw = input && input.$date ? input.$date : input;
     const base = new Date(raw);
     if (Number.isNaN(base)) return "";
@@ -58,6 +59,10 @@ export default function PaymentHistoryParticipantDetails({
       day: "numeric",
       timeZone: "America/Los_Angeles",
     }).format(d);
+  }catch(err){
+    console.log("invalid time value @ monthDay")
+    return null
+  }
   };
 
   const getStatusIndicatorColor = () => {

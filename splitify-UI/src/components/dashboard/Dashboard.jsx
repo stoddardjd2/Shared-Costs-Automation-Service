@@ -11,6 +11,7 @@ import { useData } from "../../contexts/DataContext";
 import AddCost from "../costs/AddCost";
 import ManageRecurringCostModal from "./ManageRecurringCostModal";
 import PaymentMethodPrompt from "./PaymentMethodPrompt";
+import { pageview, setUserId } from "../../googleAnalytics/googleAnalyticsHelpers";
 // import PwaInstallPrompt from "./PwaInstallPrompt";
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -28,6 +29,15 @@ const Dashboard = () => {
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
   const [view, setView] = useState("dashboard");
   const [selectedCost, setSelectedCost] = useState(null);
+
+  // Google analytics:
+  useEffect(() => {
+    // only add if user logged in
+    if (userData) {
+    pageview(null, "Landing_Page")
+    setUserId(userData._id)
+    }
+  });
 
   const handleCloseModal = () => {
     // setShowManageModal(false);

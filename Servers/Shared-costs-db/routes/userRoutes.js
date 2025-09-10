@@ -16,6 +16,8 @@ const {
   approveSmsMessages,
   addPaymentMethod,
   updateContactForUser,
+  handleGoogleCallback,
+  handleGoogleAuthVerify
 } = require("../controllers/userController");
 
 const { protect, authorize } = require("../middleware/auth");
@@ -72,11 +74,20 @@ const validateUpdate = [
 router.post("/login", validateLogin, loginUser);
 router.post("/", validateUser, createUser);
 
+// GOOGLE OAUTH
+
+// 1) Start auth (redirect user to Google)
+// router.get("/auth/google/verify", handleGoogleAuthVerify);
+// router.get("/auth/google/callback", handleGoogleCallback);
+
+
+
 router.post("/forgot-password", forgotPassword);
 router.put("/reset-password/:token", resetPassword);
 router.post("/check-token", checkIfValidToken);
 
 router.patch("/sms/user-consent/:userId", approveSmsMessages);
+
 // Protected routes
 router.use(protect); // All routes after this require user to logged in
 
