@@ -2,7 +2,11 @@
 import React, { useEffect, useState } from "react";
 import { Landmark, Link as LinkIcon } from "lucide-react";
 
-export default function PlaidConnectBanner({ handleConnect, loading }) {
+export default function PlaidConnectBanner({
+  handleConnect,
+  loading,
+  alwaysShowBanner = true,
+}) {
   const [isHidden, setIsHidden] = useState(() =>
     JSON.parse(localStorage.getItem("hidePlaidConnect") || "false")
   );
@@ -18,7 +22,7 @@ export default function PlaidConnectBanner({ handleConnect, loading }) {
   }
 
   // Collapsed mini-CTA when hidden
-  if (isHidden) {
+  if (isHidden && !alwaysShowBanner) {
     return (
       <div className="relative mb-6">
         {/* <button
@@ -47,13 +51,13 @@ export default function PlaidConnectBanner({ handleConnect, loading }) {
   return (
     <div className="bg-slate-50 rounded-2xl p-1 mb-6">
       <div className="relative bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-5 text-white overflow-hidden shadow-[0_10px_25px_rgba(37,99,235,0.2)] mx-auto">
-        <button
+        {!alwaysShowBanner && <button
           className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 border-none text-white w-8 h-8 rounded-lg cursor-pointer text-base transition-all duration-200 z-[3]"
           title="Dismiss"
           onClick={handleClose}
         >
           ×
-        </button>
+        </button>}
 
         <div className="relative z-[2]">
           <div className="flex sm:items-center items-start gap-4 mb-4">
@@ -62,13 +66,12 @@ export default function PlaidConnectBanner({ handleConnect, loading }) {
             </div>
             <div>
               <div className="text-2xl max-w-[230px] xxs:max-w-full font-bold">
-                Connect Bank Account
+                Have Bills That Change?
               </div>
               <div className="text-base opacity-90 leading-relaxed">
                 {" "}
-                Find charges from your bank so Splitify can detect when expenses increase or decrease, then automatically update
-                your recurring request with the new amounts.
-                cycles.
+                Connect your bank so Splitify can keep your requests up to date
+                with changing costs.
               </div>
             </div>
           </div>
