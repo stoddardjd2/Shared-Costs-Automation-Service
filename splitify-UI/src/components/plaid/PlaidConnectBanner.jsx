@@ -66,7 +66,7 @@ export default function PlaidConnectBanner({handleConnect, loading}) {
                 Connect Bank Account
               </div>
               <div className="text-base opacity-90 leading-relaxed">
-                Find charges from your bank, enabling cost tracking(Track costs that change between billing periods and automaticaly adjusts).
+                Find charges from your bank, enabling cost tracking to automatically update requests as costs change between billing cycles.
               </div>
             </div>
           </div>

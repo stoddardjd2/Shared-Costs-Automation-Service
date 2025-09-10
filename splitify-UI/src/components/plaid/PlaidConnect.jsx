@@ -94,7 +94,7 @@ export default function PlaidConnect({
   // Always fetch a fresh token, then re-mount the Link instance and open it.
   async function handleConnect() {
     // verify is premium user
-    if (userData?.plan !== "premium") {
+    if (userData?.plan == "premium" || userData?.plan == "plaid") {
       try {
         setError("");
         setLoading(true);
