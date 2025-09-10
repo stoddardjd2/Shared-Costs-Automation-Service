@@ -53,7 +53,7 @@ sm:[background:radial-gradient(62.5%_175.13%_at_87.01%_48.68%,_#fff_0%,_#075C7B_
           </p> */}
           <p className="text-white ">
             Bills split, texts & emails sent, follow-ups handled, changing costs
-            automtically kept updated.
+            automatically kept updated.
           </p>
 
           <CtaBtn

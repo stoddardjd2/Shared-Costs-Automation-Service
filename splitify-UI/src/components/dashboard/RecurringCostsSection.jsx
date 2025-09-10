@@ -531,6 +531,8 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                               const statusColor = getStatusColor(
                                 participant.status
                               );
+                              console.log("USER", user, "participants", cost.participants)
+                              console.log("Cost", cost, "participant", participant)
                               return (
                                 <div
                                   key={user._id}

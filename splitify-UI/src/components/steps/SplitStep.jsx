@@ -60,7 +60,7 @@ const SplitStep = ({
   setNewChargeDetails,
 }) => {
   // Context to update costs
-  const { updateCost, addCost, participants } = useData();
+  const { updateCost, addCost, participants, userData } = useData();
   // Helper function to get amount with fallback logic
   const [splitType, setSplitType] = useState(
     selectedCharge?.splitType ? selectedCharge.splitType : "equalWithMe"
@@ -132,7 +132,10 @@ const SplitStep = ({
     splitType === "custom" ||
     !isPlaidCharge ||
     recurringType === "one-time" ||
-    disableDynamicCosts;
+    disableDynamicCosts ||
+    userData.plan == "free";
+
+  const isMarkAsPaidEveryoneDisabled = userData.plan !== "premium";
 
   // State for dynamic costs tracking - use previous setting in edit mode, otherwise default based on plaidMatch
   const [isDynamic, setIsDynamic] = useState(
@@ -1342,7 +1345,7 @@ const SplitStep = ({
                       }}
                     >
                       <p>
-                        Dynamic Cost tracking is useful for utilities,
+                        Cost tracking is useful for utilities,
                         subscriptions, or any recurring cost that varies each
                         period.
                       </p>
@@ -1412,7 +1415,7 @@ const SplitStep = ({
                             ? "Not Available For Custom Split Method"
                             : recurringType === "none"
                             ? "Recurring Only"
-                            : "Plaid Required"}
+                            : "Bank Connection Required"}
                         </span>
                       )}
                     </h4>
@@ -1477,7 +1480,9 @@ const SplitStep = ({
 
               <div className="space-y-3">
                 <div
-                  onClick={() => setAllowMarkAsPaidForEveryone(false)}
+                  onClick={() => {
+                    setAllowMarkAsPaidForEveryone(false);
+                  }}
                   className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                     !allowMarkAsPaidForEveryone
                       ? "border-blue-600 bg-blue-50"
@@ -1501,31 +1506,47 @@ const SplitStep = ({
 
                 <div
                   onClick={() => {
-                    setAllowMarkAsPaidForEveryone(true);
+                    if (!isMarkAsPaidEveryoneDisabled) {
+                      setAllowMarkAsPaidForEveryone(true);
+                    }
                   }}
                   className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${
-                    allowMarkAsPaidForEveryone
+                    isMarkAsPaidEveryoneDisabled
+                      ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
+                      : allowMarkAsPaidForEveryone
                       ? "border-blue-600 bg-blue-50 cursor-pointer"
                       : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
                   }`}
                 >
                   <div
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center ${"bg-orange-500"}`}
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      isMarkAsPaidEveryoneDisabled
+                        ? "bg-gray-400"
+                        : "bg-orange-500"
+                    }`}
                   >
                     <Users className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h4 className={`font-semibold text-sm ${"text-gray-900"}`}>
+                    <h4
+                      className={`font-semibold text-sm ${
+                        isMarkAsPaidEveryoneDisabled
+                          ? "text-gray-500"
+                          : "text-gray-900"
+                      }`}
+                    >
                       Everyone
-                      {/* <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
-                        {splitType === "custom"
-                          ? "Not Available"
-                          : recurringType === "none"
-                          ? "Recurring Only"
-                          : "Plaid Required"}
-                      </span> */}
+                      <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
+                        {!isMarkAsPaidEveryoneDisabled ? "" : "Premium Required"}
+                      </span>
                     </h4>
-                    <p className={`text-xs ${"text-gray-600"}`}>
+                    <p
+                      className={`text-xs  ${
+                        isDynamicCostsDisabled
+                          ? "text-gray-400"
+                          : "text-gray-600"
+                      }`}
+                    >
                       Others can mark their requests as paid
                     </p>
                   </div>

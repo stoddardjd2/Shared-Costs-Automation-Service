@@ -177,8 +177,7 @@ export default function SplitifyPremiumModal({
       <ul className="mt-4 space-y-2 text-sm">
         {[
           "Dynamic cost tracking (auto-adjust requests)",
-          "Find transactions from your bank to easily set up new requests",
-          "Filter & choose what to use—your control",
+          "Find transactions from your bank",
           "Bank-grade encryption via Plaid",
         ].map((f) => (
           <li key={f} className="flex items-start gap-2">
@@ -223,8 +222,8 @@ export default function SplitifyPremiumModal({
         {[
           "Dynamic cost tracking (auto-adjust requests)",
           "Find transactions from your bank to easily set up new requests",
-          "Everyone can mark as paid",
-          "Custom SMS/email text for requests & reminders",
+          "Option to enable: Everyone can mark as paid",
+          "Custom SMS/email text for requests & reminders(Coming Soon)",
         ].map((f) => (
           <li key={f} className="flex items-start gap-2">
             <Check className="mt-0.5 h-4 w-4 text-blue-600 flex-shrink-0" />

@@ -200,8 +200,8 @@ const userSchema = new Schema(
         picture: { type: String },
       },
     },
+    partcipantForRequests: [{ Type: Schema.Types.ObjectId }],
   },
-
   {
     timestamps: true,
     toJSON: { virtuals: true },

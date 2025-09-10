@@ -15,7 +15,6 @@ export default function PremiumModal() {
   const [isOpen, setIsOpen] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState("monthly");
 
-  // Pricing configuration - easily customizable
   const pricing = {
     monthly: {
       price: 9.99,
