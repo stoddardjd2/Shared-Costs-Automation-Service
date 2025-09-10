@@ -6,11 +6,20 @@ const sendRequestsRouter = require("../send-request-helpers/sendRequestsRouter")
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const Request = require("../models/Request");
+const { jwtDecode } = require("jwt-decode");
 const { normalizePhone } = require("../utils/general");
 const { ObjectId } = require("mongodb");
 const { mongoose } = require("mongoose");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const { OAuth2Client } = require("google-auth-library");
+
+const oAuth2Client = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  "postmessage"
+);
+
 // Generate JWT Token
 const generateToken = (id, googleProfile) => {
   if (googleProfile) {
@@ -517,7 +526,7 @@ const createUser = async (req, res) => {
       });
     }
 
-    const { name, email, password, role, profile } = req.body;
+    const { name, email, password } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findByEmail(email);
@@ -533,9 +542,6 @@ const createUser = async (req, res) => {
       name,
       email,
       password,
-      role,
-      profile,
-      plan: "free",
     });
 
     // Generate token
@@ -1020,25 +1026,116 @@ const addPaymentMethod = async (req, res) => {
   }
 };
 
-async function handleGoogleAuthVerify(req, res) {
-  console.log("google auth");
+const handleGoogleAuth = async (req, res) => {
   try {
-    const googleAuthURL = "https://accounts.google.com/o/oauth2/v2/auth";
-    const params = new URLSearchParams({
-      client_id: process.env.GOOGLE_CLIENT_ID,
-      redirect_uri: `${process.env.BASE_URL}/auth/google/callback`,
-      response_type: "code",
-      scope: "profile email",
-      access_type: "offline",
-      prompt: "consent",
+    const { tokens } = await oAuth2Client.getToken(req.body.code); // exchange code for tokens
+
+    // use oauth token info to create user
+    const userInfo = jwtDecode(tokens.id_token);
+    // console.log("GOOGLE ROUTE token", userInfo)
+
+    // used if account with email exists:
+    async function getUserByEmail() {
+      return await User.findOne({
+        email: userInfo.email,
+      });
+    }
+    const userByGoogleId = await User.findOne({
+      "OAuth.google.sub": userInfo.sub,
     });
 
-    res.redirect(`${googleAuthURL}?${params}`);
-  } catch (e) {
-    console.error(e);
-    return res.status(401).json({ error: "error with google auth verify" });
+    if (userByGoogleId) {
+      console.log("userByGoogleId");
+      const token = generateToken(userByGoogleId._id);
+      //if account with with google id exists, login user(google id is sub value in user token)
+      res.json({
+        success: true,
+        message: "Login successful",
+        data: {
+          user: {
+            id: userByGoogleId._id,
+            name: userByGoogleId.name,
+            email: userByGoogleId.email,
+            role: userByGoogleId.role,
+            profile: userByGoogleId.profile,
+            lastLogin: userByGoogleId.lastLogin,
+          },
+          token,
+        },
+      });
+    } else if (await getUserByEmail()) {
+      console.log("userByEmail");
+      // if account with email exists, attach google id to account (sub value in user token)
+      const user = await User.findOneAndUpdate(
+        { email: userInfo.email },
+        {
+          $set: {
+            OAuth: {
+              google: {
+                sub: userInfo.sub,
+                picture: userInfo.picture,
+              },
+            },
+            name: userInfo.name,
+          },
+        },
+        { new: true } // Returns the updated document
+      );
+
+      const token = generateToken(user._id);
+
+      res.json({
+        success: true,
+        message: "Login successful",
+        data: {
+          user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            profile: user.profile,
+            lastLogin: user.lastLogin,
+          },
+          token,
+        },
+      });
+    } else {
+      console.log("new user");
+      // if account with email doesn't exist, create new account and store googleId
+      const user = await User.create({
+        email: userInfo.email,
+        name: userInfo.name,
+        OAuth: {
+          google: {
+            sub: userInfo.sub,
+            picture: userInfo.picture,
+          },
+        },
+      });
+
+      const token = generateToken(user._id);
+      res.json({
+        success: true,
+        message: "Login successful",
+        data: {
+          user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            profile: user.profile,
+            lastLogin: user.lastLogin,
+          },
+          token,
+        },
+      });
+    }
+    // send user info after handling account
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: err.message });
   }
-}
+};
 
 async function handleGoogleCallback(req, res) {
   console.log("google oauth calback");
@@ -1115,6 +1212,6 @@ module.exports = {
   approveSmsMessages,
   addPaymentMethod,
   updateContactForUser,
-  handleGoogleAuthVerify,
+  handleGoogleAuth,
   handleGoogleCallback,
 };

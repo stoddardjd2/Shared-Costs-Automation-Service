@@ -84,3 +84,4 @@ export const addPaymentMethod = async (paymentMethod, paymentAddress) => {
     body: { paymentMethod, paymentAddress },
   });
 };
+

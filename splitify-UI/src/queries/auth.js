@@ -131,13 +131,42 @@ const verifyToken = async (token) => {
       return false;
     }
 
-
     return data.data.valid;
   } catch (error) {
     console.error("Error logging in:", error);
     throw error;
   }
 };
+
+const googleOauth = async (code) => {
+  try {
+    const response = await fetch(`${API_URL}/users/auth/google`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ code: code }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      //   throw new Error(data.message || "Failed to create user");
+      console.log("Google oAuth failed", data.message);
+    }
+
+    console.log("data recieved", data);
+    // Store token in localStorage if registration is successful
+    if (data.success && data.data.token) {
+      localStorage.setItem("token", data.data.token);
+    }
+    return data;
+  } catch (error) {
+    console.error("Error creating user:", error);
+    throw error;
+  }
+};
+
 export {
   createUser,
   loginUser,
@@ -145,4 +174,5 @@ export {
   forgotPassword,
   verifyToken,
   API_URL,
+  googleOauth,
 };

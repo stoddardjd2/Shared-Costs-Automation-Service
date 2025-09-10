@@ -154,15 +154,6 @@ const userSchema = new Schema(
       cashapp: String,
       venmo: String,
     },
-    profile: {
-      avatar: String,
-      bio: {
-        type: String,
-        maxlength: [500, "Bio cannot exceed 500 characters"],
-      },
-      location: String,
-      website: String,
-    },
     contacts: [contactSchema], // <-- Contacts with unique IDs
     textMessagesAllowed: { type: TextConsentSchema, default: () => ({}) },
     passwordResetToken: String,
@@ -201,6 +192,13 @@ const userSchema = new Schema(
       enabledOn: Date,
       lastUsed: Date,
       accessToken: { type: String, select: false },
+    },
+
+    OAuth: {
+      google: {
+        sub: { type: String },
+        picture: { type: String },
+      },
     },
   },
 

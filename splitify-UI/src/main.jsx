@@ -5,9 +5,9 @@ import "./index.css";
 import App from "./App";
 import { useEffect } from "react";
 import { useRef } from "react";
-const GA_ID = import.meta.env.VITE_GA4_ID || "G-VCE6S1V64T";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+const GA_ID = import.meta.env.VITE_GA4_ID;
 const ENABLED = import.meta.env.VITE_ENABLE_ANALYTICS === "true";
-
 
 // google analytics
 export default function Analytics() {
@@ -18,19 +18,25 @@ export default function Analytics() {
     inited.current = true;
 
     // Avoid duplicate script injection
-    const already = Array.from(document.scripts).some(s =>
+    const already = Array.from(document.scripts).some((s) =>
       s.src?.includes("googletagmanager.com/gtag/js")
     );
     if (!already) {
       const script = document.createElement("script");
-      script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(GA_ID)}`;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(
+        GA_ID
+      )}`;
       script.async = true;
       document.head.appendChild(script);
     }
 
     // Bootstrap gtag
     window.dataLayer = window.dataLayer || [];
-    window.gtag = window.gtag || function gtag(){ window.dataLayer.push(arguments); };
+    window.gtag =
+      window.gtag ||
+      function gtag() {
+        window.dataLayer.push(arguments);
+      };
 
     // Store ID for helpers
     window.__GA_ID = GA_ID;
@@ -48,7 +54,9 @@ root.render(
   <React.StrictMode>
     <BrowserRouter>
       <Analytics />
-      <App />
+      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID}>
+        <App />
+      </GoogleOAuthProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

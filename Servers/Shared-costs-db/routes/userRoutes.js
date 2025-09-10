@@ -17,7 +17,7 @@ const {
   addPaymentMethod,
   updateContactForUser,
   handleGoogleCallback,
-  handleGoogleAuthVerify
+  handleGoogleAuth
 } = require("../controllers/userController");
 
 const { protect, authorize } = require("../middleware/auth");
@@ -75,9 +75,7 @@ router.post("/login", validateLogin, loginUser);
 router.post("/", validateUser, createUser);
 
 // GOOGLE OAUTH
-
-// 1) Start auth (redirect user to Google)
-// router.get("/auth/google/verify", handleGoogleAuthVerify);
+router.post("/auth/google/", handleGoogleAuth);
 // router.get("/auth/google/callback", handleGoogleCallback);
 
 
