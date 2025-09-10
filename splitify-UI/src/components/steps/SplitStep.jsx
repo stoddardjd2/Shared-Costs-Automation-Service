@@ -1345,9 +1345,8 @@ const SplitStep = ({
                       }}
                     >
                       <p>
-                        Cost tracking is useful for utilities,
-                        subscriptions, or any recurring cost that varies each
-                        period.
+                        Cost tracking is useful when you have recurring expenses that increase or
+                        decreases. Requests will be updated with the new amount each cycle.
                       </p>
                       <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>{" "}
                     </div>
@@ -1537,7 +1536,9 @@ const SplitStep = ({
                     >
                       Everyone
                       <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
-                        {!isMarkAsPaidEveryoneDisabled ? "" : "Premium Required"}
+                        {!isMarkAsPaidEveryoneDisabled
+                          ? ""
+                          : "Premium Required"}
                       </span>
                     </h4>
                     <p

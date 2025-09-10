@@ -38,7 +38,7 @@ const DEFAULT_PRICING = {
 const DEFAULT_COPY = {
   headline: "Unlock smarter splits",
   subheadline:
-    "Connect your bank for accurate transaction history and upgrade to Premium for advanced automation.",
+    "Connect your bank with Plaid to enable cost tracking or upgrade to Premium for Plaid with additional advanced features.",
   dataAssurance:
     "We never store or have direct access to your bank credentials. Splitify only retains minimal details for the transaction you choose.",
 };
@@ -176,7 +176,7 @@ export default function SplitifyPremiumModal({
       </p>
       <ul className="mt-4 space-y-2 text-sm">
         {[
-          "Dynamic cost tracking (auto-adjust requests)",
+          "Cost tracking (Splitify adjusts requests with new amounts if costs change)",
           "Find transactions from your bank",
           "Bank-grade encryption via Plaid",
         ].map((f) => (
@@ -220,10 +220,11 @@ export default function SplitifyPremiumModal({
       </p>
       <ul className="mt-4 space-y-2 text-sm">
         {[
-          "Dynamic cost tracking (auto-adjust requests)",
-          "Find transactions from your bank to easily set up new requests",
-          "Option to enable: Everyone can mark as paid",
-          "Custom SMS/email text for requests & reminders(Coming Soon)",
+          "Cost tracking (Splitify adjusts requests with new amounts if costs change)",
+          "Find transactions from your bank",
+          "Bank-grade encryption via Plaid",
+          "Allow recipients to mark as paid",
+          "Custom SMS/email text for requests & reminders (Coming Soon)",
         ].map((f) => (
           <li key={f} className="flex items-start gap-2">
             <Check className="mt-0.5 h-4 w-4 text-blue-600 flex-shrink-0" />
@@ -422,7 +423,7 @@ export default function SplitifyPremiumModal({
                   }`}
                     />
 
-                    <div className="relative z-10 flex">
+                    <div className="relative z-10 flex ">
                       {["monthly", "annual"].map((k) => (
                         <button
                           key={k}
@@ -443,7 +444,7 @@ export default function SplitifyPremiumModal({
 
                     {/* Animated badge */}
                     <span
-                      className={`absolute right-[-5rem] top-1/2 -translate-y-1/2 text-xs font-medium text-blue-700 bg-blue-50 rounded-full px-2 py-1
+                      className={`absolute top-[-20px] right-1/2 translate-x-1/2 text-xs font-medium text-blue-700 bg-blue-50 rounded-full px-2 py-1
                   ring-1 ring-inset ring-blue-100
                   transition-all duration-300
                   ${

@@ -153,7 +153,10 @@ const AddStep = ({
               const ok = validateEmail(newPerson.email || "");
               if (!ok) {
                 if (input) input.style.borderColor = "red";
-                setEmailError("Please enter a valid email address");
+                console.log("invalid email");
+                setEmailError({
+                  message: "Please enter a valid email address",
+                });
                 return;
               }
               input.style.borderColor =

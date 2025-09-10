@@ -2,8 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Landmark, Link as LinkIcon } from "lucide-react";
 
-
-export default function PlaidConnectBanner({handleConnect, loading}) {
+export default function PlaidConnectBanner({ handleConnect, loading }) {
   const [isHidden, setIsHidden] = useState(() =>
     JSON.parse(localStorage.getItem("hidePlaidConnect") || "false")
   );
@@ -66,7 +65,10 @@ export default function PlaidConnectBanner({handleConnect, loading}) {
                 Connect Bank Account
               </div>
               <div className="text-base opacity-90 leading-relaxed">
-                Find charges from your bank, enabling cost tracking to automatically update requests as costs change between billing cycles.
+                {" "}
+                Find charges from your bank so Splitify can detect when expenses increase or decrease, then automatically update
+                your recurring request with the new amounts.
+                cycles.
               </div>
             </div>
           </div>
@@ -82,8 +84,6 @@ export default function PlaidConnectBanner({handleConnect, loading}) {
             </button>
           </div>
         </div>
-
-   
       </div>
     </div>
   );
