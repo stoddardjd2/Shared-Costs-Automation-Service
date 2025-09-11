@@ -34,6 +34,7 @@ import { createRequest, updateRequest } from "../../queries/requests";
 import EditPeople from "../dashboard/EditPeople";
 import DatePicker from "./DatePicker";
 import PlaidConnect from "../plaid/PlaidConnect";
+import { Navigate } from "react-router-dom";
 const SplitStep = ({
   setSelectedPeople,
   onBack,
@@ -59,6 +60,11 @@ const SplitStep = ({
   setSelectedCost,
   setNewChargeDetails,
 }) => {
+  console.log("seclected people", selectedPeople)
+  if (!selectedPeople || selectedPeople.length == 0) {
+    return <Navigate to="/dashboard" replace/>;
+  }
+
   // Context to update costs
   const { updateCost, addCost, participants, userData } = useData();
   // Helper function to get amount with fallback logic

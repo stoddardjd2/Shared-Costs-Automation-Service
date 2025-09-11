@@ -26,8 +26,13 @@ import { useChargeState } from "../../hooks/useChargeState";
 import PaymentHistoryParticipantDetails from "./PaymentHistoryParticipantDetails";
 import CancelRequestBtn from "./CancelRequestBtn";
 import PauseRequestBtn from "./PauseRequestBtn";
-
+import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
+  if (!cost || !onClose || !setSelectedCost) {
+    return <Navigate to="/dashboard" replace/>;
+  }
+
   const { participants, updateCost, sendPaymentRequest, resendPaymentRequest } =
     useData();
   const [activeTab, setActiveTab] = useState("requests");
