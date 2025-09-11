@@ -415,12 +415,12 @@ const SplitStep = ({
 
     function calculateTotalAmountOwed(participants) {
       return participants.reduce((total, participant) => {
-        return roundToTwo(total + Number(participant.amount) || 0);
+        return total + Number(participant.amount) || 0;
       }, 0);
     }
 
-    costEntry.totalAmountOwed = calculateTotalAmountOwed(
-      costEntry.participants
+    costEntry.totalAmountOwed = roundToTwo(
+      calculateTotalAmountOwed(costEntry.participants)
     );
 
     console.log("ENTRY", costEntry);

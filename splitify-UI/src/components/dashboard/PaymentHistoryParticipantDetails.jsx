@@ -84,11 +84,11 @@ export default function PaymentHistoryParticipantDetails({
   return (
     <div className="flex flex-col gap-[13px] border border-b-2 p-3 rounded-xl">
       <div className="flex gap-4 flex-wrap justify-between">
-        <div className="flex justify-between w-full">
-          <div className="flex gap-4 min-w-[200px] max-w-[300px]">
+        <div className="flex justify-between w-full flex-wrap gap-y-4 gap-x-2">
+          <div className="flex gap-4 ">
             <Avatar user={user} color={getStatusIndicatorColor()} />
             <div className="flex-col flex justify-between">
-              <div className="font-semibold">{user.name}</div>
+              <div className="font-semibold truncate max-w-[120px]">{user.name}</div>
               <div className="text-sm text-gray-800">${participant.amount}</div>
             </div>
           </div>
@@ -176,7 +176,7 @@ function MarkAsPaidButton({
   }
 
   return (
-    <div className="flex items-center justify-end gap-3">
+    <div className="flex items-center justify-end gap-3 ml-[2px]">
       <button
         onClick={handleMarkAsPaid}
         className={`${

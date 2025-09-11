@@ -6,84 +6,83 @@ const User = require("../models/User");
 async function sendRequestsRouter(reminderData, routes = ["text", "email"]) {
   // TODO: Implement your SMS/Email sending logic here
   //Generate payment URL
+  try {
+    const isTextEnabled = await User.findById("68c1d9c25dcc518c5641b28b", {
+      "textMessagesAllowed.isAllowed": true,
+    });
 
-  const isTextEnabled = User.findById("68c1d9c25dcc518c5641b28b", {
-    "textMessagesAllowed.isAllowed": 1,
-  });
-  console.log("isTextEnabled(Router)", isTextEnabled);
-
-  function getFrequency(requestData) {
-    const { frequency, customInterval, customUnit } = requestData;
-    if (frequency !== "custom") {
-      return frequency;
-    } else {
-      if (frequency === "custom") {
-        // Handle pluralization for time units
-        const getSingularUnit = (unit) => {
-          const singularMap = {
-            months: "month",
-            days: "day",
-            weeks: "week",
-            years: "year",
+    function getFrequency(requestData) {
+      const { frequency, customInterval, customUnit } = requestData;
+      if (frequency !== "custom") {
+        return frequency;
+      } else {
+        if (frequency === "custom") {
+          // Handle pluralization for time units
+          const getSingularUnit = (unit) => {
+            const singularMap = {
+              months: "month",
+              days: "day",
+              weeks: "week",
+              years: "year",
+            };
+            return singularMap[unit] || unit;
           };
-          return singularMap[unit] || unit;
-        };
 
-        const unit =
-          customInterval === 1 ? getSingularUnit(customUnit) : customUnit;
-        return `Every ${customInterval} ${unit}`;
+          const unit =
+            customInterval === 1 ? getSingularUnit(customUnit) : customUnit;
+          return `Every ${customInterval} ${unit}`;
+        }
       }
     }
-  }
 
-  const urlBase = `${process.env.CLIENT_URL}/paymentPortal`;
-  const userId = reminderData.participantId;
-  const paymentHistoryId = reminderData.paymentHistoryId;
-  const requestId = reminderData.requestId;
-  const dueDate = reminderData.dueDate;
-  const name = reminderData.participantName;
-  const amount = reminderData.stillOwes;
-  const frequency = getFrequency(reminderData.requestData);
-  const requester = reminderData.requestOwner;
-  const chargeName = reminderData.requestName;
-  const cashapp = reminderData.requestOwnerPaymentMethods?.cashapp || null;
-  const venmo = reminderData.requestOwnerPaymentMethods?.venmo || null;
-  const allowMarkAsPaidForEveryone =
-    reminderData.requestData?.allowMarkAsPaidForEveryone || false;
+    const urlBase = `${process.env.CLIENT_URL}/paymentPortal`;
+    const userId = reminderData.participantId;
+    const paymentHistoryId = reminderData.paymentHistoryId;
+    const requestId = reminderData.requestId;
+    const dueDate = reminderData.dueDate;
+    const name = reminderData.participantName;
+    const amount = reminderData.stillOwes;
+    const frequency = getFrequency(reminderData.requestData);
+    const requester = reminderData.requestOwner;
+    const chargeName = reminderData.requestName;
+    const cashapp = reminderData.requestOwnerPaymentMethods?.cashapp || null;
+    const venmo = reminderData.requestOwnerPaymentMethods?.venmo || null;
+    const allowMarkAsPaidForEveryone =
+      reminderData.requestData?.allowMarkAsPaidForEveryone || false;
 
-  const url = new URL(urlBase);
-  url.searchParams.set("userId", userId);
-  url.searchParams.set("paymentHistoryId", paymentHistoryId);
-  url.searchParams.set("requestId", requestId);
-  url.searchParams.set("dueDate", dueDate);
-  url.searchParams.set("name", name);
-  url.searchParams.set("amount", amount);
-  url.searchParams.set("frequency", frequency);
-  url.searchParams.set("requester", requester);
-  url.searchParams.set("chargeName", chargeName);
-  url.searchParams.set("cashapp", cashapp);
-  url.searchParams.set("venmo", venmo);
-  url.searchParams.set(
-    "allowMarkAsPaidForEveryone",
-    allowMarkAsPaidForEveryone
-  );
+    const url = new URL(urlBase);
+    url.searchParams.set("userId", userId);
+    url.searchParams.set("paymentHistoryId", paymentHistoryId);
+    url.searchParams.set("requestId", requestId);
+    url.searchParams.set("dueDate", dueDate);
+    url.searchParams.set("name", name);
+    url.searchParams.set("amount", amount);
+    url.searchParams.set("frequency", frequency);
+    url.searchParams.set("requester", requester);
+    url.searchParams.set("chargeName", chargeName);
+    url.searchParams.set("cashapp", cashapp);
+    url.searchParams.set("venmo", venmo);
+    url.searchParams.set(
+      "allowMarkAsPaidForEveryone",
+      allowMarkAsPaidForEveryone
+    );
 
-  const finalUrl = url.toString();
-  // Example implementation:
-  // await sendSMS(reminderData.participantId, message);
-  // await sendEmail(reminderData.participantId, subject, message);
-  const user = await User.findOne(
-    { _id: userId },
-    { email: 1, phone: 1, _id: 0 }
-  );
-  console.log(`URL FOR ${name}!`, finalUrl);
-  console.log("sening req, getting user filtered", user);
-  if (routes.includes("email")) {
-    console.log("sending email");
-    sendEmailRequest(requester, name, amount, finalUrl, user.email);
-  }
+    const finalUrl = url.toString();
+    // Example implementation:
+    // await sendSMS(reminderData.participantId, message);
+    // await sendEmail(reminderData.participantId, subject, message);
+    const user = await User.findOne(
+      { _id: userId },
+      { email: 1, phone: 1, _id: 0 }
+    );
+    console.log(`URL FOR ${name}!`, finalUrl);
 
-  const message = `Hi ${name},
+    if (routes.includes("email")) {
+      console.log("sending email");
+      sendEmailRequest(requester, name, amount, finalUrl, user.email);
+    }
+
+    const message = `Hi ${name},
 ${requester} sent you a payment request.
 
 AMOUNT REQUESTED: $${amount}
@@ -94,10 +93,13 @@ To complete your payment, visit: ${finalUrl}
 Sent via Splitify
 `;
 
-  if (routes.includes("text") && isTextEnabled) {
-    console.log("sending text");
-    sendTextMessage(user.phone, "+18333702013", message);
+    if (routes.includes("text") && isTextEnabled) {
+      console.log("sending text");
+      sendTextMessage(user.phone, "+18333702013", message);
+    }
+    return true;
+  } catch (err) {
+    console.log("error in requestRouter", err);
   }
-  return true;
 }
 module.exports = sendRequestsRouter;

@@ -77,10 +77,10 @@ const CancelRequestBtn = ({ requestId, onDeleteSuccess }) => {
         onClick={handleDeleteClick}
         disabled={isDeleting}
         // className="text-white px-4 py-3 rounded-lg transition-all flex items-center justify-center gap-3 bg-gray-400 hover:bg-red-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-        className="w-[172px] mr-auto text-gray-600  hover:text-black py-1 rounded-lg transition-all flex items-center justify-end gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-fit mr-auto text-gray-600  hover:text-black py-1 rounded-lg transition-all flex items-center justify-start gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Trash2 className="w-5 h-5 flex-shrink-0" />
-        Delete Request
+        Delete
       </button>
 
       {showConfirmation && (
@@ -97,7 +97,7 @@ const CancelRequestBtn = ({ requestId, onDeleteSuccess }) => {
             </h3>
 
             {deleteStatus === "success" ? (
-              <div className="flex items-center gap-3 text-blue-600 mb-6">
+              <div className="flex items-center gap-3 text-gray-700 mb-6">
                 <CheckCircle className="w-5 h-5" />
                 <p>Request deleted successfully!</p>
               </div>

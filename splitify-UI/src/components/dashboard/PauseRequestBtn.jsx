@@ -101,14 +101,14 @@ const PauseRequestBtn = ({ requestId, isPausedPassed, onToggleSuccess }) => {
         // className={`text-white px-4 py-3 rounded-lg transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
         //   isPaused ? "bg-green-500 hover:bg-green-600" : "bg-yellow-500 hover:bg-yellow-600"
         // }`}
-        className="w-[172px] mr-auto text-gray-600 hover:text-black py-1 rounded-lg transition-all flex items-center justify-end gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-fit mr-auto text-gray-600 hover:text-black py-1 rounded-lg transition-all flex items-center justify-start gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isPaused ? (
           <Play className="w-5 h-5 flex-shrink-0 " />
         ) : (
           <PauseCircle className="w-5 h-5 flex-shrink-0 " />
         )}
-        {actionText} Request
+        {actionText} 
       </button>
 
       {showConfirmation && (

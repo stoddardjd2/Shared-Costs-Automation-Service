@@ -332,7 +332,7 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                 </p>
               </div>
               <div className="flex flex-wrap items-end justify-end">
-                <div className="flex justify-end ml-6">
+                <div className="flex justify-between gap-10 ml-2">
                   <PauseRequestBtn
                     requestId={cost._id}
                     isPausedPassed={cost?.isPaused}
