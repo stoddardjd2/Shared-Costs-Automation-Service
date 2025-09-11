@@ -980,9 +980,12 @@ const addPaymentMethod = async (req, res) => {
   try {
     const { paymentMethod, paymentAddress } = req.body;
     const userId = req.user?.id; // Assuming user ID from auth middleware
-
+    console.log("adding payment method", paymentMethod);
     // Basic validation
-    if (!paymentMethod || !["cashapp", "venmo"].includes(paymentMethod)) {
+    if (
+      !paymentMethod ||
+      !["cashapp", "venmo", "paypal"].includes(paymentMethod)
+    ) {
       return res.status(400).json({
         success: false,
         message: "Invalid payment method type",
@@ -994,9 +997,7 @@ const addPaymentMethod = async (req, res) => {
     if (!paymentMethod) {
       return res.status(400).json({
         success: false,
-        message: `${
-          paymentMethod === "cashapp" ? "Cash App tag" : "Venmo username"
-        } is required`,
+        message: `${"username"} is required`,
       });
     }
 

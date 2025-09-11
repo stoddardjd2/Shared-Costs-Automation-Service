@@ -153,6 +153,7 @@ const userSchema = new Schema(
     paymentMethods: {
       cashapp: String,
       venmo: String,
+      paypal: String,
     },
     contacts: [contactSchema], // <-- Contacts with unique IDs
     textMessagesAllowed: { type: TextConsentSchema, default: () => ({}) },

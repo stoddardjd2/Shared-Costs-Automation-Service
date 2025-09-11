@@ -54,7 +54,7 @@ export const deleteContact = async (contactId) => {
 };
 
 export const updateContactName = async (contactId, updatedName) => {
-  console.log("TEST!!")
+  console.log("TEST!!");
   const endpoint = `/users/contact/updateName`;
   return apiRequest(endpoint, {
     method: "PATCH",
@@ -81,7 +81,6 @@ export const addPaymentMethod = async (paymentMethod, paymentAddress) => {
   const endpoint = `/users/addPaymentMethod`;
   return await apiRequest(endpoint, {
     method: "POST",
-    body: { paymentMethod, paymentAddress },
+    body: { paymentMethod: paymentMethod.toLowerCase(), paymentAddress },
   });
 };
-

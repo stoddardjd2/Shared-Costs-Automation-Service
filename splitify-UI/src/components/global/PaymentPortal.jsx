@@ -41,8 +41,8 @@ const getPaymentMethods = (initial, paymentDetails) => [
     bgColor: "#3D95CE",
     textColor: "white",
     paymentUrl:
-      initial.venmo && initial.venmo.trim() !== ""
-        ? `https://venmo.com/u/${initial.venmo}?txn=pay&amount=${
+      paymentDetails.paymentMethods?.venmo && paymentDetails.paymentMethods.venmo?.trim() !== ""
+        ? `https://venmo.com/u/${paymentDetails.paymentMethods.venmo}?txn=pay&amount=${
             paymentDetails.amountOwed
           }&note=${encodeURIComponent(paymentDetails.requestName || "Payment")}`
         : "https://venmo.com/",
@@ -62,8 +62,8 @@ const getPaymentMethods = (initial, paymentDetails) => [
     bgColor: "#00D632",
     textColor: "white",
     paymentUrl:
-      initial.cashapp && initial.cashapp.trim() !== ""
-        ? `https://cash.app/$${initial.cashapp}/${paymentDetails.amountOwed}`
+      paymentDetails.paymentMethods?.cashapp && paymentDetails.paymentMethods.cashapp?.trim() !== ""
+        ? `https://cash.app/$${paymentDetails.paymentMethods.cashapp}/${paymentDetails.amountOwed}`
         : "https://cash.app/",
     icon: (
       <svg
@@ -134,8 +134,8 @@ const getPaymentMethods = (initial, paymentDetails) => [
     bgColor: "#0070BA",
     textColor: "white",
     paymentUrl:
-      initial.paypal && initial.paypal.trim() !== ""
-        ? `https://www.paypal.me/${initial.paypal}/${paymentDetails.amountOwed}`
+      paymentDetails.paymentMethods?.paypal && paymentDetails.paymentMethods.paypal?.trim() !== ""
+        ? `https://www.paypal.me/${paymentDetails.paymentMethods.paypal}/${paymentDetails.amountOwed}`
         : "https://paypal.me/",
     icon: (
       <svg
@@ -451,13 +451,13 @@ export default function PaymentPage() {
         userId
       );
       if (res.success) {
-        console.log("res", res);
         const {
           allowMarkAsPaidForEveryone,
           amountOwed,
           dueDate,
           owedTo,
           requestName,
+          paymentMethods
         } = res.data;
 
         const paymentDetailsFiller = {
@@ -466,6 +466,7 @@ export default function PaymentPage() {
           dueDate,
           owedTo,
           requestName,
+          paymentMethods
         };
 
         setPaymentDetails({ ...paymentDetailsFiller });

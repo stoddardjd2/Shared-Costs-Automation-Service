@@ -37,7 +37,6 @@ const getRequests = async (req, res) => {
   }
 };
 const createRequest = async (req, res) => {
-  
   console.log("Creating request with data:", req.body);
   try {
     const userId = req.user._id; // From auth middleware
@@ -146,18 +145,18 @@ const createRequest = async (req, res) => {
     if (request.startTiming == "now") {
       const owner = await User.findById(new ObjectId(req.user._id));
       requestData.participants.forEach((participant) => {
-          sendRequestsRouter({
-            requestId: request._id,
-            paymentHistoryId: request.paymentHistory[0]._id,
-            requestName: request.name,
-            requestOwner: owner.name,
-            requestOwnerPaymentMethods: owner.paymentMethods || {},
-            participantId: participant._id,
-            participantName: participant.name,
-            stillOwes: participant.amount || request.amount,
-            dueDate: request.paymentHistory[0].dueDate,
-            requestData: request,
-          });
+        sendRequestsRouter({
+          requestId: request._id,
+          paymentHistoryId: request.paymentHistory[0]._id,
+          requestName: request.name,
+          requestOwner: owner.name,
+          requestOwnerPaymentMethods: owner.paymentMethods || {},
+          participantId: participant._id,
+          participantName: participant.name,
+          stillOwes: participant.amount || request.amount,
+          dueDate: request.paymentHistory[0].dueDate,
+          requestData: request,
+        });
       });
     }
 
@@ -783,6 +782,7 @@ const handlePaymentDetails = async (req, res) => {
 
     const owner = await User.findById(new ObjectId(requestDocument.owner));
     const OwnerName = owner.name;
+    const ownerPaymentMethods = owner.paymentMethods;
     console.log("OWNER", owner);
 
     const convertToNumber = (value) =>
@@ -821,6 +821,7 @@ const handlePaymentDetails = async (req, res) => {
       owedTo: OwnerName,
       allowMarkAsPaidForEveryone:
         requestDocument?.allowMarkAsPaidForEveryone || false,
+      paymentMethods: ownerPaymentMethods,
       dueDate: thisPaymentHistory.dueDate,
       amountPaid: thisParticipant.amount,
       requestName: requestDocument.name,

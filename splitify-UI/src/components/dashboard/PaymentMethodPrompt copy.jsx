@@ -16,13 +16,12 @@ export default function PaymentMethodPrompt({
   const [bannerVisible, setBannerVisible] = useState(true);
   const [modalType, setModalType] = useState(null); // 'venmo' | 'cashapp' | null
   const [submitting, setSubmitting] = useState(false);
-  const [modalDetails, setModalDetails] = useState({});
+
   const { setPaymentMethods, paymentMethods } = useData();
   // Raw values only (no symbols)
   const [values, setValues] = useState({
-    venmo: paymentMethods?.venmo,
-    cashapp: paymentMethods?.cashapp,
-    paypal: paymentMethods?.paypal
+    venmo: "",
+    cashapp: "",
   });
 
   const openModal = useCallback((type) => {
@@ -120,52 +119,23 @@ export default function PaymentMethodPrompt({
             >
               {(!paymentMethods?.venmo || isEditingFromSettings) && (
                 <PaymentButton
-                  onClick={() => {
-                    openModal("venmo");
-                    setModalDetails({
-                      label: "Venmo Username",
-                      placeholder: "yourUsername",
-                      icon: <VenmoIcon />,
-                      prefix: "@",
-                      name: "Venmo",
-                    });
-                  }}
-                  icon={<VenmoIcon />}
+                  onClick={() => openModal("venmo")}
+                  icon={
+                    <VenmoIcon isEditingFromSettings={isEditingFromSettings} />
+                  }
                   label="Add Venmo"
                   isEditingFromSettings={isEditingFromSettings}
                 />
               )}
               {(!paymentMethods?.cashapp || isEditingFromSettings) && (
                 <PaymentButton
-                  onClick={() => {
-                    setModalDetails({
-                      label: "Cash App Tag",
-                      placeholder: "yourCashtag",
-                      icon: <CashappIcon />,
-                      prefix: "$",
-                      name: "Cash App",
-                    });
-                    openModal("cashapp");
-                  }}
-                  icon={<CashappIcon />}
+                  onClick={() => openModal("cashapp")}
+                  icon={
+                    <CashappIcon
+                      isEditingFromSettings={isEditingFromSettings}
+                    />
+                  }
                   label="Add Cash App"
-                  isEditingFromSettings={isEditingFromSettings}
-                />
-              )}
-              {(!paymentMethods?.paypal || isEditingFromSettings) && (
-                <PaymentButton
-                  onClick={() => {
-                    setModalDetails({
-                      label: "PayPal",
-                      placeholder: "yourPayPal",
-                      icon: <PaypalIcon />,
-                      prefix: "@",
-                      name: "PayPal",
-                    });
-                    openModal("paypal");
-                  }}
-                  icon={<PaypalIcon />}
-                  label="Add PayPal"
                   isEditingFromSettings={isEditingFromSettings}
                 />
               )}
@@ -185,11 +155,6 @@ export default function PaymentMethodPrompt({
               onCancel={closeModal}
               onSave={() => handleSubmit(modalType)}
               submitting={submitting}
-              label={modalDetails.label}
-              placeholder={modalDetails.placeholder}
-              icon={modalDetails.icon}
-              prefix={modalDetails.prefix}
-              name={modalDetails.name}
             />
           </div>
         )}
@@ -225,50 +190,16 @@ export default function PaymentMethodPrompt({
           <div className="flex gap-3 flex-wrap">
             {(!paymentMethods?.venmo || isEditingFromSettings) && (
               <PaymentButton
-                onClick={() => {
-                  openModal("venmo");
-                  setModalDetails({
-                    label: "Venmo Username",
-                    placeholder: "yourUsername",
-                    icon: <VenmoIcon />,
-                    prefix: "@",
-                    name: "Venmo",
-                  });
-                }}
+                onClick={() => openModal("venmo")}
                 icon={<VenmoIcon />}
                 label="Add Venmo"
               />
             )}
             {(!paymentMethods?.cashapp || isEditingFromSettings) && (
               <PaymentButton
-                onClick={() => {
-                  setModalDetails({
-                    label: "Cash App Tag",
-                    placeholder: "yourCashtag",
-                    icon: <CashappIcon />,
-                    prefix: "$",
-                    name: "Cash App",
-                  });
-                  openModal("cashapp");
-                }}
+                onClick={() => openModal("cashapp")}
                 icon={<CashappIcon />}
                 label="Add Cash App"
-              />
-            )}
-            {(!paymentMethods?.paypal || isEditingFromSettings) && (
-              <PaymentButton
-                onClick={() => {
-                  setModalDetails({
-                    label: "PayPal",
-                    placeholder: "yourPayPal",
-                    icon: <PaypalIcon />,
-                    prefix: "@",
-                    name: "PayPal",
-                  });
-                  openModal("paypal");
-                }}
-                icon={<PaypalIcon />}
-                label="Add PayPal"
               />
             )}
           </div>
@@ -287,11 +218,6 @@ export default function PaymentMethodPrompt({
             onCancel={closeModal}
             onSave={() => handleSubmit(modalType)}
             submitting={submitting}
-            label={modalDetails.label}
-            placeholder={modalDetails.placeholder}
-            icon={modalDetails.icon}
-            prefix={modalDetails.prefix}
-            name={modalDetails.name}
           />
         </div>
       )}
@@ -317,26 +243,20 @@ function PaymentButton({ onClick, icon, label, isEditingFromSettings }) {
   );
 }
 
-function PaymentModal({
-  type,
-  value,
-  onChange,
-  onCancel,
-  onSave,
-  submitting,
-  name,
-  label,
-  prefix,
-  icon,
-  placeholder,
-}) {
+function PaymentModal({ type, value, onChange, onCancel, onSave, submitting }) {
+  const isVenmo = type === "venmo";
+  const name = isVenmo ? "Venmo" : "Cash App";
+  const label = isVenmo ? "Venmo Username" : "Cash App Tag";
+  const placeholder = isVenmo ? "yourUsername" : "yourCashtag";
+  const Icon = isVenmo ? VenmoIcon : CashappIcon;
+  const prefix = isVenmo ? "@" : "$";
   const disabled = submitting || !value?.trim();
-  console.log("icon", icon);
+
   return (
     <div className="bg-white  rounded-2xl p-8 w-full max-w-md mx-5 shadow-2xl transform transition-all">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white text-lg">
-          {icon}
+          <Icon />
         </div>
         <h3 className="text-xl font-bold text-gray-800">Add {name}</h3>
       </div>
@@ -446,19 +366,6 @@ function VenmoIcon({ isEditingFromSettings }) {
       xmlns="http://www.w3.org/2000/svg"
     >
       <path d="M444.17,32H70.28C49.85,32,32,46.7,32,66.89V441.6C32,461.91,49.85,480,70.28,480H444.06C464.6,480,480,461.8,480,441.61V66.89C480.12,46.7,464.6,32,444.17,32ZM278,387H174.32L132.75,138.44l90.75-8.62,22,176.87c20.53-33.45,45.88-86,45.88-121.87,0-19.62-3.36-33-8.61-44L365.4,124.1c9.56,15.78,13.86,32,13.86,52.57C379.25,242.17,323.34,327.26,278,387Z"></path>
-    </svg>
-  );
-}
-
-function PaypalIcon({}) {
-  return (
-    <svg
-      className={`w-7 h-7`}
-      fill="#ffffff"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.982.382-1.064.9l-1.106 7.006zm2.146-10.814a.641.641 0 0 0 .633-.74L8.930 2.717a.641.641 0 0 1 .633-.74h4.008c1.295 0 2.233.259 2.845.833.612.574.918 1.407.918 2.833 0 .259-.018.5-.053.740-.018.259-.053.518-.118.777-.018.037-.018.074-.035.111-.353 1.704-1.353 2.833-3.08 3.481-.595.222-1.295.333-2.104.333H9.222z"></path>
     </svg>
   );
 }
