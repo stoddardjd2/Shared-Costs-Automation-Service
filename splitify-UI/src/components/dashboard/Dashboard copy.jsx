@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Plus, Link, RefreshCw, Users } from "lucide-react";
 import RecurringCostsSection from "./RecurringCostsSection";
 import OverdueAlerts from "./OverDueAlerts";
 import LoadingWrapper from "../../utils/LoadingWrapper";
@@ -11,14 +11,10 @@ import { useData } from "../../contexts/DataContext";
 import AddCost from "../costs/AddCost";
 import ManageRecurringCostModal from "./ManageRecurringCostModal";
 import PaymentMethodPrompt from "./PaymentMethodPrompt";
-import {
-  pageview,
-  setUserId,
-} from "../../googleAnalytics/googleAnalyticsHelpers";
-
+import { pageview, setUserId } from "../../googleAnalytics/googleAnalyticsHelpers";
+// import PwaInstallPrompt from "./PwaInstallPrompt";
 const Dashboard = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // 👈 read current URL
   const {
     participants,
     costs,
@@ -30,43 +26,41 @@ const Dashboard = () => {
     userData,
     paymentMethods,
   } = useData();
-
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
-  const [view, setView] = useState("dashboard"); // kept to minimize changes (not used for routing now)
+  const [view, setView] = useState("dashboard");
   const [selectedCost, setSelectedCost] = useState(null);
 
   // Google analytics:
   useEffect(() => {
+    // only add if user logged in
     if (userData) {
-      pageview(null, "Landing_Page");
-      setUserId(userData._id);
+    pageview(null, "Landing_Page")
+    setUserId(userData._id)
     }
   });
 
   const handleCloseModal = () => {
+    // setShowManageModal(false);
     setView("dashboard");
     setSelectedCost(null);
-    navigate("/dashboard"); // 👈 go back to dashboard path
   };
 
   useEffect(() => {
-    const t = setTimeout(() => {
+    setTimeout(() => {
       setIsLoadingDashboard(false);
     }, 200);
-    return () => clearTimeout(t);
-  }, []);
+  });
 
-  // 👇 Now controlled by the URL path
   function getView() {
-    const path = location.pathname;
-    switch (true) {
-      case /^\/dashboard\/add(\/.*)?$/.test(path):
+    switch (view) {
+      case "addRequest":
         return (
           <div className="mt-6 ">
             <AddCost setView={setView} />
           </div>
         );
-      case /^\/dashboard\/request\/details$/.test(path):
+
+      case "requestDetails":
         return (
           <ManageRecurringCostModal
             cost={selectedCost}
@@ -75,24 +69,24 @@ const Dashboard = () => {
           />
         );
 
-      case /^\/dashboard$/.test(path):
+      case "dashboard":
       default:
         return (
           <div className="mx-auto px-4 sm:px-6 py-0 pb-24">
-            {/* Header */}
+            {/* Header section - matching SplitStep structure */}
             <div className="flex items-center justify-between gap-4 mb-6 mt-8">
               <div className="flex-1 min-w-0">
                 <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
                 <p className="text-gray-600">Manage your requests</p>
               </div>
               <button
+                // onClick={() => navigate("/costs/new")}
                 onClick={() => {
+                  setView("addRequest");
                   const root = document.getElementById("root");
                   if (root) {
                     root.scrollTo({ top: 0, left: 0, behavior: "instant" });
                   }
-                  navigate("/dashboard/add"); // 👈 route controls view
-                  setView("addRequest"); // keep local state update (minimal change)
                 }}
                 className="hidden sm:flex bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors items-center gap-2 flex-shrink-0"
               >
@@ -112,24 +106,22 @@ const Dashboard = () => {
 
               {costs.length !== 0 && <OverdueAlerts />}
               <RecurringCostsSection
-                setView={(v) => {
-                  setView(v);
-                  if (v === "requestDetails")
-                    navigate("/dashboard/request/details"); // 👈 open details
-                }}
+                setView={setView}
                 setSelectedCost={setSelectedCost}
               />
+              {/* <RecurringCostsFromBank recurringFromBank={recurringFromBank} /> */}
+              {/* <OneTimeCosts oneTimeCosts={oneTimeCosts} /> */}
             </div>
 
-            {/* New request (mobile) */}
+            {/* new req button for mobile*/}
             <button
+              // onClick={() => navigate("/costs/new")}
               onClick={() => {
                 const root = document.getElementById("root");
                 if (root) {
                   root.scrollTo({ top: 0, left: 0, behavior: "instant" });
                 }
-                setView("addRequest"); // minimal change
-                navigate("/dashboard/add"); // 👈
+                setView("addRequest");
               }}
               className="fixed flex bottom-5 right-5 sm:hidden shadow-xl bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors items-center gap-2 flex-shrink-0"
             >

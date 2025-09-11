@@ -46,7 +46,7 @@ const App = () => {
         {/* Protected routes */}
         {/* <Route path="/" element={<div>{navigate("/landing")}</div>} /> */}
         <Route
-          path="/dashboard"
+          path="/dashboard/*"
           element={
             <AuthProvider>
               <ProtectedRoute>
@@ -94,15 +94,14 @@ const App = () => {
           }
         >
           <Route index element={<LandingPageOfficial />} />
-          <Route path="1" element={<LandingPage />} />
+          {/* <Route path="1" element={<LandingPage />} />
           <Route path="2" element={<LandingPage2 />} />
           <Route path="3" element={<LandingPage3 />} />
           <Route path="4" element={<LandingPage4 />} />
           <Route path="5" element={<LandingPage5 />} />
           <Route path="6" element={<LandingPage6 />} />
           <Route path="7" element={<LandingPageCustom />} />
-          <Route path="test" element={<FixedBackgroundSection />} />
-          {/* Fallback route - must be last */}
+          <Route path="test" element={<FixedBackgroundSection />} /> */}
         </Route>
 
         <Route
@@ -167,12 +166,13 @@ const App = () => {
           }
         ></Route>
         {/* <Route path="/" element={<Navigate to="/dashboard" replace />} /> */}
-        <Route path="/plaidSandboxDemo" element={<PlaidSandboxDemo />} />
+        {/* <Route path="/plaidSandboxDemo" element={<PlaidSandboxDemo />} />
         <Route
           path="/PlaidSandboxDemoUserFlow"
           element={<PlaidSandboxDemoUserFlow />}
-        />
+        /> */}
 
+          {/* Fallback route - must be last */}
         <Route path="*" element={<Navigate to="/landing" replace />} />
       </Routes>
     </div>

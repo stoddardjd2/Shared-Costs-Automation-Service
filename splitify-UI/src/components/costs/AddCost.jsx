@@ -10,6 +10,7 @@ import ChargeDetailsStep from "../steps/ChargeDetailsStep";
 import SearchStep from "../steps/SearchStep";
 import SplitStep from "../steps/SplitStep";
 import AddStep from "../steps/AddStep";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const AddCost = ({ setView }) => {
   const [currentStep, setCurrentStep] = useState(STEPS.SEARCH);
@@ -17,6 +18,9 @@ const AddCost = ({ setView }) => {
   const chargeState = useChargeState();
   const peopleState = usePeopleState();
   const splitState = useSplitState();
+
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const handleChargeTypeSelect = (type) => {
     chargeState.setChargeType(type);
@@ -39,6 +43,7 @@ const AddCost = ({ setView }) => {
 
   const handleAddContact = () => {
     setCurrentStep(STEPS.ADD);
+    navigate("/dashboard/add/newperson");
   };
 
   const handleAddPerson = () => {
@@ -57,6 +62,7 @@ const AddCost = ({ setView }) => {
     const success = peopleState.handleUpdatePersonName(contactId, updatedName);
   };
   const handleContinueToSplit = () => {
+    navigate("/dashboard/add/split");
     setCurrentStep(STEPS.SPLIT);
   };
 
@@ -66,7 +72,9 @@ const AddCost = ({ setView }) => {
         setCurrentStep(STEPS.CHARGE_TYPE);
         break;
       case STEPS.CHARGE_DETAILS:
+        navigate("/dashboard");
         setView("dashoard");
+
         // setCurrentStep(
         //   chargeState.chargeType === "new"
         //     ? STEPS.CHARGE_TYPE
@@ -79,9 +87,11 @@ const AddCost = ({ setView }) => {
             ? STEPS.CHARGE_SEARCH
             : STEPS.CHARGE_DETAILS
         );
+        navigate("/dashboard");
         break;
       case STEPS.SPLIT: // ADD THIS CASE
         setCurrentStep(STEPS.SEARCH);
+        navigate("/dashboard/add");
         break;
       case STEPS.ADD:
         setCurrentStep(STEPS.SEARCH);
@@ -93,7 +103,19 @@ const AddCost = ({ setView }) => {
   };
 
   const renderCurrentStep = () => {
-    switch (currentStep) {
+    const path = location.pathname;
+
+    // derive step from URL; fallback to currentStep if no match
+    let stepFromUrl = currentStep;
+    if (path.startsWith("/dashboard/add/split")) {
+      stepFromUrl = STEPS.SPLIT;
+    } else if (path.startsWith("/dashboard/add/newperson")) {
+      stepFromUrl = STEPS.ADD;
+    } else if (path.startsWith("/dashboard/add")) {
+      stepFromUrl = STEPS.SEARCH;
+    }
+
+    switch (stepFromUrl) {
       case STEPS.CHARGE_TYPE:
         return (
           <ChargeTypeStep
@@ -102,6 +124,7 @@ const AddCost = ({ setView }) => {
           />
         );
 
+      // NOT USED
       case STEPS.CHARGE_SEARCH:
         return (
           <ChargeSearchStep
@@ -120,6 +143,7 @@ const AddCost = ({ setView }) => {
           />
         );
 
+      // NOT USED
       case STEPS.CHARGE_DETAILS:
         return (
           <ChargeDetailsStep
@@ -135,6 +159,7 @@ const AddCost = ({ setView }) => {
           />
         );
 
+      // dashboard/add
       case STEPS.SEARCH:
         return (
           <SearchStep
@@ -146,11 +171,10 @@ const AddCost = ({ setView }) => {
             togglePersonSelection={peopleState.togglePersonSelection}
             onAddContact={handleAddContact}
             onBack={handleBack}
-            onContinue={handleContinueToSplit} // ADD THIS PROP
+            onContinue={handleContinueToSplit}
             // Charge state
             selectedCharge={chargeState.selectedCharge}
             newChargeDetails={chargeState.newChargeDetails}
-            // REMOVE ALL SPLIT STATE PROPS - they're not needed anymore
             // New person form
             newPerson={peopleState.newPerson}
             setNewPerson={peopleState.setNewPerson}
@@ -159,14 +183,13 @@ const AddCost = ({ setView }) => {
           />
         );
 
-      // ADD THIS NEW CASE
+      // dashboard/add/split
       case STEPS.SPLIT:
         return (
           <SplitStep
             selectedPeople={peopleState.selectedPeople}
             onBack={handleBack}
             selectedCharge={chargeState.selectedCharge}
-            // newChargeDetails={chargeState.newChargeDetails}
             splitType={splitState.splitType}
             setSplitType={splitState.setSplitType}
             totalAmount={splitState.totalAmount}
@@ -181,6 +204,7 @@ const AddCost = ({ setView }) => {
           />
         );
 
+      // dashboard/add/newperson
       case STEPS.ADD:
         return (
           <AddStep
@@ -193,8 +217,6 @@ const AddCost = ({ setView }) => {
             setNewPeople={peopleState.setNewPeople}
             onContinue={handleContinueToSplit}
             onDeletePerson={handleDeletePerson}
-            // isPhoneInUse={peopleState.isPhoneInUse}
-            // setIsPhoneInUse={peopleState.setIsPhoneInUse}
             setEmailError={peopleState.setEmailError}
             emailError={peopleState.emailError}
             selectedPeople={peopleState.selectedPeople}

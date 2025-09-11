@@ -401,7 +401,7 @@ export default function SplitifyPremiumModal({
                     ref={closeBtnRef}
                     onClick={onClose}
                     aria-label="Close upgrade modal"
-                    className="absolute right-4 top-4 inline-flex items-center justify-center rounded-full p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="absolute right-4 top-4 inline-flex items-center justify-center rounded-full p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 "
                   >
                     <X className="h-5 w-5" />
                   </button>
