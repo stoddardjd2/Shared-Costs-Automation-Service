@@ -151,7 +151,7 @@ const Navbar = () => {
 
     return initials;
   }
-  
+
   useEffect(() => {
     const path = location.pathname;
     setShowPremiumPrompt(path.startsWith("/dashboard/premium"));
@@ -301,7 +301,7 @@ const Navbar = () => {
                       }
                       setShowUserMenu(false);
                     }}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    className="flex items-center w-full px-4 py-4 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                   >
                     <Crown className="w-4 h-4 mr-3" />{" "}
                     {userData.plan == "free"
@@ -315,7 +315,7 @@ const Navbar = () => {
                         alert("Upgrade plan modal would open here");
                         setShowUserMenu(false);
                       }}
-                      className="flex items-center w-full px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 transition-colors"
+                      className="flex items-center w-full px-4 py-4 text-sm text-purple-600 hover:bg-purple-50 transition-colors"
                     >
                       <Crown className="w-4 h-4 mr-3" />
                       Upgrade Plan
@@ -328,7 +328,7 @@ const Navbar = () => {
                       setShowPwaGuide(!showPwaGuide);
                       setShowUserMenu(false);
                     }}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    className="flex items-center w-full px-4 py-4 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                   >
                     <Smartphone className="w-4 h-4 mr-3" />
                     Install Web App
@@ -340,7 +340,7 @@ const Navbar = () => {
                       setShowPaymentMethodPrompt(true);
                       setShowUserMenu(false);
                     }}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    className="flex items-center w-full px-4 py-4 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                   >
                     <Settings className="w-4 h-4 mr-3" />
                     Edit Payment Methods
@@ -350,7 +350,7 @@ const Navbar = () => {
                   <div className="border-t border-gray-100 py-2">
                     <button
                       onClick={handleLogout}
-                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                      className="flex items-center w-full px-4 py-4 text-sm text-red-600 hover:bg-red-50 transition-colors"
                     >
                       <LogOut className="w-4 h-4 mr-3" />
                       Sign Out
