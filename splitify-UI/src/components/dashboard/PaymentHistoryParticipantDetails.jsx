@@ -83,7 +83,7 @@ export default function PaymentHistoryParticipantDetails({
 
   return (
     <div className="flex flex-col gap-[13px] border border-b-2 p-3 rounded-xl">
-      <div className="flex gap-4 flex-wrap justify-between">
+      <div className="flex gap-1 flex-wrap justify-between">
         <div className="flex justify-between w-full flex-wrap gap-y-4 gap-x-2">
           <div className="flex gap-4 ">
             <Avatar user={user} color={getStatusIndicatorColor()} />
@@ -107,11 +107,11 @@ export default function PaymentHistoryParticipantDetails({
           <div className="flex gap-5 justify-between w-full">
             <div className="h-10 w-full justify-between border border-white/30 text-gray-600 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-4 shadow-none disabled:opacity-50 disabled:cursor-auto text-sm flex-shrink-0">
               <div className="flex items-center gap-3">
-                <Send className="w-6 h-6 " />
+                <Send className="w-4 h-4 flex-shrink-0" />
                 <span>Last Sent {monthDay(participant?.requestSentDate)}</span>
               </div>
               <div className="flex items-center gap-3">
-                <RefreshCw className="w-6 h-6 " />
+                <RefreshCw className="w-4 h-4 flex-shrink-0" />
                 <span>
                   Next{" "}
                   {monthDay(
