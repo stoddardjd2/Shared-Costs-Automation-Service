@@ -16,7 +16,7 @@ import {
   Inbox,
   Smartphone,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useData } from "../../contexts/DataContext";
 import PaymentMethodPrompt from "./PaymentMethodPrompt";
 import PwaInstallPrompt from "./PwaInstallPrompt";
@@ -30,6 +30,7 @@ const Navbar = () => {
   const [showPremiumPrompt, setShowPremiumPrompt] = useState(false);
   const { userData, setUserData } = useData();
   const navigate = useNavigate();
+  const location = useLocation();
   // Demo user data
 
   // Close dropdown when clicking outside
@@ -150,6 +151,12 @@ const Navbar = () => {
 
     return initials;
   }
+  
+  useEffect(() => {
+    const path = location.pathname;
+    setShowPremiumPrompt(path.startsWith("/dashboard/premium"));
+  }, [location.pathname]);
+
 
   return (
     <nav className="bg-white border-b border-slate-200/60 shadow-sm fixed top-0 w-full z-50">
@@ -286,6 +293,7 @@ const Navbar = () => {
                     onClick={async () => {
                       if (userData.plan == "free") {
                         setShowPremiumPrompt(!showPremiumPrompt);
+                        navigate("/dashboard/premium");
                       } else {
                         // get url from stripe to manage subscription
                         const res = await handleCreatePortalSession();
@@ -385,7 +393,10 @@ const Navbar = () => {
 
       <SplitifyPremiumModal
         isOpen={showPremiumPrompt}
-        onClose={() => setShowPremiumPrompt(false)}
+        onClose={() => {
+          navigate("/dashboard");
+          // setShowPremiumPrompt(false);
+        }}
       />
     </nav>
   );
