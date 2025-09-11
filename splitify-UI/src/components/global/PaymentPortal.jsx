@@ -420,8 +420,8 @@ export default function PaymentPage() {
     // paymentName: params.get("chargeName") || "",
     // paymentAmount: params.get("amount") || "",
     // frequency: params.get("frequency") || "",
-    cashapp: params.get("cashapp") || "",
-    venmo: params.get("venmo") || "",
+    // cashapp: params.get("cashapp") || "",
+    // venmo: params.get("venmo") || "",
     // allowMarkAsPaidForEveryone:
     //   params.get("allowMarkAsPaidForEveryone") == "true" || false,
   };

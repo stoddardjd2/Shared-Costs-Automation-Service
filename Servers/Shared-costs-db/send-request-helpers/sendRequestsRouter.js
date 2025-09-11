@@ -54,18 +54,7 @@ async function sendRequestsRouter(reminderData, routes = ["text", "email"]) {
     url.searchParams.set("userId", userId);
     url.searchParams.set("paymentHistoryId", paymentHistoryId);
     url.searchParams.set("requestId", requestId);
-    url.searchParams.set("dueDate", dueDate);
     url.searchParams.set("name", name);
-    url.searchParams.set("amount", amount);
-    url.searchParams.set("frequency", frequency);
-    url.searchParams.set("requester", requester);
-    url.searchParams.set("chargeName", chargeName);
-    url.searchParams.set("cashapp", cashapp);
-    url.searchParams.set("venmo", venmo);
-    url.searchParams.set(
-      "allowMarkAsPaidForEveryone",
-      allowMarkAsPaidForEveryone
-    );
 
     const finalUrl = url.toString();
     // Example implementation:
