@@ -194,7 +194,7 @@ function MarkAsPaidButton({
 
       {/* Simple working animation */}
       <span
-        className={`text-blue-600 font-medium text-sm transition-all duration-300 ease-out ${
+        className={`hidden xxs:flex text-blue-600 font-medium text-sm transition-all duration-300 ease-out ${
           isPaid ? "opacity-100 translate-x-0" : "opacity-100 translate-x-0"
         }`}
       >

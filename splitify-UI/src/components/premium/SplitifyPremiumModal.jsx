@@ -51,6 +51,8 @@ export default function SplitifyPremiumModal({
   showPlaidOnly = true,
   showPremium = true,
 }) {
+
+  
   const { userData, setUserData } = useData();
   const userEmail = userData?.email || "";
   const userName = userData?.name || "";
