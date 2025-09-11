@@ -35,6 +35,7 @@ import EditPeople from "../dashboard/EditPeople";
 import DatePicker from "./DatePicker";
 import PlaidConnect from "../plaid/PlaidConnect";
 import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 const SplitStep = ({
   setSelectedPeople,
   onBack,
@@ -60,9 +61,9 @@ const SplitStep = ({
   setSelectedCost,
   setNewChargeDetails,
 }) => {
-  console.log("seclected people", selectedPeople)
+  const navigate = useNavigate();
   if (!selectedPeople || selectedPeople.length == 0) {
-    return <Navigate to="/dashboard" replace/>;
+    return <Navigate to="/dashboard" replace />;
   }
 
   // Context to update costs
@@ -455,6 +456,7 @@ const SplitStep = ({
         const newCostFromDB = await createRequest(costEntry);
         if (newCostFromDB) {
           addCost(newCostFromDB);
+          navigate("/dashboard");
           setView("dashboard");
           setIsSendingRequest(false);
           root.scrollTo({ top: 0, behavior: "instant" });
