@@ -48,7 +48,7 @@ const AddStep = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50  mt-10">
       <div className="max-w-lg mx-auto px-6 pb-20">
         {/* <StepIndicator current="add" /> */}
         <div className="flex items-center gap-4 mb-10">

@@ -677,7 +677,7 @@ const SplitStep = ({
         {/* {!isEditMode && <StepIndicator current="split" />} */}
         {
           <div
-            className={`flex items-center gap-4 mb-6  ${isEditMode && "mt-8"}`}
+            className={`flex items-center gap-4  mt-10 mb-6  ${isEditMode && "mt-8"}`}
           >
             <button
               onClick={onBack}

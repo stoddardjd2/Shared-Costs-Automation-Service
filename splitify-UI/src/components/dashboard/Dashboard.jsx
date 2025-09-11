@@ -15,7 +15,7 @@ import {
   pageview,
   setUserId,
 } from "../../googleAnalytics/googleAnalyticsHelpers";
-
+import WelcomeScreen from './WelcomeScreen'
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation(); // 👈 read current URL
@@ -34,7 +34,7 @@ const Dashboard = () => {
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
   const [view, setView] = useState("dashboard"); // kept to minimize changes (not used for routing now)
   const [selectedCost, setSelectedCost] = useState(null);
-
+  const [showFirstTimePrompt, setShowFirstTimePrompt] = useState(false);
   // Google analytics:
   useEffect(() => {
     if (userData) {
@@ -42,6 +42,14 @@ const Dashboard = () => {
       setUserId(userData._id);
     }
   });
+
+  useEffect(() => {
+    // show first time welcome screen and navigate user to make first request
+    if (!costs || costs.length == 0) {
+      navigate("/dashboard/welcome");
+      setShowFirstTimePrompt(true);
+    }
+  }, []);
 
   const handleCloseModal = () => {
     setView("dashboard");
@@ -60,6 +68,13 @@ const Dashboard = () => {
   function getView() {
     const path = location.pathname;
     switch (true) {
+      case /^\/dashboard\/welcome(\/.*)?$/.test(path):
+        return (
+          <div className="mt-6 ">
+            <WelcomeScreen/>
+          </div>
+        );
+
       case /^\/dashboard\/add(\/.*)?$/.test(path):
         return (
           <div className="mt-6 ">

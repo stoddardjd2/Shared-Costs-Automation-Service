@@ -107,8 +107,7 @@ export default function PaymentMethodPrompt({
                   Set up payments
                 </div>
                 <div className="text-slate-600 text-sm text-center">
-                  Add your payment methods to receive money. Choose from the
-                  options below.
+                  Add your payment methods to make it easier for others to send you money.
                 </div>
               </div>
             </div>

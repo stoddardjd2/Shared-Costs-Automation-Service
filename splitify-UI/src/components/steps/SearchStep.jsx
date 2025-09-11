@@ -24,7 +24,7 @@ const SearchStep = ({
   handleUpdatePersonName,
 }) => {
   return (
-    <div className="min-h-screen bg-gray-50 mt-4">
+    <div className="min-h-screen bg-gray-50 mt-10">
       {/* Main content with padding bottom to prevent button tray overlap */}
       <div className="pb-36">
         <div className="max-w-lg mx-auto px-6 py-0">
