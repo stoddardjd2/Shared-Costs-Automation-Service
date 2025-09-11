@@ -15,7 +15,7 @@ import { useEffect } from "react";
 import { pageview } from "../../../../googleAnalytics/googleAnalyticsHelpers";
 export default function LandingPage() {
   useEffect(() => {
-    pageview(null, "Landing_Page")
+    pageview(null, "Landing_Page");
   });
 
   return (
@@ -26,14 +26,16 @@ export default function LandingPage() {
       />
       <Hero />
       <div className="relative">
-        <div className="absolute z-0 left-0 bottom-0 rounded-banner shadow-[0_-5px_20px_rgba(0,0,0,0.25)] top-[-130px] bg-[#ACC8D2] w-full">
+        <div className="absolute z-0 left-0 bottom-0 rounded-banner top-[-130px] bg-[#ACC8D2] w-full">
           <BrandsBanner />
         </div>
         <div className="relative z-10">
-          <Section2 />
+          <Section3 />
         </div>
       </div>
-      <Section3 />
+      
+      <Section2 />
+
       <div className="relative">
         <Section6 />
         {/* rounded overlay on bottom */}

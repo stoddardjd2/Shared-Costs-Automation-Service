@@ -1,7 +1,7 @@
 import Layout from "../../builders/Layout";
 import CtaBtn from "../../builders/CtaBtn";
 import phoneImg from "../../../../../../assets/landing-page/phone-tilt-overdue-mild.png";
-import phoneImgFlat from './overdue-text-flat.png'
+import phoneImgFlat from "./overdue-text-flat.png";
 export default function Section3() {
   return (
     <section
@@ -47,16 +47,17 @@ export default function Section3() {
           `}
         >
           <h2 className="mb-[20px]">
-            Splitify handles the talking, so you can{" "}
-            <span className="gradient-text">Relax.</span>
+            <span className="gradient-text"> Save </span>
+            time, money & relationships.
+            {/* <span className="gradient-text"> save </span> */}
+            {/* <span className="gradient-text"> save </span> */}
           </h2>
           <p
             className={`
             
             w-full sm:w-5/6`}
           >
-            Splitify sends text and email messages for you, so you don't have to
-            do a thing. Just add a bill and hit send.
+            Splitify handles follow-ups—texting and emailing until the bill is paid. That means more time back in your day, more money in your pocket, and less strain on your relationships.
           </p>
           <CtaBtn
             text="Send a Request"
@@ -65,8 +66,6 @@ export default function Section3() {
           />
         </div>
       </Layout>
-
-  
     </section>
   );
 }

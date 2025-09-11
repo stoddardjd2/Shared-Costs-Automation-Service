@@ -7,13 +7,16 @@ import Body from "../builders/Body";
 import CtaBtn from "../builders/CtaBtn";
 export default function Hero() {
   return (
+    // sm:[background:radial-gradient(62.5%_175.13%_at_87.01%_48.68%,_#fff_0%,_#075C7B_31.33%,_#022B3A_71.02%,_#0C0C0C_100%),_radial-gradient(58.45%_56.88%_at_36.87%_72.42%,_#fff_0%,_#4167BC_29.12%,_#1F386F_50.48%,_#0C0C0C_100%)]
+
     <section
       className={` 
         justify-center flex overflow-hidden relative bg-no-repeat
         sm:h-[1100px] 
         [background:radial-gradient(52.87%_92.69%_at_53.89%_92.69%,_#075C7B_31.33%,_#022B3A_71.02%,_#0C0C0C_100%)]
-sm:[background:radial-gradient(62.5%_175.13%_at_87.01%_48.68%,_#fff_0%,_#075C7B_31.33%,_#022B3A_71.02%,_#0C0C0C_100%),_radial-gradient(58.45%_56.88%_at_36.87%_72.42%,_#fff_0%,_#4167BC_29.12%,_#1F386F_50.48%,_#0C0C0C_100%)]
-        
+sm:bg-[radial-gradient(62.5%_175.13%_at_97.01%_48.68%,_#075C7B_31.33%,_#022B3A_71.02%,_#0C0C0C_100%),radial-gradient(58.45%_56.88%_at_46.87%_72.42%,_#FFFFFF_0%,_#4167BC_29.12%,_#1F386F_50.48%,_#0C0C0C_100%)]
+
+
     `}
       // [background:radial-gradient(62.5%_175.13%_at_97.01%_48.68%,_#fff_0%,_#075C7B_31.33%,_#022B3A_71.02%,_#0C0C0C_100%),_radial-gradient(58.45%_56.88%_at_46.87%_72.42%,_#fff_0%,_#4167BC_29.12%,_#1F386F_50.48%,_#0C0C0C_100%)]m
     >
@@ -36,7 +39,7 @@ sm:[background:radial-gradient(62.5%_175.13%_at_87.01%_48.68%,_#fff_0%,_#075C7B_
           `}
         >
           <p className="text-white smaller font-thin mb-5">
-            *UPDATE* New users can now use Splitify free of charge with
+            *LIMITED* New users can now use Splitify free of charge with
             unlimited requests and texts.
           </p>
           <h1 className=" text-white mb-[18px]">
