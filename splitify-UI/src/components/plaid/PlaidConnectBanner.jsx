@@ -65,7 +65,7 @@ export default function PlaidConnectBanner({
               <Landmark className="w-6 h-6" />
             </div>
             <div>
-              <div className="text-2xl max-w-[230px] xxs:max-w-full font-bold">
+              <div className="text-2xl max-w-[230px] xxs:max-w-full font-bold white">
                 Have Bills That Change?
               </div>
               <div className="text-base opacity-90 leading-relaxed">

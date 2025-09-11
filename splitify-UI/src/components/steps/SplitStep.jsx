@@ -303,7 +303,9 @@ const SplitStep = ({
 
   function getCostEntry() {
     function roundToTwo(num) {
-      return Number(num.toFixed(2));
+      const n = Number(num);
+      if (Number.isNaN(n));
+      return Number(n.toFixed(2));
     }
     const costEntry = generateCostEntry({
       selectedCharge,
@@ -391,16 +393,17 @@ const SplitStep = ({
           );
           break;
         case "percentage":
-          individualAmount =
-           roundToTwo(editableTotalAmount *
-            (Number(percentageAmounts[person._id] || 0) / 100));
+          individualAmount = roundToTwo(
+            editableTotalAmount *
+              (Number(percentageAmounts[person._id] || 0) / 100)
+          );
           baseParticipant.percentage = Number(percentageAmounts[person._id]);
           break;
         case "custom":
           individualAmount = roundToTwo(Number(customAmounts[person._id]) || 0);
-          baseParticipant.customAmount = roundToTwo(Number(
-            customAmounts[person._id]
-          ));
+          baseParticipant.customAmount = roundToTwo(
+            Number(customAmounts[person._id])
+          );
           break;
         default:
           individualAmount = 0;
@@ -412,7 +415,7 @@ const SplitStep = ({
 
     function calculateTotalAmountOwed(participants) {
       return participants.reduce((total, participant) => {
-        return roundToTwo(total + (Number(participant.amount)) || 0);
+        return roundToTwo(total + Number(participant.amount) || 0);
       }, 0);
     }
 

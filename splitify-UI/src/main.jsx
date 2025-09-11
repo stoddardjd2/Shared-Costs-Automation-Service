@@ -6,6 +6,7 @@ import App from "./App";
 import { useEffect } from "react";
 import { useRef } from "react";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import ErrorBoundary from "./components/global/ErrorBoundary";
 const GA_ID = import.meta.env.VITE_GA4_ID;
 const ENABLED = import.meta.env.VITE_ENABLE_ANALYTICS === "true";
 
@@ -54,7 +55,9 @@ root.render(
   <React.StrictMode>
     <BrowserRouter>
       <Analytics />
-      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID}>
+      <GoogleOAuthProvider
+        clientId={import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID}
+      >
         <App />
       </GoogleOAuthProvider>
     </BrowserRouter>
