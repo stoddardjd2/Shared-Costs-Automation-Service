@@ -92,7 +92,7 @@ FOR: ${chargeName}
 To complete your payment, visit: ${finalUrl}
 
 Sent via Splitify
-Split expenses. Automate follow-ups.`;
+`;
 
   if (routes.includes("text") && isTextEnabled) {
     console.log("sending text");

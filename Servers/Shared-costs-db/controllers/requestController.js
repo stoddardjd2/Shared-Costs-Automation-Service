@@ -37,6 +37,7 @@ const getRequests = async (req, res) => {
   }
 };
 const createRequest = async (req, res) => {
+  
   console.log("Creating request with data:", req.body);
   try {
     const userId = req.user._id; // From auth middleware

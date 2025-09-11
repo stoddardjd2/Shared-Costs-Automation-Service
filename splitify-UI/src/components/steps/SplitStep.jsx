@@ -302,6 +302,9 @@ const SplitStep = ({
   };
 
   function getCostEntry() {
+    function roundToTwo(num) {
+      return Number(num.toFixed(2));
+    }
     const costEntry = generateCostEntry({
       selectedCharge,
       newChargeDetails,
@@ -321,8 +324,8 @@ const SplitStep = ({
     costEntry.amount =
       splitType == "percentage"
         ? null
-        : Number((editableTotalAmount / (participants.length + 1)).toFixed(2));
-    costEntry.totalAmount = Number(editableTotalAmount);
+        : Number(roundToTwo(editableTotalAmount / (participants.length + 1)));
+    costEntry.totalAmount = roundToTwo(Number(editableTotalAmount));
     costEntry.frequency = recurringType === "none" ? null : recurringType;
     costEntry.customInterval =
       recurringType === "custom" ? customInterval : null;
@@ -345,13 +348,23 @@ const SplitStep = ({
     // costEntry.dynamicCostReason = dynamicCostReason;
     // Only include split method specific data
     if (splitType === "custom") {
-      costEntry.customAmounts = { ...customAmounts };
+      costEntry.customAmounts = Object.fromEntries(
+        Object.entries(customAmounts).map(([key, value]) => [
+          key,
+          roundToTwo(value),
+        ])
+      );
     } else {
       costEntry.customAmounts = {};
     }
 
     if (splitType === "percentage") {
-      costEntry.percentageAmounts = { ...percentageAmounts };
+      costEntry.percentageAmounts = Object.fromEntries(
+        Object.entries(percentageAmounts).map(([key, value]) => [
+          key,
+          roundToTwo(value),
+        ])
+      );
     } else {
       costEntry.percentageAmounts = {};
     }
@@ -367,29 +380,27 @@ const SplitStep = ({
       switch (splitType) {
         case "equalWithMe":
           // individualAmount = actualAmount / (selectedPeople.length + 1);
-          individualAmount = Number(
-            editableTotalAmount / (selectedPeople.length + 1)
-          ).toFixed(2);
+          individualAmount = roundToTwo(
+            Number(editableTotalAmount / (selectedPeople.length + 1))
+          );
           console.log("AMOUNT IND", individualAmount);
           break;
         case "equal":
-          individualAmount = Number(
-            editableTotalAmount / selectedPeople.length
-          ).toFixed(2);
+          individualAmount = roundToTwo(
+            Number(editableTotalAmount / selectedPeople.length)
+          );
           break;
         case "percentage":
           individualAmount =
-            editableTotalAmount *
-            (Number(percentageAmounts[person._id] || 0) / 100);
-          baseParticipant.percentage = Number(
-            percentageAmounts[person._id]
-          ).toFixed(2);
+           roundToTwo(editableTotalAmount *
+            (Number(percentageAmounts[person._id] || 0) / 100));
+          baseParticipant.percentage = Number(percentageAmounts[person._id]);
           break;
         case "custom":
-          individualAmount = Number(customAmounts[person._id] || 0);
-          baseParticipant.customAmount = Number(
+          individualAmount = roundToTwo(Number(customAmounts[person._id]) || 0);
+          baseParticipant.customAmount = roundToTwo(Number(
             customAmounts[person._id]
-          ).toFixed(2);
+          ));
           break;
         default:
           individualAmount = 0;
@@ -401,7 +412,7 @@ const SplitStep = ({
 
     function calculateTotalAmountOwed(participants) {
       return participants.reduce((total, participant) => {
-        return total + (Number(participant.amount) || 0);
+        return roundToTwo(total + (Number(participant.amount)) || 0);
       }, 0);
     }
 
@@ -1345,8 +1356,9 @@ const SplitStep = ({
                       }}
                     >
                       <p>
-                        Cost tracking is useful when you have recurring expenses that increase or
-                        decreases. Requests will be updated with the new amount each cycle.
+                        Cost tracking is useful when you have recurring expenses
+                        that increase or decreases. Requests will be updated
+                        with the new amount each cycle.
                       </p>
                       <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>{" "}
                     </div>
