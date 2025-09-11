@@ -130,6 +130,16 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
     return { avatar: avatar.toUpperCase() };
   };
 
+  function FormatDueDate(isoString) {
+    const date = new Date(isoString);
+
+    const month = date.getUTCMonth() + 1; // months are 0-based
+    const day = date.getUTCDate();
+    const year = date.getUTCFullYear();
+
+    return `${month}/${day}/${year}`;
+  }
+
   // Format the amount per person based on split type
   const formatAmountDisplay = (cost) => {
     if (cost.splitType == "custom" || cost.splitType == "percentage") {
@@ -424,12 +434,13 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                       </div>
 
                       {/* Next due date */}
+                      {console.log("cost.nextDue", cost.nextDue, cost.name)}
                       {cost.nextDue && (
                         <div className="hidden xs:flex items-center gap-2 text-gray-600 px-3 py-1.5 rounded-lg w-fit">
                           <Calendar className="w-4 h-4" />
                           <span className="text-sm">
                             {cost.isRecurring ? "Next: " : "Due: "}
-                            {new Date(cost.nextDue).toLocaleDateString()}
+                            {FormatDueDate(cost.nextDue)}
                           </span>
                         </div>
                       )}
@@ -531,8 +542,18 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                               const statusColor = getStatusColor(
                                 participant.status
                               );
-                              console.log("USER", user, "participants", cost.participants)
-                              console.log("Cost", cost, "participant", participant)
+                              console.log(
+                                "USER",
+                                user,
+                                "participants",
+                                cost.participants
+                              );
+                              console.log(
+                                "Cost",
+                                cost,
+                                "participant",
+                                participant
+                              );
                               return (
                                 <div
                                   key={user._id}

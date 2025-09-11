@@ -39,16 +39,16 @@ async function sendRequestsRouter(reminderData, routes = ["text", "email"]) {
     const userId = reminderData.participantId;
     const paymentHistoryId = reminderData.paymentHistoryId;
     const requestId = reminderData.requestId;
-    const dueDate = reminderData.dueDate;
+    // const dueDate = reminderData.dueDate;
     const name = reminderData.participantName;
     const amount = reminderData.stillOwes;
-    const frequency = getFrequency(reminderData.requestData);
+    // const frequency = getFrequency(reminderData.requestData);
     const requester = reminderData.requestOwner;
     const chargeName = reminderData.requestName;
-    const cashapp = reminderData.requestOwnerPaymentMethods?.cashapp || null;
-    const venmo = reminderData.requestOwnerPaymentMethods?.venmo || null;
-    const allowMarkAsPaidForEveryone =
-      reminderData.requestData?.allowMarkAsPaidForEveryone || false;
+    // const cashapp = reminderData.requestOwnerPaymentMethods?.cashapp || null;
+    // const venmo = reminderData.requestOwnerPaymentMethods?.venmo || null;
+    // const allowMarkAsPaidForEveryone =
+    //   reminderData.requestData?.allowMarkAsPaidForEveryone || false;
 
     const url = new URL(urlBase);
     url.searchParams.set("userId", userId);
