@@ -834,18 +834,21 @@ async function approveSmsMessages(req, res) {
           if (currentSetCount <= 3) {
             // do not send again if same number:
             if (oldUser.phone !== normalizedPhone) {
-              sendRequestsRouter({
-                requestId: reqDoc._id,
-                paymentHistoryId: history._id,
-                requestName: reqDoc.name,
-                requestOwner: owner.name,
-                requestOwnerPaymentMethods: owner.paymentMethods || {},
-                participantId: participant._id,
-                participantName: userName,
-                stillOwes: participant.amount,
-                dueDate: history.dueDate,
-                requestData: reqDoc,
-              });
+              sendRequestsRouter(
+                {
+                  requestId: reqDoc._id,
+                  paymentHistoryId: history._id,
+                  requestName: reqDoc.name,
+                  requestOwner: owner.name,
+                  requestOwnerPaymentMethods: owner.paymentMethods || {},
+                  participantId: participant._id,
+                  participantName: userName,
+                  stillOwes: participant.amount,
+                  dueDate: history.dueDate,
+                  requestData: reqDoc,
+                },
+                ["text"]
+              );
               sentCount++;
             }
           }

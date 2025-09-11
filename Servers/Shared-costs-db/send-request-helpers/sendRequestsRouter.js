@@ -2,9 +2,15 @@ const sendEmailRequest = require("./sendEmailRequest");
 const sendTextMessage = require("./sendTextMessage");
 const User = require("../models/User");
 
-async function sendRequestsRouter(reminderData) {
+// routes is array of strings with channels to send messages to EX: ["text", "email"]
+async function sendRequestsRouter(reminderData, routes = ["text", "email"]) {
   // TODO: Implement your SMS/Email sending logic here
   //Generate payment URL
+
+  const isTextEnabled = User.findById("68c1d9c25dcc518c5641b28b", {
+    "textMessagesAllowed.isAllowed": 1,
+  });
+  console.log("isTextEnabled(Router)", isTextEnabled);
 
   function getFrequency(requestData) {
     const { frequency, customInterval, customUnit } = requestData;
@@ -70,10 +76,12 @@ async function sendRequestsRouter(reminderData) {
     { _id: userId },
     { email: 1, phone: 1, _id: 0 }
   );
-
   console.log(`URL FOR ${name}!`, finalUrl);
   console.log("sening req, getting user filtered", user);
-  sendEmailRequest(requester, name, amount, finalUrl, user.email);
+  if (routes.includes("email")) {
+    console.log("sending email");
+    sendEmailRequest(requester, name, amount, finalUrl, user.email);
+  }
 
   const message = `Hi ${name},
 ${requester} sent you a payment request.
@@ -86,7 +94,10 @@ To complete your payment, visit: ${finalUrl}
 Sent via Splitify
 Split expenses. Automate follow-ups.`;
 
-  sendTextMessage(user.phone, "+18333702013", message);
+  if (routes.includes("text") && isTextEnabled) {
+    console.log("sending text");
+    sendTextMessage(user.phone, "+18333702013", message);
+  }
   return true;
 }
 module.exports = sendRequestsRouter;

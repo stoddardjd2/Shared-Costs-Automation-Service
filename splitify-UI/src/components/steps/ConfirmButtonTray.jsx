@@ -24,15 +24,40 @@ export default function ConfirmButtonTray({
   const { participants } = useData();
   const [showCostTooltip, setShowCostTooltip] = useState(false);
 
+  console.log("customfrequency", billingFrequency);
   const isDisabled = () => {
     if (!isCheckout) {
       return false;
     } else {
+      const isUsingCustomFrequencyNumberAndIsFalsy = () => {
+        function extractNumbers(str) {
+          return str?.match(/\d+/g)?.map(Number) || [];
+        }
+        const customFrequencyNumber = extractNumbers(billingFrequency)[0];
+
+        if (frequency == "custom") {
+          const exceptions = [
+            "daily",
+            "weekly",
+            "monthly",
+            "yearly",
+            "biweekly",
+          ];
+          if (exceptions.some((freq) => billingFrequency.includes(freq))) {
+          } else {
+            return (
+              customFrequencyNumber == 0 || customFrequencyNumber == undefined
+            );
+          }
+        }
+        return false;
+      };
       return (
         isSendingRequest ||
         totalAmount == 0 ||
         !chargeName ||
         !frequency ||
+        isUsingCustomFrequencyNumberAndIsFalsy() ||
         !startTiming
       );
     }

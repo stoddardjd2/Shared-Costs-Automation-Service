@@ -896,10 +896,10 @@ const SplitStep = ({
                   </label>
                   <input
                     type="number"
-                    min="1"
+                    min="0"
                     value={customInterval}
                     onChange={(e) =>
-                      setCustomInterval(parseInt(e.target.value) || 1)
+                      setCustomInterval(parseInt(e.target.value) || "")
                     }
                     className="w-full p-2 border border-gray-200 rounded text-sm outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
                   />
@@ -1414,7 +1414,7 @@ const SplitStep = ({
                             ? "Not Available For Custom Split Method"
                             : recurringType === "none"
                             ? "Recurring Only"
-                            : "Bank Connection Required"}
+                            : "Plaid Required"}
                         </span>
                       )}
                     </h4>

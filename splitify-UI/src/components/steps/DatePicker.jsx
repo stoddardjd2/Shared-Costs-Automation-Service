@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { SkipForward, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
 const DatePicker = ({ startTiming, setStartTiming }) => {
@@ -28,6 +28,23 @@ const DatePicker = ({ startTiming, setStartTiming }) => {
   const [currentMonth, setCurrentMonth] = useState(() =>
     isISODate(startTiming) ? parseISODateLocal(startTiming) : new Date()
   );
+
+  // click-outside ref + handler
+  const containerRef = useRef(null);
+  useEffect(() => {
+    if (!showCalendar) return;
+    const handlePointerDown = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setShowCalendar(false);
+      }
+    };
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("touchstart", handlePointerDown, { passive: true });
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("touchstart", handlePointerDown);
+    };
+  }, [showCalendar]);
 
   // Keep internal selection in sync if parent changes startTiming
   useEffect(() => {
@@ -113,7 +130,7 @@ const DatePicker = ({ startTiming, setStartTiming }) => {
     <div className="bg-gray-50">
       <div className="max-w-md mx-auto space-y-4">
         {/* Custom Date Option */}
-        <div className="relative">
+        <div className="relative" ref={containerRef}>
           <button
             onClick={() => setShowCalendar(!showCalendar)}
             className={`w-full p-3 rounded-lg border-2 cursor-pointer transition-all flex items-center gap-3 ${

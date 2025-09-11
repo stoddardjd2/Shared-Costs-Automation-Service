@@ -166,7 +166,7 @@ const ContactCard = ({
               <h3 className="font-semibold text-gray-900 border border-transparent text-lg">
                 {editedName}
               </h3>
-              {!deleteEnabled && (
+              {!deleteEnabled &&  addMode && (
                 <button
                   onClick={handleEditName}
                   className="w-7 h-7 flex-shrink-0 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all opacity-0 group-hover:opacity-100"

@@ -144,8 +144,7 @@ const createRequest = async (req, res) => {
     //only send now if startTiming = "now"
     if (request.startTiming == "now") {
       const owner = await User.findById(new ObjectId(req.user._id));
-      participantsTextPermissions.forEach((participant) => {
-        if (participant.canText) {
+      requestData.participants.forEach((participant) => {
           sendRequestsRouter({
             requestId: request._id,
             paymentHistoryId: request.paymentHistory[0]._id,
@@ -158,7 +157,6 @@ const createRequest = async (req, res) => {
             dueDate: request.paymentHistory[0].dueDate,
             requestData: request,
           });
-        }
       });
     }
 
