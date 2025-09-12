@@ -43,7 +43,7 @@ No fees, no problem.`,
   },
   {
     header: "Repeats, automatically.",
-    body: "Have bills that change? Connect your bank account and Splitify can update them with the latest cost - so you don't have to do a thing.",
+    body: "Have bills that change? Connect your bank account and Splitify can update them with the latest cost.",
   },
 ];
 

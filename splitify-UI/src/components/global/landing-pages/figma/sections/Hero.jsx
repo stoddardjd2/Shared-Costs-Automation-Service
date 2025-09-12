@@ -21,8 +21,8 @@ lg:bg-[radial-gradient(62.5%_175.13%_at_97.01%_48.68%,_#075C7B_31.33%,_#022B3A_7
       // [background:radial-gradient(62.5%_175.13%_at_97.01%_48.68%,_#fff_0%,_#075C7B_31.33%,_#022B3A_71.02%,_#0C0C0C_100%),_radial-gradient(58.45%_56.88%_at_46.87%_72.42%,_#fff_0%,_#4167BC_29.12%,_#1F386F_50.48%,_#0C0C0C_100%)]m
     >
       <div
-        className={`max-w-[1600px]  grid grid-cols-12 gap-5
-          px-4 lg:px-5
+        className={`  grid grid-cols-12 gap-5
+          px-4 lg:px-20
           [box-sizing:border-box] 
           items-start lg:items-center
           mt-20 lg:mt-0 
@@ -39,7 +39,7 @@ lg:bg-[radial-gradient(62.5%_175.13%_at_97.01%_48.68%,_#075C7B_31.33%,_#022B3A_7
           `}
         >
           <p className="text-white smaller font-thin mb-5">
-            *LIMITED* New users can now use Splitify free of charge with
+            *LIMITED TIME* New users can now use Splitify free of charge with
             unlimited requests and texts.
           </p>
           <h1 className=" text-white mb-[18px] hero-header">
@@ -92,6 +92,8 @@ lg:bg-[radial-gradient(62.5%_175.13%_at_97.01%_48.68%,_#075C7B_31.33%,_#022B3A_7
           lg:ml-10
           mx-auto lg:mx-0
           lg:mb-24
+          max-w-[730px]
+          !ml-auto
           `}
         >
           <img
