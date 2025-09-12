@@ -15,7 +15,7 @@ import {
   pageview,
   setUserId,
 } from "../../googleAnalytics/googleAnalyticsHelpers";
-import WelcomeScreen from './WelcomeScreen'
+import WelcomeScreen from "./WelcomeScreen";
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation(); // 👈 read current URL
@@ -64,16 +64,21 @@ const Dashboard = () => {
     return () => clearTimeout(t);
   }, []);
 
+  if (!costs || costs.length == 0 && showFirstTimePrompt) {
+    // setShowFirstTimePrompt(true);
+    return <WelcomeScreen setShowFirstTimePrompt={setShowFirstTimePrompt}/>;
+  }
+
   // 👇 Now controlled by the URL path
   function getView() {
     const path = location.pathname;
     switch (true) {
-      case /^\/dashboard\/welcome(\/.*)?$/.test(path):
-        return (
-          <div className="mt-6 ">
-            <WelcomeScreen/>
-          </div>
-        );
+      // case /^\/dashboard\/welcome(\/.*)?$/.test(path):
+      //   return (
+      //     <div className="mt-6 ">
+      //       <WelcomeScreen />
+      //     </div>
+      //   );
 
       case /^\/dashboard\/add(\/.*)?$/.test(path):
         return (

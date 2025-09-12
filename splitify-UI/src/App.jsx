@@ -35,6 +35,7 @@ import LandingPageCustom from "./components/global/landing-pages/LandingPageCust
 import FixedBackgroundSection from "./components/global/landing-pages/figma/sections/section-4/FixedBackgroundSection.jsx";
 const App = () => {
   const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Routes>
@@ -172,7 +173,7 @@ const App = () => {
           element={<PlaidSandboxDemoUserFlow />}
         /> */}
 
-          {/* Fallback route - must be last */}
+        {/* Fallback route - must be last */}
         <Route path="*" element={<Navigate to="/landing" replace />} />
       </Routes>
     </div>

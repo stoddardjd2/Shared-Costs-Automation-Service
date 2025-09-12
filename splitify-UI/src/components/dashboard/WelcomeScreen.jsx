@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ArrowRight, Send, CreditCard, List, Calculator } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-export default function WelcomeScreen() {
+export default function WelcomeScreen({setShowFirstTimePrompt}) {
   const [isVisible, setIsVisible] = useState(false);
   const navigate = useNavigate();
   useEffect(() => {
@@ -11,10 +11,12 @@ export default function WelcomeScreen() {
   const handleGetStarted = () => {
     // Navigate to dashboard/add
     navigate("/dashboard/add");
+    setShowFirstTimePrompt(false)
   };
 
   const handleExploreDashboard = () => {
     navigate('/dashboard/')
+    setShowFirstTimePrompt(false)
   };
 
   const features = [

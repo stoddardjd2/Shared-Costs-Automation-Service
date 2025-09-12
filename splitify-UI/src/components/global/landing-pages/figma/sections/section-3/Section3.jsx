@@ -8,13 +8,13 @@ export default function Section3() {
       className={` flex items-center relative
                 bg-[#ACC8D2]`}
     >
-      <Layout>
+      <Layout className="pt-0 lg:pt-10">
         <div
           className={`
         sm:col-start-1 
         order-2 sm:order-1
         mt-[35px] sm:mt-0
-        col-span-12 sm:col-span-4 
+        col-span-12 sm:col-span-4
           flex items-center
           `}
         >
@@ -46,12 +46,12 @@ export default function Section3() {
           text-center sm:text-left
           `}
         >
-          <h2 className="mb-[20px]">
+          <h1 className="mb-[20px]">
             <span className="gradient-text"> Save </span>
             time, money & relationships.
             {/* <span className="gradient-text"> save </span> */}
             {/* <span className="gradient-text"> save </span> */}
-          </h2>
+          </h1>
           <p
             className={`
             

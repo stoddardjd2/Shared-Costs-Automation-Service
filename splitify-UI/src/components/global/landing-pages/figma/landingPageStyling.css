@@ -5,6 +5,8 @@
   line-height: 1.2;
 }
 
+:where(.landing-page) .hero-header{}
+
 :where(.landing-page) h2 {
   font-size: 4rem;
   font-weight: bold;

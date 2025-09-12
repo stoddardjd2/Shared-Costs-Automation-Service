@@ -11,7 +11,7 @@ export default function BrandsBanner({
 
   return (
     <div
-      className={`relative overflow-hidden w-full ${className}`}
+      className={`relative overflow-hidden  w-full ${className}`}
       aria-label="Trusted brands"
     >
       {/* Edge fade */}

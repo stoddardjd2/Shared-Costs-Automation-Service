@@ -18,7 +18,7 @@ export default function Section2() {
           col-span-12 sm:col-span-6 
           col-start-1 my-auto`}
         >
-          <h2
+          <h1
             className={`
             text-center sm:text-left
             mb-[20px]`}
@@ -26,7 +26,7 @@ export default function Section2() {
             Bills can change.
             <br className="" />
             Splitify adapts.
-          </h2>
+          </h1>
           <p
             className={`
               sm:w-5/6
@@ -56,7 +56,7 @@ export default function Section2() {
         >
           <img
             src={bankConnectionDemo}
-            className="hidden sm:flex max-h-[80vh] mx-auto sm:mx-0"
+            className="hidden sm:flex  max-h-[80vh] sm:ml-auto"
             alt="bank connection demo"
           />
           <img

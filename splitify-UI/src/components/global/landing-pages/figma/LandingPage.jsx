@@ -33,7 +33,7 @@ export default function LandingPage() {
           <Section3 />
         </div>
       </div>
-      
+
       <Section2 />
 
       <div className="relative">

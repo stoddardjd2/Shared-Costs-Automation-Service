@@ -5,9 +5,9 @@ export default function Layout({ children, className="" }) {
       <div
         className={`
  grid grid-cols-12 box-content  
-   py-12 sm:py-20
+   py-20 sm:py-20
    w-full
-   px-2 sm:px-20 
+   px-2 sm:px-20 xl:px-60
    ${className}
 `}
       >

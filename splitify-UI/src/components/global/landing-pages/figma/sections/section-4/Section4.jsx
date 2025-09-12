@@ -201,9 +201,9 @@ export default function Section4() {
         <Layout>
           <div
             ref={gridRef}
-            className="col-span-12 grid grid-cols-12 gap-y-[0px] sm:gap-y-[270px]"
+            className="col-span-12 grid grid-cols-12 gap-y-[50px] sm:gap-y-[270px]"
           >
-            <ScrollScale
+            {/* <ScrollScale
               className="col-span-12 my-20 sm:my-40 "
               containerRef={gridRef}
             >
@@ -220,9 +220,9 @@ export default function Section4() {
                   </p>
                 </div>
               </div>
-            </ScrollScale>
+            </ScrollScale> */}
 
-            <ScrollScale className="col-span-12" containerRef={gridRef}>
+            <ScrollScale className="col-span-12 sm:mt-32" containerRef={gridRef}>
               <View
                 image={DashboardImg}
                 features={features1}

@@ -129,7 +129,7 @@ const Navbar = () => {
           }`}
         >
           <div
-            className={`mx-auto max-w-[1440px] nav-animate transition-all duration-500 ease-out border-overlay ${
+            className={`nav-animate transition-all duration-500 ease-out border-overlay ${
               isScrolled
                 ? `scrolled-gradient rounded-2xl px-3 sm:px-8 py-2 sm:py-4 shadow-2xl shadow-black/50 backdrop-blur-md ${
                     transitionComplete ? "show-border" : ""
