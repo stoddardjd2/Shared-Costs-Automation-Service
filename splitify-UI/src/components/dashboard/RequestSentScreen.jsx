@@ -50,7 +50,7 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
       className="min-h-screen overflow-hidden z-50 fixed flex-col inset-0 bg-gradient-to-br from-blue-900 via-blue-700 to-blue-600 flex items-center justify-center"
     >
       {/* Background elements */}
-      <div className=" relative h-[85vh]  overflow-auto scroll-h  [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      <div className=" relative h-[85dvh]  overflow-auto scroll-h  [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         <div className="absolute inset-0 ">
           {/* Clouds */}
           <div
@@ -417,6 +417,10 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
               transform: translateX(-20px);
             }
           }
+
+          @supports not (height: 85dvh) {
+  .min-h-\[100dvh\] { min-height: 85vh; }
+}
         `}</style>
       </div>
       <div
