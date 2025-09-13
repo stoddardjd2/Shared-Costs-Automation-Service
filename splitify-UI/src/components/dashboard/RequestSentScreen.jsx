@@ -47,10 +47,10 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
         setHide(false);
         setTimeout(() => setHide(true), 100);
       }}
-      className="min-h-screen overflow-hidden z-50 fixed flex-col inset-0 bg-gradient-to-br from-blue-900 via-blue-700 to-blue-600 flex items-center justify-center"
+      className="overflow-hidden  z-50 fixed flex-col inset-0 bg-gradient-to-br from-blue-900 via-blue-700 to-blue-600 flex items-start justify-start"
     >
       {/* Background elements */}
-      <div className=" relative h-[85dvh]  overflow-auto scroll-h  [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      <div className=" relative max-h-[75dvh] sm:max-h-[95dvh]  overflow-auto scroll-h  [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         <div className="absolute inset-0 ">
           {/* Clouds */}
           <div
@@ -418,17 +418,25 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
             }
           }
 
-          @supports not (height: 85dvh) {
-  .min-h-\[100dvh\] { min-height: 85vh; }
-}
+          @supports not (max-height: 85dvh) {
+            .max-h-\[85vh\] {
+              max-height: 85vh;
+            }
+          }
         `}</style>
       </div>
       <div
-        className={`flex backdrop-blur-lg pt-4 gap-y-4 sm:mb-8 sticky flex-wrap sm:flex-nowrap items-end justify-center gap-x-4 pb-[30px] sm:pb-[0px] ${
-          animationStage >= 7
-            ? "translate-y-0 opacity-100"
-            : "translate-y-8 opacity-0 "
-        }`}
+        className={`flex fixed inset-x-0 z-50
+  bottom-[env(safe-area-inset-bottom,0px)]
+  px-4 sm:px-8
+  backdrop-blur-lg pt-4 gap-y-4 sm:mb-8
+  flex-wrap sm:flex-nowrap items-end justify-center gap-x-4
+  pb-[max(30px,env(safe-area-inset-bottom,0px))]
+  ${
+    animationStage >= 7
+      ? "translate-y-0 opacity-100"
+      : "translate-y-8 opacity-0 "
+  }`}
       >
         <button
           onClick={onClose}
