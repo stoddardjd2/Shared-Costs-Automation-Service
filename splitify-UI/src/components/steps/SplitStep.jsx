@@ -36,6 +36,7 @@ import DatePicker from "./DatePicker";
 import PlaidConnect from "../plaid/PlaidConnect";
 import { Navigate } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import RequestSentScreen from "../dashboard/RequestSentScreen";
 const SplitStep = ({
   setSelectedPeople,
   onBack,
@@ -111,6 +112,8 @@ const SplitStep = ({
 
   const [showUnitOptions, setShowUnitOptions] = useState(false);
 
+  const [submittedRequest, setSubmittedRequest] = useState({});
+
   const [isPlaidCharge, setIsPlaidCharge] = useState(
     selectedCharge?.isPlaidCharge || false
   );
@@ -151,7 +154,7 @@ const SplitStep = ({
   // const [isDynamic, setIsDynamic] = useState(false);
   const [showDynamicInfo, setShowDynamicInfo] = useState(false);
   const [isHoveringDynamicInfo, setIsHoveringDynamicInfo] = useState(false);
-
+  const [showRequestSentScreen, setShowRequestSentScreen] = useState(false);
   // Track previous split type to detect changes from custom
   const prevSplitTypeRef = useRef(splitType);
 
@@ -436,7 +439,6 @@ const SplitStep = ({
 
   const handleSendRequest = () => {
     const costEntry = getCostEntry();
-    console.log("submitting cost", costEntry);
     setIsSendingRequest(true);
     if (isEditMode) {
       const handleUpdateRequest = async () => {
@@ -456,10 +458,8 @@ const SplitStep = ({
         const newCostFromDB = await createRequest(costEntry);
         if (newCostFromDB) {
           addCost(newCostFromDB);
-          navigate("/dashboard");
-          setView("dashboard");
-          setIsSendingRequest(false);
-          root.scrollTo({ top: 0, behavior: "instant" });
+          setShowRequestSentScreen(true);
+          setSubmittedRequest(newCostFromDB);
         }
       };
       handleCreateRequest(); // Call the function
@@ -668,6 +668,27 @@ const SplitStep = ({
       setLastKnownGoodAmount(chargeAmount);
     }
   }, [selectedCharge?._id, selectedCharge?.lastAmount]);
+  const [hide, setHide] = useState(true);
+
+  if (showRequestSentScreen) {
+    // after sent request, show confirmation screen
+    return (
+      <RequestSentScreen
+        setHide={setHide}
+        request={submittedRequest}
+        onClose={() => {
+          navigate("/dashboard");
+          setView("dashboard");
+          root.scrollTo({ top: 0, behavior: "instant" });
+        }}
+        onAgain={() => {
+          navigate("/dashboard/add");
+          setView("add");
+          root.scrollTo({ top: 0, behavior: "instant" });
+        }}
+      />
+    );
+  }
 
   return (
     <div className={"relative"}>
@@ -677,7 +698,9 @@ const SplitStep = ({
         {/* {!isEditMode && <StepIndicator current="split" />} */}
         {
           <div
-            className={`flex items-center gap-4  mt-10 mb-6  ${isEditMode && "mt-8"}`}
+            className={`flex items-center gap-4  mt-10 mb-6  ${
+              isEditMode && "mt-8"
+            }`}
           >
             <button
               onClick={onBack}

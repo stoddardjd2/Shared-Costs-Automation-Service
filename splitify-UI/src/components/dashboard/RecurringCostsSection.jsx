@@ -433,21 +433,6 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                         </h3>
                       </div>
 
-                      {/* Next due date */}
-                      {console.log("cost.nextDue", cost.nextDue, cost.name)}
-                      {cost.nextDue && cost.isRecurring && (
-                        <div
-                          title="Next request date"
-                          className="items-center ml-auto flex gap-2 text-gray-600 px-3 py-1.5 rounded-lg w-fit"
-                        >
-                          <Calendar className="w-4 h-4" />
-                          <span className="text-sm">
-                            {/* {cost.isRecurring ? "Next: " : "Due: "} */}
-                            {FormatDueDate(cost.nextDue)}
-                          </span>
-                        </div>
-                      )}
-
                       {/* Manage button */}
                       <button
                         onClick={() => {
@@ -529,6 +514,19 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                           )}
                         </div>
                       </div>
+                      {/* Next due date */}
+                      {cost.nextDue && cost.isRecurring && (
+                        <div
+                          title="Next request date"
+                          className="items-center ml-auto flex gap-2 text-gray-600 px-3 py-1.5 rounded-lg w-fit"
+                        >
+                          <Calendar className="w-4 h-4" />
+                          <span className="text-sm">
+                            {/* {cost.isRecurring ? "Next: " : "Due: "} */}
+                            {FormatDueDate(cost.nextDue)}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {/* People */}
