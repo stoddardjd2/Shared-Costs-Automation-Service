@@ -7,7 +7,7 @@ async function sendRequestsRouter(reminderData, routes = ["text", "email"]) {
   // TODO: Implement your SMS/Email sending logic here
   //Generate payment URL
   try {
-    const isTextEnabled = await User.findById("68c1d9c25dcc518c5641b28b", {
+    const isTextEnabled = await User.findById(reminderData.participantId, {
       "textMessagesAllowed.isAllowed": true,
     });
 

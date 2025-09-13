@@ -420,7 +420,7 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
         `}</style>
       </div>
       <div
-        className={`flex backdrop-blur-lg pt-4 mt-auto gap-y-4 sm:mb-8 sticky bottom-0 flex-wrap sm:flex-nowrap items-end justify-center gap-x-4 pb-[30px] sm:pb-[0px] ${
+        className={`flex backdrop-blur-lg pt-4 gap-y-4 sm:mb-8 sticky flex-wrap sm:flex-nowrap items-end justify-center gap-x-4 pb-[30px] sm:pb-[0px] ${
           animationStage >= 7
             ? "translate-y-0 opacity-100"
             : "translate-y-8 opacity-0 "
