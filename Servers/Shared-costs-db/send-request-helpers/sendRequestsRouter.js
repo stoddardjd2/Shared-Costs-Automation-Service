@@ -64,8 +64,8 @@ async function sendRequestsRouter(reminderData, routes = ["text", "email"]) {
       { _id: userId },
       { email: 1, phone: 1, _id: 0 }
     );
-    console.log(`URL FOR ${name}!`, finalUrl);
 
+    console.log(`URL FOR ${name}!`, finalUrl);
     if (routes.includes("email")) {
       console.log("sending email");
       sendEmailRequest(requester, name, amount, finalUrl, user.email);

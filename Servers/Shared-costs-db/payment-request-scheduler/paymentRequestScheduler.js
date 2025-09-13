@@ -242,15 +242,6 @@ async function sendPaymentRequestToParticipant({
       dueDate: effectiveDueDate,
       requestData: request,
     });
-
-    console.log(`Reminder ${success ? "SENT" : "FAILED TO SEND"} →`, {
-      requestId: String(request._id),
-      participantId: String(participant._id),
-      participantName,
-      paymentHistoryId: String(paymentHistoryId),
-      dueDate: effectiveDueDate.toISOString(),
-    });
-
     return !!success;
   } catch (err) {
     console.error(
@@ -336,6 +327,7 @@ async function processRecurringRequestIfDue(
       currentDate
     )
   ) {
+    console.log("REQUEST DUE", requestDocument.name);
     const requestSentDate = currentDate;
 
     // DYNAMIC COST
@@ -349,7 +341,7 @@ async function processRecurringRequestIfDue(
         );
         requestDocument.participants = updatedDynamicData.newParticipants;
         console.log(
-          "updated req doc after dynamic newParticpants",
+          "DYNAMIC UPDATE: updated req doc after dynamic newParticpants",
           requestDocument.participants
         );
       } catch (e) {
@@ -439,7 +431,6 @@ function startRecurringRequestsCron() {
           isRecurring: true,
           isDelete: { $ne: true }, // Not deleted,
           iPaused: { $ne: true }, // Not paused,
-          
         }).lean();
         schedulerMetrics.lastRunProcessedCount = activeRecurringRequests.length;
 
