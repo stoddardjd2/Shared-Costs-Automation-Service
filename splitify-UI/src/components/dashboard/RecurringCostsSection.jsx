@@ -616,6 +616,7 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                 <button
                   onClick={() => {
                     setView("addRequest");
+                    navigate('/dashboard/add')
                     const root = document.getElementById("root");
                     if (root)
                       root.scrollTo({ top: 0, left: 0, behavior: "instant" });
