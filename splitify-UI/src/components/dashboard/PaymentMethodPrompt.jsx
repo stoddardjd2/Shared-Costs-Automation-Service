@@ -22,7 +22,7 @@ export default function PaymentMethodPrompt({
   const [values, setValues] = useState({
     venmo: paymentMethods?.venmo,
     cashapp: paymentMethods?.cashapp,
-    paypal: paymentMethods?.paypal
+    paypal: paymentMethods?.paypal,
   });
 
   const openModal = useCallback((type) => {
@@ -107,7 +107,8 @@ export default function PaymentMethodPrompt({
                   Set up payments
                 </div>
                 <div className="text-slate-600 text-sm text-center">
-                  Add your payment methods to make it easier for others to send you money.
+                  Add your payment methods to make it easier for others to send
+                  you money.
                 </div>
               </div>
             </div>
@@ -215,8 +216,8 @@ export default function PaymentMethodPrompt({
             <div>
               <div className="text-2xl font-bold ">Set up payments</div>
               <div className="text-base opacity-90 leading-relaxed ">
-                Add your payment methods to receive money. Choose from the
-                options below.
+                Add your payment methods to make it easier for others to send
+                you money.
               </div>
             </div>
           </div>

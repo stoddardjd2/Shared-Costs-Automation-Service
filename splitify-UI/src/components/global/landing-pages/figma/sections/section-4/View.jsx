@@ -17,7 +17,7 @@ export default function View({ image, features, header, body, text }) {
         </div>
         <div className="col-span-8 my-auto">
           <div className="flex flex-col gap-[16px]  ml-20">
-            <h2 className="text-white">{header}</h2>
+            <h3 className="text-white">{header}</h3>
             <p className="text-[#EAEAEA] mt-3 w-9/12 medium-body">{body}</p>
             <CtaBtn className={""} text={text} />
           </div>
@@ -28,7 +28,7 @@ export default function View({ image, features, header, body, text }) {
       <div className="xl:hidden max-w-[500px] mx-auto col-span-12 grid grid-cols-12 gap-y-[20px] sm:gap-y-[50px]">
         <div className="col-span-12 my-auto">
           <div className="flex flex-col gap-[16px] w-12/12 mx-auto text-center">
-            <h2 className="text-white">{header}</h2>
+            <h3 className="text-white">{header}</h3>
             <p className="text-[#EAEAEA] mt-1 w-9/12 mx-auto medium-body">{body}</p>
           </div>
         </div>
