@@ -200,7 +200,6 @@ async function sendPaymentRequestToParticipant({
   paymentHistoryId,
   dueDate,
 }) {
-  console.log("updated due date:", request.name, dueDate);
   try {
     if (!paymentHistoryId) throw new Error("paymentHistoryId is required");
 
@@ -396,13 +395,14 @@ async function processRecurringRequestIfDue(
       requestDocument.frequency
     );
 
+    console.log("updated due date:", requestDocument.name, nextDueDate);
     await Request.updateOne(
       { _id: requestDocument._id },
       {
         $push: { paymentHistory: paymentHistoryEntry },
         $set: {
           lastSent: requestSentDate,
-          dueDate: nextDueDate,
+          nextDue: nextDueDate,
         },
       }
     );

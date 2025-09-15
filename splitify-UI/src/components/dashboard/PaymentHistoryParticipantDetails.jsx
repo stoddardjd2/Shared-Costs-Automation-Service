@@ -108,7 +108,7 @@ export default function PaymentHistoryParticipantDetails({
             <div className="h-10 w-full justify-between border border-white/30 text-gray-600 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-4 shadow-none disabled:opacity-50 disabled:cursor-auto text-sm flex-shrink-0">
               <div className="flex items-center gap-3">
                 <Send className="w-4 h-4 flex-shrink-0" />
-                <span>Reminder Sent {monthDay(participant?.requestSentDate)}</span>
+                <span>Sent {monthDay(participant?.requestSentDate)}</span>
               </div>
               <div className="flex items-center gap-3">
                 <RefreshCw className="w-4 h-4 flex-shrink-0" />

@@ -61,7 +61,7 @@ async function startServer() {
     );
 
     if (process.env.NODE_ENV == "production") {
-      app.enable("trust proxy");
+      // app.enable("trust proxy");
 
       app.use((req, res, next) => {
         if (req.secure) return next();
