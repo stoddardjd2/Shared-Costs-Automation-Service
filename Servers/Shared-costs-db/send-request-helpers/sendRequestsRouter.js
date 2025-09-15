@@ -7,7 +7,7 @@ async function sendRequestsRouter(reminderData, routes = ["text", "email"]) {
   // TODO: Implement your SMS/Email sending logic here
   //Generate payment URL
   try {
-    const isTextEnabled = await User.findById(reminderData.participantId, {
+    const participant = await User.findById(reminderData.participantId, {
       "textMessagesAllowed.isAllowed": true,
     });
 
@@ -82,7 +82,7 @@ To complete your payment, visit: ${finalUrl}
 Sent via Splitify
 `;
 
-    if (routes.includes("text") && isTextEnabled) {
+    if (routes.includes("text") && participant.textMessagesAllowed.isAllowed) {
       console.log("sending text");
       sendTextMessage(user.phone, "+18333702013", message);
     }

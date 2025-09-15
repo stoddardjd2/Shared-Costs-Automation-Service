@@ -113,7 +113,7 @@ export default function PaymentHistoryParticipantDetails({
               <div className="flex items-center gap-3">
                 <RefreshCw className="w-4 h-4 flex-shrink-0" />
                 <span>
-                  Next{" "}
+                  Reminder on{" "}
                   {monthDay(
                     participant?.requestSentDate,
                     REMINDER_FREQUENCY_DAYS

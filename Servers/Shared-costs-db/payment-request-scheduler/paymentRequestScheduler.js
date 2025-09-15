@@ -39,22 +39,15 @@ function normalizeStartTiming(startTimingValue) {
   return null;
 }
 
-function sameOrAfterDayInTimezone(
-  dateA,
-  dateB,
-  timeZone = TIMEZONE,
-  useUtc = false
-) {
-  const formatDateKey = (date) => {
-    const formatter = new Intl.DateTimeFormat("en-CA", {
-      timeZone: useUtc ? "UTC" : timeZone,
+// DISABLED TIMEZONE
+function sameOrAfterDayInTimezone(dateA, dateB, timeZone = TIMEZONE) {
+  const formatDateKey = (date) =>
+    new Intl.DateTimeFormat("en-CA", {
+      // timeZone,
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
-    });
-    return formatter.format(date);
-  };
-
+    }).format(date);
   return formatDateKey(dateA) >= formatDateKey(dateB);
 }
 
@@ -250,7 +243,6 @@ async function sendPaymentRequestToParticipant({
       dueDate: effectiveDueDate,
       requestData: request,
     });
-
     return !!success;
   } catch (err) {
     console.error(
@@ -280,10 +272,7 @@ async function processRecurringRequestIfDue(
   // Initial request
   if (!hasInitialRequestBeenSent) {
     if (startTimingValue && startTimingValue !== "now") {
-      // ENABLE USE UTC AND DISABLE TIMEZONE
-      if (
-        sameOrAfterDayInTimezone(currentDate, startTimingValue, TIMEZONE, true)
-      ) {
+      if (sameOrAfterDayInTimezone(currentDate, startTimingValue, TIMEZONE)) {
         const requestSentDate = currentDate;
         // Generate history id up front and pass it through
         const paymentHistoryId = new ObjectId();
@@ -389,22 +378,17 @@ async function processRecurringRequestIfDue(
       }
     }
 
-    // resused for purpose
-    console.log("updating due daete for doc", requestDocument)
-    const nextDueDate = calculateDueDate(
-      requestDocument.dueDate,
+    const requestNextDueDate = calculateDueDate(
+      currentDate,
       requestDocument.frequency
     );
+    console.log("NEXT DUE DATE:", requestNextDueDate);
 
-    console.log("updated due date:", requestDocument.name, nextDueDate);
     await Request.updateOne(
-      { _id: requestDocument._id },
+      { _id: requestDocument._id, lastSent: requestDocument.lastSent },
       {
         $push: { paymentHistory: paymentHistoryEntry },
-        $set: {
-          lastSent: requestSentDate,
-          nextDue: nextDueDate,
-        },
+        $set: { lastSent: requestSentDate, nextDue: requestNextDueDate },
       }
     );
 
