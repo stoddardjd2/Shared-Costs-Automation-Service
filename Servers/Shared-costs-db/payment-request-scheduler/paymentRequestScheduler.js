@@ -390,6 +390,7 @@ async function processRecurringRequestIfDue(
     }
 
     // resused for purpose
+    console.log("updating due daete for doc", requestDocument)
     const nextDueDate = calculateDueDate(
       requestDocument.dueDate,
       requestDocument.frequency
