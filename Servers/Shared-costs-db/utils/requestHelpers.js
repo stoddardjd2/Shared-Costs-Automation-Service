@@ -33,26 +33,37 @@ const transporter = nodemailer.createTransport({
 // };
 
 const calculateNextReminderDate = (nextDueDate, reminderFrequency) => {
-  if (!reminderFrequency || reminderFrequency === "none" || !nextDueDate) {
+  if (!reminderFrequency || reminderFrequency === "none" || !nextDueDate)
     return null;
-  }
 
   const dueDate = new Date(nextDueDate);
+  if (isNaN(dueDate)) return null; // invalid date
+
+  const DAY = 24 * 60 * 60 * 1000;
 
   switch (reminderFrequency) {
     case "daily":
-      // +1 day (duration-based, UTC safe)
-      return new Date(dueDate.getTime() + 1 * 24 * 60 * 60 * 1000);
+      return new Date(dueDate.getTime() + 1 * DAY);
 
     case "weekly":
-      // +7 days (duration-based, UTC safe)
-      return new Date(dueDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+      return new Date(dueDate.getTime() + 7 * DAY);
 
-    case "monthly":
-      // Calendar-based, but in UTC
-      const monthlyDate = new Date(dueDate);
-      monthlyDate.setUTCMonth(monthlyDate.getUTCMonth() + 1);
-      return monthlyDate;
+    case "biweekly":
+      return new Date(dueDate.getTime() + 14 * DAY);
+
+    case "monthly": {
+      // calendar-based add in UTC
+      const d = new Date(dueDate);
+      d.setUTCMonth(d.getUTCMonth() + 1);
+      return d;
+    }
+
+    case "yearly": {
+      // calendar-based add in UTC
+      const d = new Date(dueDate);
+      d.setUTCFullYear(d.getUTCFullYear() + 1);
+      return d;
+    }
 
     default:
       return null;
