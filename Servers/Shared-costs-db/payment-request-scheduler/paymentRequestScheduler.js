@@ -391,7 +391,7 @@ async function processRecurringRequestIfDue(
     }
 
     // resused for purpose
-    const nextDueDate = calculateNextReminderDate(
+    const nextDueDate = calculateDueDate(
       requestDocument.dueDate,
       requestDocument.frequency
     );
