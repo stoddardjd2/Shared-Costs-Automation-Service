@@ -5,6 +5,7 @@ const Request = require("../models/Request");
 const User = require("../models/User");
 const sendRequestsRouter = require("../send-request-helpers/sendRequestsRouter");
 const { resolveDynamicAmountIfEnabled } = require("./plaidHelper");
+const { request } = require("../server");
 
 const TIMEZONE = process.env.REMINDER_TIMEZONE || "America/Los_Angeles";
 const CRON_EXPRESSION = "0 12 * * *"; // 12:00 PM Pacific daily
@@ -44,7 +45,7 @@ function sameOrAfterDayInTimezone(dateA, dateB, timeZone = TIMEZONE) {
   const formatDateKey = (date) =>
     new Intl.DateTimeFormat("en-CA", {
       // timeZone,
-      timeZone:"UTC",
+      timeZone: "UTC",
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
@@ -89,19 +90,58 @@ function addIntervalToDate(baseDate, intervalCount, intervalUnit) {
 }
 
 function getIntervalFromFrequency(frequency, customInterval, customUnit) {
-  const freq = String(frequency || "").toLowerCase();
-  if (freq === "custom") {
-    const count = Number(customInterval || 0) || 1;
-    const unit = customUnit || "days";
-    return { count, unit };
+  const freq = String(frequency || "")
+    .trim()
+    .toLowerCase();
+
+  switch (freq) {
+    // Custom interval passthrough
+    case "custom": {
+      const count = Number(customInterval || 0) || 1;
+      const unit = customUnit || "days";
+      return { count, unit };
+    }
+
+    // Day aliases
+    case "day":
+    case "days":
+    case "daily":
+      return { count: 1, unit: "days" };
+
+    // Week aliases
+    case "week":
+    case "weeks":
+    case "weekly":
+      return { count: 1, unit: "weeks" };
+
+    // Biweekly aliases
+    case "biweekly":
+    case "bi-weekly":
+      return { count: 2, unit: "weeks" };
+
+    // Month aliases
+    case "month":
+    case "months":
+    case "monthly":
+      return { count: 1, unit: "months" };
+
+    // Year aliases
+    case "year":
+    case "years":
+    case "yearly":
+      return { count: 1, unit: "years" };
+
+    // One-time / none
+    case "one-time":
+    case "one time":
+    case "once":
+    case "none":
+      return null;
+
+    // Default: 1 week
+    default:
+      return { count: 1, unit: "months" };
   }
-  if (freq === "daily") return { count: 1, unit: "days" };
-  if (freq === "weekly") return { count: 1, unit: "weeks" };
-  if (freq === "biweekly") return { count: 2, unit: "weeks" };
-  if (freq === "monthly") return { count: 1, unit: "months" };
-  if (freq === "yearly") return { count: 1, unit: "years" };
-  if (freq === "one-time") return null;
-  return { count: 1, unit: "weeks" };
 }
 
 function isRequestDueByFrequency(
@@ -129,8 +169,18 @@ function isRequestDueByFrequency(
   return currentDate >= nextEligibleDate;
 }
 
-function calculateDueDate(requestDate, reminderFrequency) {
-  const interval = getIntervalFromFrequency(reminderFrequency, 1, null);
+function calculateDueDate(
+  requestDate,
+  reminderFrequency,
+  customInterval,
+  customUnit
+) {
+  const interval = getIntervalFromFrequency(
+    reminderFrequency,
+    customInterval,
+    customUnit
+  );
+  if (!interval) return null;
   return addIntervalToDate(requestDate, interval.count, interval.unit);
 }
 
@@ -146,7 +196,9 @@ function calculateNextReminderDate(dueDate, reminderFrequency) {
 function createPaymentHistoryEntry(requestDocument, requestSentDate, presetId) {
   const dueDate = calculateDueDate(
     requestSentDate,
-    requestDocument.reminderFrequency
+    requestDocument.reminderFrequency,
+    requestDocument?.customInterval,
+    requestDocument?.customUnit
   );
   const nextReminderDate = calculateNextReminderDate(
     dueDate,
@@ -337,13 +389,14 @@ async function processRecurringRequestIfDue(
     // let newTotalAmount = null;
 
     if (requestDocument?.isDynamic) {
+      console.log("DYNAMIC COST SCHEDULED FOR:", requestDocument.name)
       try {
         const updatedDynamicData = await resolveDynamicAmountIfEnabled(
           requestDocument
         );
         requestDocument.participants = updatedDynamicData.newParticipants;
         console.log(
-          "DYNAMIC UPDATE: updated req doc after dynamic newParticpants",
+          "DYNAMIC UPDATE: UPDATED PARCITIPANTS WITH NEW COSTS:",
           requestDocument.participants
         );
       } catch (e) {
@@ -381,9 +434,16 @@ async function processRecurringRequestIfDue(
 
     const requestNextDueDate = calculateDueDate(
       currentDate,
-      requestDocument.frequency
+      requestDocument.frequency,
+      requestDocument?.customInterval,
+      requestDocument?.customUnit
     );
-    console.log("NEXT DUE DATE:", requestNextDueDate);
+    console.log(
+      "NEXT DUE DATE:",
+      requestNextDueDate,
+      "FOR",
+      requestDocument.name
+    );
 
     await Request.updateOne(
       { _id: requestDocument._id, lastSent: requestDocument.lastSent },

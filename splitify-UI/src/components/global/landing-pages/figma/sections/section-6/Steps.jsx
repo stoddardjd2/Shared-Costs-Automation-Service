@@ -34,7 +34,7 @@ const steps = [
   },
   {
     header: "Follow-ups handled.",
-    body: "Selected people will recieve friendly text and email reminders until they complete their payments.",
+    body: "Selected people will receive friendly text and email reminders until they complete their payments.",
   },
   {
     header: "Get paid.",

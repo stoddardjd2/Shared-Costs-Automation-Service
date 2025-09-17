@@ -121,7 +121,7 @@ async function resolveDynamicAmountIfEnabled(requestDocument) {
         {
           $set: {
             amount: null,
-            totalAmount: last?.amount.toFixed(2),
+            totalAmount: Number(last?.amount.toFixed(2)),
             participants: updatedParticipants,
           },
         },
@@ -166,7 +166,6 @@ async function resolveDynamicAmountIfEnabled(requestDocument) {
         { new: true }
       );
 
-      console.log("DOC UPDATE", doc);
       updatedDynamicData = {
         // newAmount: amountEach,
         // newTotalAmount: last?.amount,
@@ -180,7 +179,7 @@ async function resolveDynamicAmountIfEnabled(requestDocument) {
     }
   }
 
-  console.log("rerutnr", updatedDynamicData);
+  console.log("DYNAMIC UPDATED WITH:", updatedDynamicData);
   return updatedDynamicData;
 }
 
