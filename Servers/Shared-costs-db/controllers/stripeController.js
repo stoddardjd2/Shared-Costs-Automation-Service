@@ -104,39 +104,39 @@ const returnAccountStatus = async (req, res, next) => {
 };
 
 // Stripe Webhook Handler
-const webHookHandler = async (req, res) => {
-  console.log("webHookHandler invoked");
-  const sig = req.headers["stripe-signature"];
-  console.log("Received Stripe signature:", sig);
+// const webHookHandler = async (req, res) => {
+//   console.log("webHookHandler invoked");
+//   const sig = req.headers["stripe-signature"];
+//   console.log("Received Stripe signature:", sig);
 
-  let event;
-  try {
-    // Use req.rawBody (Buffer) instead of req.body here
-    event = stripe.webhooks.constructEvent(
-      req.rawBody,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
-    console.log("Stripe event constructed:", event.type);
-  } catch (err) {
-    console.error("Error verifying Stripe webhook signature:", err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
+//   let event;
+//   try {
+//     // Use req.rawBody (Buffer) instead of req.body here
+//     event = stripe.webhooks.constructEvent(
+//       req.rawBody,
+//       sig,
+//       process.env.STRIPE_WEBHOOK_SECRET
+//     );
+//     console.log("Stripe event constructed:", event.type);
+//   } catch (err) {
+//     console.error("Error verifying Stripe webhook signature:", err.message);
+//     return res.status(400).send(`Webhook Error: ${err.message}`);
+//   }
 
-  // Handle account.updated
-  if (event.type === "account.updated") {
-    const acct = event.data.object;
-    console.log(
-      "account.updated event for:",
-      acct.id,
-      "requirements:",
-      acct.requirements
-    );
-    // TODO: Persist acct.requirements.currently_due / past_due to your database
-  }
+//   // Handle account.updated
+//   if (event.type === "account.updated") {
+//     const acct = event.data.object;
+//     console.log(
+//       "account.updated event for:",
+//       acct.id,
+//       "requirements:",
+//       acct.requirements
+//     );
+//     // TODO: Persist acct.requirements.currently_due / past_due to your database
+//   }
 
-  res.json({ received: true });
-};
+//   res.json({ received: true });
+// };
 
 // Initiate Payout
 const payoutAccount = async (req, res, next) => {
@@ -432,16 +432,27 @@ function inferPlanFromSubscription(sub) {
 }
 
 async function handleStripeWebHook(req, res) {
-  console.log("stripe webhook received:", req.body);
+  // Convert a Stripe unix-second timestamp to Date, only if valid.
+  // Returns undefined instead of Invalid Date so we can omit from $set.
+  const stripeTsToDate = (ts) =>
+    Number.isFinite(ts) ? new Date(ts * 1000) : undefined;
+
+  // Build a $set object that only includes defined values.
+  const definedOnly = (obj) =>
+    Object.fromEntries(
+      Object.entries(obj).filter(([, v]) => v !== undefined && v !== Number.NaN)
+    );
+
+  console.log("stripe webhook received");
 
   const sig = req.headers["stripe-signature"];
-  const raw = req.rawBody;
+  // const raw = req.rawBody;
 
   let event;
 
   try {
     event = stripe.webhooks.constructEvent(
-      raw,
+      req.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
@@ -450,55 +461,90 @@ async function handleStripeWebHook(req, res) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
+  console.log("STRIPE WEBHOOK EVENT TYPE:", event.type);
   try {
     switch (event.type) {
       case "invoice.payment_succeeded": {
         const invoice = event.data.object;
-        if (
-          invoice.billing_reason === "subscription_create" ||
-          invoice.billing_reason === "subscription_cycle"
-        ) {
-          const subId = invoice.subscription;
-          const customerId = invoice.customer;
-          const sub = await stripe.subscriptions.retrieve(subId);
 
-          const user = await User.findOne({ stripeCustomerId: customerId });
-          if (!user) break;
+        // Only act on subscription-related invoices
+        const subRelatedReasons = new Set([
+          "subscription_create",
+          "subscription_cycle",
+          "subscription_update",
+          "subscription_threshold",
+        ]);
+        if (!subRelatedReasons.has(invoice.billing_reason)) break;
 
-          const { planKey, interval, plan } = inferPlanFromSubscription(sub);
+        const customerId = invoice.customer;
+        const user = await User.findOne({ stripeCustomerId: customerId });
+        if (!user) break;
 
-          await User.updateOne(
-            { _id: user._id },
-            {
-              $set: {
-                "subscription.id": sub.id,
-                "subscription.planKey":
-                  planKey || user.subscription?.planKey || null,
-                "subscription.interval":
-                  interval || user.subscription?.interval || null,
-                "subscription.status": sub.status,
-                "subscription.currentPeriodStart": new Date(
-                  sub.current_period_start * 1000
-                ),
-                "subscription.currentPeriodEnd": new Date(
-                  sub.current_period_end * 1000
-                ),
-                "subscription.cancelAtPeriodEnd": !!sub.cancel_at_period_end,
-                "subscription.latestInvoiceId": invoice.id,
-                "subscription.defaultPaymentMethodId":
-                  sub.default_payment_method || null,
-                isPremium: ["active", "trialing"].includes(sub.status),
-                plan: plan || "free",
-              },
-            }
-          );
+        // Try to get subscription id directly from invoice
+        const subId =
+          typeof invoice.subscription === "string"
+            ? invoice.subscription
+            : undefined;
+
+        // Also try to glean period from the subscription line item as a fallback
+        const subLine =
+          (invoice.lines?.data || []).find(
+            (l) => l.type === "subscription" || (l.price?.recurring && l.period)
+          ) || null;
+
+        // Retrieve subscription only if we have a real id
+        let sub = null;
+        if (subId) {
+          sub = await stripe.subscriptions.retrieve(subId, {
+            expand: ["default_payment_method"],
+          });
+        }
+
+        // Infer plan *only* if we have a subscription object
+        const { planKey, interval, plan } = sub
+          ? inferPlanFromSubscription(sub)
+          : {};
+
+        const startUnix = sub?.current_period_start ?? subLine?.period?.start;
+        const endUnix = sub?.current_period_end ?? subLine?.period?.end;
+
+        const update = definedOnly({
+          "subscription.id": sub?.id ?? subId, // set if we have something
+          "subscription.planKey": planKey ?? user.subscription?.planKey ?? null,
+          "subscription.interval":
+            interval ?? user.subscription?.interval ?? null,
+          "subscription.status": sub?.status, // leave undefined if no sub
+          "subscription.currentPeriodStart": stripeTsToDate(startUnix),
+          "subscription.currentPeriodEnd": stripeTsToDate(endUnix),
+          "subscription.cancelAtPeriodEnd":
+            typeof sub?.cancel_at_period_end === "boolean"
+              ? sub.cancel_at_period_end
+              : undefined,
+          "subscription.latestInvoiceId": invoice.id,
+          // Prefer sub.default_payment_method; fallback to invoice’s PI payment_method if present
+          "subscription.defaultPaymentMethodId":
+            (typeof sub?.default_payment_method === "object"
+              ? sub.default_payment_method?.id
+              : sub?.default_payment_method) ??
+            invoice?.payment_intent?.payment_method ??
+            invoice?.default_payment_method ??
+            undefined,
+          isPremium: sub
+            ? ["active", "trialing"].includes(sub.status)
+            : undefined,
+          plan: plan ?? undefined,
+        });
+
+        // If nothing to set, don’t make a noisy update
+        if (Object.keys(update).length) {
+          await User.updateOne({ _id: user._id }, { $set: update });
         }
         break;
       }
 
       case "customer.subscription.updated":
       case "customer.subscription.created": {
-        const sub = event.data.object;
+        const sub = event.data.object; // full subscription object here
         const customerId = sub.customer;
 
         const user = await User.findOne({ stripeCustomerId: customerId });
@@ -506,48 +552,50 @@ async function handleStripeWebHook(req, res) {
 
         const { planKey, interval, plan } = inferPlanFromSubscription(sub);
 
-        await User.updateOne(
-          { _id: user._id },
-          {
-            $set: {
-              "subscription.id": sub.id,
-              "subscription.planKey":
-                planKey || user.subscription?.planKey || null,
-              "subscription.interval":
-                interval || user.subscription?.interval || null,
-              "subscription.status": sub.status,
-              "subscription.currentPeriodStart": new Date(
-                sub.current_period_start * 1000
-              ),
-              "subscription.currentPeriodEnd": new Date(
-                sub.current_period_end * 1000
-              ),
-              "subscription.cancelAtPeriodEnd": !!sub.cancel_at_period_end,
-              "subscription.defaultPaymentMethodId":
-                sub.default_payment_method || null,
-              isPremium: ["active", "trialing"].includes(sub.status),
-              plan: plan || "free",
-            },
-          }
-        );
+        const update = definedOnly({
+          "subscription.id": sub.id,
+          "subscription.planKey": planKey ?? user.subscription?.planKey ?? null,
+          "subscription.interval":
+            interval ?? user.subscription?.interval ?? null,
+          "subscription.status": sub.status,
+          "subscription.currentPeriodStart": stripeTsToDate(
+            sub.current_period_start
+          ),
+          "subscription.currentPeriodEnd": stripeTsToDate(
+            sub.current_period_end
+          ),
+          "subscription.cancelAtPeriodEnd": !!sub.cancel_at_period_end,
+          "subscription.defaultPaymentMethodId":
+            (typeof sub.default_payment_method === "object"
+              ? sub.default_payment_method?.id
+              : sub.default_payment_method) ?? undefined,
+          isPremium: ["active", "trialing"].includes(sub.status),
+          plan: plan ?? "free",
+        });
+
+        await User.updateOne({ _id: user._id }, { $set: update });
         break;
       }
 
       case "invoice.payment_failed": {
         const invoice = event.data.object;
         const customerId = invoice.customer;
-        const subId = invoice.subscription;
+        const subId =
+          typeof invoice.subscription === "string"
+            ? invoice.subscription
+            : undefined;
 
         const sub = subId ? await stripe.subscriptions.retrieve(subId) : null;
         const user = await User.findOne({ stripeCustomerId: customerId });
         if (!user) break;
 
+        const status = sub?.status ?? "past_due";
         await User.updateOne(
           { _id: user._id },
           {
             $set: {
-              "subscription.status": sub?.status || "past_due",
-              isPremium: ["active", "trialing"].includes(sub?.status || ""),
+              "subscription.status": status,
+              isPremium: ["active", "trialing"].includes(status),
             },
           }
         );
@@ -609,7 +657,7 @@ module.exports = {
   createAccount,
   createAccountLink,
   returnAccountStatus,
-  webHookHandler,
+  // webHookHandler,
   createSubscription,
   payoutAccount,
   handleStripeWebHook,

@@ -10,7 +10,7 @@ export default function Section2() {
     <section
       id="about"
       className={`flex items-center
-                bg-[#ACC8D2]`}
+                bg-landing-main`}
     >
       <Layout className="sm:py-20 pt-0">
         <div

@@ -6,7 +6,7 @@ export default function Section3() {
   return (
     <section
       className={` flex items-center relative
-                bg-[#ACC8D2]`}
+                bg-landing-main`}
     >
       <Layout className="pt-0 lg:pt-10">
         <div

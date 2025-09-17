@@ -26,7 +26,7 @@ export default function LandingPage() {
       />
       <Hero />
       <div className="relative">
-        <div className="absolute z-0 left-0 bottom-0 rounded-banner top-[-130px] bg-landing-main w-full">
+        <div className="absolute z-0 left-0 bottom-0 rounded-banner top-[-130px] bg-[#ACC8D2] w-full">
           <BrandsBanner />
         </div>
         <div className="relative z-10">
@@ -39,7 +39,7 @@ export default function LandingPage() {
       <div className="relative">
         <Section6 />
         {/* rounded overlay on bottom */}
-        <div class="absolute z-20 bottom-[-55px] h-[55px] rounded-b-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.25)] bg-landing-main w-full"></div>
+        <div class="absolute z-20 bottom-[-55px] h-[55px] rounded-b-[40px] shadow-[0_20px_20px_rgba(0,0,0,0.25)] bg-[#ACC8D2] w-full"></div>
       </div>
 
       <Section4 />

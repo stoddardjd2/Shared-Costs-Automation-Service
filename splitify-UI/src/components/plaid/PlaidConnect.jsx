@@ -274,7 +274,7 @@ export default function PlaidConnect({
       {/* <PremiumModal isOpen={showPremiumPrompt} setIsOpen={setShowPremiumPrompt}/> */}
       <SplitifyPremiumModal
         isOpen={showPremiumPrompt}
-        onClose={()=>setShowPremiumPrompt(false)}
+        onClose={() => setShowPremiumPrompt(false)}
       />
       {linkToken && (
         <PlaidLinkOpener

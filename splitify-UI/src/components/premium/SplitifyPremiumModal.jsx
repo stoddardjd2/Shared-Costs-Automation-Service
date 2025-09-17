@@ -51,8 +51,6 @@ export default function SplitifyPremiumModal({
   showPlaidOnly = true,
   showPremium = true,
 }) {
-
-  
   const { userData, setUserData } = useData();
   const userEmail = userData?.email || "";
   const userName = userData?.name || "";
@@ -66,6 +64,7 @@ export default function SplitifyPremiumModal({
   const [isFetchingCS, setIsFetchingCS] = useState(false);
   const [fetchError, setFetchError] = useState(null);
 
+  console.log("SELECTION", selection);
   // success info for confirmation screen
   const [successInfo, setSuccessInfo] = useState(null); // { planKey, billing, amount, currency }
 
@@ -145,7 +144,6 @@ export default function SplitifyPremiumModal({
     setFetchError(null);
     setStep("pay");
     setIsFetchingCS(true);
-
     try {
       setSelection({ planKey, billing });
       // Hit your backend to create a Subscription and return a clientSecret
@@ -337,7 +335,7 @@ export default function SplitifyPremiumModal({
                 onSuccess={(info) => {
                   setUserData((prevUserData) => ({
                     ...prevUserData,
-                    plan: planKey,
+                    plan: selection?.planKey,
                   }));
 
                   setSuccessInfo(info);
@@ -377,7 +375,13 @@ export default function SplitifyPremiumModal({
       {/* Scrollable overlay container */}
       <div className="fixed inset-0 overflow-y-auto">
         {/* Align top on mobile, center on sm+ */}
-        <div className="flex min-h-dvh items-start sm:items-center justify-center">
+        <div
+          onClick={(e) => {
+            if (e.target !== e.currentTarget) return;
+            onClose();
+          }}
+          className="flex min-h-dvh items-start sm:items-center justify-center"
+        >
           {/* Panel */}
           <div className="w-full max-w-5xl bg-white shadow-2xl ring-1 ring-black/5 min-h-[100svh] sm:min-h-0 max-h-[100svh] sm:max-h-[85vh] flex flex-col overflow-hidden sm:m-10 sm:rounded-xl">
             {/* CHOOSE STEP */}

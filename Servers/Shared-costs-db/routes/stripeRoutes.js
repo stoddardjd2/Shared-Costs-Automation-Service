@@ -29,7 +29,7 @@ const { protect, authorize } = require("../middleware/auth");
 // POST /api/billing/create-subscription
 // body: { planKey: "plaid" | "premium", interval: "monthly" | "annual", currency: "USD" }
 
-router.post("/webhooks", handleStripeWebHook);
+// router.post("/webhooks", handleStripeWebHook);
 
 // Protected routes after this middleware
 router.use(protect);

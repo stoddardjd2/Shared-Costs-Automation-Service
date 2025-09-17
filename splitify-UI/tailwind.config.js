@@ -17,7 +17,9 @@ export default {
           "radial-gradient(71.54% 87.4% at 47.99% 100%, #ACACAC 0%, #075C7B 41.39%, #022B3A 71.02%, #0C0C0C 100%)",
       } /* Rectangle 7 */,
       /* Rectangle 6 */
-
+      backgroundColor: {
+        "landing-main": "#ACC8D2",
+      },
       borderRadius: {
         banner: "40px 40px 0 0",
       },
@@ -31,7 +33,6 @@ export default {
       xl: "1280px",
       "2xl": "1536px",
     },
-
   },
   plugins: [],
 };

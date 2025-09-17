@@ -76,9 +76,9 @@ lg:bg-[radial-gradient(62.5%_175.13%_at_97.01%_48.68%,_#075C7B_31.33%,_#022B3A_7
             />
             <img
               className={`absolute 
-                top-[90px]
+                top-[40px]
               right-[-10px]  
-              w-[133px] z-2`}
+              w-[203px] z-2`}
               src={heroPhoneImg2}
             />
           </div>

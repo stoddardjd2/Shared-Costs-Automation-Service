@@ -37,6 +37,7 @@ import PlaidConnect from "../plaid/PlaidConnect";
 import { Navigate } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import RequestSentScreen from "../dashboard/RequestSentScreen";
+import SplitifyPremiumModal from "../premium/SplitifyPremiumModal";
 const SplitStep = ({
   setSelectedPeople,
   onBack,
@@ -79,7 +80,7 @@ const SplitStep = ({
   const [selectedTransaction, setSelectedTransaction] = useState(
     selectedCharge?.selectedTransaction
   );
-
+  const [showPremiumPrompt, setShowPremiumPrompt] = useState(false);
   const [isEditingPeople, setIsEditingPeople] = useState(false);
 
   const [isSendingRequest, setIsSendingRequest] = useState(false);
@@ -736,19 +737,21 @@ const SplitStep = ({
           customUnit={customUnit}
           originalFrequency={originalFrequency}
         /> */}
-        <PlaidConnect
-          setChargeName={setChargeName}
-          setEditableTotalAmount={setEditableTotalAmount}
-          setRecurringType={setRecurringType}
-          setIsPlaidCharge={setIsPlaidCharge}
-          setIsDynamic={setIsDynamic}
-          setStartTiming={setStartTiming}
-          chargeName={chargeName}
-          isPlaidCharge={isPlaidCharge}
-          setSelectedTransaction={setSelectedTransaction}
-          selectedTransaction={selectedTransaction}
-          isEditMode={isEditMode}
-        />
+        {!isEditMode && (
+          <PlaidConnect
+            setChargeName={setChargeName}
+            setEditableTotalAmount={setEditableTotalAmount}
+            setRecurringType={setRecurringType}
+            setIsPlaidCharge={setIsPlaidCharge}
+            setIsDynamic={setIsDynamic}
+            setStartTiming={setStartTiming}
+            chargeName={chargeName}
+            isPlaidCharge={isPlaidCharge}
+            setSelectedTransaction={setSelectedTransaction}
+            selectedTransaction={selectedTransaction}
+            isEditMode={isEditMode}
+          />
+        )}
         {/* Name of Charge */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 ">
@@ -1429,10 +1432,14 @@ const SplitStep = ({
                     if (!isDynamicCostsDisabled) {
                       setIsDynamic(true);
                     }
+                    if (userData.plan !== "free" && !isPlaidCharge) {
+                    } else {
+                      setShowPremiumPrompt(true);
+                    }
                   }}
                   className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${
                     isDynamicCostsDisabled
-                      ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
+                      ? "border-gray-200 bg-gray-50 cursor-pointer opacity-60"
                       : isDynamic
                       ? "border-blue-600 bg-blue-50 cursor-pointer"
                       : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
@@ -1460,6 +1467,8 @@ const SplitStep = ({
                             ? "Not Available For Custom Split Method"
                             : recurringType === "none"
                             ? "Recurring Only"
+                            : !isPlaidCharge
+                            ? "Must add charge with Plaid"
                             : "Plaid Required"}
                         </span>
                       )}
@@ -1553,11 +1562,13 @@ const SplitStep = ({
                   onClick={() => {
                     if (!isMarkAsPaidEveryoneDisabled) {
                       setAllowMarkAsPaidForEveryone(true);
+                    } else {
+                      setShowPremiumPrompt(true);
                     }
                   }}
                   className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${
                     isMarkAsPaidEveryoneDisabled
-                      ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
+                      ? "border-gray-200 bg-gray-50 cursor-pointer opacity-60"
                       : allowMarkAsPaidForEveryone
                       ? "border-blue-600 bg-blue-50 cursor-pointer"
                       : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
@@ -1581,11 +1592,11 @@ const SplitStep = ({
                       }`}
                     >
                       Everyone
-                      <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
-                        {!isMarkAsPaidEveryoneDisabled
-                          ? ""
-                          : "Premium Required"}
-                      </span>
+                      {isMarkAsPaidEveryoneDisabled && (
+                        <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
+                          Premium Required
+                        </span>
+                      )}
                     </h4>
                     <p
                       className={`text-xs  ${
@@ -1656,6 +1667,14 @@ const SplitStep = ({
           chargeName={chargeName}
           frequency={recurringType}
           splitType={splitType}
+        />
+
+        <SplitifyPremiumModal
+          isOpen={showPremiumPrompt}
+          onClose={() => {
+            // navigate("/dashboard");
+            setShowPremiumPrompt(false);
+          }}
         />
       </div>
     </div>

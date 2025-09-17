@@ -20,6 +20,8 @@ const {
   getRequestSchedulerStatus,
   runRecurringRequestsNow,
 } = require("./payment-request-scheduler/paymentRequestScheduler");
+
+const { handleStripeWebHook } = require("./controllers/stripeController");
 // Import routes
 const userRoutes = require("./routes/userRoutes");
 const requestRoutes = require("./routes/requestRoutes");
@@ -52,7 +54,6 @@ async function startServer() {
 
     // Security middleware
     app.use(helmet());
-    console.log("ACCEPTING CORS ORIGIN:", process.env.CLIENT_URL);
     app.use(
       cors({
         origin: [process.env.CLIENT_URL],
@@ -60,15 +61,21 @@ async function startServer() {
       })
     );
 
-    if (process.env.NODE_ENV == "production") {
-      app.enable("trust proxy");
+    // if (process.env.NODE_ENV == "production") {
+    //   app.enable("trust proxy");
 
-      app.use((req, res, next) => {
-        if (req.secure) return next();
-        console.log("redirect");
-        res.redirect(301, `https://${req.headers.host}${req.url}`);
-      });
-    }
+    //   app.use((req, res, next) => {
+    //     if (req.secure) return next();
+    //     console.log("redirect");
+    //     res.redirect(301, `https://${req.headers.host}${req.url}`);
+    //   });
+    // }
+
+    app.post(
+      "/api/stripe/webhook",
+      express.raw({ type: "application/json" }),
+      handleStripeWebHook
+    );
 
     // Rate limiting
     const limiter = rateLimit({
@@ -78,17 +85,20 @@ async function startServer() {
     });
     app.use(limiter);
 
+    // app.use("/api/stripe", stripeRoutes);
 
     // Custom body parser for Stripe webhooks
-    app.use(
-      express.json({
-        verify: (req, res, buf) => {
-          if (req.originalUrl?.startsWith("/api/stripe/webhooks")) {
-            req.rawBody = buf; // needed for signature verification
-          }
-        },
-      })
-    );
+    // app.use(
+    //   express.json({
+    //     verify: (req, res, buf) => {
+    //       if (req.originalUrl?.startsWith("/api/stripe/webhook")) {
+    //         req.rawBody = buf; // needed for signature verification
+    //       }
+    //     },
+    //   })
+    // );
+
+    app.use(express.json());
     app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
     // Routes
@@ -114,7 +124,6 @@ async function startServer() {
     app.use("/api/plaid", plaidRoutes);
     app.use("/api/admin", adminRoutes);
     app.use("/api/stripe", stripeRoutes);
-
     // Error handling middleware
     app.use(notFound);
     app.use(errorHandler);
