@@ -1,5 +1,3 @@
-
-
 export default function generateCostEntry({
   selectedCharge,
   newChargeDetails,
@@ -10,6 +8,7 @@ export default function generateCostEntry({
   customInterval,
   customUnit,
   totalSplit,
+  startTiming,
 }) {
   // Helper function to get frequency from recurring type
   const getFrequency = () => {
@@ -48,43 +47,104 @@ export default function generateCostEntry({
   const getNextDueDate = () => {
     if (recurringType === "none") return null;
 
-    const now = new Date();
-    const nextDue = new Date(now);
+    // Parse 'YYYY-MM-DD' into a UTC-midnight Date
+    function dateFromYMD(ymd, mode = "utc") {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd)) {
+        throw new Error("Date must be 'YYYY-MM-DD'");
+      }
+      const [y, m, d] = ymd.split("-").map(Number);
+      const dt =
+        mode === "utc"
+          ? new Date(Date.UTC(y, m - 1, d))
+          : new Date(y, m - 1, d);
+      const ok =
+        mode === "utc"
+          ? dt.getUTCFullYear() === y &&
+            dt.getUTCMonth() === m - 1 &&
+            dt.getUTCDate() === d
+          : dt.getFullYear() === y &&
+            dt.getMonth() === m - 1 &&
+            dt.getDate() === d;
+      if (!ok) throw new Error("Invalid calendar date");
+      return dt;
+    }
 
+    // Format a Date (assumed UTC) as 'YYYY-MM-DD'
+    function toYMDUTC(d) {
+      const y = d.getUTCFullYear();
+      const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+      const day = String(d.getUTCDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    // Add interval in UTC
+    function addUTC(base, count, unit) {
+      const dt = new Date(base.getTime());
+      switch (unit) {
+        case "days":
+          dt.setUTCDate(dt.getUTCDate() + count);
+          break;
+        case "weeks":
+          dt.setUTCDate(dt.getUTCDate() + count * 7);
+          break;
+        case "months":
+          dt.setUTCMonth(dt.getUTCMonth() + count);
+          break;
+        case "years":
+          dt.setUTCFullYear(dt.getUTCFullYear() + count);
+          break;
+        default:
+          throw new Error("Unsupported unit");
+      }
+      return dt;
+    }
+
+    // Anchor date: 'now' at UTC midnight, or the provided start date
+    const now = new Date();
+    const base =
+      startTiming === "now"
+        ? new Date(
+            Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+          )
+        : dateFromYMD(startTiming, "utc");
+
+    if (startTiming !== "now" && base.getTime() > Date.now()) {
+      return toYMDUTC(base);
+    }
+
+    let next;
     switch (recurringType) {
       case "daily":
-        nextDue.setDate(now.getDate() + 1);
+        next = addUTC(base, 1, "days");
         break;
       case "weekly":
-        nextDue.setDate(now.getDate() + 7);
+        next = addUTC(base, 1, "weeks");
+        break;
+      case "biweekly":
+        next = addUTC(base, 2, "weeks");
         break;
       case "monthly":
-        nextDue.setMonth(now.getMonth() + 1);
+        next = addUTC(base, 1, "months");
         break;
       case "yearly":
-        nextDue.setFullYear(now.getFullYear() + 1);
+        next = addUTC(base, 1, "years");
         break;
-      case "custom":
-        switch (customUnit) {
-          case "days":
-            nextDue.setDate(now.getDate() + customInterval);
-            break;
-          case "weeks":
-            nextDue.setDate(now.getDate() + customInterval * 7);
-            break;
-          case "months":
-            nextDue.setMonth(now.getMonth() + customInterval);
-            break;
-          case "years":
-            nextDue.setFullYear(now.getFullYear() + customInterval);
-            break;
-        }
+      case "custom": {
+        const count = Number(customInterval || 0);
+        if (!count) return null;
+        const unit = String(customUnit || "").toLowerCase();
+        if (unit === "days") next = addUTC(base, count, "days");
+        else if (unit === "weeks") next = addUTC(base, count, "weeks");
+        else if (unit === "months") next = addUTC(base, count, "months");
+        else if (unit === "years") next = addUTC(base, count, "years");
+        else return null;
         break;
+      }
       default:
         return null;
     }
 
-    return nextDue.toISOString().split("T")[0];
+    return toYMDUTC(next);
   };
 
   // Generate custom splits object based on split type
@@ -136,12 +196,11 @@ export default function generateCostEntry({
 
   const currentDate = new Date().toISOString().split("T")[0];
 
-
-  console.log("recurringType", recurringType)
+  console.log("recurringType", recurringType);
   return {
     name: chargeName,
     amount: chargeAmount,
-    isRecurring: (recurringType == "one-time") ? false : true,
+    isRecurring: recurringType == "one-time" ? false : true,
     plaidMatch: selectedCharge?.plaidMatch || null,
     participants: participants,
     splitType: splitType,
@@ -173,7 +232,6 @@ export default function generateCostEntry({
     //     ],
     //   },
     // ],
-
 
     // Additional metadata that might be useful
     // metadata: {
