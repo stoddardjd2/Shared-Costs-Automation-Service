@@ -204,7 +204,6 @@ async function processReminders() {
       iPaused: { $ne: true }, // Not paused,
       // FLIP for dev
       "paymentHistory.nextReminderDate": { $lte: now }, // Has reminders due
-      "paymentHistory.nextReminderDate": { $lte: now }, // Has reminders due
     });
 
     console.log(`📋 Found ${requests.length} requests with due reminders`);

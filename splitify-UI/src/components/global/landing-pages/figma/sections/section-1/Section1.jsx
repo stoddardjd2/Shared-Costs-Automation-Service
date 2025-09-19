@@ -11,7 +11,7 @@ export default function Section1() {
         
          sm:!pt-10 z-10 relative bg-[#ACC8D2]
         
-        `}
+        `}s
       >
         <div className="col-span-12  flex flex-col justify-center items-center">
           <div

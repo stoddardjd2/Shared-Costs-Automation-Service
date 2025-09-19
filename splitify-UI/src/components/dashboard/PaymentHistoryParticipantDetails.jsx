@@ -17,7 +17,7 @@ export default function PaymentHistoryParticipantDetails({
   paymentHistoryRequest,
   user,
 }) {
-  const REMINDER_FREQUENCY_DAYS = 7;
+  const REMINDER_FREQUENCY_DAYS = 14;
 
   const [isPaid, setIsPaid] = useState(
     participant.paymentAmount >= participant.amount || participant.markedAsPaid
@@ -113,10 +113,9 @@ export default function PaymentHistoryParticipantDetails({
               <div className="flex items-center gap-3">
                 <RefreshCw className="w-4 h-4 flex-shrink-0" />
                 <span>
-                  Reminder on{" "}
+                  Reminder scheduled for{" "}
                   {monthDay(
-                    participant?.requestSentDate,
-                    REMINDER_FREQUENCY_DAYS
+                    paymentHistoryRequest?.nextReminderDate
                   )}
                 </span>
               </div>

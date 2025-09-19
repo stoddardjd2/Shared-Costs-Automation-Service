@@ -161,17 +161,17 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
                 : "scale-0 opacity-0"
             }`}
           >
-            <div className="w-32 h-32 mx-auto bg-blue-600 rounded-full flex items-center justify-center shadow-2xl border-4 border-blue-200">
-              <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center">
-                <Check className="w-12 h-12 text-blue-600" />
-              </div>
+            <div className="w-24 h-24 mx-auto bg-opacity-200 backdrop-blur-3xl rounded-full flex items-center justify-center shadow-2xl border-4 border-white">
+              {/* <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center"> */}
+                <Check className="w-12 h-12 text-white" />
+              {/* </div> */}
             </div>
 
             {/* Success ripples */}
             {[1, 2, 3].map((ripple) => (
               <div
                 key={ripple}
-                className={`absolute inset-0 w-32 h-32 mx-auto border-4 border-blue-400 rounded-full transform transition-all duration-2000 ${
+                className={`absolute inset-0 w-24 h-24 mx-auto border-4 border-blue-400 rounded-full transform transition-all duration-2000 ${
                   animationStage >= 4
                     ? `scale-${120 + ripple * 20} opacity-0`
                     : "scale-100 opacity-40"
@@ -189,7 +189,7 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
                 : "translate-y-8 opacity-0"
             }`}
           >
-            <h1 className="font-bold text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
+            <h1 className="font-bold text-white text-3xl">
               Payment Request{request.participants.length == 1 ? "" : "s"} Sent!
             </h1>
             <div
@@ -211,7 +211,7 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
           >
             <div className="bg-blue-600 max-w-[500px] mx-auto bg-opacity-20 rounded-3xl px-8 py-4 backdrop-blur-lg border border-blue-400 border-opacity-30 shadow-2xl">
               <div className="flex items-center justify-center space-x-4">
-                <span className="font-bold text-white text-2xl sm:text-3xl md:text-4xl">
+                <span className="font-bold text-white text-2xl">
                   ${request.totalAmountOwed.toFixed(2)} Total
                 </span>
               </div>
@@ -223,9 +223,9 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
               animationStage >= 5
                 ? "translate-y-0 opacity-100"
                 : "translate-y-4 opacity-0"
-            } text-base sm:text-lg md:text-xl`}
+            } text-base`}
           >
-            Your payment request has been successfully sent.
+            Participants will recieve an email and text message.
           </p>
 
           {/* Recipients with delivery animation */}
@@ -236,7 +236,7 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
                 : "translate-y-8 opacity-0"
             }`}
           >
-            <p className="text-white text-opacity-80 mb-6 font-medium text-base sm:text-lg">
+            <p className="text-white text-opacity-80 mb-6 font-medium text-base ">
               Delivered to:
             </p>
 
@@ -285,7 +285,7 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
                       animationStage >= 6
                         ? "translate-y-0 opacity-100"
                         : "translate-y-2 opacity-0"
-                    } text-xs sm:text-sm md:text-base`}
+                    } text-base`}
                     style={{ transitionDelay: `${700 + index * 200}ms` }}
                   >
                     {recipient.name}
@@ -295,7 +295,7 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
                       animationStage >= 6
                         ? "translate-y-0 opacity-100"
                         : "translate-y-2 opacity-0"
-                    } text-xs sm:text-sm md:text-base`}
+                    } text-sm`}
                     style={{ transitionDelay: `${700 + index * 200}ms` }}
                   >
                     ${recipient.amount.toFixed(2)}
@@ -440,13 +440,13 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
       >
         <button
           onClick={onClose}
-          className="min-w-[300px] border-2 h-fit border-white border-opacity-40 bg-white text-black py-4 px-8 rounded-2xl font-semibold text-base sm:text-lg backdrop-blur-sm transform hover:scale-105 hover:bg-white/90  transition-all duration-300"
+          className="min-w-[230px] border-2 h-fit border-white border-opacity-40 bg-white text-black py-4 px-8 rounded-2xl font-semibold text-base backdrop-blur-sm transform hover:scale-105 hover:bg-white/90  transition-all duration-300"
         >
           Close
         </button>
         <button
           onClick={onAgain}
-          className="whitespace-nowrap min-w-[300px] bg-transparent border-2 h-fit border-white border-opacity-40 text-white py-4 px-8 rounded-2xl font-semibold text-base sm:text-lg backdrop-blur-sm transform hover:scale-105 hover:bg-white hover:bg-opacity-10 transition-all duration-300"
+          className="whitespace-nowrap min-w-[230px] bg-transparent border-2 h-fit border-white border-opacity-40 text-white py-4 px-8 rounded-2xl font-semibold text-base backdrop-blur-sm transform hover:scale-105 hover:bg-white hover:bg-opacity-10 transition-all duration-300"
         >
           Send Another Request
         </button>

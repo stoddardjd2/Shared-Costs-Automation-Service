@@ -33,6 +33,7 @@ const transporter = nodemailer.createTransport({
 // };
 
 const calculateNextReminderDate = (nextDueDate, reminderFrequency) => {
+  console.log("REMINDER FREQUENCY", reminderFrequency)
   if (!reminderFrequency || reminderFrequency === "none" || !nextDueDate)
     return null;
 

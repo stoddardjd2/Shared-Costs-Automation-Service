@@ -132,7 +132,7 @@ const OverdueAlerts = () => {
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-              <AlertTriangle className="w-4 h-4 text-white" />
+              <AlertTriangle className="w-7 h-7 text-white" />
             </div>
             <div>
               <h3 className="text-2xl font-semibold text-white flex items-center gap-2">

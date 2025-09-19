@@ -41,7 +41,8 @@ const createRequest = async (req, res) => {
   try {
     const userId = req.user._id; // From auth middleware
     const {
-      dueInDays = 7,
+      // assume due immediately
+      dueInDays = 0,
       reminderFrequency = "weekly",
       ...requestData
     } = req.body;
@@ -62,7 +63,8 @@ const createRequest = async (req, res) => {
       dueDate,
       reminderFrequency
     );
-
+    console.log("reminderFreq", reminderFrequency, dueDate)
+    console.log("NEXT REMINDER DATE!", nextReminderDate)
     let request;
 
     // Create initial payment history entry if startTiming is now

@@ -91,7 +91,8 @@ const exchangePublicToken = async (req, res) => {
     const { public_token } = req.body;
 
     const response = await fetch(
-      "https://sandbox.plaid.com/item/public_token/exchange",
+
+      `${process.env.PLAID_PUBLIC_TOKEN_EXCHANGE_URL}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
