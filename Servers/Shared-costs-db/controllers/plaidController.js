@@ -36,7 +36,7 @@ const createLinkToken = async (req, res) => {
 
     const request = {
       user: { client_user_id },
-      client_name: "Sandbox Connect",
+      client_name: "Splitify",
       products: ["transactions"], // add more if needed: "auth", "identity", etc.
       country_codes: ["US"],
       language: "en",
@@ -67,14 +67,14 @@ const createLinkToken = async (req, res) => {
 const createPublicToken = async (req, res) => {
   try {
     const response = await fetch(
-      "https://sandbox.plaid.com/sandbox/public_token/create",
+      `https://${process.env.PLAID_ENV}.plaid.com/sandbox/public_token/create`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          client_id: "686ee94862386b0024d2cbcd",
-          secret: "c18250107468c87adf2934e95d0358",
-          institution_id: "ins_109508",
+          client_id: process.env.PLAID_CLIENT_ID,
+          secret: process.env.PLAID_SECRET,
+          // institution_id: "ins_109508",
           initial_products: ["transactions"],
         }),
       }
@@ -92,13 +92,13 @@ const exchangePublicToken = async (req, res) => {
 
     const response = await fetch(
 
-      `${process.env.PLAID_PUBLIC_TOKEN_EXCHANGE_URL}`,
+      `https://${process.env.PLAID_ENV}.plaid.com/item/public_token/exchange`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          client_id: "686ee94862386b0024d2cbcd",
-          secret: "c18250107468c87adf2934e95d0358",
+          client_id: process.env.PLAID_CLIENT_ID,
+          secret: process.env.PLAID_SECRET,
           public_token: public_token,
         }),
       }
@@ -116,7 +116,7 @@ const refreshTransactions = async (req, res) => {
     const { access_token } = req.body;
 
     const response = await fetch(
-      "https://sandbox.plaid.com/transactions/refresh",
+      `https://${process.env.PLAID_ENV}.plaid.com/transactions/refresh`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -314,7 +314,7 @@ const getTransactions = async (req, res) => {
 
     // Fetch all transactions with pagination
     const fetchAllTransactions = async (startISO, endISO, accessToken) => {
-      const PLAID_URL = "https://sandbox.plaid.com/transactions/get";
+      const PLAID_URL = `https://${process.env.PLAID_ENV}.plaid.com/transactions/get`;
       const PAGE_SIZE = 500;
       let all = [];
       let offset = 0;
