@@ -19,7 +19,6 @@ const DatePicker = ({ startTiming, setStartTiming }) => {
     return `${y}-${m}-${d}`;
   };
 
-  console.log("nextExpectedChargeDate", startTiming)
   // --- State ---
   const [selectedDate, setSelectedDate] = useState(() =>
     isISODate(startTiming) ? parseISODateLocal(startTiming) : null

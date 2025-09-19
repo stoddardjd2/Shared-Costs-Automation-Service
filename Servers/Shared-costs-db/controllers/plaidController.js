@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { ObjectId } = require("mongodb");
 const { Configuration, PlaidApi, PlaidEnvironments } = require("plaid");
-const { encrypt, decrypt } = require ("../utils/accessTokenHelpers");
+const { encrypt, decrypt } = require("../utils/accessTokenHelpers");
 require("dotenv").config();
 
 /** Initialize Plaid client */
@@ -17,9 +17,6 @@ const config = new Configuration({
   },
 });
 const plaid = new PlaidApi(config);
-
-
-
 
 const createLinkToken = async (req, res) => {
   console.log("create link token");
@@ -40,6 +37,7 @@ const createLinkToken = async (req, res) => {
       products: ["transactions"], // add more if needed: "auth", "identity", etc.
       country_codes: ["US"],
       language: "en",
+      webhook: `${process.env.CLIENT_URL}/api/plaid/webhook`, // 👈 Important
       // Optional fields below; include only if set
       // redirect_uri must be registered in Plaid dashboard when used
     };
@@ -91,7 +89,6 @@ const exchangePublicToken = async (req, res) => {
     const { public_token } = req.body;
 
     const response = await fetch(
-
       `https://${process.env.PLAID_ENV}.plaid.com/item/public_token/exchange`,
       {
         method: "POST",
@@ -501,7 +498,51 @@ const savePlaidAccessToken = async (req, res) => {
   }
 };
 
+async function webhook(req, res) {
+  try {
+    const { webhook_type, webhook_code, item_id } = req.body;
 
+    console.log("Plaid webhook received:", webhook_type, webhook_code, item_id);
+
+    if (webhook_type === "TRANSACTIONS") {
+      switch (webhook_code) {
+        case "INITIAL_UPDATE":
+          // First transaction data (30 days) is ready
+          console.log(`Transactions INITIAL_UPDATE for item ${item_id}`);
+
+          // 👉 Trigger a job or flag in DB so your app calls /transactions/get
+          // await Item.updateOne({ plaidItemId: item_id }, { transactionsReady: true });
+
+          break;
+
+        case "HISTORICAL_UPDATE":
+          // Older transactions backfill (up to 24 months) completed
+          console.log(`Transactions HISTORICAL_UPDATE for item ${item_id}`);
+          break;
+
+        case "DEFAULT_UPDATE":
+          // New transactions available (Plaid polls every ~24h)
+          console.log(`Transactions DEFAULT_UPDATE for item ${item_id}`);
+          break;
+
+        case "TRANSACTIONS_REMOVED":
+          // Some transactions were removed by institution
+          console.log(
+            `Transactions removed for item ${item_id}: ${req.body.removed_transactions}`
+          );
+          break;
+
+        default:
+          console.log(`Unhandled TRANSACTIONS webhook_code: ${webhook_code}`);
+      }
+    }
+
+    res.sendStatus(200);
+  } catch (err) {
+    console.error("Error in Plaid webhook handler:", err);
+    res.sendStatus(500);
+  }
+}
 
 module.exports = {
   getTransactions,
@@ -510,4 +551,5 @@ module.exports = {
   createPublicToken,
   createLinkToken,
   savePlaidAccessToken,
+  webhook,
 };

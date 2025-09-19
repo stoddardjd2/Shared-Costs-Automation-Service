@@ -1432,7 +1432,7 @@ const SplitStep = ({
                     if (!isDynamicCostsDisabled) {
                       setIsDynamic(true);
                     }
-                    if (userData.plan !== "free" && !isPlaidCharge) {
+                    if (userData.plan !== "free" && isPlaidCharge) {
                     } else {
                       setShowPremiumPrompt(true);
                     }

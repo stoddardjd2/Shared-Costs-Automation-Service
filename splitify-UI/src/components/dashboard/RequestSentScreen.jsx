@@ -27,9 +27,9 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
       { stage: 2, delay: 500 }, // Icon takes off with trail
       { stage: 3, delay: 1400 }, // Icon reaches destination
       { stage: 4, delay: 1400 }, // Success confirmation
-      { stage: 5, delay: 1600 }, // Content appears
-      { stage: 6, delay: 1800 }, // Recipients animate in
-      { stage: 7, delay: 2000 }, // Buttons appear
+      { stage: 5, delay: 1400 }, // Content appears
+      { stage: 6, delay: 1400 }, // Recipients animate in
+      { stage: 7, delay: 1400 }, // Buttons appear
     ];
 
     timeline.forEach(({ stage, delay }) => {
@@ -247,12 +247,14 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
                   className="relative w-[100px] sm:w-[150px] flex flex-col items-center justify-center"
                 >
                   <div
-                    className={`absolute -top-8 left-1/2 transform -translate-x-1/2 transition-all duration-1000 ${
+                    className={`absolute -top-8 left-1/2 transform -translate-x-1/2 transition-all duration-1000 
+                      ${
                       animationStage >= 6
                         ? "translate-y-0 opacity-100"
                         : "-translate-y-4 opacity-0"
-                    }`}
-                    style={{ transitionDelay: `${400 + index * 200}ms` }}
+                    }
+                    `}
+                    // style={{ transitionDelay: `${400 + index * 200}ms` }}
                   ></div>
 
                   <div
@@ -264,7 +266,7 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
                         : "translate-y-8 scale-90"
                     }`}
                     style={{
-                      transitionDelay: `${600 + index * 200}ms`,
+                      // transitionDelay: `${600 + index * 200}ms`,
                       transitionTimingFunction:
                         "cubic-bezier(0.68, -0.55, 0.265, 1.55)",
                     }}
@@ -276,7 +278,7 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
                           ? "scale-150 opacity-0"
                           : "scale-100 opacity-30"
                       }`}
-                      style={{ transitionDelay: `${800 + index * 200}ms` }}
+                      // style={{ transitionDelay: `${800 + index * 200}ms` }}
                     ></div>
                   </div>
 
@@ -286,7 +288,7 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
                         ? "translate-y-0 opacity-100"
                         : "translate-y-2 opacity-0"
                     } text-base`}
-                    style={{ transitionDelay: `${700 + index * 200}ms` }}
+                    // style={{ transitionDelay: `${700 + index * 200}ms` }}
                   >
                     {recipient.name}
                   </p>
@@ -296,7 +298,7 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
                         ? "translate-y-0 opacity-100"
                         : "translate-y-2 opacity-0"
                     } text-sm`}
-                    style={{ transitionDelay: `${700 + index * 200}ms` }}
+                    // style={{ transitionDelay: `${700 + index * 200}ms` }}
                   >
                     ${recipient.amount.toFixed(2)}
                   </p>

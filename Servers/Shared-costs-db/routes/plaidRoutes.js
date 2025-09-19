@@ -8,6 +8,7 @@ const {
   createPublicToken,
   createLinkToken,
   savePlaidAccessToken,
+  webhook,
 } = require("../controllers/plaidController");
 const { protect } = require("../middleware/auth");
 
@@ -19,5 +20,6 @@ router.post("/exchange_public_token", exchangePublicToken);
 router.post("/transactions", getTransactions);
 router.post("/transactions/refresh", refreshTransactions);
 router.post("/savePlaidAccessToken", savePlaidAccessToken);
+router.post("/plaidWebhook", webhook);
 
 module.exports = router;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react"; 
+import { useState, useEffect, useCallback, useRef } from "react";
 import { plaidAPI } from "../../queries/plaidService";
 import TransactionsDatePicker from "./TransactionsDatePicker";
 import { getTransactions } from "../../queries/plaidService";
@@ -42,10 +42,6 @@ export default function PlaidTransactionsModal({
 
   const scrollContainerRef = useRef(null);
   const debounceTimerRef = useRef(null);
-
-  // NEW: track initial fetch errors + retry timer
-  const [initialLoadError, setInitialLoadError] = useState(null);
-  const retryTimeoutRef = useRef(null);
 
   // Filter transactions (exclude negative amounts, apply search, and date range)
   useEffect(() => {
@@ -108,14 +104,6 @@ export default function PlaidTransactionsModal({
         scrollContainerRef.current.scrollTop = 0;
       }
     }
-
-    // Cleanup any pending retry when modal closes/unmounts
-    return () => {
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current);
-        retryTimeoutRef.current = null;
-      }
-    };
   }, [isOpen]);
 
   // Load more transactions
@@ -222,54 +210,19 @@ export default function PlaidTransactionsModal({
 
   // need to move accessTOken to backend
   useEffect(() => {
-    let isMounted = true;
-
-    async function fetchTransactions(isRetry = false) {
-      // keep the primary loader visible during retries
-      if (!isRetry) setIsLoadingInitialTransactions(true);
-
-      try {
-        setInitialLoadError(null);
+    try {
+      async function fetchTransactions() {
+        setIsLoadingInitialTransactions(true);
         const transactions = await getTransactions(startDate, endDate);
-        if (!isMounted) return;
+        console.log("transact", transactions);
         setTransactions(transactions || []);
         setIsLoadingInitialTransactions(false);
-
-        // clear any scheduled retry on success
-        if (retryTimeoutRef.current) {
-          clearTimeout(retryTimeoutRef.current);
-          retryTimeoutRef.current = null;
-        }
-      } catch (err) {
-        console.log("failed to fetch transactions", err);
-        if (!isMounted) return;
-
-        // show loader + helpful note and schedule retry every 15s
-        setInitialLoadError(err?.message || "Request failed");
-        setIsLoadingInitialTransactions(true);
-
-        if (retryTimeoutRef.current) {
-          clearTimeout(retryTimeoutRef.current);
-        }
-        retryTimeoutRef.current = setTimeout(() => {
-          // only retry if still mounted and modal still open
-          if (isMounted && isOpen) {
-            fetchTransactions(true);
-          }
-        }, 15000);
       }
+      fetchTransactions();
+    } catch (err) {
+      console.log("failed to fetch transactions", err);
     }
-
-    fetchTransactions();
-
-    return () => {
-      isMounted = false;
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current);
-        retryTimeoutRef.current = null;
-      }
-    };
-  }, [startDate, endDate, isOpen]);
+  }, [startDate, endDate]);
 
   return (
     <div
@@ -325,6 +278,12 @@ export default function PlaidTransactionsModal({
                 setDate={setStartDate}
                 currentDate={startDate}
               />
+              {/* <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              /> */}
             </div>
             <div className="flex-1">
               <label className="block text-xs font-medium text-slate-700 mb-1">
@@ -335,7 +294,24 @@ export default function PlaidTransactionsModal({
                 currentDate={endDate}
               />
             </div>
+            {/* <div className="flex items-end">
+              <button
+                onClick={() => {
+                  const d = new Date();
+                  d.setDate(d.getDate() - 30);
+                  setStartDate(d.toISOString().slice(0, 10));
+                  setEndDate(new Date().toISOString().slice(0, 10));
+                }}
+                className="px-3 py-2 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all whitespace-nowrap"
+                title="Reset to last 30 days"
+              >
+                Last 30 days
+              </button>
+            </div> */}
           </div>
+          {/* <button className="bg-gradient-to-br from-blue-600 to-blue-700 border border-white/30 text-white px-6 py-3 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-300 flex items-center gap-2 backdrop-blur-md translate-y-0 hover:-translate-y-0.5 shadow-none hover:shadow-lg hover:shadow-black/10">
+            Get Transactions
+          </button> */}
 
           {/* Search */}
           <div className="relative">
@@ -367,11 +343,7 @@ export default function PlaidTransactionsModal({
           <div className="h-full flex items-center justify-center py-6">
             <div className="flex items-center space-x-2 text-slate-500">
               <div className="animate-spin rounded-full h-4 w-4 border-2 border-slate-300 border-t-slate-600"></div>
-              <span className="text-sm">
-                {initialLoadError
-                  ? "Loading transactions… If you just linked your account, Plaid may need up to a minute to prepare your data. We'll retry automatically every 15 seconds."
-                  : "Loading transactions..."}
-              </span>
+              <span className="text-sm">Loading transactions...</span>
             </div>
           </div>
         ) : (
