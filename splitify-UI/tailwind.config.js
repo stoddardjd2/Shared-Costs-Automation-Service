@@ -21,7 +21,7 @@ export default {
       } /* Rectangle 7 */,
       /* Rectangle 6 */
       backgroundColor: {
-        "landing-main": "#e9f6fa",
+        "landing-main": "#ffffff",
         /* Desktop - 11 */
       },
       borderRadius: {
