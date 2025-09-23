@@ -9,6 +9,9 @@ export default {
           "linear-gradient(180deg,#E0EAEE 0%,#ACC8D2 100%)",
         "scroll-gradient":
           "radial-gradient(137.99% 51.6% at 0% 100%, #000000 0%, #075C7B 41.39%, #022B3A 91.02%)",
+
+        "scroll-gradient-mobile":
+          "radial-gradient(137.99% 51.6% at 50% 100%,#1f7594 0%, #06455c 60%)",
         // "feature-gradient": "radial-gradient(137.99% 51.6% at 50% 100%, #ACACAC 0%, #075C7B 41.39%, #022B3A 71.02%, #0C0C0C 100%)"
         /* Rectangle 6 */
         "feature-gradient":
@@ -18,7 +21,8 @@ export default {
       } /* Rectangle 7 */,
       /* Rectangle 6 */
       backgroundColor: {
-        "landing-main": "#ACC8D2",
+        "landing-main": "#e9f6fa",
+        /* Desktop - 11 */
       },
       borderRadius: {
         banner: "40px 40px 0 0",
