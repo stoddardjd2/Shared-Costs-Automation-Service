@@ -442,13 +442,13 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
       >
         <button
           onClick={onClose}
-          className="min-w-[230px] border-2 h-fit border-white border-opacity-40 bg-white text-black py-4 px-8 rounded-2xl font-semibold text-base backdrop-blur-sm transform hover:scale-105 hover:bg-white/90  transition-all duration-300"
+          className="min-w-[230px] border-2 h-fit border-white border-opacity-40 bg-white text-black py-4 px-8 rounded-2xl font-semibold text-base backdrop-blur-sm transform hover:bg-white/90  transition-all duration-300"
         >
           Close
         </button>
         <button
           onClick={onAgain}
-          className="whitespace-nowrap min-w-[230px] bg-transparent border-2 h-fit border-white border-opacity-40 text-white py-4 px-8 rounded-2xl font-semibold text-base backdrop-blur-sm transform hover:scale-105 hover:bg-white hover:bg-opacity-10 transition-all duration-300"
+          className="whitespace-nowrap min-w-[230px] bg-transparent border-2 h-fit border-white border-opacity-40 text-white py-4 px-8 rounded-2xl font-semibold text-base backdrop-blur-sm transform hover:bg-white hover:bg-opacity-10 transition-all duration-300"
         >
           Send Another Request
         </button>

@@ -23,8 +23,14 @@ function calculateNextReminderDate(currentDate, frequency) {
     case "weekly":
       next.setDate(next.getDate() + 7);
       break;
+    case "biweekly":
+      next.setDate(next.getDate() + 14);
+      break;
     case "monthly":
       next.setMonth(next.getMonth() + 1);
+      break;
+    case "yearly":
+      next.setMonth(next.getMonth() + 12);
       break;
     default:
       // If frequency is a number, treat as days
@@ -80,7 +86,6 @@ function getParticipantsNeedingReminders(
 async function processRequestReminders(request) {
   const now = new Date();
   let updatedRequest = false;
-
   for (let i = 0; i < request.paymentHistory.length; i++) {
     const paymentEntry = request.paymentHistory[i];
 
