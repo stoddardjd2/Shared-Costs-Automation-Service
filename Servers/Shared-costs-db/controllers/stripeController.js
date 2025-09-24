@@ -432,6 +432,8 @@ function inferPlanFromSubscription(sub) {
 }
 
 async function handleStripeWebHook(req, res) {
+  console.log("stripe webhook received");
+
   // Convert a Stripe unix-second timestamp to Date, only if valid.
   // Returns undefined instead of Invalid Date so we can omit from $set.
   const stripeTsToDate = (ts) =>
@@ -442,8 +444,6 @@ async function handleStripeWebHook(req, res) {
     Object.fromEntries(
       Object.entries(obj).filter(([, v]) => v !== undefined && v !== Number.NaN)
     );
-
-  console.log("stripe webhook received");
 
   const sig = req.headers["stripe-signature"];
   // const raw = req.rawBody;
@@ -542,6 +542,7 @@ async function handleStripeWebHook(req, res) {
         break;
       }
 
+      case "customer.subscription.resumed":
       case "customer.subscription.updated":
       case "customer.subscription.created": {
         const sub = event.data.object; // full subscription object here
@@ -601,7 +602,7 @@ async function handleStripeWebHook(req, res) {
         );
         break;
       }
-
+      case "customer.subscription.paused":
       case "customer.subscription.deleted": {
         const sub = event.data.object;
         const customerId = sub.customer;
