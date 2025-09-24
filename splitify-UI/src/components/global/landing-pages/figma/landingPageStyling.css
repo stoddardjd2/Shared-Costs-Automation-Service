@@ -95,3 +95,14 @@
   :where(.landing-page) .smaller { font-size: 0.9375rem; } /* 15px, only for tiny labels */
   :where(.landing-page) .feature { font-size: 1.125rem; } /* 18px */
 }
+
+@keyframes gradient-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient-flow {
+  background-size: 200% 200%;
+  animation: gradient-flow 6s ease infinite;
+}

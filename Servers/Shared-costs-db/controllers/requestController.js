@@ -63,8 +63,6 @@ const createRequest = async (req, res) => {
       dueDate,
       reminderFrequency
     );
-    console.log("reminderFreq", reminderFrequency, dueDate)
-    console.log("NEXT REMINDER DATE!", nextReminderDate)
     let request;
 
     // Create initial payment history entry if startTiming is now

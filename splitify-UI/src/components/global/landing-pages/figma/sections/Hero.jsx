@@ -62,8 +62,12 @@ lg:bg-[radial-gradient(62.5%_175.13%_at_97.01%_48.68%,_#075C7B_31.33%,_#022B3A_7
           <CtaBtn
             className={`mt-[30px]
             mx-auto lg:mx-0
+          text-white font-semibold px-6 py-3 
+             rounded-xl shadow-lg cursor-pointer hover:scale-105 transition-all
+
             `}
           />
+
           {/* FOR SMALL VIEW */}
           <div className={`lg:hidden w-10/12 mx-auto relative h-[400px]`}>
             <img

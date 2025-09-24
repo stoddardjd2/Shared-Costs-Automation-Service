@@ -41,7 +41,12 @@ function normalizeStartTiming(startTimingValue) {
 }
 
 // DISABLED TIMEZONE
-function sameOrAfterDayInTimezone(dateA, dateB, timeZone = TIMEZONE) {
+function sameOrAfterDayInTimezone(
+  dateA,
+  dateB,
+  timeZone = TIMEZONE,
+  requestDocument
+) {
   const formatDateKey = (date) =>
     new Intl.DateTimeFormat("en-CA", {
       // timeZone,
@@ -50,6 +55,15 @@ function sameOrAfterDayInTimezone(dateA, dateB, timeZone = TIMEZONE) {
       month: "2-digit",
       day: "2-digit",
     }).format(date);
+
+  console.log(
+    "COMPARING TIMES TO CHECK IF SEND",
+    formatDateKey(dateA),
+    formatDateKey(dateB),
+    formatDateKey(dateA) >= formatDateKey(dateB),
+    requestDocument.name
+  );
+
   return formatDateKey(dateA) >= formatDateKey(dateB);
 }
 
@@ -325,7 +339,14 @@ async function processRecurringRequestIfDue(
   // Initial request
   if (!hasInitialRequestBeenSent) {
     if (startTimingValue && startTimingValue !== "now") {
-      if (sameOrAfterDayInTimezone(currentDate, startTimingValue, TIMEZONE)) {
+      if (
+        sameOrAfterDayInTimezone(
+          currentDate,
+          startTimingValue,
+          TIMEZONE,
+          requestDocument
+        )
+      ) {
         const requestSentDate = currentDate;
         // Generate history id up front and pass it through
         const paymentHistoryId = new ObjectId();
@@ -389,7 +410,7 @@ async function processRecurringRequestIfDue(
     // let newTotalAmount = null;
 
     if (requestDocument?.isDynamic) {
-      console.log("DYNAMIC COST SCHEDULED FOR:", requestDocument.name)
+      console.log("DYNAMIC COST SCHEDULED FOR:", requestDocument.name);
       try {
         const updatedDynamicData = await resolveDynamicAmountIfEnabled(
           requestDocument
