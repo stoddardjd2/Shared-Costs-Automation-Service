@@ -28,7 +28,7 @@ export default function BrandsBanner({
             "--spacing": `${spacing}px`,
           }}
         >
-          {/* First set */}
+          {/* First set */}   
           <div className="marquee-group">
             {duplicatedLogos.map((item, i) => (
               <div

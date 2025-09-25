@@ -602,6 +602,7 @@ async function handleStripeWebHook(req, res) {
         );
         break;
       }
+      
       case "customer.subscription.paused":
       case "customer.subscription.deleted": {
         const sub = event.data.object;
