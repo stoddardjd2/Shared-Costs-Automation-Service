@@ -42,25 +42,32 @@ lg:bg-[radial-gradient(62.5%_175.13%_at_97.01%_48.68%,_#075C7B_31.33%,_#022B3A_7
             *LIMITED TIME* New users can now use Splitify free of charge with
             unlimited requests and texts.
           </p>
-          <h1 className=" text-white mb-[18px] hero-header">
-            {/* <span>Bills split.</span>
+          <h1 className=" text-white mb-[18px] hero-header flex flex-col">
+            <span>Bills split.</span>
             <span>Texts & emails sent.</span>
             <span>Follow-ups handled.</span>
-            <span>Stress, gone.</span> */}
-            Splitify handles your shared bills, so you can{" "}
-            <span className="gradient-text w-fit brightness-150 ">relax.</span>
+            <span>
+              Time to{" "}
+              <span className="gradient-text w-fit brightness-150 ">
+                relax.
+              </span>
+            </span>
+            {/* Splitify handles your shared bills, so you can{" "} */}
           </h1>
           {/* <p className="text-white">
-            Splitify takes care of shared bills—handling requests, sending
+            Splitify takes care of your shared bills—handling requests, sending
             reminders, and keeping bills updated as costs change.
           </p> */}
-          <p className="text-white ">
+          <p className="text-white">
+            Stop the awkward 'who owes what' texts. Splitify handles group bills
+            automatically and keeps everyone updated when costs change.
+          </p>
+          {/* <p className="text-white ">
             Bills split, texts & emails sent, follow-ups handled, changing costs
             automatically kept updated.
-          </p>
-
+          </p> */}
           <CtaBtn
-          variation={"Landing-1.0-HERO"}
+            variation={"Landing-1.0-HERO"}
             className={`mt-[30px]
             mx-auto lg:mx-0
           text-white font-semibold px-6 py-3 
@@ -68,7 +75,6 @@ lg:bg-[radial-gradient(62.5%_175.13%_at_97.01%_48.68%,_#075C7B_31.33%,_#022B3A_7
 
             `}
           />
-
           {/* FOR SMALL VIEW */}
           <div className={`lg:hidden w-10/12 mx-auto relative h-[400px]`}>
             <img
