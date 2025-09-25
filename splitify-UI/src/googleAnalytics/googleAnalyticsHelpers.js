@@ -1,20 +1,20 @@
-function trackCreateAccount(variation) {
-  if (import.meta.env.VITE_ENABLE_ANALYTICS == "true") {
-    if (window.gtag) {
-      window.gtag("event", "signup_click", {
-        event_category: "engagement",
-        event_label: `Create Account Button CTA-${variation}`,
-      });
-    }
-  }
-}
-
 function ready() {
   return (
+    import.meta.env.VITE_ENABLE_ANALYTICS == "true" &&
     typeof window !== "undefined" &&
     typeof window.gtag === "function" &&
     window.__GA_ID
   );
+}
+
+function trackCreateAccount(variation) {
+  console.log("tracking click", variation);
+  if (!ready()) {
+    window.gtag("event", "signup_click", {
+      event_category: "engagement",
+      event_label: `Create Account Button CTA-${variation}`,
+    });
+  }
 }
 
 function pageview(path, title) {

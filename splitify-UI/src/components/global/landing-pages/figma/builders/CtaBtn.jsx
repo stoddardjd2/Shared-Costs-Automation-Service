@@ -15,7 +15,7 @@ export default function CtaBtn({
         ${className}`}
       onClick={() => {
         navigate("/signup");
-        trackCreateAccount("CTA-BTN-1.0");
+        trackCreateAccount("Landing-1.0");
       }}
     >
       <p className="text-inherit">{text}</p>
