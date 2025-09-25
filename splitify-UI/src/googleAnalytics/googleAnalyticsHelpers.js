@@ -8,7 +8,6 @@ function ready() {
 }
 
 function trackCreateAccount(variation) {
-  console.log("tracking click", variation);
   if (!ready()) {
     window.gtag("event", "signup_click", {
       event_category: "engagement",

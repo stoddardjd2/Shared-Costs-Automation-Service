@@ -2,7 +2,7 @@ import { trackCreateAccount } from "../../../../../googleAnalytics/googleAnalyti
 import { useNavigate } from "react-router-dom";
 export default function CtaBtn({
   className,
-  analyticsId,
+  variation = "Landing-1.0",
   text = "Sign Up Free",
   greenBtn = false,
 }) {
@@ -11,21 +11,26 @@ export default function CtaBtn({
   return (
     <button
       className={`group flex-shrink-0 mt-[35px] w-fit px-4 h-[55px] [drop-shadow(0px_4px_31.8px_#000000)] 
-        ${greenBtn ? "bg-[#CEFF66] text-black " : "bg-blue-600 text-white "} shadow-md rounded-[10px] text-body flex items-center justify-center gap-4
+        ${
+          greenBtn ? "bg-[#CEFF66] text-black " : "bg-blue-600 text-white "
+        } shadow-md rounded-[10px] text-body flex items-center justify-center gap-4
         ${className}`}
       onClick={() => {
         navigate("/signup");
-        trackCreateAccount("Landing-1.0");
+        trackCreateAccount(variation);
       }}
     >
       <p className="text-inherit">{text}</p>
-      <Arrow greenBtn={greenBtn} className="transform translate-y-[2px] transition-transform duration-300 group-hover:translate-x-1" />
+      <Arrow
+        greenBtn={greenBtn}
+        className="transform translate-y-[2px] transition-transform duration-300 group-hover:translate-x-1"
+      />
     </button>
   );
 }
 
 /* Group 2 */
-function Arrow({ className,greenBtn}) {
+function Arrow({ className, greenBtn }) {
   return (
     <svg
       className={className}
