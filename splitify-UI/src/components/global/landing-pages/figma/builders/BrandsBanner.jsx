@@ -1,7 +1,7 @@
 import { logos } from "../sections/section-1/brandLogos";
 
 export default function BrandsBanner({
-  speed = 90,
+  speed = 300,
   spacing = 90,
   direction = "rtl", //"ltr" or "rtl"
   className = "",
@@ -41,6 +41,58 @@ export default function BrandsBanner({
           </div>
 
           {/* Spacer between groups */}
+          <div style={{ width: `${spacing}px`, flexShrink: 0 }} />
+
+          {/* Duplicate set for seamless loop */}
+          <div className="marquee-group" aria-hidden="true">
+            {duplicatedLogos.map((item, i) => (
+              <div
+                key={`second-${i}`}
+                className="marquee-item h-8 md:h-9 lg:h-10"
+              >
+                <Brand item={item} />
+              </div>
+            ))}
+          </div>
+          <div style={{ width: `${spacing}px`, flexShrink: 0 }} />
+
+          {/* Duplicate set for seamless loop */}
+          <div className="marquee-group" aria-hidden="true">
+            {duplicatedLogos.map((item, i) => (
+              <div
+                key={`second-${i}`}
+                className="marquee-item h-8 md:h-9 lg:h-10"
+              >
+                <Brand item={item} />
+              </div>
+            ))}
+          </div>
+          <div style={{ width: `${spacing}px`, flexShrink: 0 }} />
+
+          {/* Duplicate set for seamless loop */}
+          <div className="marquee-group" aria-hidden="true">
+            {duplicatedLogos.map((item, i) => (
+              <div
+                key={`second-${i}`}
+                className="marquee-item h-8 md:h-9 lg:h-10"
+              >
+                <Brand item={item} />
+              </div>
+            ))}
+          </div>
+          <div style={{ width: `${spacing}px`, flexShrink: 0 }} />
+
+          {/* Duplicate set for seamless loop */}
+          <div className="marquee-group" aria-hidden="true">
+            {duplicatedLogos.map((item, i) => (
+              <div
+                key={`second-${i}`}
+                className="marquee-item h-8 md:h-9 lg:h-10"
+              >
+                <Brand item={item} />
+              </div>
+            ))}
+          </div>
           <div style={{ width: `${spacing}px`, flexShrink: 0 }} />
 
           {/* Duplicate set for seamless loop */}
