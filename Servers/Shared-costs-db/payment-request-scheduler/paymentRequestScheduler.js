@@ -124,33 +124,33 @@ function getIntervalFromFrequency(frequency, customInterval, customUnit) {
 
 function addIntervalToDate(baseDate, intervalCount, intervalUnit) {
   const d = new Date(baseDate); // accepts ISO with +00:00 or Z
-  switch (String(unit).toLowerCase()) {
+  switch (String(intervalUnit).toLowerCase()) {
     case "day":
     case "days":
     case "daily":
-      return new Date(d.getTime() + count * 24 * 60 * 60 * 1000);
+      return new Date(d.getTime() + intervalCount * 24 * 60 * 60 * 1000);
     case "week":
     case "weeks":
     case "weekly":
     case "biweekly":
     case "bi-weekly":
-      return new Date(d.getTime() + count * 7 * 24 * 60 * 60 * 1000);
+      return new Date(d.getTime() + intervalCount * 7 * 24 * 60 * 60 * 1000);
     case "month":
     case "months":
     case "monthly": {
       const m = new Date(d);
-      m.setUTCMonth(m.getUTCMonth() + count);
+      m.setUTCMonth(m.getUTCMonth() + intervalCount);
       return m;
     }
     case "year":
     case "years":
     case "yearly": {
       const y = new Date(d);
-      y.setUTCFullYear(y.getUTCFullYear() + count);
+      y.setUTCFullYear(y.getUTCFullYear() + intervalCount);
       return y;
     }
     default:
-      return new Date(d.getTime() + count * 24 * 60 * 60 * 1000);
+      return new Date(d.getTime() + intervalCount * 24 * 60 * 60 * 1000);
   }
 }
 
