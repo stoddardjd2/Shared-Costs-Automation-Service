@@ -145,7 +145,7 @@ const emailTemplate = `<!DOCTYPE html>
             <td style="background-color:#f3f4f6; padding:16px 20px; text-align:center; border-top:1px solid #e2e8f0; border-radius:0 0 8px 8px;">
               <div style="font-size:12px; color:#64748b; line-height:1.5; font-family:Arial, Helvetica, sans-serif;">
                 Sent via <span style="font-weight:bold; color:#2563eb;">Splitify</span><br>
-                Split expenses. Settle up easily.
+                Shared costs made easy.
               </div>
             </td>
           </tr>
