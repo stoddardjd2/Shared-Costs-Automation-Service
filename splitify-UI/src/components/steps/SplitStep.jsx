@@ -38,6 +38,7 @@ import { Navigate } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import RequestSentScreen from "../dashboard/RequestSentScreen";
 import SplitifyPremiumModal from "../premium/SplitifyPremiumModal";
+import { gaEvent } from "../../googleAnalytics/googleAnalyticsHelpers";
 const SplitStep = ({
   setSelectedPeople,
   onBack,
@@ -441,6 +442,9 @@ const SplitStep = ({
   const handleSendRequest = () => {
     const costEntry = getCostEntry();
     setIsSendingRequest(true);
+
+    gaEvent("send_request_click")
+
     if (isEditMode) {
       const handleUpdateRequest = async () => {
         const UpdatedCostFromDB = await updateRequest(costEntry._id, costEntry);
