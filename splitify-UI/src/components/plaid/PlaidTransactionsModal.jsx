@@ -235,7 +235,7 @@ export default function PlaidTransactionsModal({
         const transactions = await getTransactions(startDate, endDate);
         console.log("TRANSACTIONs", transactions);
         if (transactions.loginRequired) {
-          alert("Login required, may need to refresh after logging in.");
+          alert("Login required for bank");
           setReloginRequired(true);
           handleConnect();
           return;

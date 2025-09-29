@@ -59,6 +59,7 @@ export default function PlaidConnect({
         setUserData((prev) => {
           return { ...prev, plaid: { isEnabled: true } };
         });
+        setReloginRequired(false);
       }
 
       pushLog("Access token exchanged.");

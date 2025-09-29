@@ -70,8 +70,6 @@ export const exchangePublicToken = async (publicToken) => {
       method: "POST",
       body: { public_token: publicToken },
     });
-    console.log("data", data);
-    console.log("Access token created:", data.access_token);
     return data.access_token;
   } catch (error) {
     console.error("Error creating access token:", error);
