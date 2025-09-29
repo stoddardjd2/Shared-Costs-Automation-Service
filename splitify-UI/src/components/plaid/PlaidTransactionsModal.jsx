@@ -18,6 +18,7 @@ export default function PlaidTransactionsModal({
   onSelect,
   accessToken,
   handleConnect,
+  setReloginRequired,
   lazyLoadConfig = {}, // Allow overriding default config
 }) {
   const config = { ...LAZY_LOAD_CONFIG, ...lazyLoadConfig };
@@ -235,6 +236,7 @@ export default function PlaidTransactionsModal({
         console.log("TRANSACTIONs", transactions);
         if (transactions.loginRequired) {
           alert("Login required, may need to refresh after logging in.");
+          setReloginRequired(true);
           handleConnect();
           return;
         }
