@@ -111,7 +111,7 @@ export const getTransactions = async (startDate, endDate) => {
     console.error("Error fetching transactions:", error);
     if (error.error_code == "ITEM_LOGIN_REQUIRED") {
       // if institution revokes access, prompt user to sign in again
-      console.error("Error fetching transactions:", error);
+      console.log("login needed", error);
       return { loginRequired: true };
     } else {
       throw error;
