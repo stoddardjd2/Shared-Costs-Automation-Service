@@ -236,6 +236,7 @@ export default function PlaidTransactionsModal({
         if (transactions.loginRequired) {
           alert("Login required, may need to refresh after logging in.");
           handleConnect();
+          return;
         }
         if (!isMounted) return;
         setTransactions(transactions || []);

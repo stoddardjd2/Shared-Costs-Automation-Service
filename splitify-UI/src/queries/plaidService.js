@@ -96,7 +96,7 @@ export const refreshTransactions = async (accessToken) => {
 };
 
 export const getTransactions = async (startDate, endDate) => {
-  console.log("Getting transactinos...");
+  console.log("Getting transactions...");
   try {
     const data = await apiRequest(`/plaid/transactions`, {
       method: "POST",
