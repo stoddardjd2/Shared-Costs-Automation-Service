@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react"; 
+import { useState, useEffect, useCallback, useRef } from "react";
 import { plaidAPI } from "../../queries/plaidService";
 import TransactionsDatePicker from "./TransactionsDatePicker";
 import { getTransactions } from "../../queries/plaidService";
@@ -17,6 +17,7 @@ export default function PlaidTransactionsModal({
   onClose,
   onSelect,
   accessToken,
+  handleConnect,
   lazyLoadConfig = {}, // Allow overriding default config
 }) {
   const config = { ...LAZY_LOAD_CONFIG, ...lazyLoadConfig };
@@ -231,6 +232,11 @@ export default function PlaidTransactionsModal({
       try {
         setInitialLoadError(null);
         const transactions = await getTransactions(startDate, endDate);
+        console.log("TRANSACTIONs", transactions);
+        if (transactions.loginRequired) {
+          alert("Login required, may need to refresh after logging in.");
+          handleConnect();
+        }
         if (!isMounted) return;
         setTransactions(transactions || []);
         setIsLoadingInitialTransactions(false);
@@ -448,7 +454,6 @@ export default function PlaidTransactionsModal({
                             {formatDate(transaction.date)}
                           </div>
                         </div>
-                        
                       </div>
                     </div>
                   ))}

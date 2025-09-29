@@ -262,6 +262,7 @@ export default function PlaidConnect({
             }}
             transactions={transactions}
             onSelect={handleSelectTransaction}
+            handleConnect={handleConnect}
           />
         )}
       </>

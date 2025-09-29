@@ -109,7 +109,13 @@ export const getTransactions = async (startDate, endDate) => {
     return data.transactions;
   } catch (error) {
     console.error("Error fetching transactions:", error);
-    throw error;
+    if (error.error_code == "ITEM_LOGIN_REQUIRED") {
+      // if institution revokes access, prompt user to sign in again
+      console.error("Error fetching transactions:", error);
+      return { loginRequired: true };
+    } else {
+      throw error;
+    }
   }
 };
 
