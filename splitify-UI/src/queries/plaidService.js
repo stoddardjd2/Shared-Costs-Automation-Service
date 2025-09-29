@@ -108,13 +108,22 @@ export const getTransactions = async (startDate, endDate) => {
     console.log("Transactions retrieved", data);
     return data.transactions;
   } catch (error) {
-    console.error("Error fetching transactions:", error);
-    if (error.error_code == "ITEM_LOGIN_REQUIRED") {
-      // if institution revokes access, prompt user to sign in again
-      console.log("login needed", error);
-      return { loginRequired: true };
-    } else {
-      throw error;
+    try {
+      const plaidError = JSON.parse(
+        error.message.replace(/^Plaid error:\s*/, "")
+      );
+
+      console.error("Error fetching transactions:", plaidError);
+
+      if (plaidError.error_code == "ITEM_LOGIN_REQUIRED") {
+        // if institution revokes access, prompt user to sign in again
+        console.log("login needed", error);
+        return { loginRequired: true };
+      } else {
+        throw error;
+      }
+    } catch (parseErr) {
+      console.error("Non-Plaid error:", error);
     }
   }
 };

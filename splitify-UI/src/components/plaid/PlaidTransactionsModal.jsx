@@ -371,7 +371,7 @@ export default function PlaidTransactionsModal({
         {/* Transaction List */}
         {isLoadingInitialTransactions ? (
           <div className="h-full flex items-center justify-center py-6">
-            <div className="flex items-center space-x-2 text-slate-500">
+            <div className="flex items-center space-x-2 text-slate-500 max-w-[90%]">
               <div className="animate-spin rounded-full h-4 w-4 border-2 border-slate-300 border-t-slate-600"></div>
               <span className="text-sm">
                 {initialLoadError
