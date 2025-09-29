@@ -170,6 +170,13 @@ export default function PlaidConnect({
           >
             <Landmark className="w-6 h-6" />
             <span>Find from bank</span>
+            <span
+              onClick={() => {
+                handleConnect();
+              }}
+            >
+              test
+            </span>
           </button>
         )}
 
