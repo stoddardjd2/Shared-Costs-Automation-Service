@@ -161,23 +161,27 @@ export default function PlaidConnect({
     return (
       <>
         {!isEditMode && (
-          <button
-            onClick={() => {
-              setShowTransactions(true);
-            }}
-            className="bg-gradient-to-br mb-6 from-blue-600 to-blue-700 border border-white/30 text-white px-6 py-3 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-300 flex items-center gap-2 backdrop-blur-md translate-y-0 hover:-translate-y-0.5 shadow-none hover:shadow-lg hover:shadow-black/10"
-            disabled={loading}
-          >
-            <Landmark className="w-6 h-6" />
-            <span>Find from bank</span>
-            <span
+          <>
+            <button
+              onClick={() => {
+                setShowTransactions(true);
+              }}
+              className="bg-gradient-to-br mb-6 from-blue-600 to-blue-700 border border-white/30 text-white px-6 py-3 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-300 flex items-center gap-2 backdrop-blur-md translate-y-0 hover:-translate-y-0.5 shadow-none hover:shadow-lg hover:shadow-black/10"
+              disabled={loading}
+            >
+              <Landmark className="w-6 h-6" />
+              <span>Find from bank</span>
+            </button>
+
+            <button
               onClick={() => {
                 handleConnect();
               }}
+              className="bg-gradient-to-br mb-6 from-blue-600 to-blue-700 border border-white/30 text-white px-6 py-3 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-300 flex items-center gap-2 backdrop-blur-md translate-y-0 hover:-translate-y-0.5 shadow-none hover:shadow-lg hover:shadow-black/10"
             >
-              test
-            </span>
-          </button>
+              <span>test</span>
+            </button>
+          </>
         )}
 
         {isPlaidCharge && (
