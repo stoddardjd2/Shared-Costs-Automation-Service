@@ -222,9 +222,13 @@ export default function Section4() {
               </div>
             </ScrollScale> */}
 
-            <ScrollScale className="col-span-12 sm:mt-32" containerRef={gridRef}>
+            <ScrollScale
+              className="col-span-12 sm:mt-32"
+              containerRef={gridRef}
+            >
               <View
                 image={DashboardImg}
+                imgAlt={"Dashboard demo phone view"}
                 features={features1}
                 header={"View all your bills in one place."}
                 text={"Make Bills Easy"}
@@ -237,6 +241,7 @@ export default function Section4() {
             <ScrollScale className="col-span-12" containerRef={gridRef}>
               <View
                 image={HistoryImg}
+                imgAlt={"Payment history demo phone view"}
                 features={features2}
                 header={"View payment history & manage your requests."}
                 text={"Manage Your Payments"}
@@ -248,6 +253,7 @@ export default function Section4() {
 
             <ScrollScale className="col-span-12" containerRef={gridRef}>
               <View
+                imgAlt={"Bill splitting demo phone view"}
                 image={SplitImg}
                 features={features3}
                 header={"Split bills & send requests in seconds."}

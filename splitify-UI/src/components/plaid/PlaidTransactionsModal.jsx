@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react"; 
+import { useState, useEffect, useCallback, useRef } from "react";
 import { plaidAPI } from "../../queries/plaidService";
 import TransactionsDatePicker from "./TransactionsDatePicker";
 import { getTransactions } from "../../queries/plaidService";
@@ -17,6 +17,8 @@ export default function PlaidTransactionsModal({
   onClose,
   onSelect,
   accessToken,
+  handleConnect,
+  setReloginRequired,
   lazyLoadConfig = {}, // Allow overriding default config
 }) {
   const config = { ...LAZY_LOAD_CONFIG, ...lazyLoadConfig };
@@ -231,6 +233,13 @@ export default function PlaidTransactionsModal({
       try {
         setInitialLoadError(null);
         const transactions = await getTransactions(startDate, endDate);
+        console.log("TRANSACTIONs", transactions);
+        if (transactions.loginRequired) {
+          alert("Login required for bank");
+          setReloginRequired(true);
+          handleConnect();
+          return;
+        }
         if (!isMounted) return;
         setTransactions(transactions || []);
         setIsLoadingInitialTransactions(false);
@@ -365,7 +374,7 @@ export default function PlaidTransactionsModal({
         {/* Transaction List */}
         {isLoadingInitialTransactions ? (
           <div className="h-full flex items-center justify-center py-6">
-            <div className="flex items-center space-x-2 text-slate-500">
+            <div className="flex items-center space-x-2 text-slate-500 max-w-[90%]">
               <div className="animate-spin rounded-full h-4 w-4 border-2 border-slate-300 border-t-slate-600"></div>
               <span className="text-sm">
                 {initialLoadError
@@ -448,7 +457,6 @@ export default function PlaidTransactionsModal({
                             {formatDate(transaction.date)}
                           </div>
                         </div>
-                        
                       </div>
                     </div>
                   ))}

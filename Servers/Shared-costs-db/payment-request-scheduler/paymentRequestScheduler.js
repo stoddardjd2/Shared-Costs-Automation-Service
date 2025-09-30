@@ -67,35 +67,90 @@ function sameOrAfterDayInTimezone(
   return formatDateKey(dateA) >= formatDateKey(dateB);
 }
 
-function addIntervalToDate(baseDate, intervalCount, intervalUnit) {
-  const d = new Date(baseDate); // accepts ISO with +00:00 or Z
-  switch (String(unit).toLowerCase()) {
+function getIntervalFromFrequency(frequency, customInterval, customUnit) {
+  const freq = String(frequency || "")
+    .trim()
+    .toLowerCase();
+
+  switch (freq) {
+    // Custom interval passthrough
+    case "custom": {
+      const count = Number(customInterval || 0) || 1;
+      const unit = customUnit || "days";
+      return { count, unit };
+    }
+
+    // Day aliases
     case "day":
     case "days":
     case "daily":
-      return new Date(d.getTime() + count * 24 * 60 * 60 * 1000);
+      return { count: 1, unit: "days" };
+
+    // Week aliases
+    case "week":
+    case "weeks":
+    case "weekly":
+      return { count: 1, unit: "weeks" };
+
+    // Biweekly aliases
+    case "biweekly":
+    case "bi-weekly":
+      return { count: 2, unit: "weeks" };
+
+    // Month aliases
+    case "month":
+    case "months":
+    case "monthly":
+      return { count: 1, unit: "months" };
+
+    // Year aliases
+    case "year":
+    case "years":
+    case "yearly":
+      return { count: 1, unit: "years" };
+
+    // One-time / none
+    case "one-time":
+    case "one time":
+    case "once":
+    case "none":
+      return null;
+
+    // Default: 1 week
+    default:
+      return { count: 1, unit: "months" };
+  }
+}
+
+function addIntervalToDate(baseDate, intervalCount, intervalUnit) {
+  const d = new Date(baseDate); // accepts ISO with +00:00 or Z
+  switch (String(intervalUnit).toLowerCase()) {
+    case "day":
+    case "days":
+    case "daily":
+      return new Date(d.getTime() + intervalCount * 24 * 60 * 60 * 1000);
     case "week":
     case "weeks":
     case "weekly":
     case "biweekly":
     case "bi-weekly":
-      return new Date(d.getTime() + count * 7 * 24 * 60 * 60 * 1000);
+      return new Date(d.getTime() + intervalCount * 7 * 24 * 60 * 60 * 1000);
     case "month":
     case "months":
     case "monthly": {
       const m = new Date(d);
-      m.setUTCMonth(m.getUTCMonth() + count);
+      m.setUTCMonth(m.getUTCMonth() + intervalCount);
       return m;
     }
     case "year":
     case "years":
     case "yearly": {
       const y = new Date(d);
-      y.setUTCFullYear(y.getUTCFullYear() + count);
+      y.setUTCFullYear(y.getUTCFullYear() + intervalCount);
       return y;
     }
     default:
-      return new Date(d.getTime() + count * 24 * 60 * 60 * 1000);
+      return new Date(d.getTime() + intervalCount * 24 * 60 * 60 * 1000);
   }
 }
 

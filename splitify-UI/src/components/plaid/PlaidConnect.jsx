@@ -30,6 +30,7 @@ export default function PlaidConnect({
   const [error, setError] = useState("");
   const [log, setLog] = useState([]);
   const [showTransactions, setShowTransactions] = useState(false);
+  const [reloginRequired, setReloginRequired] = useState(false);
   const [showPremiumPrompt, setShowPremiumPrompt] = useState(false);
   const { userData, setUserData } = useData();
 
@@ -58,6 +59,7 @@ export default function PlaidConnect({
         setUserData((prev) => {
           return { ...prev, plaid: { isEnabled: true } };
         });
+        setReloginRequired(false);
       }
 
       pushLog("Access token exchanged.");
@@ -157,7 +159,7 @@ export default function PlaidConnect({
     });
   };
 
-  if (userData?.plaid?.isEnabled)
+  if (userData?.plaid?.isEnabled && !reloginRequired)
     return (
       <>
         {!isEditMode && (
@@ -262,6 +264,8 @@ export default function PlaidConnect({
             }}
             transactions={transactions}
             onSelect={handleSelectTransaction}
+            handleConnect={handleConnect}
+            setReloginRequired={setReloginRequired}
           />
         )}
       </>

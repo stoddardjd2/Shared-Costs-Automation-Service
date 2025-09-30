@@ -24,6 +24,7 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
+import { gaEvent } from "../../googleAnalytics/googleAnalyticsHelpers";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -64,9 +65,12 @@ export default function SplitifyPremiumModal({
   const [isFetchingCS, setIsFetchingCS] = useState(false);
   const [fetchError, setFetchError] = useState(null);
 
-  console.log("SELECTION", selection);
   // success info for confirmation screen
   const [successInfo, setSuccessInfo] = useState(null); // { planKey, billing, amount, currency }
+
+  useEffect(() => {
+    gaEvent("subscription_view");
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -333,6 +337,10 @@ export default function SplitifyPremiumModal({
                 userEmail={userEmail}
                 userName={userName}
                 onSuccess={(info) => {
+                  gaEvent("subscription_purchased", {
+                    plan: selection?.planKey,
+                    billing: billing,
+                  });
                   setUserData((prevUserData) => ({
                     ...prevUserData,
                     plan: selection?.planKey,

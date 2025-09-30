@@ -18,28 +18,28 @@ function calculateNextReminderDate(currentDate, frequency) {
 
   switch (frequency.toLowerCase()) {
     case "daily":
-      next.setDate(next.getDate() + 1);
+      next.setUTCDate(next.getUTCDate() + 1);
       break;
     case "weekly":
-      next.setDate(next.getDate() + 7);
+      next.setUTCDate(next.getUTCDate() + 7);
       break;
     case "biweekly":
-      next.setDate(next.getDate() + 14);
+      next.setUTCDate(next.getUTCDate() + 14);
       break;
     case "monthly":
-      next.setMonth(next.getMonth() + 1);
+      next.setUTCMonth(next.getUTCMonth() + 1);
       break;
     case "yearly":
-      next.setMonth(next.getMonth() + 12);
+      next.setUTCFullYear(next.getUTCFullYear() + 1);
       break;
     default:
       // If frequency is a number, treat as days
-      const days = parseInt(frequency);
+      const days = parseInt(frequency, 10);
       if (!isNaN(days)) {
-        next.setDate(next.getDate() + days);
+        next.setUTCDate(next.getUTCDate() + days);
       } else {
         // Default to weekly if frequency is unknown
-        next.setDate(next.getDate() + 7);
+        next.setUTCDate(next.getUTCDate() + 7);
       }
   }
 
@@ -88,17 +88,19 @@ async function processRequestReminders(request) {
   let updatedRequest = false;
   for (let i = 0; i < request.paymentHistory.length; i++) {
     const paymentEntry = request.paymentHistory[i];
-
+  
     // // Skip if no reminder date set or not yet due
-    // if (!paymentEntry.nextReminderDate || paymentEntry.nextReminderDate > now) {
-    //   continue;
-    // }
+    if (!paymentEntry.nextReminderDate || paymentEntry.nextReminderDate > now) {
+      continue;
+    }
 
     // Get participants who need reminders
     const participantsToRemind = getParticipantsNeedingReminders(
       paymentEntry,
       request.participants
     );
+
+    console.log("TO REMIND:", participantsToRemind);
 
     if (participantsToRemind.length === 0) {
       // disable reminders for payment entry if no one eligible

@@ -1,12 +1,13 @@
 import CtaBtn from "../../builders/CtaBtn";
 
-export default function View({ image, features, header, body, text }) {
+export default function View({ image, features, header, body, text, imgAlt }) {
   return (
     <>
       <div className="col-span-12 hidden xl:grid grid-cols-12 gap-y-[270px]">
         <div className="col-span-4 size-[555px] relative  rounded-3xl">
           <img
             src={image}
+            alt={imgAlt}
             className="w-[320px] absolute bottom-[-30px] left-[-30px]"
           ></img>
           {/* <div className="absolute top-20 left-[320px] flex-col justify-center gap-10 flex">
@@ -29,7 +30,9 @@ export default function View({ image, features, header, body, text }) {
         <div className="col-span-12 my-auto">
           <div className="flex flex-col gap-[16px] w-12/12 mx-auto text-center">
             <h3 className="text-white">{header}</h3>
-            <p className="text-[#EAEAEA] mt-1 w-9/12 mx-auto medium-body">{body}</p>
+            <p className="text-[#EAEAEA] mt-1 w-9/12 mx-auto medium-body">
+              {body}
+            </p>
           </div>
         </div>
 
@@ -39,7 +42,11 @@ export default function View({ image, features, header, body, text }) {
           ))}
         </div> */}
 
-        <img src={image} className="w-[320px] mx-auto col-span-12"></img>
+        <img
+          alt={imgAlt}
+          src={image}
+          className="w-[320px] mx-auto col-span-12"
+        ></img>
       </div>
     </>
   );

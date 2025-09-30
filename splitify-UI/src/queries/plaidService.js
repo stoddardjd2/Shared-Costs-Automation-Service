@@ -70,8 +70,6 @@ export const exchangePublicToken = async (publicToken) => {
       method: "POST",
       body: { public_token: publicToken },
     });
-    console.log("data", data);
-    console.log("Access token created:", data.access_token);
     return data.access_token;
   } catch (error) {
     console.error("Error creating access token:", error);
@@ -96,7 +94,7 @@ export const refreshTransactions = async (accessToken) => {
 };
 
 export const getTransactions = async (startDate, endDate) => {
-  console.log("Getting transactinos...");
+  console.log("Getting transactions...");
   try {
     const data = await apiRequest(`/plaid/transactions`, {
       method: "POST",
@@ -108,8 +106,23 @@ export const getTransactions = async (startDate, endDate) => {
     console.log("Transactions retrieved", data);
     return data.transactions;
   } catch (error) {
-    console.error("Error fetching transactions:", error);
-    throw error;
+    try {
+      const plaidError = JSON.parse(
+        error.message.replace(/^Plaid error:\s*/, "")
+      );
+
+      console.error("Error fetching transactions:", plaidError);
+
+      if (plaidError.error_code == "ITEM_LOGIN_REQUIRED") {
+        // if institution revokes access, prompt user to sign in again
+        console.log("login needed", error);
+        return { loginRequired: true };
+      } else {
+        throw error;
+      }
+    } catch (parseErr) {
+      console.error("Non-Plaid error:", error);
+    }
   }
 };
 
