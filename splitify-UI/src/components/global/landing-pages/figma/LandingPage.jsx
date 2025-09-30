@@ -20,6 +20,19 @@ export default function LandingPage() {
 
   return (
     <div className={`landing-page relative`}>
+      {/* for startup fame verification */}
+      <a
+        className="hidden"
+        href="https://startupfa.me/s/splitify?utm_source=splitify.io"
+        target="_blank"
+      >
+        <img
+          src="https://startupfa.me/badges/featured-badge.webp"
+          alt="Featured on Startup Fame"
+          width="171"
+          height="54"
+        />
+      </a>
       <title>
         Splitify — Split Bills Automatically, Send Reminders, Track Changing
         Costs
