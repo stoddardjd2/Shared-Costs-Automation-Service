@@ -20,6 +20,14 @@ export default function LandingPage() {
 
   return (
     <div className={`landing-page relative`}>
+      <title>
+        Splitify — Split Bills Automatically, Send Reminders, Track Changing
+        Costs
+      </title>
+      <meta
+        name="description"
+        content="Splitify makes shared bills simple: split expenses automatically, send reminders by text or email, and keep amounts updated when costs change."
+      />
       <Navbar
         onLoginClick={() => (window.location.href = "/login")}
         onCreateAccountClick={() => (window.location.href = "/signup")}
