@@ -60,7 +60,7 @@ lg:bg-[radial-gradient(62.5%_175.13%_at_97.01%_48.68%,_#075C7B_31.33%,_#022B3A_7
           </p>
 
           <CtaBtn
-          variation={"Landing-1.0-HERO-TEST-A"}
+            variation={"Landing-1.0-HERO-TEST-A"}
             className={`mt-[30px]
             mx-auto lg:mx-0
           text-white font-semibold px-6 py-3 
@@ -85,6 +85,7 @@ lg:bg-[radial-gradient(62.5%_175.13%_at_97.01%_48.68%,_#075C7B_31.33%,_#022B3A_7
               right-[-10px]  
               w-[203px] z-2`}
               src={heroPhoneImg2}
+              alt="Hero Phone text message demo for overdue payment"
             />
           </div>
         </div>
@@ -109,6 +110,7 @@ lg:bg-[radial-gradient(62.5%_175.13%_at_97.01%_48.68%,_#075C7B_31.33%,_#022B3A_7
           translate-x-[-20px]
 
             `}
+            alt="Hero dashboard demo"
             src={heroDashboardTabletBorderImg}
           />
           <img
