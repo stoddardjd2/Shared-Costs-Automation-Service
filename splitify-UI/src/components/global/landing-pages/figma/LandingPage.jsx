@@ -62,6 +62,22 @@ function setMetaDescription(desc) {
   meta.setAttribute("content", desc);
 }
 
+// JSON-LD SCHEMA FOR SEO
+function injectSchema(schemaObject, id) {
+  if (typeof document === "undefined") return;
+
+  // If id is passed, reuse or replace instead of duplicating
+  let script = id ? document.getElementById(id) : null;
+  if (!script) {
+    script = document.createElement("script");
+    script.type = "application/ld+json";
+    if (id) script.id = id;
+    document.head.appendChild(script);
+  }
+
+  script.text = JSON.stringify(schemaObject);
+}
+
 export default function LandingPage() {
   // guard to avoid double-fire in React 18 Strict Mode dev
   const fired = useRef(false);
@@ -79,6 +95,72 @@ export default function LandingPage() {
       "Splitify makes shared bills simple: split expenses automatically, send reminders by text or email, and keep amounts updated when costs change."
     );
     setCanonical("/"); // canonical for the root landing page
+
+    injectSchema(
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        name: "Splitify",
+        operatingSystem: "Web",
+        applicationCategory: "FinanceApplication",
+        description:
+          "Split bills automatically—complete with text/email reminders and automatic updates when utilities change",
+        url: "https://splitify.io/",
+        image: "https://splitify.io/assets/landing-page/hero-dashboard-pc.png",
+        // offers: {
+        //   "@type": "Offer",
+        //   price: "0",
+        //   priceCurrency: "USD",
+        //   category: "FreeTrial",
+        // },
+        brand: {
+          "@type": "Brand",
+          name: "Splitify",
+        },
+        // aggregateRating: {
+        //   "@type": "AggregateRating",
+        //   ratingValue: "4.8",
+        //   ratingCount: "127",
+        // },
+      },
+      "landing-page-schema"
+    );
+
+
+    // ADD FAQ FIRST
+    // injectSchema(
+    //   {
+    //     "@context": "https://schema.org",
+    //     "@type": "FAQPage",
+    //     mainEntity: [
+    //       {
+    //         "@type": "Question",
+    //         name: "Does Splitify send reminders automatically?",
+    //         acceptedAnswer: {
+    //           "@type": "Answer",
+    //           text: "Yes. Splitify sends texts and emails and keeps nudging until the bill is paid.",
+    //         },
+    //       },
+    //       {
+    //         "@type": "Question",
+    //         name: "Can Splitify handle changing utility costs?",
+    //         acceptedAnswer: {
+    //           "@type": "Answer",
+    //           text: "Yes. Each cycle, Splitify updates the amount from your connected account or entered bill and sends new requests.",
+    //         },
+    //       },
+    //       {
+    //         "@type": "Question",
+    //         name: "Do I need my roommates to install Splitify?",
+    //         acceptedAnswer: {
+    //           "@type": "Answer",
+    //           text: "No. You can request via text/email; they can pay without creating an account.",
+    //         },
+    //       },
+    //     ],
+    //   },
+    //   "landing-page-faq"
+    // );
   }, []);
 
   return (

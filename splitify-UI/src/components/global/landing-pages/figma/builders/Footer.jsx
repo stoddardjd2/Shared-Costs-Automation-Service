@@ -213,7 +213,7 @@ export default function Footer() {
           </div>
 
           {/* Right: Minimal Contact Form, fully blended in */}
-          <div className="w-full md:w-[300px] mt-4 md:mt-0">
+          <div id="support" className="w-full md:w-[300px] mt-4 md:mt-0">
             <h4 className="font-semibold mb-2 text-black text-base">
               Questions? Feedback?
             </h4>
