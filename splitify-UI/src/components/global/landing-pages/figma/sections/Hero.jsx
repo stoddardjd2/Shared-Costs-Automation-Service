@@ -1,10 +1,10 @@
 import CtaBtn from "../builders/CtaBtn";
 import RenderPicture from "../builders/RenderPicture";
 // Tablet frame
-import heroDashboardTabletBorderImg from "../../../../../assets/landing-page/hero-dashboard-tablet-border.png?w=600;730;900;1200&format=avif;webp;png&quality=80&as=picture";
+import heroDashboardTabletBorderImg from "../../../../../assets/landing-page/hero-dashboard-tablet-border.png?w=600;730;900;1200;1460&format=avif;webp;png&quality=80&as=picture";
 
 // Phone overlay
-import heroPhoneImg2 from "../../../../../assets/landing-page/hero-phone-2.png?w=180;240;320;400;520&format=avif;webp;png&quality=80&as=picture";
+import heroPhoneImg2 from "../../../../../assets/landing-page/hero-phone-2.png?w=180;240;320;400;520;640&format=avif;webp;png&quality=80&as=picture";
 
 // --- Hero component ---
 export default function Hero() {
@@ -67,7 +67,7 @@ export default function Hero() {
             />
             <RenderPicture
               picture={heroPhoneImg2}
-              sizes="40vw"
+              sizes="203px"
               alt="Hero Phone text message demo for overdue payment"
               imgClassName="absolute top-[40px] right-[-10px] w-[203px] z-2"
               eager
@@ -94,7 +94,7 @@ export default function Hero() {
           />
           <RenderPicture
             picture={heroPhoneImg2}
-            sizes="(min-width:1024px) 15vw, 40vw"
+            sizes="(min-width:1024px) 15vw, 0px"
             alt=""
             imgClassName="absolute bottom-[-250px] lg:bottom-[-40px] right-[0px] w-[15vw] z-2"
             eager
