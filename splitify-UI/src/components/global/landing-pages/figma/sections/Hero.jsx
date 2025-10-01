@@ -57,7 +57,7 @@ export default function Hero() {
           />
 
           {/* SMALL VIEW */}
-          <div className="lg:hidden w-10/12 mx-auto relative h-[400px]">
+          <div className="lg:hidden w-11/12 mx-auto relative h-[400px]">
             <RenderPicture
               picture={heroDashboardTabletBorderImg}
               sizes="83vw"

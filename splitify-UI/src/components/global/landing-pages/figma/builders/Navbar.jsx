@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import SmartSplitLogo from "../../../../../assets/SmartSplitLogo.svg?react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { trackCreateAccount } from "../../../../../googleAnalytics/googleAnalyticsHelpers";
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -153,10 +153,8 @@ const Navbar = () => {
               {/* Actions */}
               <div className="flex items-center gap-2 sm:gap-4">
                 {/* Hide Login on very small screens to keep it clean */}
-                <button
-                  onClick={() => {
-                    navigate("/login");
-                  }}
+                <Link
+                  to={"/login"}
                   className={`px-4 py-2 rounded-lg font-semibold transition-transform duration-300 hover:-translate-y-0.5 text-sm border-2 ${
                     isScrolled
                       ? `${
@@ -168,14 +166,14 @@ const Navbar = () => {
                   }`}
                 >
                   <span className="inline sm:text-[1rem]">Login</span>
-                </button>
+                </Link>
 
-                <button
+                <Link
                   className={`px-3 sm:px-7 py-2 sm:py-3 rounded-lg text-white font-semibold transition-transform duration-300 hover:-translate-y-0.5 text-sm sm:text-base shadow-md ${
                     isScrolled ? "bg-blue-600" : "bg-white/[8%]"
                   }`}
+                  to={"/signup"}
                   onClick={() => {
-                    navigate("/signup");
                     trackCreateAccount("landing-navbar-CTA");
                   }}
                 >
@@ -183,7 +181,7 @@ const Navbar = () => {
                     Create Your Free Account
                   </span>
                   <span className="sm:hidden">Sign up free</span>
-                </button>
+                </Link>
               </div>
             </div>
           </div>

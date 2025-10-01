@@ -37,6 +37,8 @@ export default function View({ image, features, header, body, text, imgAlt }) {
               {body}
             </p>
           </div>
+        <CtaBtn className="col-span-12 mx-auto mb-4 -translate-x-0" text={text} />
+
         </div>
 
         {/* <div className="flex-wrap col-span-12 justify-center items-center gap-4 flex">

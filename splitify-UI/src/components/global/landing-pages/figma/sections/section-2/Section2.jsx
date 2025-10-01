@@ -36,10 +36,10 @@ export default function Section2() {
           >
             Connect your bank so Splitify can detect when expenses like
             utilities and subscriptions increase or decrease, then automatically
-            update your splits with the new amounts.
+            update your ongoing requests with the new amounts.
           </p>
           <CtaBtn
-            text="Track My Bills"
+            text="Automate Utility Splitting"
             className={`
             mx-auto sm:mx-0
             `}

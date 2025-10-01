@@ -58,7 +58,7 @@ export default function Section3() {
             pocket, and less strain on your relationships.
           </p>
 
-          <CtaBtn text="Send a Request" className="mx-auto sm:mx-0" />
+          <CtaBtn text="Automate Your Shared Bills, Free" className="mx-auto sm:mx-0" />
         </div>
       </Layout>
     </section>

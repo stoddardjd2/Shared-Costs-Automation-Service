@@ -148,8 +148,7 @@ export default function Footer() {
                   </a>
                 </li>
                 <li>
-                  <a
-                    href="#about"
+                  <button
                     onClick={(e) => {
                       e.preventDefault();
                       scrollToSection("about");
@@ -157,11 +156,10 @@ export default function Footer() {
                     className="text-gray-700 hover:text-blue-600 transition-colors text-sm"
                   >
                     About
-                  </a>
+                  </button>
                 </li>
                 <li>
-                  <a
-                    href="#features"
+                  <button
                     onClick={(e) => {
                       e.preventDefault();
                       scrollToSection("features");
@@ -169,7 +167,7 @@ export default function Footer() {
                     className="text-gray-700 hover:text-blue-600 transition-colors text-sm"
                   >
                     Features
-                  </a>
+                  </button>
                 </li>
               </ul>
             </div>

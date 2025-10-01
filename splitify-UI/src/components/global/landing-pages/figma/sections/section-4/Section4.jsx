@@ -231,7 +231,7 @@ export default function Section4() {
                 imgAlt={"Dashboard demo phone view"}
                 features={features1}
                 header={"View all your bills in one place."}
-                text={"Make Bills Easy"}
+                text={"Automate My Shared Bills"}
                 body={
                   "Get alerted when you have overdue payments, view request details, and send new requests - all in one place."
                 }
@@ -244,7 +244,7 @@ export default function Section4() {
                 imgAlt={"Payment history demo phone view"}
                 features={features2}
                 header={"View payment history & manage your requests."}
-                text={"Manage Your Payments"}
+                text={"Record Payment History"}
                 body={
                   "View all payment requests, mark requests as paid, and adjust request details."
                 }
@@ -257,7 +257,7 @@ export default function Section4() {
                 image={SplitImg}
                 features={features3}
                 header={"Split bills & send requests in seconds."}
-                text={"Split a Bill"}
+                text={"Split a Bill & Send Requests"}
                 body={
                   "Splitify makes it easy to split bills by automatically calculating costs per person."
                 }
