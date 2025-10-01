@@ -1,7 +1,7 @@
 import Layout from "../../builders/Layout";
 import CtaBtn from "../../builders/CtaBtn";
-import phoneImg from "../../../../../../assets/landing-page/phone-tilt-overdue-mild.png";
-import phoneImgFlat from "./overdue-text-flat.png";
+import phoneImg from "../../../../../../assets/landing-page/phone-tilt-overdue-mild.png?format=webp&quality=80&as=src";
+import phoneImgFlat from "./overdue-text-flat.png?format=jpg&quality=80&as=src";
 export default function Section3() {
   return (
     <section

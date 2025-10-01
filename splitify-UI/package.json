@@ -20,6 +20,7 @@
     "react-plaid-link": "^4.1.1",
     "react-router-dom": "^6.8.0",
     "stripe": "^18.5.0",
+    "vite-imagetools": "^8.0.0",
     "vite-plugin-svgr": "^4.3.0"
   },
   "devDependencies": {

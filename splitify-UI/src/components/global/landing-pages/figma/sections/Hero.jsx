@@ -1,8 +1,9 @@
 // import heroDashboardPcImg from "../../../../../assets/landing-page/hero-dashboard-pc.png";
 import heroDashboardTabletImg from "../../../../../assets/landing-page/hero-dashboard-tablet-zoom.png";
-import heroDashboardTabletBorderImg from "../../../../../assets/landing-page/hero-dashboard-tablet-border.png";
+
+import heroDashboardTabletBorderImg from "../../../../../assets/landing-page/hero-dashboard-tablet-border.png?format=webp&quality=80&as=src";
 import heroPhoneImg from "../../../../../assets/landing-page/hero-phone.png";
-import heroPhoneImg2 from "../../../../../assets/landing-page/hero-phone-2.png";
+import heroPhoneImg2 from "../../../../../assets/landing-page/hero-phone-2.png?format=webp&quality=80&as=src";
 import Body from "../builders/Body";
 import CtaBtn from "../builders/CtaBtn";
 export default function Hero() {

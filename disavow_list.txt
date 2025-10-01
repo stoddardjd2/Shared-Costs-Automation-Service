@@ -1,0 +1,21 @@
+# Disavow file for splitify.io
+# Created Sep 2025
+# Spammy PBN / backlink farm domains
+
+domain:kompromat100.info
+domain:thebestbacklinksavailable.click
+domain:seo.am.in
+domain:australianwebdirectory.pro
+domain:selfie-battles-are-for-amateurs-tim--kalin-from-seodomains-here.com
+domain:australianwebdirectory.shop
+domain:agmermer.pro
+domain:great-choice-for-pbn-domains.co.uk
+domain:this-is-not-what-you-think-it-is-at-all.us
+domain:purple-elephant.us
+domain:dr70-links.co.uk
+domain:sergechel.info
+domain:moviesrock.nl
+domain:all-aged-domains.com
+domain:alenews.pl
+domain:faithwebsites.net
+domain:dont-tell-anyone.click

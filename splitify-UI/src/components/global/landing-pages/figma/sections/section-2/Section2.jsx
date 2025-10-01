@@ -1,8 +1,8 @@
 import Layout from "../../builders/Layout";
 import CtaBtn from "../../builders/CtaBtn";
 import Chart from "../../../../../../assets/landing-page/chart.svg?react";
-import bankConnectionDemo from "./bank-connection-demo.png";
-import bankConnectionDemoFlat from "./bank-connection-demo-flat.png";
+import bankConnectionDemo from "./bank-connection-demo.png?format=webp&quality=80&as=src";
+import bankConnectionDemoFlat from "./bank-connection-demo-flat.png?format=webp&quality=80&as=src";
 
 import { useEffect, useRef } from "react";
 export default function Section2() {
