@@ -14,43 +14,47 @@ const normalizeName = (name = "") =>
     .trim();
 
 async function fetchAllTransactions(startISO, endISO, accessToken) {
-  const url = "https://sandbox.plaid.com/transactions/get";
-  const PAGE_SIZE = 500;
-  let all = [];
-  let offset = 0;
-  let total = null;
+  try {
+    const url = "https://sandbox.plaid.com/transactions/get";
+    const PAGE_SIZE = 500;
+    let all = [];
+    let offset = 0;
+    let total = null;
 
-  do {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        client_id: process.env.PLAID_CLIENT_ID,
-        secret: process.env.PLAID_SECRET,
-        access_token: accessToken,
-        start_date: startISO,
-        end_date: endISO,
-        options: {
-          count: PAGE_SIZE,
-          offset,
-          include_personal_finance_category: true,
-        },
-      }),
-    });
+    do {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          client_id: process.env.PLAID_CLIENT_ID,
+          secret: process.env.PLAID_SECRET,
+          access_token: accessToken,
+          start_date: startISO,
+          end_date: endISO,
+          options: {
+            count: PAGE_SIZE,
+            offset,
+            include_personal_finance_category: true,
+          },
+        }),
+      });
 
-    if (!res.ok) {
-      const txt = await res.text();
-      throw new Error(`Plaid error: ${res.status} ${txt}`);
-    }
-    const data = await res.json();
-    const { transactions = [], total_transactions } = data;
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(`Plaid error: ${res.status} ${txt}`);
+      }
+      const data = await res.json();
+      const { transactions = [], total_transactions } = data;
 
-    all.push(...transactions);
-    total = total_transactions ?? all.length;
-    offset += transactions.length;
-  } while (offset < (total ?? 0));
+      all.push(...transactions);
+      total = total_transactions ?? all.length;
+      offset += transactions.length;
+    } while (offset < (total ?? 0));
 
-  return all;
+    return all;
+  } catch (err) {
+    console.error("plaid fetch error for fetchAllTransaction", err);
+  }
 }
 
 /**
@@ -100,6 +104,9 @@ async function resolveDynamicAmountIfEnabled(requestDocument) {
 
   const last = await getLatestMatchingCharge({ ownerUserId, requestName });
 
+  if (!last) {
+    throw console.error("error getting latest amount for dynamic cost");
+  }
   let updatedDynamicData = {};
   if (requestDocument.splitType == "custom") {
     throw console.error("custom split type not allowed for dynamic costs");
