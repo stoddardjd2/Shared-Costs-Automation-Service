@@ -96,6 +96,8 @@ export default function LandingPage() {
     );
     setCanonical("/"); // canonical for the root landing page
 
+
+    // JSON-LD SCHEMA INJECTION FOR SEO
     injectSchema(
       {
         "@context": "https://schema.org",

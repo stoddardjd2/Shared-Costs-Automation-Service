@@ -14,8 +14,8 @@ import {
 } from "lucide-react";
 
 // ⬇️ Stripe imports
-import { loadStripe } from "@stripe/stripe-js";
 import { useData } from "../../contexts/DataContext";
+import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
   PaymentElement,
