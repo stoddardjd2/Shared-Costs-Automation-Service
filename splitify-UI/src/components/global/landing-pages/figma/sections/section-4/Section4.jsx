@@ -4,9 +4,9 @@ import { useEffect, useRef, useLayoutEffect, useState } from "react";
 import FixedBackgroundSection from "./FixedBackgroundSection.jsx";
 import View from "./View.jsx";
 import { features1, features2, features3 } from "./features.jsx";
-import HistoryImg from "./history-demo-phone.png?format=webp&quality=80&as=src";
-import DashboardImg from "./dashboard-demo-phone.png?format=webp&quality=80&as=src";
-import SplitImg from "./split-demo-phone.png?format=webp&quality=80&as=src";
+import HistoryImg from "./history-demo-phone.png?w=300;500;700;900&format=avif;webp;png&quality=80&as=picture";
+import DashboardImg from "./dashboard-demo-phone.png?w=300;500;700;900&quality=80&as=picture"; //breaks with other image types
+import SplitImg from "./split-demo-phone.png?w=300;500;700;900&format=avif;webp;png&quality=80&as=picture";
 import Footer from "../../builders/Footer.jsx";
 
 /**

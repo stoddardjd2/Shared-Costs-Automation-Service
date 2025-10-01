@@ -1,15 +1,18 @@
 import CtaBtn from "../../builders/CtaBtn";
+import RenderPicture from "../../builders/RenderPicture";
 
 export default function View({ image, features, header, body, text, imgAlt }) {
   return (
     <>
       <div className="col-span-12 hidden xl:grid grid-cols-12 gap-y-[270px]">
-        <div className="col-span-4 size-[555px] relative  rounded-3xl">
-          <img
-            src={image}
+        <div className="col-span-4 size-[555px] relative rounded-3xl">
+          <RenderPicture
+            picture={image}
             alt={imgAlt}
+            sizes="(min-width:1280px) 320px, 90vw"
             className="w-[320px] absolute bottom-[-30px] left-[-30px]"
-          ></img>
+            imgClassName="w-[320px]"
+          />
           {/* <div className="absolute top-20 left-[320px] flex-col justify-center gap-10 flex">
             {features.map((feature, index) => (
               <Feature svg={feature.svg} label={feature.label} key={index} />
@@ -17,15 +20,15 @@ export default function View({ image, features, header, body, text, imgAlt }) {
           </div> */}
         </div>
         <div className="col-span-8 my-auto">
-          <div className="flex flex-col gap-[16px]  ml-20">
+          <div className="flex flex-col gap-[16px] ml-20">
             <h3 className="text-white">{header}</h3>
             <p className="text-[#EAEAEA] mt-3 w-9/12 medium-body">{body}</p>
-            <CtaBtn className={""} text={text} />
+            <CtaBtn className="" text={text} />
           </div>
         </div>
       </div>
 
-      {/* small screen*/}
+      {/* small screen */}
       <div className="xl:hidden max-w-[500px] mx-auto col-span-12 grid grid-cols-12 gap-y-[20px] sm:gap-y-[50px]">
         <div className="col-span-12 my-auto">
           <div className="flex flex-col gap-[16px] w-12/12 mx-auto text-center">
@@ -42,11 +45,13 @@ export default function View({ image, features, header, body, text, imgAlt }) {
           ))}
         </div> */}
 
-        <img
+        <RenderPicture
+          picture={image}
           alt={imgAlt}
-          src={image}
-          className="w-[320px] mx-auto col-span-12"
-        ></img>
+          sizes="100vw"
+          className="mx-auto col-span-12"
+          imgClassName="w-[320px] mx-auto"
+        />
       </div>
     </>
   );

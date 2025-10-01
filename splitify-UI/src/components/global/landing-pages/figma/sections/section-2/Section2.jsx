@@ -1,10 +1,10 @@
 import Layout from "../../builders/Layout";
 import CtaBtn from "../../builders/CtaBtn";
 import Chart from "../../../../../../assets/landing-page/chart.svg?react";
-import bankConnectionDemo from "./bank-connection-demo.png?format=webp&quality=80&as=src";
-import bankConnectionDemoFlat from "./bank-connection-demo-flat.png?format=webp&quality=80&as=src";
-
+import bankConnectionDemo from "./bank-connection-demo.png?w=400;600;800;1000&format=avif;webp;png&quality=80&as=picture";
+import bankConnectionDemoFlat from "./bank-connection-demo-flat.png?w=400;600;800;1000&format=avif;webp;png&quality=80&as=picture";
 import { useEffect, useRef } from "react";
+import RenderPicture from "../../builders/RenderPicture";
 export default function Section2() {
   return (
     <section
@@ -54,15 +54,19 @@ export default function Section2() {
         mt-[35px] sm:mt-0
           items-center`}
         >
-          <img
-            src={bankConnectionDemo}
-            className="hidden sm:flex  max-h-[80vh] sm:ml-auto"
+          <RenderPicture
+            picture={bankConnectionDemo}
+            sizes="(min-width:640px) 33vw, 90vw"
             alt="bank connection demo"
+            className="hidden sm:flex"
+            imgClassName="max-h-[80vh] sm:ml-auto"
           />
-          <img
-            src={bankConnectionDemoFlat}
-            className="flex sm:hidden max-h-[80vh] mx-auto sm:mx-0"
+          <RenderPicture
+            picture={bankConnectionDemoFlat}
+            sizes="100vw"
             alt="bank connection demo"
+            className="flex sm:hidden"
+            imgClassName="max-h-[80vh] mx-auto sm:mx-0"
           />
           {/* <PriceChart /> */}
         </div>
