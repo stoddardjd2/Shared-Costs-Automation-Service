@@ -18,33 +18,42 @@ export default function Analytics() {
     if (!ENABLED || inited.current) return;
     inited.current = true;
 
-    // Avoid duplicate script injection
     const already = Array.from(document.scripts).some((s) =>
       s.src?.includes("googletagmanager.com/gtag/js")
     );
+
     if (!already) {
       const script = document.createElement("script");
       script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(
         GA_ID
       )}`;
       script.async = true;
-      document.head.appendChild(script);
-    }
 
-    // Bootstrap gtag
-    window.dataLayer = window.dataLayer || [];
-    window.gtag =
-      window.gtag ||
-      function gtag() {
-        window.dataLayer.push(arguments);
+      // Ensure gtag is initialized only after the script is loaded
+      script.onload = () => {
+        window.dataLayer = window.dataLayer || [];
+        window.gtag =
+          window.gtag ||
+          function gtag() {
+            window.dataLayer.push(arguments);
+          };
+
+        // Init gtag after the script is loaded
+        window.gtag("js", new Date());
+        window.gtag("config", GA_ID, { send_page_view: false });
       };
+
+      document.head.appendChild(script);
+    } else {
+      // If script already exists, initialize gtag immediately
+      if (window.gtag) {
+        window.gtag("js", new Date());
+        window.gtag("config", GA_ID, { send_page_view: false });
+      }
+    }
 
     // Store ID for helpers
     window.__GA_ID = GA_ID;
-
-    // Init + disable auto page_view for SPA
-    window.gtag("js", new Date());
-    window.gtag("config", GA_ID, { send_page_view: false });
   }, []);
 
   return null;

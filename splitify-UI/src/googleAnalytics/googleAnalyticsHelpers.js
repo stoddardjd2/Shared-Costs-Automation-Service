@@ -8,12 +8,13 @@ function ready() {
 }
 
 function trackCreateAccount(variation) {
-  if (!ready()) {
-    window.gtag("event", "signup_click", {
-      event_category: "engagement",
-      event_label: `Create Account Button CTA-${variation}`,
-    });
-  }
+  console.log("window", window);
+  console.log("gteag", window.gtag);
+  if (!ready()) return;
+  window.gtag("event", "signup_click", {
+    event_category: "engagement",
+    event_label: `Create Account Button CTA-${variation}`,
+  });
 }
 
 function pageview(path, title) {

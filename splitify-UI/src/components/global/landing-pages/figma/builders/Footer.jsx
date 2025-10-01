@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import SmartSplitLogo from "../../../../../assets/SmartSplitLogo.svg?react";
 import getAPIUrl from "../../../../../config";
 import { useNavigate } from "react-router-dom";
+
 export default function Footer() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -26,6 +27,11 @@ export default function Footer() {
         "Content-Type": "application/json",
       },
     });
+  };
+
+  const currentDate = () => {
+    const date = new Date();
+    return date.getFullYear();
   };
 
   const scrollToSection = (elementId) => {
@@ -250,15 +256,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="border-t border-gray-500/20 mt-6 pt-4 text-center text-gray-400 text-xs">
-          <p>
-            &copy;{" "}
-            {() => {
-              const date = new Date(); 
-              console.log("date", date)
-              return date.getFullYear();
-            }}{" "}
-            Splitify. All rights reserved.
-          </p>
+          <p>&copy; {currentDate()} Splitify. All rights reserved.</p>
         </div>
       </footer>
     </>
