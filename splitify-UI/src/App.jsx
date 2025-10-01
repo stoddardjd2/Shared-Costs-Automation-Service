@@ -8,7 +8,9 @@ import { DataProvider } from "./contexts/DataContext";
 //    Especially anything that might import Stripe.
 const Loginv2 = lazy(() => import("./components/auth/Loginv2"));
 const Signup = lazy(() => import("./components/auth/Signup"));
-const ResetPasswordPage = lazy(() => import("./components/auth/ResetPasswordPage"));
+const ResetPasswordPage = lazy(() =>
+  import("./components/auth/ResetPasswordPage")
+);
 
 const Dashboard = lazy(() => import("./components/dashboard/Dashboard"));
 const Navbar = lazy(() => import("./components/dashboard/Navbar"));
@@ -16,17 +18,27 @@ const Navbar = lazy(() => import("./components/dashboard/Navbar"));
 const GlobalNavbar = lazy(() => import("./components/global/GlobalNavbar"));
 const GlobalFooter = lazy(() => import("./components/global/GlobalFooter.jsx"));
 
-const LandingPageOfficial = lazy(() => import("./components/global/landing-pages/figma/LandingPage"));
+const LandingPageOfficial = lazy(() =>
+  import("./components/global/landing-pages/figma/LandingPage")
+);
 // const LandingPage = lazy(() => import("./components/global/landing-pages/Claude/LandingPage"));
 // const LandingPage2 = lazy(() => import("./components/global/landing-pages/Claude/LandingPage2"));
 
 const PaymentPage = lazy(() => import("./payment-components/PaymentPage"));
-const PaymentPortal = lazy(() => import("./components/global/PaymentPortal.jsx"));
+const PaymentPortal = lazy(() =>
+  import("./components/global/PaymentPortal.jsx")
+);
 
 // Other pages
-const SmsOptInPage = lazy(() => import("./components/global/opt-in-pages/SmsOptInPage.jsx"));
-const PrivacyPolicy = lazy(() => import("./components/global/about/PrivacyPolicy.jsx"));
-const TermsAndConditions = lazy(() => import("./components/global/about/TermsAndConditions.jsx"));
+const SmsOptInPage = lazy(() =>
+  import("./components/global/opt-in-pages/SmsOptInPage.jsx")
+);
+const PrivacyPolicy = lazy(() =>
+  import("./components/global/about/PrivacyPolicy.jsx")
+);
+const TermsAndConditions = lazy(() =>
+  import("./components/global/about/TermsAndConditions.jsx")
+);
 
 // If you have protected route wrapper, keep it non-lazy if it's tiny.
 // Otherwise you can lazy it too:
@@ -42,12 +54,16 @@ const App = () => {
       <Suspense fallback={<Fallback />}>
         <Routes>
           {/* Public routes */}
+          <Route path="/" element={<LandingPageOfficial />} />
+          
           <Route path="/login" element={<Loginv2 />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+          <Route
+            path="/reset-password/:token"
+            element={<ResetPasswordPage />}
+          />
 
           {/* Protected routes */}
-          {/* <Route path="/" element={<div>{navigate("/landing")}</div>} /> */}
           <Route
             path="/dashboard/*"
             element={
@@ -83,28 +99,6 @@ const App = () => {
               </>
             }
           />
-
-          {/* Landing page variations */}
-          <Route
-            path="/landing"
-            element={
-              <>
-                {/* Intentionally no GlobalNavbar here unless you need it */}
-                <Outlet />
-                {/* <GlobalFooter /> */}
-              </>
-            }
-          >
-            <Route index element={<LandingPageOfficial />} />
-            {/* <Route path="1" element={<LandingPage />} />
-            <Route path="2" element={<LandingPage2 />} />
-            <Route path="3" element={<LandingPage3 />} />
-            <Route path="4" element={<LandingPage4 />} />
-            <Route path="5" element={<LandingPage5 />} />
-            <Route path="6" element={<LandingPage6 />} />
-            <Route path="7" element={<LandingPageCustom />} />
-            <Route path="test" element={<FixedBackgroundSection />} /> */}
-          </Route>
 
           {/* Misc pages */}
           <Route
@@ -147,8 +141,7 @@ const App = () => {
             <Route path="termsAndConditions" element={<TermsAndConditions />} />
           </Route>
 
-          {/* Fallback route - must be last */}
-          <Route path="*" element={<Navigate to="/landing" replace />} />
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Suspense>
     </div>
