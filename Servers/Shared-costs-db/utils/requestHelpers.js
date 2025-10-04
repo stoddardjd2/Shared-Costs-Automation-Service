@@ -9,6 +9,13 @@ const transporter = nodemailer.createTransport({
     user: process.env.GENERAL_EMAIL_USER,
     pass: process.env.GENERAL_EMAIL_PASS,
   },
+  maxConnections: 2, // keep low for Gmail/Workspace
+  maxMessages: 50, // per connection
+  rateDelta: 60_000, // window (ms)
+  rateLimit: 80, // messages per window (tune to your quota)
+  socketTimeout: 30_000,
+  logger: true, // enable for debugging
+  debug: false,
 });
 
 // const calculateNextReminderDate = (nextDueDate, reminderFrequency) => {
@@ -33,7 +40,7 @@ const transporter = nodemailer.createTransport({
 // };
 
 const calculateNextReminderDate = (nextDueDate, reminderFrequency) => {
-  console.log("REMINDER FREQUENCY", reminderFrequency)
+  console.log("REMINDER FREQUENCY", reminderFrequency);
   if (!reminderFrequency || reminderFrequency === "none" || !nextDueDate)
     return null;
 
