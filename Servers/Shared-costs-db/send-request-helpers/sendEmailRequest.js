@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 const emailTemplate = require("./emailTemplate.js");
-const pRetry = require("p-retry"); // npm install p-retry
+const pRetry = require("p-retry"); 
 
 async function sendEmailRequest(
   sender,
