@@ -120,6 +120,8 @@ const createRequest = async (req, res) => {
             {
               $push: { participantForRequests: request._id },
               // Optionally store email if you want to track or reference it
+            
+            // MAY NEED TO REMOVE:
               $set: { email: participant.email },
             },
             { new: true }

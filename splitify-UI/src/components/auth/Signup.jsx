@@ -16,7 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { pageview } from "../../googleAnalytics/googleAnalyticsHelpers";
+import { pageview, gaEvent} from "../../googleAnalytics/googleAnalyticsHelpers";
 const Signup = () => {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -138,8 +138,12 @@ const Signup = () => {
 
       // Assuming createUser returns a response object
       if (response && response.success) {
+        
         navigate("/dashboard");
-
+        gaEvent("signup_completed", {
+          event_category: "engagement",
+          event_label: `Create Account Button CTA-Signup`,
+        });
         // showNotification(
         //   "Account created successfully! Welcome aboard!",
         //   "success"
