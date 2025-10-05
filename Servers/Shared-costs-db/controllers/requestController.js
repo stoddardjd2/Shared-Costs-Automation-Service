@@ -117,7 +117,11 @@ const createRequest = async (req, res) => {
           // If participant user exists, add request to their requests array
           await User.findByIdAndUpdate(
             participant._id,
-            { $push: { partcipantForRequests: request._id } },
+            {
+              $push: { participantForRequests: request._id },
+              // Optionally store email if you want to track or reference it
+              $set: { email: participant.email },
+            },
             { new: true }
           );
         }
