@@ -8,8 +8,6 @@ function ready() {
 }
 
 function trackCreateAccount(variation) {
-  console.log("window", window);
-  console.log("gteag", window.gtag);
   if (!ready()) return;
   window.gtag("event", "signup_click", {
     event_category: "engagement",
@@ -27,6 +25,7 @@ function pageview(path, title) {
 }
 
 function gaEvent(name, params = {}) {
+  console.log("GA Event:", name, params);
   if (!ready()) return;
   window.gtag("event", name, params);
 }
