@@ -15,7 +15,7 @@ import {
   CheckCircle,
   X,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   pageview,
   gaEvent,
@@ -43,18 +43,20 @@ const Signup = () => {
     pageview(null, "Signup_page");
   }, []);
 
+  const location = useLocation();
+
   // google oauth:
   const googleLogin = useGoogleLogin({
     onSuccess: async ({ code }) => {
       try {
-        console.log("code", code);
         const res = await googleOauth(code);
         if (res.success) {
-          navigate("/dashboard");
+          navigate(`/dashboard${location.search}}`);
         }
       } catch (error) {
         if (!error?.response?.data?.error) {
-          setRequestError("Could not connect to server. Try again.");
+          console.log("error. Try again.");
+          // setRequestError("Could not connect to server. Try again.");
         }
         console.log(error);
       }
@@ -145,7 +147,7 @@ const Signup = () => {
           event_category: "engagement",
           event_label: `Create Account Button CTA-Signup`,
         });
-        navigate("/dashboard");
+        navigate(`/dashboard${location.search}}`);
 
         // showNotification(
         //   "Account created successfully! Welcome aboard!",

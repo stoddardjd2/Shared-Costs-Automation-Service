@@ -92,7 +92,7 @@ export default function LandingPage() {
       "Splitify — Split Bills Automatically, Send Reminders, Track Changing Costs"
     );
     setMetaDescription(
-      "Splitify makes shared bills simple: split expenses automatically, send reminders by text or email, and keep amounts updated when costs change."
+      "Splitify makes shared bills simple: split expenses automatically, automated reminders by text or email, and amounts stay updated when costs change."
     );
     setCanonical("/"); // canonical for the root landing page
 

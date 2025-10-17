@@ -1,0 +1,50 @@
+:where(.landing-page-v2) {
+  section {
+    min-height: 80vh;
+
+    &:not(.hero) {
+      display:flex;
+      flex-direction: column;
+      justify-content:center;
+      color:rgb(170, 203, 247) 100%;
+    }
+  }
+
+  h1 {
+    font-size: 4.5rem;
+    font-weight: bold;
+    color: #222222;
+  }
+
+  p {
+    font-size: 1.125rem;
+    color: #292929;
+  }
+  .constrained-width {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .body-text {
+    color: #292929;
+  }
+
+  h2 {
+    font-size: 4rem;
+    font-weight: bold;
+    color: #1d1d1d;
+    line-height: 1.2;
+  }
+
+  h3 {
+    font-size: 2rem;
+    font-weight: bold;
+    line-height: 1.2;
+    color: #1d1d1d;
+  }
+
+  .primary-color {
+    /* background-color: rgba(130,184,255,1) */
+    background-color: #2563ea;
+  }
+}

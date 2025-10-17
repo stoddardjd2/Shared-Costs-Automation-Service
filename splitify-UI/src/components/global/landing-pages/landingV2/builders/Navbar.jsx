@@ -81,9 +81,9 @@ const Navbar = () => {
   return (
     <>
       <style>{`
-        /* Scrolled background */
         .scrolled-gradient {
-          background: radial-gradient(62.5% 175.13% at 97.01% 48.68%, #075C7B 31.33%, #022B3A 71.02%, #0C0C0C 100%);
+         background-image:linear-gradient(130deg,rgba(227, 242, 253, 1) 0%, rgba(225, 246, 251, 1) 66%, rgba(130, 184, 255, 1) 100%)
+
         }
 
         /* One-way border fade-in using a pseudo element */
@@ -124,14 +124,14 @@ const Navbar = () => {
 
       <div className="relative">
         <nav
-          className={`fixed top-2 left-0 right-0 z-50 nav-animate transition-all duration-500 ease-out safe-top ${
+          className={`fixed top-2 left-0 right-0 z-50 nav-animate transition-all duration-300 ease-out safe-top ${
             isScrolled ? "py-2.5 sm:py-4 px-3 sm:px-5" : "py-2.5 sm:py-5"
           }`}
         >
           <div
             className={`nav-animate transition-all duration-500 ease-out border-overlay ${
               isScrolled
-                ? `scrolled-gradient rounded-2xl px-3 sm:px-8 py-2 sm:py-4 shadow-2xl shadow-black/50 backdrop-blur-md ${
+                ? `bg-white rounded-2xl px-3 sm:px-8 py-2 sm:py-4 shadow-2xl shadow-black/50  ${
                     transitionComplete ? "show-border" : ""
                   }`
                 : "px-3 sm:px-6 bg-transparent"
@@ -145,10 +145,30 @@ const Navbar = () => {
                 aria-label="Go to top"
               >
                 <SmartSplitLogo className="w-9 h-9 sm:w-[45px] sm:h-[45px] shrink-0" />
-                <span className="font-semibold leading-none text-white text-lg sm:text-2xl">
+                <span className="font-semibold leading-none text-blue-600 text-lg sm:text-2xl">
                   Splitify
                 </span>
               </button>
+
+              {/* Nav */}
+              {/* <div className="flex items-center gap-2 sm:gap-4">
+
+                <a
+                  onClick={() => {
+                    scrollTo("0", "instant");
+                  }}
+                >
+                  Features
+                </a>
+
+                <a
+                  onClick={() => {
+                    scrollTo("0", "instant");
+                  }}
+                >
+                  Pricing
+                </a>
+              </div> */}
 
               {/* Actions */}
               <div className="flex items-center gap-2 sm:gap-4">
@@ -161,23 +181,25 @@ const Navbar = () => {
                           transitionComplete
                             ? "border-white/0 hover:border-white/80"
                             : "border-transparent"
-                        } text-white hover:bg-white/10`
+                        } text-gray-800 hover:bg-white/10`
                       : "border-white/0 text-white hover:bg-black/5"
                   }`}
                 >
-                  <span className="inline sm:text-[1rem]">Login</span>
+                  <span className="inline sm:text-[1rem] text-gray-800">
+                    Login
+                  </span>
                 </Link>
 
                 <Link
-                  className={`px-3 sm:px-7 py-2 sm:py-3 rounded-lg text-white font-semibold transition-transform duration-300 hover:-translate-y-0.5 text-sm sm:text-base shadow-md ${
-                    isScrolled ? "bg-blue-600 hover:bg-blue-700 transition-all " : "bg-white/[8%]"
+                  className={`px-3 sm:px-7 py-2 transition-all  sm:py-3 rounded-lg text-white font-semibold duration-300 hover:-translate-y-0.5 text-sm sm:text-base shadow-md ${
+                    isScrolled ? "bg-blue-600 hover:bg-blue-700 transition-all" : "bg-white"
                   }`}
                   to={"/signup"}
                   onClick={() => {
                     trackCreateAccount("landing-navbar-CTA");
                   }}
                 >
-                  <span className="hidden sm:inline">
+                  <span className={`hidden transition-all  timing sm:inline text-gray-800 ${isScrolled ? "text-white " : ""}`}>
                     Create Your Free Account
                   </span>
                   <span className="sm:hidden">Sign up free</span>

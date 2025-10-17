@@ -10,7 +10,7 @@ import heroPhoneImg2 from "../../../../../assets/landing-page/hero-phone-2.png?w
 export default function Hero() {
   return (
     <section
-      className={` 
+      className={`hero 
         justify-center flex overflow-hidden relative bg-no-repeat
         lg:h-[1100px] 
         [background:radial-gradient(52.87%_92.69%_at_53.89%_92.69%,_#075C7B_31.33%,_#022B3A_71.02%,_#0C0C0C_100%)]

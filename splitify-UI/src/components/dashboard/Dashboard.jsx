@@ -44,8 +44,14 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    // show first time welcome screen and navigate user to make first request
-    if (!costs || costs.length == 0) {
+    // if user selected plan from landing page, popup to continue that process
+    const params = new URLSearchParams(location.search);
+
+    if (params?.get("plan")) {
+      navigate(`/dashboard/premium${location.search}`);
+
+      // show first time welcome screen and navigate user to make first request
+    } else if (!costs || costs.length == 0) {
       navigate("/dashboard/welcome");
       setShowFirstTimePrompt(true);
     }
@@ -64,9 +70,9 @@ const Dashboard = () => {
     return () => clearTimeout(t);
   }, []);
 
-  if (!costs || costs.length == 0 && showFirstTimePrompt) {
+  if (!costs || (costs.length == 0 && showFirstTimePrompt)) {
     // setShowFirstTimePrompt(true);
-    return <WelcomeScreen setShowFirstTimePrompt={setShowFirstTimePrompt}/>;
+    return <WelcomeScreen setShowFirstTimePrompt={setShowFirstTimePrompt} />;
   }
 
   // 👇 Now controlled by the URL path

@@ -21,6 +21,10 @@ const GlobalFooter = lazy(() => import("./components/global/GlobalFooter.jsx"));
 const LandingPageOfficial = lazy(() =>
   import("./components/global/landing-pages/figma/LandingPage")
 );
+
+const LandingPageV2 = lazy(() =>
+  import("./components/global/landing-pages/landingV2/LandingPageV2")
+);
 // const LandingPage = lazy(() => import("./components/global/landing-pages/Claude/LandingPage"));
 // const LandingPage2 = lazy(() => import("./components/global/landing-pages/Claude/LandingPage2"));
 
@@ -56,6 +60,9 @@ const App = () => {
           {/* Public routes */}
           <Route path="/" element={<LandingPageOfficial />} />
           
+          <Route path="/landing/*" element={<LandingPageOfficial />}></Route>
+          <Route path="/landing/2" element={<LandingPageV2 />} />
+
           <Route path="/login" element={<Loginv2 />} />
           <Route path="/signup" element={<Signup />} />
           <Route

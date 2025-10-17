@@ -31,18 +31,71 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 const DEFAULT_PRICING = {
   currency: "USD",
   trialDays: null,
-  plaid: { monthly: 1.49, annual: 13.99 },
-  premium: { monthly: 3.49, annual: 29.49 },
+  premium: { monthly: 4.49, annual: 47.88 },
+  professional: { monthly: 29, annual: 240 },
   defaultBilling: "monthly",
 };
 
 const DEFAULT_COPY = {
   headline: "Unlock smarter splits",
   subheadline:
-    "Connect your bank with Plaid to enable cost tracking or upgrade to Premium for Plaid with additional advanced features.",
+    "Get the most advanced bill splitting features that you can't get anywhere else.",
   dataAssurance:
     "We never store or have direct access to your bank credentials. Splitify only retains minimal details for the transaction you choose.",
 };
+
+// DISPLAY ONLY
+const plans = [
+  {
+    name: "Free (no card needed)",
+    id: "free",
+    price: "0",
+    annualPrice: "0",
+    description: "Includes everything you need to automate your bill splits",
+    features: [
+      "*LIMITED TIME* Unlimited text messages and requests",
+      "Recurring splits",
+      "Automated reminders",
+      "Instant bill splitting calculations",
+      "Payment tracking",
+    ],
+    cta: "Sign Up Free",
+  },
+  {
+    name: "Premium",
+    id: "premium",
+    price: "4.49",
+    annualPrice: "3.99",
+    includes: "Includes everything in Free",
+
+    description:
+      "For those who want to save more time, plus unlock powerful features",
+    features: [
+      "Unlimited text messages and requests",
+      "Plaid bank connection",
+      "Automatically update split amounts as bills change.",
+      "Customizable Text & Email Messages (Coming soon)",
+      "Schedule requests for later",
+    ],
+    cta: "Get Started",
+    popular: true,
+  },
+  {
+    name: "Professional",
+    id: "professional",
+    price: "29",
+    annualPrice: "20",
+    includes: "Includes everything in Premium",
+    description: "For our bill splitting pros",
+    features: [
+      "Advanced analytics (Coming Soon)",
+      "Priority support",
+      "Early access to new features",
+      "supports a solo developer",
+    ],
+    cta: "Get Started",
+  },
+];
 
 export default function SplitifyPremiumModal({
   isOpen,
@@ -68,6 +121,29 @@ export default function SplitifyPremiumModal({
   // success info for confirmation screen
   const [successInfo, setSuccessInfo] = useState(null); // { planKey, billing, amount, currency }
 
+  // ⬇️ start checkout – fetch a clientSecret for Payment Element
+  const startCheckout = async (planKey) => {
+    setFetchError(null);
+    setStep("pay");
+    setIsFetchingCS(true);
+    try {
+      setSelection({ planKey, billing });
+      // Hit your backend to create a Subscription and return a clientSecret
+      const res = await createSubscription(planKey, billing, ccy);
+
+      if (!res?.clientSecret) {
+        throw new Error("Missing clientSecret from server response");
+      }
+      setClientSecret(res.clientSecret);
+    } catch (err) {
+      setFetchError(err?.message || "Something went wrong");
+      setStep("choose");
+    } finally {
+      setIsFetchingCS(false);
+    }
+  };
+
+  console.log("STEP", step);
   useEffect(() => {
     gaEvent("subscription_view");
   }, []);
@@ -88,13 +164,25 @@ export default function SplitifyPremiumModal({
 
   // Reset state when modal opens/closes
   useEffect(() => {
-    if (isOpen) {
-      setStep("choose");
-      setSelection(null);
-      setClientSecret(null);
-      setIsFetchingCS(false);
-      setFetchError(null);
-      setSuccessInfo(null);
+    // If user selected subscription already from landing
+    const params = new URLSearchParams(window.location.search);
+    if (params?.get("plan") && params?.get("billing")) {
+      setStep("pay");
+      setSelection({
+        planKey: params.get("plan"),
+        billing: params.get("billing"),
+      });
+      setBilling(params.get("billing"));
+      startCheckout(params.get("plan"));
+    } else {
+      if (isOpen) {
+        setStep("choose");
+        setSelection(null);
+        setClientSecret(null);
+        setIsFetchingCS(false);
+        setFetchError(null);
+        setSuccessInfo(null);
+      }
     }
   }, [isOpen]);
 
@@ -143,120 +231,101 @@ export default function SplitifyPremiumModal({
     );
   };
 
-  // ⬇️ start checkout – fetch a clientSecret for Payment Element
-  const startCheckout = async (planKey) => {
-    setFetchError(null);
-    setStep("pay");
-    setIsFetchingCS(true);
-    try {
-      setSelection({ planKey, billing });
-      // Hit your backend to create a Subscription and return a clientSecret
-      const res = await createSubscription(planKey, billing, ccy);
+  const PlaidCard = ({ plan }) => (
+    <div
+      className={`relative bg-white rounded-lg p-8 shadow-lg transition-shadow hover:shadow-xl ${
+        plan.popular ? "ring-2 ring-blue-600" : ""
+      }`}
+    >
+      {plan.popular && (
+        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
+          Most Popular
+        </div>
+      )}
 
-      if (!res?.clientSecret) {
-        throw new Error("Missing clientSecret from server response");
-      }
-      setClientSecret(res.clientSecret);
-    } catch (err) {
-      setFetchError(err?.message || "Something went wrong");
-      setStep("choose");
-    } finally {
-      setIsFetchingCS(false);
-    }
-  };
+      <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
 
-  const PlaidCard = () => (
-    <div className="group relative flex flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
-      <div className="absolute -top-3 left-4 inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-100">
-        <Building2 className="h-3.5 w-3.5" /> Plaid only
-      </div>
-      <div className="mt-3 flex items-center gap-3">
-        <CreditCard className="h-6 w-6 text-blue-600" />
-        <h3 className="text-lg font-semibold">Plaid Bank Connection</h3>
-      </div>
-      <p className="mt-2 text-sm text-gray-600">
-        Securely connect your bank to import transactions and enable dynamic
-        cost tracking.
-      </p>
-      <ul className="mt-4 space-y-2 text-sm">
-        {[
-          "Cost tracking (Splitify adjusts requests with new amounts if costs change)",
-          "Find transactions from your bank",
-          "Bank-grade encryption via Plaid",
-        ].map((f) => (
-          <li key={f} className="flex items-start gap-2">
-            <Check className="mt-0.5 h-4 w-4 text-blue-600 flex-shrink-0" />
-            <span>{f}</span>
-          </li>
-        ))}
-      </ul>
+      <p className="text-gray-600 mb-6 min-h-[54px]">{plan.description}</p>
 
-      <PriceBlock planKey="plaid" />
-
-      <button
-        onClick={() => startCheckout("plaid")}
-        disabled={isFetchingCS}
-        className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white text-blue-600 ring-1 ring-inset ring-blue-200 px-4 py-2.5 font-medium hover:bg-blue-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-      >
-        {isFetchingCS ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" /> Preparing…
-          </>
-        ) : (
-          "Connect with Plaid"
-        )}
-      </button>
-    </div>
-  );
-
-  const PremiumCard = () => (
-    <div className="group relative flex flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
-      <div className="absolute -top-3 left-4 inline-flex items-center gap-1 rounded-full bg-blue-600 px-2.5 py-1 text-xs font-medium text-white shadow">
-        <Sparkles className="h-3.5 w-3.5" /> Most popular
-      </div>
-      <div className="mt-3 flex items-center gap-3">
-        <BadgeDollarSign className="h-6 w-6 text-blue-600" />
-        <h3 className="text-lg font-semibold">Premium</h3>
-      </div>
-      <p className="mt-2 text-sm text-gray-600">
-        Everything in Plaid connection, plus automation to remove the friction
-        of shared costs.
-      </p>
-      <ul className="mt-4 space-y-2 text-sm">
-        {[
-          "Cost tracking (Splitify adjusts requests with new amounts if costs change)",
-          "Find transactions from your bank",
-          "Bank-grade encryption via Plaid",
-          "Allow recipients to mark as paid",
-          "Custom SMS/email text for requests & reminders (Coming Soon)",
-        ].map((f) => (
-          <li key={f} className="flex items-start gap-2">
-            <Check className="mt-0.5 h-4 w-4 text-blue-600 flex-shrink-0" />
-            <span>{f}</span>
-          </li>
-        ))}
-      </ul>
-
-      <PriceBlock planKey="premium" />
-      {trial ? (
-        <span className="mt-1 inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-100">
-          {trial}-day free trial
+      <div className="mb-6">
+        <span className="text-5xl font-bold text-gray-900">
+          ${billing == "annual" ? plan.annualPrice : plan.price}
         </span>
-      ) : null}
+        <span className="text-gray-600">/month</span>
+      </div>
 
       <button
         onClick={() => startCheckout("premium")}
         disabled={isFetchingCS}
-        className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 text-white px-4 py-2.5 font-medium shadow-sm hover:shadow-md hover:brightness-105 transition disabled:opacity-60 disabled:cursor-not-allowed"
+        className="inline-flex w-full mb-4 items-center justify-center gap-2 rounded-xl bg-blue-600 text-white px-4 py-2.5 font-medium shadow-sm hover:shadow-md hover:brightness-105 transition disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {isFetchingCS ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" /> Preparing…
           </>
         ) : (
-          "Upgrade to Premium"
+          "Get Premium"
         )}
       </button>
+      <p className="mb-3 text-gray-400">{plan.includes}</p>
+
+      <ul className="space-y-3">
+        {plan.features.map((feature, featureIndex) => (
+          <li key={featureIndex} className="flex items-start gap-3">
+            <Check className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-600" />
+            <span className="text-gray-700">{feature}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
+  const PremiumCard = ({ plan }) => (
+    <div
+      className={`relative border border-gray-200 bg-white rounded-lg p-8 shadow-lg transition-shadow hover:shadow-xl ${
+        plan.popular ? "ring-2 ring-blue-600" : ""
+      }`}
+    >
+      {plan.popular && (
+        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
+          Most Popular
+        </div>
+      )}
+
+      <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
+
+      <p className="text-gray-600 mb-6 min-h-[54px]">{plan.description}</p>
+
+      <div className="mb-6">
+        <span className="text-5xl font-bold text-gray-900">
+          ${billing == "annual" ? plan.annualPrice : plan.price}
+        </span>
+        <span className="text-gray-600">/month</span>
+      </div>
+
+      <button
+        onClick={() => startCheckout("professional")}
+        disabled={isFetchingCS}
+        className="inline-flex w-full mb-4 items-center justify-center gap-2 rounded-xl bg-blue-600 text-white px-4 py-2.5 font-medium shadow-sm hover:shadow-md hover:brightness-105 transition disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        {isFetchingCS ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" /> Preparing…
+          </>
+        ) : (
+          "Get Professional"
+        )}
+      </button>
+      <p className="mb-3 text-gray-400">{plan.includes}</p>
+
+      <ul className="space-y-3">
+        {plan.features.map((feature, featureIndex) => (
+          <li key={featureIndex} className="flex items-start gap-3">
+            <Check className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-600" />
+            <span className="text-gray-700">{feature}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 
@@ -292,7 +361,7 @@ export default function SplitifyPremiumModal({
               Complete your purchase
             </h2>
             <p className="mt-1 text-sm text-gray-600">
-              {selection?.planKey === "premium" ? "Premium" : "Plaid"} •{" "}
+              {selection?.planKey === "premium" ? "Premium" : "Professional"} •{" "}
               {billing === "monthly" ? "Monthly" : "Annual"} —{" "}
               {formatPrice(pricing?.[selection?.planKey]?.[billing])}
             </p>
@@ -422,60 +491,15 @@ export default function SplitifyPremiumModal({
                 </div>
 
                 {/* Billing toggle */}
-                <div className="flex flex-wrap items-center justify-center gap-3 px-6 pt-5 sm:px-8">
-                  <div className="relative inline-flex rounded-full bg-gray-100 p-1 text-sm">
-                    {/* Sliding thumb */}
-                    <span
-                      aria-hidden
-                      className={`absolute inset-y-1 left-1 rounded-full bg-white shadow ring-1 ring-inset ring-blue-200
-                  transition-transform duration-300 ease-out
-                  w-24 sm:w-28
-                  ${
-                    billing === "annual"
-                      ? "translate-x-[96px] sm:translate-x-[112px]"
-                      : "translate-x-0"
-                  }`}
-                    />
-
-                    <div className="relative z-10 flex ">
-                      {["monthly", "annual"].map((k) => (
-                        <button
-                          key={k}
-                          onClick={() => setBilling(k)}
-                          className={`w-24 sm:w-28 px-3 py-1.5 rounded-full capitalize text-center
-                      transition-colors duration-200
-                      ${
-                        billing === k
-                          ? "text-blue-600"
-                          : "text-gray-600 hover:text-gray-800"
-                      }`}
-                          aria-pressed={billing === k}
-                        >
-                          {k}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Animated badge */}
-                    <span
-                      className={`absolute top-[-20px] right-1/2 translate-x-1/2 text-xs font-medium text-blue-700 bg-blue-50 rounded-full px-2 py-1
-                  ring-1 ring-inset ring-blue-100
-                  transition-all duration-300
-                  ${
-                    billing === "annual"
-                      ? "opacity-100 -translate-y-1/2"
-                      : "opacity-0 translate-y-[-20px] pointer-events-none"
-                  }`}
-                    >
-                      Best value
-                    </span>
-                  </div>
-                </div>
+                <BillingToggle
+                  isAnnual={billing !== "monthly"}
+                  setBilling={setBilling}
+                />
 
                 {/* Cards */}
                 <div className="grid grid-cols-1 gap-y-8 gap-4 p-6 sm:grid-cols-2 sm:gap-6 sm:p-8">
-                  {showPlaidOnly && <PlaidCard />}
-                  {showPremium && <PremiumCard />}
+                  {showPlaidOnly && <PlaidCard plan={plans[1]} />}
+                  {showPremium && <PremiumCard plan={plans[2]} />}
                 </div>
 
                 {/* Footer */}
@@ -541,7 +565,7 @@ function SuccessStep({ info, onClose, onGoToBilling }) {
             Payment successful
           </h2>
           <p className="mt-1 text-sm text-gray-600">
-            {planKey === "premium" ? "Premium" : "Plaid"} •{" "}
+            {planKey === "premium" ? "Premium" : "Professional"} •{" "}
             {billing === "monthly" ? "Monthly" : "Annual"}{" "}
             {typeof amount === "number" ? `— ${format(amount)}` : ""}
           </p>
@@ -720,23 +744,116 @@ function CheckoutForm({
         </div>
       ) : null}
 
-      <button
-        type="submit"
-        disabled={!stripe || !paymentReady || submitting}
-        className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 text-white px-5 py-2.5 font-medium shadow-sm hover:shadow-md hover:brightness-105 disabled:opacity-60 disabled:cursor-not-allowed"
-      >
-        {submitting ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" /> Processing…
-          </>
-        ) : (
-          <>Pay {amountLabel}</>
-        )}
-      </button>
+      <div className="w-full flex items-center justify-center">
+        <button
+          type="submit"
+          disabled={!stripe || !paymentReady || submitting}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 text-white px-5 py-2.5 font-medium shadow-sm hover:shadow-md hover:brightness-105 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {submitting ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" /> Processing…
+            </>
+          ) : (
+            <>Confirm Payment</>
+          )}
+        </button>
+      </div>
 
       <p className="text-xs text-gray-500 text-center">
         Payments secured by Stripe.
       </p>
     </form>
+  );
+}
+
+function BillingToggle({ isAnnual, setBilling }) {
+  const leftRef = useRef(null);
+  const rightRef = useRef(null);
+
+  const toggle = () =>
+    setBilling((prev) => {
+      if (prev == "monthly") {
+        return "annual";
+      } else return "monthly";
+    });
+  const setMonthly = () => setBilling("monthly");
+  const setAnnual = () => setBilling("annual");
+
+  // Keyboard: left/right arrows switch
+  const onKeyDown = (e) => {
+    if (e.key === "ArrowLeft") setMonthly();
+    if (e.key === "ArrowRight") setAnnual();
+    if (e.key === "Enter" || e.key === " ") toggle();
+  };
+
+  // Each side uses equal width for a crisp slide; tweak w-32 if you want tighter/looser
+  const segmentWidth = "w-32"; // change to w-28 / w-36 as you like
+
+  return (
+    <div className="flex items-center justify-center flex-col mt-3">
+      <div
+        role="group"
+        aria-label="Billing period"
+        className={[
+          "relative inline-flex items-center rounded-full",
+          "bg-gray-100 ring-1 ring-inset ring-gray-200",
+          "p-1 select-none",
+        ].join(" ")}
+        onKeyDown={onKeyDown}
+        tabIndex={0}
+      >
+        {/* Sliding pill backdrop */}
+        <span
+          aria-hidden
+          className={[
+            "absolute inset-y-1 my-auto h-[calc(100%-0.5rem)] rounded-full bg-white shadow-sm",
+            "transition-transform duration-300 ease-out motion-reduce:transition-none",
+            segmentWidth,
+            isAnnual ? "translate-x-[calc(100%+0.25rem)]" : "translate-x-0",
+          ].join(" ")}
+          style={{ left: "0.25rem" }}
+        />
+
+        {/* Monthly */}
+        <button
+          ref={leftRef}
+          type="button"
+          onClick={setMonthly}
+          aria-pressed={!isAnnual}
+          className={[
+            "relative z-10 inline-flex items-center justify-center",
+            "px-4 py-2 text-sm font-medium rounded-full",
+            segmentWidth,
+            !isAnnual ? "text-gray-900" : "text-gray-600 hover:text-gray-800",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600",
+            "transition-colors",
+          ].join(" ")}
+        >
+          Monthly
+        </button>
+
+        {/* Annual */}
+        <button
+          ref={rightRef}
+          type="button"
+          onClick={setAnnual}
+          aria-pressed={isAnnual}
+          className={[
+            "relative mr-1 z-10 inline-flex items-center justify-center",
+            "px-4 py-2 text-sm font-medium rounded-full",
+            segmentWidth,
+            isAnnual ? "text-gray-900" : "text-gray-600 hover:text-gray-800",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600",
+            "transition-colors",
+          ].join(" ")}
+        >
+          <span className="flex items-center gap-1">Yearly</span>
+        </button>
+      </div>
+      <span className="text-[14px] mt-4 font-normal text-blue-600">
+        Save up to 30% with yearly
+      </span>
+    </div>
   );
 }

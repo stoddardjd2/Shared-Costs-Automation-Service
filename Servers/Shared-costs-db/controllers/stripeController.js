@@ -293,13 +293,13 @@ async function createSubscription(req, res) {
 
     // 2) Map UI plans -> env Price IDs
     const PRICE_IDS = {
-      plaid: {
-        monthly: process.env.STRIPE_PRICE_PLAID_MONTHLY,
-        annual: process.env.STRIPE_PRICE_PLAID_ANNUAL,
-      },
       premium: {
         monthly: process.env.STRIPE_PRICE_PREMIUM_MONTHLY,
         annual: process.env.STRIPE_PRICE_PREMIUM_ANNUAL,
+      },
+      professional: {
+        monthly: process.env.STRIPE_PRICE_PROFESSIONAL_MONTHLY,
+        annual: process.env.STRIPE_PRICE_PROFESSIONAL_ANNUAL,
       },
     };
     const priceId = PRICE_IDS?.[planKey]?.[interval];

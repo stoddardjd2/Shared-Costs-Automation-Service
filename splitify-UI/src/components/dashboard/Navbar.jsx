@@ -59,9 +59,9 @@ const Navbar = () => {
 
   const getPlanColor = (plan) => {
     switch (plan.toLowerCase()) {
-      case "plaid":
-        return "bg-gradient-to-r from-purple-500 to-purple-600";
       case "premium":
+        return "bg-gradient-to-r from-purple-500 to-purple-600";
+      case "professional":
         return "bg-gradient-to-r from-orange-400 via-orange-600 to-orange-600";
       default:
         return "bg-gradient-to-r from-gray-500 to-gray-600";
@@ -312,7 +312,7 @@ const Navbar = () => {
                   {userData.plan === "Free" && (
                     <button
                       onClick={() => {
-                        alert("Upgrade plan modal would open here");
+                        // alert("Upgrade plan modal would open here");
                         setShowUserMenu(false);
                       }}
                       className="flex items-center w-full px-4 py-4 text-sm text-purple-600 hover:bg-purple-50 transition-colors"
