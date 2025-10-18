@@ -1,5 +1,5 @@
 import CtaBtn from "../builders/CtaBtn";
-import dashboardImg from "../assets/dashboard.png";
+import dashboardImg from "../assets/dashboard-high-res.png";
 import Star from "../assets/Star";
 import overdueTextPhoneImg from "../assets/overdueTextPhone.png";
 import {

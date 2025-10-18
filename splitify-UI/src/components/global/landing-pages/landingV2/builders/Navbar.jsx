@@ -8,6 +8,28 @@ const Navbar = () => {
   const fadeTimerRef = useRef(null);
   const navigate = useNavigate();
 
+  const scrollToSection = (elementId) => {
+    const element = document.getElementById(elementId);
+    const root = document.getElementById("root");
+
+    if (element && root) {
+      const offset = 70; // Offset for fixed header
+
+      // Get position relative to the root container
+      const elementPosition = element.getBoundingClientRect().top;
+      const rootPosition = root.getBoundingClientRect().top;
+      const relativePosition = elementPosition - rootPosition;
+
+      // Calculate the scroll position
+      const scrollPosition = root.scrollTop + relativePosition - offset;
+
+      root.scrollTo({
+        top: scrollPosition,
+        behavior: "instant",
+      });
+    }
+  };
+
   useEffect(() => {
     const handleScroll = (event) => {
       const scrollThreshold = 50;
@@ -151,24 +173,67 @@ const Navbar = () => {
               </button>
 
               {/* Nav */}
-              {/* <div className="flex items-center gap-2 sm:gap-4">
-
-                <a
-                  onClick={() => {
-                    scrollTo("0", "instant");
+              <div className="flex items-center gap-2 sm:gap-8 ml-[8%]">
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToSection("howItWorks");
                   }}
+                  className={`px-4 py-2 rounded-lg font-semibold transition-transform duration-300 hover:-translate-y-0.5 text-sm border-2 ${
+                    isScrolled
+                      ? `${
+                          transitionComplete
+                            ? "border-white/0 hover:border-white/80"
+                            : "border-transparent"
+                        } text-gray-800 hover:bg-white/10`
+                      : "border-white/0 text-white hover:bg-black/5"
+                  }`}
                 >
-                  Features
-                </a>
+                  <span className="inline sm:text-[1rem] text-gray-500">
+                    How it works
+                  </span>
+                </button>
 
-                <a
-                  onClick={() => {
-                    scrollTo("0", "instant");
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToSection("features");
                   }}
+                  className={`px-4 py-2 rounded-lg font-semibold transition-transform duration-300 hover:-translate-y-0.5 text-sm border-2 ${
+                    isScrolled
+                      ? `${
+                          transitionComplete
+                            ? "border-white/0 hover:border-white/80"
+                            : "border-transparent"
+                        } text-gray-800 hover:bg-white/10`
+                      : "border-white/0 text-white hover:bg-black/5"
+                  }`}
                 >
-                  Pricing
-                </a>
-              </div> */}
+                  <span className="inline sm:text-[1rem] text-gray-500">
+                    Features
+                  </span>
+                </button>
+
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToSection("pricing");
+                  }}
+                  className={`px-4 py-2 rounded-lg font-semibold transition-transform duration-300 hover:-translate-y-0.5 text-sm border-2 ${
+                    isScrolled
+                      ? `${
+                          transitionComplete
+                            ? "border-white/0 hover:border-white/80"
+                            : "border-transparent"
+                        } text-gray-800  hover:bg-white/10`
+                      : "border-white/0 text-white hover:bg-black/5"
+                  }`}
+                >
+                  <span className="inline sm:text-[1rem]  text-gray-500">
+                    Pricing
+                  </span>
+                </button>
+              </div>
 
               {/* Actions */}
               <div className="flex items-center gap-2 sm:gap-4">
@@ -185,21 +250,27 @@ const Navbar = () => {
                       : "border-white/0 text-white hover:bg-black/5"
                   }`}
                 >
-                  <span className="inline sm:text-[1rem] text-gray-800">
+                  <span className="inline sm:text-[1rem] text-gray-500">
                     Login
                   </span>
                 </Link>
 
                 <Link
                   className={`px-3 sm:px-7 py-2 transition-all  sm:py-3 rounded-lg text-white font-semibold duration-300 hover:-translate-y-0.5 text-sm sm:text-base shadow-md ${
-                    isScrolled ? "bg-blue-600 hover:bg-blue-700 transition-all" : "bg-white"
+                    isScrolled
+                      ? "bg-blue-600 hover:bg-blue-700 transition-all"
+                      : "bg-white"
                   }`}
                   to={"/signup"}
                   onClick={() => {
                     trackCreateAccount("landing-navbar-CTA");
                   }}
                 >
-                  <span className={`hidden transition-all  timing sm:inline text-gray-800 ${isScrolled ? "text-white " : ""}`}>
+                  <span
+                    className={`hidden transition-all  timing sm:inline text-gray-800 ${
+                      isScrolled ? "text-white " : ""
+                    }`}
+                  >
                     Create Your Free Account
                   </span>
                   <span className="sm:hidden">Sign up free</span>

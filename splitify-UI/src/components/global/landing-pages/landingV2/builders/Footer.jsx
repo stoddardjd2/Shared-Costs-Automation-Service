@@ -39,7 +39,7 @@ export default function Footer() {
     const root = document.getElementById("root");
 
     if (element && root) {
-      const offset = 50; // Offset for fixed header
+      const offset = 70; // Offset for fixed header
 
       // Get position relative to the root container
       const elementPosition = element.getBoundingClientRect().top;
@@ -151,11 +151,11 @@ export default function Footer() {
                   <button
                     onClick={(e) => {
                       e.preventDefault();
-                      scrollToSection("about");
+                      scrollToSection("howItWorks");
                     }}
                     className="text-gray-700 hover:text-blue-600 transition-colors text-sm"
                   >
-                    About
+                    How it works
                   </button>
                 </li>
                 <li>
@@ -167,6 +167,17 @@ export default function Footer() {
                     className="text-gray-700 hover:text-blue-600 transition-colors text-sm"
                   >
                     Features
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      scrollToSection("pricing");
+                    }}
+                    className="text-gray-700 hover:text-blue-600 transition-colors text-sm"
+                  >
+                    Pricing
                   </button>
                 </li>
               </ul>

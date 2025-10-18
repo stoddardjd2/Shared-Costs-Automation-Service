@@ -1,34 +1,38 @@
 import SectionIndicator from "../builders/SectionIndicator";
-
+import feature1 from "../assets/feature-1-blue.png";
+import feature2 from "../assets/feature-2-blue.png";
+import feature3 from "../assets/feature-3.png";
+import feature4 from "../assets/feature-4.png";
 const features = [
   {
     title: "Splits update automatically",
     description:
       "Never check a utility site again. Splitify automatically updates split amounts as bills change.",
-    btmElements: <div>Test</div>,
-  },
-  {
-    title: "Recurring splits",
-    description:
-      "Automate splits for utilites, Wi-Fi, or subscriptions. Set it once, forget the rest.",
-    btmElements: <div>Test</div>,
-  },
-  {
-    title: "Smart Reminders",
-    description: "Splitify sends customizable text and email reminders, so you actually get paid.",
-    btmElements: <div>Test</div>,
+    btmElements: <img className="h-fit rounded-xl shadow-md" src={feature1} />,
   },
   {
     title: "Easy to pay",
     description:
       "Splitify sends a link to your crew so they can pay anyway they want. No app needed.",
-    btmElements: <div>Test</div>,
+    btmElements: <img className="h-fit" src={feature4} />,
+  },
+  {
+    title: "Recurring splits",
+    description:
+      "Automate splits for utilites, Wi-Fi, or subscriptions. Set it once, forget the rest.",
+    btmElements: <img className="h-fit rounded-xl shadow-md" src={feature2} />,
+  },
+  {
+    title: "Smart Reminders",
+    description:
+      "Splitify sends customizable text and email reminders, so you actually get paid.",
+    btmElements: <img className="h-fit" src={feature3} />,
   },
 ];
 
 export default function Features() {
   return (
-    <section>
+    <section id="features">
       <div className="constrained-width">
         <SectionIndicator className={"mx-auto"} title={"Features"} />
         <h2 className="text-center">It's more than just a split button</h2>
@@ -54,12 +58,14 @@ export default function Features() {
 
 function FeatureCard({ btmElements, title, description }) {
   return (
-    <div className="w-full flex flex-col h-[300px] border border-gray-200 rounded-2xl p-4 shadow-lg">
+    <div className="w-full flex flex-col bg-white h-[300px] border border-gray-200 rounded-2xl p-4 shadow-lg">
       <div className="flex items-center mb-3">
         <h3 className="">{title}</h3>
       </div>
       <p className="">{description}</p>
-      <div className="w-full h-full mt-6 rounded-[30px] bg-blue-50"></div>
+      <div className="w-full overflow-hidden h-fit mt-auto p-2 flex items-end rounded-[30px]">
+        {btmElements}
+      </div>
     </div>
   );
 }

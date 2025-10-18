@@ -79,79 +79,80 @@ export default function PricingTable() {
     });
 
     navigate(`/signup?plan=${selection.plan}&billing=${selection.billing}`);
-
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-16 px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-900 mb-3">
-            Simple Pricing
-          </h2>
-          <p className="text-lg text-gray-600 mb-6">
-            Everything you need for free, plus some extra features for the bill
-            splitting pros.
-          </p>
+    <section id="pricing">
+      <div className="min-h-screen bg-gray-50 py-16 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-900 mb-3">
+              Simple Pricing
+            </h2>
+            <p className="text-lg text-gray-600 mb-6">
+              Everything you need for free, plus some extra features for the
+              bill splitting pros.
+            </p>
 
-          <BillingToggle isAnnual={isAnnual} setIsAnnual={setIsAnnual} />
-        </div>
+            <BillingToggle isAnnual={isAnnual} setIsAnnual={setIsAnnual} />
+          </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          {plans.map((plan, index) => (
-            <div
-              key={index}
-              className={`border border-gray-200 relative bg-white rounded-lg p-8 shadow-lg transition-shadow hover:shadow-xl ${
-                plan.popular ? "ring-2 ring-blue-600" : ""
-              }`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                  Most Popular
-                </div>
-              )}
-
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                {plan.name}
-              </h3>
-
-              <p className="text-gray-600 mb-6 min-h-[54px]">
-                {plan.description}
-              </p>
-
-              <div className="mb-6">
-                <span className="text-5xl font-bold text-gray-900">
-                  ${isAnnual ? plan.annualPrice : plan.price}
-                </span>
-                <span className="text-gray-600">/month</span>
-              </div>
-
-              <button
-                onClick={() => handleCTAClick(plan)}
-                className={`w-full py-3 rounded-lg font-semibold mb-6 transition-colors ${
-                  plan.popular
-                    ? "bg-blue-600 text-white hover:bg-blue-700"
-                    : "bg-gray-100 text-gray-900 hover:bg-gray-200"
+          <div className="grid md:grid-cols-3 gap-6">
+            {plans.map((plan, index) => (
+              <div
+                key={index}
+                className={`border border-gray-200 relative bg-white rounded-lg p-8 shadow-lg transition-shadow hover:shadow-xl ${
+                  plan.popular ? "ring-2 ring-blue-600" : ""
                 }`}
               >
-                {plan.cta}
-              </button>
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                    Most Popular
+                  </div>
+                )}
 
-              <p className="mb-3 text-gray-400">{plan.includes}</p>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                  {plan.name}
+                </h3>
 
-              <ul className="space-y-3">
-                {plan.features.map((feature, featureIndex) => (
-                  <li key={featureIndex} className="flex items-start gap-3">
-                    <Check className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-600" />
-                    <span className="text-gray-700">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+                <p className="text-gray-600 mb-6 min-h-[54px]">
+                  {plan.description}
+                </p>
+
+                <div className="mb-6">
+                  <span className="text-5xl font-bold text-gray-900">
+                    ${isAnnual ? plan.annualPrice : plan.price}
+                  </span>
+                  <span className="text-gray-600">/month</span>
+                </div>
+
+                <button
+                  onClick={() => handleCTAClick(plan)}
+                  className={`w-full py-3 rounded-lg font-semibold mb-6 transition-colors ${
+                    plan.popular
+                      ? "bg-blue-600 text-white hover:bg-blue-700"
+                      : "bg-gray-100 text-gray-900 hover:bg-gray-200"
+                  }`}
+                >
+                  {plan.cta}
+                </button>
+
+                <p className="mb-3 text-gray-400">{plan.includes}</p>
+
+                <ul className="space-y-3">
+                  {plan.features.map((feature, featureIndex) => (
+                    <li key={featureIndex} className="flex items-start gap-3">
+                      <Check className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-600" />
+                      <span className="text-gray-700">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
