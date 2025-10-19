@@ -38,7 +38,7 @@
   }
 
   p {
-    font-size: clamp(.95rem, 0.8rem + 0.4vw, 1.125rem);
+    font-size: clamp(0.95rem, 0.8rem + 0.4vw, 1.125rem);
     color: #292929;
     line-height: 1.65;
   }
@@ -57,8 +57,12 @@
     /* background-color: rgba(130,184,255,1) */
     background-color: #2563ea;
   }
-}
 
+  .smaller {
+    font-size: clamp(0.88rem, 0.7rem + 0.4vw, 1.125rem);
+    line-height: 1.5;
+  }
+}
 
 /* :where(.landing-page-v2) {
   section {
@@ -109,8 +113,6 @@
   }
 }
  */
-
-
 
 /* ------------------- */
 /* Responsive queries  */
@@ -191,7 +193,7 @@
       font-size: 1rem;
     } /* 16px */
     :where(.landing-page-v2) .smaller {
-      font-size: 0.9375rem;
+      font-size: 0.8375rem;
     } /* 15px, only for tiny labels */
     :where(.landing-page-v2) .feature {
       font-size: 1.125rem;

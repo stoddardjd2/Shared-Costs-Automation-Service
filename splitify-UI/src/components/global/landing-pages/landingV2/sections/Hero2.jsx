@@ -45,7 +45,7 @@ export default function Hero() {
       <div className="relative z-10">
         {/* copy */}
         <div className="mt-28">
-          <p className="text-center mx-auto px-4 py-2 mb-4 rounded-[60px] bg-white/90 text-gray-700 font-normal w-fit">
+          <p className="smaller text-center mx-auto px-4 py-2 mb-4 rounded-[60px] bg-white/90 text-gray-700 font-normal w-fit">
             *LIMITED TIME* New users can now use Splitify free of charge with
             unlimited requests and texts.
           </p>
