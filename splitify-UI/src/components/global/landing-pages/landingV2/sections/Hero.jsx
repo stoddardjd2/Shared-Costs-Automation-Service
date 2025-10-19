@@ -46,7 +46,7 @@ export default function Hero() {
       <div className="relative z-10">
         <div className=" !pb-0 ">
           {/* copy */}
-          <div className="pb-0 sm:pb-[clamp(1rem,5vw,2.5rem)] p-[clamp(2rem,5vw,2.5rem)] pt-0 sm:mt-[clamp(1rem,5vw,7rem)] sticky top-[90px] sm:top-[190px] mb-0 sm:mb-10 ">
+          <div className="pb-0 sm:pb-[clamp(1rem,5vw,2.5rem)] p-[clamp(2rem,5vw,2.5rem)] pt-0 sticky top-[90px] sm:top-[clamp(95px,9vw,190px)] mb-0 sm:mb-[clamp(0.4rem,0.5rem+4vw,5rem)] ">
             {/* <p className="text-center  smaller mx-4 sm:mx-auto px-4 sm:px-[clamp(2rem,5vw,2rem)] py-2 mb-6 rounded-[60px] bg-white/100 text-gray-600 font-normal w-fit">
               *LIMITED TIME* New users now have free access to premium features.
             </p> */}

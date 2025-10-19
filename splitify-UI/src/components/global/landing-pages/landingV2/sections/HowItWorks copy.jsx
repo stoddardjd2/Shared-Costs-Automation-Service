@@ -49,22 +49,30 @@ export default function HowItWorks() {
   return (
     <section id="howItWorks" className="p-[clamp(1rem,5vw,2.5rem)]">
       <div className="constrained-width">
-        <SectionIndicator title="How it works" />
-        <div className="flex gap-y-[1rem] gap-x-20 flex-wrap justify-between">
-          <h2>
-            <span className="whitespace-nowrap">Split bills in</span>
+        <SectionIndicator title="How it works" className={"mx-auto sm:mx-0"}/>
+        <div className="flex gap-y-[1rem] justify-center gap-x-20 flex-col sm:flex-row justify-between">
+          <h2 className="hidden sm:inline">
+            <span className="whitespace-nowrap mx-auto sm:text-start">
+              Split bills in
+            </span>
             <br />
             <span>3 simple steps</span>
           </h2>
-          <div className="max-w-[330px] flex flex-col gap-[clamp(1rem,1vw,1.25rem)]">
-            <p className="text-gray-600">
+
+          {/* mobile */}
+          <h2 className="flex sm:hidden text-center justify-center">
+              Split bills in 3 simple steps
+          </h2>
+
+          <div className="w-9/12 mx-auto sm:mx-0 sm:max-w-[330px]  flex flex-col gap-[clamp(1rem,1vw,1.25rem)]">
+            <p className="text-gray-600 text-center sm:text-start">
               No calculators. No group chats. No excel sheets. Just splits that
               actually get paid.
             </p>
             <CtaBtn
               variation={"Landing-v2-HowItWorks-TEST-A"}
               whiteArrow={true}
-              className={`w-fit font-semibold mt-0 px-6 py-3 shadow-lg cursor-pointer hover:bg-blue-700 transition-all`}
+              className={`w-fit mx-auto sm:mx-0 font-semibold !mt-3 px-6 py-3 shadow-lg cursor-pointer hover:bg-blue-700 transition-all`}
             />
           </div>
         </div>
@@ -98,10 +106,10 @@ function StepCard({ number, title, description, imgSrc, delayMs = 0 }) {
         "w-full flex flex-col h-[390px] bg-white border border-gray-200 rounded-2xl shadow-lg",
         "transition-all duration-1000 ease-out will-change-transform will-change-opacity",
         "motion-reduce:transition-none", // respect reduced-motion
-        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12",
       ].join(" ")}
       style={{
-        transitionDelay: `${delayMs}ms`
+        transitionDelay: `${delayMs}ms`,
       }}
     >
       <div className="p-4">
