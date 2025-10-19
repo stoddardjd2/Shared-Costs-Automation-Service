@@ -173,7 +173,7 @@ const Navbar = () => {
               </button>
 
               {/* Nav */}
-              <div className="flex items-center gap-2 sm:gap-8 ml-[8%]">
+              <div className="hidden lg:flex items-center gap-2 sm:gap-8 ml-[8%]">
                 <button
                   onClick={(e) => {
                     e.preventDefault();
@@ -267,13 +267,19 @@ const Navbar = () => {
                   }}
                 >
                   <span
-                    className={`hidden transition-all  timing sm:inline text-gray-800 ${
+                    className={`hidden transition-all  sm:inline text-gray-800 ${
                       isScrolled ? "text-white " : ""
                     }`}
                   >
                     Create Your Free Account
                   </span>
-                  <span className="sm:hidden">Sign up free</span>
+                  <span
+                    className={`text-gray-800 transition-all sm:hidden  ${
+                      isScrolled ? "text-white " : ""
+                    }`}
+                  >
+                    Sign up free
+                  </span>
                 </Link>
               </div>
             </div>

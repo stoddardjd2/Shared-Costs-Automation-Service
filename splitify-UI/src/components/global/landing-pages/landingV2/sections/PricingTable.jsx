@@ -3,10 +3,11 @@ import { useState } from "react";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { gaEvent } from "../../../../../googleAnalytics/googleAnalyticsHelpers";
+import SectionIndicator from "../builders/SectionIndicator";
 
 export default function PricingTable() {
   const navigate = useNavigate();
-  const [isAnnual, setIsAnnual] = useState(false);
+  const [isAnnual, setIsAnnual] = useState(true);
 
   // Easy color configuration - change these values
   const colors = {
@@ -82,22 +83,23 @@ export default function PricingTable() {
   };
 
   return (
-    <section id="pricing">
-      <div className="min-h-screen bg-gray-50 py-16 px-4">
+    <section id="pricing " className="p-[clamp(1rem,5vw,2.5rem)]">
+      <div className="min-h-screen bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
+            <SectionIndicator className={"mx-auto"} title={"Pricing"} />
+
             <h2 className="text-4xl font-bold text-gray-900 mb-3">
-              Simple Pricing
+              The most advanced bill splitting tool
             </h2>
             <p className="text-lg text-gray-600 mb-6">
-              Everything you need for free, plus some extra features for the
-              bill splitting pros.
+              Everything you need for free, plus some paid features for the smart ones.
             </p>
 
             <BillingToggle isAnnual={isAnnual} setIsAnnual={setIsAnnual} />
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid lg:grid-cols-3 gap-6">
             {plans.map((plan, index) => (
               <div
                 key={index}

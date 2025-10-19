@@ -7,42 +7,78 @@ const features = [
   {
     title: "Splits update automatically",
     description:
-      "Never check a utility site again. Splitify automatically updates split amounts as bills change.",
-    btmElements: <img className="h-fit rounded-xl shadow-md" src={feature1} />,
+      "If bills changed, Splitify updates split amounts before sending again.",
+    btmElements: (
+      <div>
+        {/* <p className="text-gray-500 italic mb-2">
+          Perfect for utilities or other shared bills that change.
+        </p> */}
+        <img className="h-fit rounded-xl shadow-md" src={feature1} />
+      </div>
+    ),
   },
   {
-    title: "Easy to pay",
+    title: (
+      <div>
+        Simple <br className="hidden [@media(min-width:580px)]:inline"></br>{" "}
+        payments
+      </div>
+    ),
     description:
-      "Splitify sends a link to your crew so they can pay anyway they want. No app needed.",
-    btmElements: <img className="h-fit" src={feature4} />,
+      "Splitify sends a link to your crew so they can pay anyway they want.",
+    btmElements: (
+      <div className="">
+        {/* <p className="text-gray-500 italic mb-2">
+         No app needed. 100% free.
+        </p> */}
+        <img className="h-fit -translate-x-2" src={feature4} />
+      </div>
+    ),
   },
   {
-    title: "Recurring splits",
+    title: (
+      <div>
+        Recurring <br className="hidden [@media(min-width:580px)]:inline"></br>{" "}
+        splits
+      </div>
+    ),
     description:
       "Automate splits for utilites, Wi-Fi, or subscriptions. Set it once, forget the rest.",
     btmElements: <img className="h-fit rounded-xl shadow-md" src={feature2} />,
   },
   {
-    title: "Smart Reminders",
-    description:
-      "Splitify sends customizable text and email reminders, so you actually get paid.",
-    btmElements: <img className="h-fit" src={feature3} />,
+    title: (
+      <div>
+        Smart <br className="hidden [@media(min-width:580px)]:inline"></br>
+        Reminders
+      </div>
+    ),
+    description: (
+      <div>
+        Splitify sends email <span className="italic font-medium">and</span> text messages, so your requests
+        actually get paid.
+      </div>
+    ),
+    btmElements: <img className="h-fit -translate-x-2" src={feature3} />,
   },
 ];
 
 export default function Features() {
   return (
     <section id="features">
-      <div className="constrained-width">
+      <div className="constrained-width  p-[clamp(1rem,5vw,2.5rem)]">
         <SectionIndicator className={"mx-auto"} title={"Features"} />
         <h2 className="text-center">It's more than just a split button</h2>
-        <p className="text-center mt-4 w-3/5 mx-auto">
-          Splitify automates shared payments so you don't have to worry or waste
-          time. <br></br>Fast, friendly, reliable.
+        <p className="text-center mt-4 lg:w-3/5 mx-auto text-gray-600">
+          Splitify does the work for you, so you dont don't have to worry or
+          waste time. <br></br>
+          <div className="mt-2 italic text-gray-600">
+            Fast, friendly, reliable.
+          </div>
         </p>
 
         {/* features grid */}
-        <div className="mt-14 grid gap-6 sm:grid-cols-1 lg:grid-cols-4 xl:grid-cols-4 auto-rows-fr">
+        <div className="mt-14 grid gap-6 auto-rows-fr grid-cols-[repeat(auto-fit,minmax(250px,1fr))]">
           {features.map((feature, index) => (
             <FeatureCard
               title={feature.title}
@@ -58,12 +94,15 @@ export default function Features() {
 
 function FeatureCard({ btmElements, title, description }) {
   return (
-    <div className="w-full flex flex-col bg-white h-[300px] border border-gray-200 rounded-2xl p-4 shadow-lg">
-      <div className="flex items-center mb-3">
-        <h3 className="">{title}</h3>
+    <div className="flex flex-col bg-white  border border-gray-200 rounded-2xl shadow-lg">
+      <div className="p-4">
+        <div className="flex items-center mb-4">
+          <h3 className="">{title}</h3>
+        </div>
+        <p className="text-gray-600">{description}</p>
       </div>
-      <p className="">{description}</p>
-      <div className="w-full overflow-hidden h-fit mt-auto p-2 flex items-end rounded-[30px]">
+
+      <div className="w-full  mt-auto p-4 overflow-hidden h-fit max-w-[300px]mt-auto flex items-end rounded-[30px]">
         {btmElements}
       </div>
     </div>

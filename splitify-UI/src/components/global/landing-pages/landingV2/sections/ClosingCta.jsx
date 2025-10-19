@@ -1,10 +1,10 @@
 import Star from "../assets/Star";
 import CtaBtn from "../builders/CtaBtn";
-import splittingPhoneImg from '../assets/splittingPhone.png';
+import splittingPhoneImg from "../assets/splittingPhone.png";
 export default function ClosingCta() {
   return (
     <section
-      className="relative"
+      className="relative mb-0"
       style={
         // {
         //   background: "rgba(179, 220, 250, 1.0)",
@@ -22,20 +22,25 @@ export default function ClosingCta() {
         // }
       }
     >
-      <div className="constrained-width ">
-        <div className="flex justify-between gap-20">
-          <div className="w-5/12 p-16"><img src={splittingPhoneImg}/></div>
+      <div className="constrained-width relative z-10 p-[clamp(1rem,5vw,2rem)]">
+        <div className="flex-col-reverse md:flex-row flex justify-between gap-[clamp(1rem,5vw,5rem)] ">
+          <div className="">
+            <img
+              src={splittingPhoneImg}
+              className="mx-auto md:-translate-x-4  w-[clamp(20rem,30rem+20vw,60rem)]"
+            />
+          </div>
 
-          <div className="w-7/12 my-auto">
-            <h2 className="">Make your next split the easiest one yet.</h2>
-            <p className="mt-4 w-9/12">
+          <div className="my-auto">
+            <h2 className="text-center md:text-start">Make your next split the easiest one yet.</h2>
+            <p className="mt-4 w-9/12 mx-auto md:mx-0 text-center md:text-start">
               Splitify keeps things clear, quick and friendly. No follow-ups. No
               confusion. Works with any payment app.
             </p>
             <CtaBtn
               variation={"Landing-v2-ClosingCTA-TEST-A"}
               whiteArrow={true}
-              className={`sm:mt-[50px] w-fit font-semibold !mt-8 px-6 py-3 
+              className={`sm:mt-[50px] mx-auto md:mx-0 w-fit font-semibold !mt-8 px-6 py-3 
                    shadow-lg cursor-pointer hover:bg-blue-700 transition-all`}
             />
           </div>

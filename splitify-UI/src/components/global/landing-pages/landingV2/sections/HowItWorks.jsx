@@ -26,22 +26,22 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section id="howItWorks">
+    <section id="howItWorks" className="p-[clamp(1rem,5vw,2.5rem)]">
       <div className="constrained-width">
         <SectionIndicator title="How it works" />
-        <div className="flex gap-20">
+        <div className="flex gap-y-[1rem] gap-x-20 flex-wrap justify-between">
           <h2>
-            Split bills in <br></br> 3 simple steps
+           <span className="whitespace-nowrap"> Split bills in</span> <br></br><span className="">3 simple steps</span>
           </h2>
-          <div className="ml-auto max-w-[330px]">
-            <p>
+          <div className="max-w-[330px] flex flex-col gap-[clamp(1rem,1vw,1.25rem)]">
+            <p className="text-gray-600">
               No calculators. No group chats. No excel sheets. Just splits that
               actually get paid.
             </p>
             <CtaBtn
               variation={"Landing-v2-HowItWorks-TEST-A"}
               whiteArrow={true}
-              className={`sm:mt-[50px] w-fit font-semibold !mt-8 px-6 py-3 
+              className={` w-fit font-semibold mt-0 px-6 py-3 
                                  shadow-lg cursor-pointer hover:bg-blue-700 transition-all`}
             />
           </div>
@@ -72,12 +72,12 @@ function StepCard({ number, title, description, imgSrc }) {
           <span className="rounded-[60px] flex-shrink-0 text-white mr-4 w-8 h-8 flex items-center justify-center primary-color">
             {number}
           </span>
-          <h3 className="whitespace-nowrap">{title}</h3>
+          <h3 className="">{title}</h3>
         </div>
-        <p className="">{description}</p>
+        <p className="text-gray-600">{description}</p>
       </div>
 
-      <div className="w-full h-full mt-6 rounded-[20px] bg-blue-50 relative overflow-hidden">
+      <div className="w-full h-full mt-6 rounded-tr-[20px] rounded-tl-[20px] opacity-60  bg-blue-50 relative overflow-hidden">
         <img
           className="absolute left-[24px] top-[24px] rounded-2xl"
           src={imgSrc}

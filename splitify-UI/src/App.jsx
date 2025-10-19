@@ -1,3 +1,5 @@
+import Test from "./components/Test.jsx";
+
 // App.jsx
 import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate, Outlet, useNavigate } from "react-router-dom";
@@ -58,10 +60,12 @@ const App = () => {
       <Suspense fallback={<Fallback />}>
         <Routes>
           {/* Public routes */}
-          <Route path="/" element={<LandingPageOfficial />} />
-          
-          <Route path="/landing/*" element={<LandingPageOfficial />}></Route>
-          <Route path="/landing/2" element={<LandingPageV2 />} />
+          <Route path="/test" element={<Test />} />
+
+          <Route path="/" element={<LandingPageV2 />} />
+
+          <Route path="/landing/*" element={<LandingPageV2 />}></Route>
+          <Route path="/landing/2" element={<LandingPageOfficial />} />
 
           <Route path="/login" element={<Loginv2 />} />
           <Route path="/signup" element={<Signup />} />

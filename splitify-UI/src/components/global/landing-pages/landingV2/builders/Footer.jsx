@@ -109,7 +109,7 @@ export default function Footer() {
         }
       `}</style>
 
-      <footer className="footer-section bg-[#f7f7f7] pt-8 text-white py-6 border-t border-gray-200 rounded-banner">
+      <footer className="footer-section bg-white pt-8 text-white py-6 border-t border-gray-200 ">
         <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row md:items-start md:justify-between gap-6">
           {/* Left: Brand + Links */}
           <div className="flex-1 flex flex-col md:flex-row gap-x-20 gap-y-8">
@@ -118,7 +118,7 @@ export default function Footer() {
                 <SmartSplitLogo className="w-8 h-8 " />
                 <h2 className="text-2xl font-bold text-blue-600">Splitify</h2>
               </div>
-              <p className="text-gray-700 text-sm"></p>
+              <p className="text-gray-600 text-sm"></p>
             </div>
 
             {/* Navigation Column */}
@@ -132,7 +132,7 @@ export default function Footer() {
                     onClick={() => {
                       navigate("/signup");
                     }}
-                    className="text-gray-700 cursor-pointer hover:text-blue-600 transition-colors text-sm"
+                    className="text-gray-600 cursor-pointer hover:text-blue-600 transition-colors text-sm"
                   >
                     Sign Up
                   </a>
@@ -142,7 +142,7 @@ export default function Footer() {
                     onClick={() => {
                       navigate("/login");
                     }}
-                    className="text-gray-700 cursor-pointer hover:text-blue-600 transition-colors text-sm"
+                    className="text-gray-600 cursor-pointer hover:text-blue-600 transition-colors text-sm"
                   >
                     Log In
                   </a>
@@ -153,7 +153,7 @@ export default function Footer() {
                       e.preventDefault();
                       scrollToSection("howItWorks");
                     }}
-                    className="text-gray-700 hover:text-blue-600 transition-colors text-sm"
+                    className="text-gray-600 hover:text-blue-600 transition-colors text-sm"
                   >
                     How it works
                   </button>
@@ -164,7 +164,7 @@ export default function Footer() {
                       e.preventDefault();
                       scrollToSection("features");
                     }}
-                    className="text-gray-700 hover:text-blue-600 transition-colors text-sm"
+                    className="text-gray-600 hover:text-blue-600 transition-colors text-sm"
                   >
                     Features
                   </button>
@@ -175,7 +175,7 @@ export default function Footer() {
                       e.preventDefault();
                       scrollToSection("pricing");
                     }}
-                    className="text-gray-700 hover:text-blue-600 transition-colors text-sm"
+                    className="text-gray-600 hover:text-blue-600 transition-colors text-sm"
                   >
                     Pricing
                   </button>
@@ -194,7 +194,7 @@ export default function Footer() {
                     href="https://github.com/stoddardjd2"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-700 hover:text-blue-600 transition-colors text-sm flex items-center gap-1"
+                    className="text-gray-600 hover:text-blue-600 transition-colors text-sm flex items-center gap-1"
                   >
                     <svg
                       className="w-4 h-4"
@@ -211,7 +211,7 @@ export default function Footer() {
                     href="https://www.linkedin.com/in/jared-stoddard/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-700 hover:text-blue-600 transition-colors text-sm flex items-center gap-1"
+                    className="text-gray-600 hover:text-blue-600 transition-colors text-sm flex items-center gap-1"
                   >
                     <svg
                       className="w-4 h-4"
@@ -235,14 +235,14 @@ export default function Footer() {
             <div onSubmit={handleSubmit} className="flex flex-col gap-2">
               <input
                 type="email"
-                className="text-[#3c3c3c] bg-transparent px-0 py-1 border-b border-gray-700 focus:border-blue-600 transition text-sm placeholder-[#3c3c3c] focus:outline-none"
+                className="text-[#3c3c3c] bg-transparent px-0 py-1 border-b border-gray-600 focus:border-blue-600 transition text-sm placeholder-[#3c3c3c] focus:outline-none"
                 placeholder="Your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
               <textarea
-                className="text-[#3c3c3c] bg-transparent px-0 py-1 border-b border-gray-700 focus:border-blue-600 transition text-sm min-h-[38px] placeholder-[#3c3c3c] resize-none focus:outline-none"
+                className="text-[#3c3c3c] bg-transparent px-0 py-1 border-b border-gray-600 focus:border-blue-600 transition text-sm min-h-[38px] placeholder-[#3c3c3c] resize-none focus:outline-none"
                 placeholder="Message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}

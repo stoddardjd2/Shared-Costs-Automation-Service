@@ -9,7 +9,7 @@ import ClosingCta from "./sections/ClosingCta";
 import PricingTable from "./sections/PricingTable";
 export default function LandingPageV2() {
   return (
-    <div className="landing-page-v2">
+    <div className="landing-page-v2 overflow-hidden">
       <Navbar />
       <Hero />
       <HowItWorks />
