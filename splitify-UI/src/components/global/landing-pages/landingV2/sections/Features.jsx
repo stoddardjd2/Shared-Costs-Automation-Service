@@ -1,8 +1,10 @@
 import SectionIndicator from "../builders/SectionIndicator";
-import feature1 from "../assets/feature-1-blue.png";
-import feature2 from "../assets/feature-2-blue.png";
+import feature1 from "../assets/feature-1.png";
+import feature2 from "../assets/feature-2.png";
 import feature3 from "../assets/feature-3.png";
 import feature4 from "../assets/feature-4.png";
+import feature5 from "../assets/feature-5.png";
+import feature6 from "../assets/feature-6.png";
 
 import { motion, useAnimation, useInView } from "framer-motion";
 import { useEffect, useRef } from "react";
@@ -12,9 +14,23 @@ const features = [
     title: "Splits update automatically",
     description:
       "If bills change, Splitify updates split amounts before sending again. Perfect for utilites.",
-    btmElements: (
-      <img className="h-fit rounded-xl shadow-md" src={feature1} alt="" />
+    btmElements: <img className="h-fit" src={feature1} alt="" />,
+  },
+  {
+    title: (
+      <div>
+        Auto
+        <br className="hidden [@media(min-width:580px)]:inline" /> reminders
+      </div>
     ),
+    description: (
+      <p className="text-gray-600">
+        Missing payments? Splitify follows up with email{" "}
+        <span className="italic font-medium">and</span> text messages until you
+        get paid.
+      </p>
+    ),
+    btmElements: <img className="h-fit" src={feature3} alt="" />,
   },
   {
     title: (
@@ -25,37 +41,9 @@ const features = [
     ),
     description:
       "Splitify sends a link to your crew so they can pay any way they want.",
-    btmElements: <img className="h-fit -translate-x-2" src={feature4} alt="" />,
+    btmElements: <img className="h-fit " src={feature4} alt="" />,
   },
-  {
-    title: (
-      <div>
-        Recurring <br className="hidden [@media(min-width:580px)]:inline" />{" "}
-        splits
-      </div>
-    ),
-    description:
-      "Automate splits for utilities, Wi-Fi, or subscriptions. Set it once, forget the rest.",
-    btmElements: (
-      <img className="h-fit rounded-xl shadow-md" src={feature2} alt="" />
-    ),
-  },
-  {
-    title: (
-      <div>
-        Auto
-        <br className="hidden [@media(min-width:580px)]:inline" /> reminders
-      </div>
-    ),
-    description: (
-      <div>
-        Missing payments? Splitify follows up with email{" "}
-        <span className="italic font-medium">and</span> text messages until you
-        get paid.
-      </div>
-    ),
-    btmElements: <img className="h-fit -translate-x-2" src={feature3} alt="" />,
-  },
+
   {
     title: (
       <div>
@@ -69,21 +57,33 @@ const features = [
         and no disputes.{" "}
       </div>
     ),
-    btmElements: <img className="h-fit -translate-x-2" src={feature3} alt="" />,
+    btmElements: <img className="h-fit " src={feature5} alt="" />,
   },
   {
     title: (
       <div>
-        Connect <br className="hidden [@media(min-width:580px)]:inline" />{" "}
-        your bank
+        Recurring <br className="hidden [@media(min-width:580px)]:inline" />{" "}
+        splits
+      </div>
+    ),
+    description:
+      "Automate splits for utilities, Wi-Fi, or subscriptions. Set it once, forget the rest.",
+    btmElements: <img className="w-full " src={feature2} alt="" />,
+  },
+  {
+    title: (
+      <div>
+        Connect <br className="hidden [@media(min-width:580px)]:inline" /> your
+        bank
       </div>
     ),
     description: (
       <div>
-        Optionally, connect your bank account with Plaid to make bill splitting even easier.
+        Optionally, connect your bank account with Plaid to make bill splitting
+        even easier.
       </div>
     ),
-    btmElements: <img className="h-fit -translate-x-2" src={feature3} alt="" />,
+    btmElements: <img className="h-fit" src={feature6} alt="" />,
   },
 ];
 
@@ -145,7 +145,7 @@ export default function Features() {
 
 function FeatureCard({ btmElements, title, description }) {
   return (
-    <div className="flex flex-col h-full bg-white border border-gray-200 rounded-2xl shadow-lg">
+    <div className="flex flex-col h-full overflow-hidden w-full bg-white border border-gray-200 rounded-2xl shadow-lg">
       <div className="p-4">
         <div className="flex items-center mb-4">
           <h3>{title}</h3>
@@ -153,8 +153,8 @@ function FeatureCard({ btmElements, title, description }) {
         <p className="text-gray-600">{description}</p>
       </div>
 
-      <div className="w-full mt-auto p-4 overflow-hidden h-fit max-w-[400px] mt-auto flex items-end rounded-[30px]">
-        {btmElements}
+      <div className="w-full  opacity-60 transition-all hover:opacity-100 rounded-tl-[10px]  shadow-lg bg-blue-50 mt-auto pt-4 pl-4 overflow-hidden h-fit flex items-end">
+        <div className="rounded-tl-xl overflow-hidden w-full">{btmElements}</div>
       </div>
     </div>
   );

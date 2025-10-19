@@ -114,7 +114,7 @@ function StepCard({ number, title, description, imgSrc, delayMs = 0 }) {
         <p className="text-gray-600">{description}</p>
       </div>
 
-      <div className="w-full h-full mt-6 rounded-tr-[20px] rounded-tl-[20px] opacity-60 bg-blue-50 relative overflow-hidden">
+      <div className="w-full h-full mt-6 rounded-tl-[20px]  transition-all hover:opacity-100 opacity-60 bg-blue-50 relative overflow-hidden">
         <img
           className="absolute left-[24px] top-[24px] rounded-2xl"
           src={imgSrc}
