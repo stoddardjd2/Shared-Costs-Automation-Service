@@ -1,19 +1,30 @@
 import { Check } from "lucide-react";
-import { useState } from "react";
-import { useRef } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { gaEvent } from "../../../../../googleAnalytics/googleAnalyticsHelpers";
 import SectionIndicator from "../builders/SectionIndicator";
+import { motion } from "framer-motion";
+
+// 🆕 cardVariants now accepts custom delay
+const cardVariants = {
+  hidden: { opacity: 0, y: 24, scale: 0.98 },
+  visible: (i) => {
+    return {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut",
+        delay: i * 0.15, // 🆕 delay per card
+      },
+    };
+  },
+};
 
 export default function PricingTable() {
   const navigate = useNavigate();
   const [isAnnual, setIsAnnual] = useState(true);
-
-  // Easy color configuration - change these values
-  const colors = {
-    primary: "blue", // Options: blue, purple, green, red, orange, pink, indigo
-    background: "gray", // Options: gray, slate, zinc, neutral
-  };
 
   const plans = [
     {
@@ -37,7 +48,6 @@ export default function PricingTable() {
       price: "4.49",
       annualPrice: "3.99",
       includes: "Includes everything in Free",
-
       description:
         "For those who want to save more time, plus unlock powerful features",
       features: [
@@ -68,7 +78,6 @@ export default function PricingTable() {
   ];
 
   const handleCTAClick = (plan) => {
-    // Replace with your actual gaEvent and navigate logic
     const selection = {
       plan: plan.id,
       billing: isAnnual ? "annual" : "monthly",
@@ -83,73 +92,80 @@ export default function PricingTable() {
   };
 
   return (
-    <section id="pricing " className="p-[clamp(1rem,5vw,2.5rem)]">
+    <section id="pricing" className="p-[clamp(1rem,5vw,2.5rem)]">
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <SectionIndicator className={"mx-auto"} title={"Pricing"} />
-
+            <SectionIndicator className="mx-auto" title="Pricing" />
             <h2 className="text-4xl font-bold text-gray-900 mb-3">
               The most advanced bill splitting tool
             </h2>
             <p className="text-lg text-gray-600 mb-6">
-              Everything you need for free, plus some paid features for the smart ones.
+              Everything you need for free, plus some paid features for the
+              smart ones.
             </p>
-
             <BillingToggle isAnnual={isAnnual} setIsAnnual={setIsAnnual} />
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6">
             {plans.map((plan, index) => (
-              <div
+              <motion.div
                 key={index}
-                className={`border border-gray-200 relative bg-white rounded-lg p-8 shadow-lg transition-shadow hover:shadow-xl ${
-                  plan.popular ? "ring-2 ring-blue-600" : ""
-                }`}
+                custom={index}
+                variants={cardVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
               >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                    Most Popular
-                  </div>
-                )}
-
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  {plan.name}
-                </h3>
-
-                <p className="text-gray-600 mb-6 min-h-[54px]">
-                  {plan.description}
-                </p>
-
-                <div className="mb-6">
-                  <span className="text-5xl font-bold text-gray-900">
-                    ${isAnnual ? plan.annualPrice : plan.price}
-                  </span>
-                  <span className="text-gray-600">/month</span>
-                </div>
-
-                <button
-                  onClick={() => handleCTAClick(plan)}
-                  className={`w-full py-3 rounded-lg font-semibold mb-6 transition-colors ${
-                    plan.popular
-                      ? "bg-blue-600 text-white hover:bg-blue-700"
-                      : "bg-gray-100 text-gray-900 hover:bg-gray-200"
+                <div
+                  className={`border border-gray-200 relative bg-white rounded-lg p-8 shadow-lg transition-shadow hover:shadow-xl ${
+                    plan.popular ? "ring-2 ring-blue-600" : ""
                   }`}
                 >
-                  {plan.cta}
-                </button>
+                  {plan.popular && (
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                      Most Popular
+                    </div>
+                  )}
 
-                <p className="mb-3 text-gray-400">{plan.includes}</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                    {plan.name}
+                  </h3>
 
-                <ul className="space-y-3">
-                  {plan.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-start gap-3">
-                      <Check className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-600" />
-                      <span className="text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                  <p className="text-gray-600 mb-6 min-h-[54px]">
+                    {plan.description}
+                  </p>
+
+                  <div className="mb-6">
+                    <span className="text-5xl font-bold text-gray-900">
+                      ${isAnnual ? plan.annualPrice : plan.price}
+                    </span>
+                    <span className="text-gray-600">/month</span>
+                  </div>
+
+                  <button
+                    onClick={() => handleCTAClick(plan)}
+                    className={`w-full py-3 rounded-lg font-semibold mb-6 transition-colors ${
+                      plan.popular
+                        ? "bg-blue-600 text-white hover:bg-blue-700"
+                        : "bg-gray-100 text-gray-900 hover:bg-gray-200"
+                    }`}
+                  >
+                    {plan.cta}
+                  </button>
+
+                  <p className="mb-3 text-gray-400">{plan.includes}</p>
+
+                  <ul className="space-y-3">
+                    {plan.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-start gap-3">
+                        <Check className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-600" />
+                        <span className="text-gray-700">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -166,15 +182,13 @@ function BillingToggle({ isAnnual, setIsAnnual }) {
   const setMonthly = () => setIsAnnual(false);
   const setAnnual = () => setIsAnnual(true);
 
-  // Keyboard: left/right arrows switch
   const onKeyDown = (e) => {
     if (e.key === "ArrowLeft") setMonthly();
     if (e.key === "ArrowRight") setAnnual();
     if (e.key === "Enter" || e.key === " ") toggle();
   };
 
-  // Each side uses equal width for a crisp slide; tweak w-32 if you want tighter/looser
-  const segmentWidth = "w-32"; // change to w-28 / w-36 as you like
+  const segmentWidth = "w-32";
 
   return (
     <div className="flex items-center justify-center flex-col">
@@ -189,7 +203,6 @@ function BillingToggle({ isAnnual, setIsAnnual }) {
         onKeyDown={onKeyDown}
         tabIndex={0}
       >
-        {/* Sliding pill backdrop */}
         <span
           aria-hidden
           className={[
@@ -201,7 +214,6 @@ function BillingToggle({ isAnnual, setIsAnnual }) {
           style={{ left: "0.25rem" }}
         />
 
-        {/* Monthly */}
         <button
           ref={leftRef}
           type="button"
@@ -219,7 +231,6 @@ function BillingToggle({ isAnnual, setIsAnnual }) {
           Monthly
         </button>
 
-        {/* Annual */}
         <button
           ref={rightRef}
           type="button"

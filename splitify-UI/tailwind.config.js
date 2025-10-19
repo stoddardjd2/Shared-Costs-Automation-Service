@@ -37,6 +37,15 @@ export default {
       xl: "1280px",
       "2xl": "1536px",
     },
+    keyframes: {
+      arrowNudge: {
+        "0%, 100%": { transform: "translateX(0) translateY(2px)" },
+        "50%": { transform: "translateX(6px) translateY(2px)" },
+      },
+    },
+    animation: {
+      arrowNudge: "arrowNudge 1.4s ease-in-out infinite",
+    },
   },
   plugins: [],
 };

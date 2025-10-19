@@ -6,6 +6,7 @@ export default function CtaBtn({
   text = "Sign Up Free",
   greenBtn = false,
   whiteArrow = false,
+  animate = false,
 }) {
   const navigate = useNavigate();
 
@@ -24,7 +25,7 @@ export default function CtaBtn({
       <p className="text-inherit whitespace-nowrap">{text}</p>
       <Arrow
         whiteArrow
-        className="transform translate-y-[2px] transition-transform duration-300 group-hover:translate-x-1"
+        className={`transform translate-y-[2px] transition-transform duration-300 group-hover:translate-x-1 ${animate && 'animate-arrowNudge'}`}
       />
     </Link>
   );
@@ -48,4 +49,3 @@ function Arrow({ className, greenBtn, whiteArrow }) {
     </svg>
   );
 }
-

@@ -38,6 +38,7 @@ export default function ClosingCta() {
               confusion. Works with any payment app.
             </p>
             <CtaBtn
+            animate={true}
               variation={"Landing-v2-ClosingCTA-TEST-A"}
               whiteArrow={true}
               className={`sm:mt-[50px] mx-auto md:mx-0 w-fit font-semibold !mt-8 px-6 py-3 
