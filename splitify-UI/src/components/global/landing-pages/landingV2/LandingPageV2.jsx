@@ -14,13 +14,12 @@ export default function LandingPageV2() {
       <Navbar />
       <Hero />
       <HowItWorks />
-      <Features /> 
-       {/*Problem Agitation (what it solves)  */}
-       {/* Comparison to other apps */}
-       <PricingTable/>
-      <ClosingCta/>
-      <Footer/>
-
+      <Features />
+      {/*Problem Agitation (what it solves)  */}
+      {/* Comparison to other apps */}
+      <PricingTable />
+      <ClosingCta />
+      <Footer />
     </div>
   );
 }

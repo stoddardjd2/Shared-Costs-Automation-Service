@@ -3,6 +3,8 @@ import dashboardImg from "../assets/dashboard-high-res.png";
 import dashboardPhoneImg from "../assets/dashboard-phone.png";
 import Star from "../assets/Star";
 import overdueTextPhoneImg from "../assets/overdueTextPhone.png";
+import heroBg from "../assets/hero-bg.png"; // ✅ bundler-friendly
+
 import {
   VenmoLogo,
   CashAppLogo,
@@ -33,9 +35,18 @@ export default function Hero() {
         //     "radial-gradient(at right bottom, rgba(179, 220, 250, 1.0), rgba(72, 156, 219, 1.0))",
         // }
         {
-          background: "#E3F2FD",
-          background:
-            " linear-gradient(130deg,rgba(227, 242, 253, 1) 1%, rgba(225, 246, 251, 1) 59%, rgba(130, 184, 255, 1) 100%)",
+          background: `url(${heroBg})`,
+          backgroundRepeat: "no-repeat" /* prevents tiling */,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed", // 👈 keeps it fixed
+
+          // background
+
+          // background: "#E3F2FD",
+
+          // background:
+          //   " linear-gradient(130deg,rgba(227, 242, 253, 1) 1%, rgba(225, 246, 251, 1) 59%, rgba(130, 184, 255, 1) 100%)",
         }
         //   {
         //   backgroundImage:
@@ -50,12 +61,15 @@ export default function Hero() {
             {/* <p className="text-center  smaller mx-4 sm:mx-auto px-4 sm:px-[clamp(2rem,5vw,2rem)] py-2 mb-6 rounded-[60px] bg-white/100 text-gray-600 font-normal w-fit">
               *LIMITED TIME* New users now have free access to premium features.
             </p> */}
-            <h1 className="text-center mb-2">Split bills, <br className="inline sm:hidden"></br> not friendships.</h1>
+            <h1 className="text-center mb-2">
+              Split bills, <br className="inline sm:hidden"></br> not
+              friendships.
+            </h1>
             <p className="text-center text-gray-700">
               Splitify sends email & text messages for you until you get paid.
             </p>
             <p className="text-center font-semibold text-gray-700">
-              No chasing. No awkward follow-ups.
+              No chasing. No awkward follow-ups. No confusion.
             </p>
 
             <CtaBtn

@@ -97,10 +97,10 @@ export default function PricingTable() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <SectionIndicator className="mx-auto" title="Pricing" />
-            <h2 className="text-4xl font-bold text-gray-900 mb-3">
+            <h2 className=" mb-3">
               The most advanced bill splitting tool
             </h2>
-            <p className="text-lg text-gray-600 mb-6">
+            <p className="mb-6">
               Everything you need for free, plus some paid features for the
               smart ones.
             </p>

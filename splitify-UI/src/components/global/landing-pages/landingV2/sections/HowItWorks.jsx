@@ -41,7 +41,7 @@ export default function HowItWorks() {
     {
       title: "Text & emails sent",
       description:
-        "Splitify sends requests and reminders for you and then tracks payment history.",
+        "Splitify sends requests and reminders for you with a link for others to pay.",
       imgSrc: demo1Img,
     },
   ];

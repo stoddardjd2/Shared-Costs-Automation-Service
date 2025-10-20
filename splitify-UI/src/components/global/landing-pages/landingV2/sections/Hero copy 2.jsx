@@ -35,7 +35,7 @@ export default function Hero() {
         {
           background: "#E3F2FD",
           background:
-            " linear-gradient(130deg,rgba(227, 242, 253, 1) 0%, rgba(225, 246, 251, 1) 66%, rgba(130, 184, 255, 1) 100%)",
+            " linear-gradient(130deg,rgba(227, 242, 253, 1) 1%, rgba(225, 246, 251, 1) 59%, rgba(130, 184, 255, 1) 100%)",
         }
         //   {
         //   backgroundImage:
@@ -46,11 +46,14 @@ export default function Hero() {
       <div className="relative z-10">
         <div className=" !pb-0 ">
           {/* copy */}
-          <div className="pb-0 md:pb-[clamp(1rem,5vw,2.5rem)] p-[clamp(1rem,5vw,2.5rem)] pt-0 md:mt-[clamp(1rem,5vw,7rem)] sticky top-[90px] md:top-[190px] mb-0 md:mb-10 ">
-            {/* <p className="text-center  smaller mx-4 md:mx-auto px-4 md:px-[clamp(2rem,5vw,2rem)] py-2 mb-6 rounded-[60px] bg-white/100 text-gray-600 font-normal w-fit">
+          <div className="pb-0 sm:pb-[clamp(1rem,5vw,2.5rem)] p-[clamp(2rem,5vw,2.5rem)] pt-0 sticky top-[90px] sm:top-[clamp(95px,9vw,190px)] mb-0 sm:mb-[clamp(0.4rem,0.5rem+4vw,5rem)] ">
+            {/* <p className="text-center  smaller mx-4 sm:mx-auto px-4 sm:px-[clamp(2rem,5vw,2rem)] py-2 mb-6 rounded-[60px] bg-white/100 text-gray-600 font-normal w-fit">
               *LIMITED TIME* New users now have free access to premium features.
             </p> */}
-            <h1 className="text-center mb-2">Split bills, <br className="inline md:hidden"></br> not friendships.</h1>
+            <h1 className="text-center mb-2">
+              Split bills, <br className="inline sm:hidden"></br> not
+              friendships.
+            </h1>
             <p className="text-center text-gray-700">
               Splitify sends email & text messages for you until you get paid.
             </p>
@@ -74,8 +77,8 @@ export default function Hero() {
           </div>
 
           {/* dashboard image w/ border */}
-          <div className="mt-10 constrained-width md:p-[clamp(1rem,5vw,2.5rem)] ">
-            <div className="hidden md:inline  relative ">
+          <div className="mt-10 constrained-width sm:p-[clamp(1rem,5vw,2.5rem)] ">
+            <div className="hidden sm:inline  relative ">
               <div className="shadow-[0_0_20px_4px_rgb(255,255,255,.5)] p-[clamp(0rem,1vw,1rem)] bg-gray-200/50  rounded-[clamp(0rem,2vw,1.5rem)] border border-gray-300">
                 <img
                   src={dashboardImg}
@@ -92,7 +95,7 @@ export default function Hero() {
             </div>
 
             {/* MOBILE:"" */}
-            <div className="relative overflow-hidden flex flex-wrap justify-between md:hidden h-[clamp(590px,200px+7vw,590px)]">
+            <div className="relative overflow-hidden flex flex-wrap justify-between sm:hidden h-[clamp(590px,200px+7vw,590px)]">
               <img
                 src={dashboardPhoneImg}
                 alt="Dashboard demo"
@@ -108,16 +111,16 @@ export default function Hero() {
         </div>
 
         {/*  banner */}
-        <div className="sticky mt-0 bottom-0 w-full bg-white pt-2 md:py-6 shadow-sm border border-gray-200 md:mt-10">
-          <div className="constrained-width  md:px-10">
+        <div className="sticky mt-0 bottom-0 w-full bg-white pt-2 sm:py-6 shadow-sm border border-gray-200 sm:mt-10">
+          <div className="constrained-width  sm:px-10">
             <PaymentLogos />
           </div>
         </div>
       </div>
       {/* Fixed stars */}
-      <Star className="absolute top-[0px] w-32 right-10 z-0" />
-      <Star className="absolute top-[-200px] w-24 left-10 z-0" />
-      <Star className="absolute top-[600px] w-20 left-[100px] z-0 hidden md:flex" />
+        <Star className="absolute top-[-100px] sm:top-[0px] w-32 right-1 md:right-10 z-0" />
+        <Star className="absolute top-[-340px] sm:top-[-200px] w-24 left-10 z-0" />
+        <Star className="absolute top-[600px] w-20 left-[100px] z-0 hidden sm:flex" />
     </section>
   );
 }
@@ -127,7 +130,7 @@ export function PaymentLogos({ speed = 40, pauseOnHover = true }) {
     <>
       {/* MOBILE: marquee banner */}
       <div
-        className="md:hidden relative overflow-hidden bg-white"
+        className="sm:hidden relative overflow-hidden bg-white"
         style={{
           "--marquee-speed": `${speed}s`,
         }}
@@ -161,7 +164,7 @@ export function PaymentLogos({ speed = 40, pauseOnHover = true }) {
       </div>
 
       {/* DESKTOP: original layout */}
-      <div className="hidden md:flex md:flex-wrap items-center justify-between gap-6">
+      <div className="hidden sm:flex sm:flex-wrap items-center justify-between gap-6">
         <p className="text-gray-600 text-center w-full lg:text-start lg:w-fit">
           Get paid your way
         </p>
