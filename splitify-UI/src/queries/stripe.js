@@ -39,6 +39,7 @@ const apiRequest = async (endpoint, options = {}) => {
 
 export const createSubscription = async (planKey, interval, currency) => {
   const endpoint = `/stripe/create-subscription`;
+  console.log("creawting with", planKey, interval, currency)
   return await apiRequest(endpoint, {
     method: "POST",
     body: {

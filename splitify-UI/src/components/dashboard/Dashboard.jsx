@@ -48,6 +48,7 @@ const Dashboard = () => {
     const params = new URLSearchParams(location.search);
 
     if (params?.get("plan")) {
+      console.log("location.search", location.search)
       navigate(`/dashboard/premium${location.search}`);
 
       // show first time welcome screen and navigate user to make first request

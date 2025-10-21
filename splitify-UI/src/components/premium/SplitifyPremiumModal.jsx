@@ -143,7 +143,6 @@ export default function SplitifyPremiumModal({
     }
   };
 
-  console.log("STEP", step);
   useEffect(() => {
     gaEvent("subscription_view");
   }, []);

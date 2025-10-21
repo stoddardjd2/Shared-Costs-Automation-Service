@@ -36,7 +36,7 @@ const features = [
     title: (
       <div>
         Pay with <br className="hidden [@media(min-width:580px)]:inline" />{" "}
-        Link
+        link
       </div>
     ),
     description:
