@@ -153,6 +153,7 @@ const SplitStep = ({
   const [isDynamic, setIsDynamic] = useState(
     selectedCharge?.isDynamic || false
   );
+  console.log("IS DYNAMIC", isDynamic)
   // const [isDynamic, setIsDynamic] = useState(false);
   const [showDynamicInfo, setShowDynamicInfo] = useState(false);
   const [isHoveringDynamicInfo, setIsHoveringDynamicInfo] = useState(false);

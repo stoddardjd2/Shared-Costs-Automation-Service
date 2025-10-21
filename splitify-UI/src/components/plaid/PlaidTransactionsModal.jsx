@@ -375,7 +375,7 @@ export default function PlaidTransactionsModal({
         {isLoadingInitialTransactions ? (
           <div className="h-full flex items-center justify-center py-6">
             <div className="flex items-center space-x-2 text-slate-500 max-w-[90%]">
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-slate-300 border-t-slate-600"></div>
+              <div className="animate-spin rounded-full flex-shrink-0 h-4 w-4 border-2 border-slate-300 border-t-slate-600"></div>
               <span className="text-sm">
                 {initialLoadError
                   ? "Loading transactions… If you just linked your account, Plaid may need up to a minute to prepare your data. We'll retry automatically every 15 seconds."
@@ -466,7 +466,7 @@ export default function PlaidTransactionsModal({
                 {isLoading && config.showLoadingIndicator && (
                   <div className="flex items-center justify-center py-6">
                     <div className="flex items-center space-x-2 text-slate-500">
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-slate-300 border-t-slate-600"></div>
+                      <div className="animate-spin flex-shrink-0 rounded-full h-4 w-4 border-2 border-slate-300 border-t-slate-600"></div>
                       <span className="text-sm">
                         Loading more transactions...
                       </span>

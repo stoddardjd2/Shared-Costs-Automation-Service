@@ -53,6 +53,7 @@ export default function PlaidConnect({
       pushLog("Public token received from Link.");
       setLoading(true);
 
+      console.log("EXCHANGE", pubToken);
       const accessToken = await plaidAPI.exchangePublicToken(pubToken);
       const res = await savePlaidAccessToken(accessToken);
       if (res.success) {
@@ -96,7 +97,7 @@ export default function PlaidConnect({
   // Always fetch a fresh token, then re-mount the Link instance and open it.
   async function handleConnect() {
     // verify is premium user
-    if (userData?.plan == "premium" || userData?.plan == "plaid") {
+    if (userData?.plan !== "free") {
       try {
         setError("");
         setLoading(true);
@@ -131,7 +132,7 @@ export default function PlaidConnect({
         : transaction?.billingFrequency
     );
     // set to dynamic if frequency is known
-    // setIsDynamic(transaction?.billingFrequency === "unkown" ? false : true);
+    setIsDynamic(transaction?.billingFrequency === "unkown" ? false : true);
     setStartTiming(transaction?.nextExpectedChargeDate);
     setSelectedTransaction(transaction);
   }
