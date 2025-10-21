@@ -14,7 +14,7 @@ const features = [
     title: "Splits update automatically",
     description:
       "If bills change, Splitify updates split amounts before sending again. Perfect for utilites.",
-    btmElements: <img className="h-fit" src={feature1} alt="" />,
+    btmElements: <img className="w-full h-auto" src={feature1} alt="" />,
   },
   {
     title: (
@@ -30,7 +30,7 @@ const features = [
         get paid.
       </p>
     ),
-    btmElements: <img className="h-fit" src={feature3} alt="" />,
+    btmElements: <img className="w-full h-auto" src={feature3} alt="" />,
   },
   {
     title: (
@@ -41,7 +41,7 @@ const features = [
     ),
     description:
       "Splitify sends a link to your crew so they can pay any way they want.",
-    btmElements: <img className="h-fit " src={feature4} alt="" />,
+    btmElements: <img className="w-full h-auto" src={feature4} alt="" />,
   },
 
   {
@@ -57,7 +57,7 @@ const features = [
         and no disputes.{" "}
       </div>
     ),
-    btmElements: <img className="h-fit " src={feature5} alt="" />,
+    btmElements: <img className="w-full h-auto" src={feature5} alt="" />,
   },
   {
     title: (
@@ -83,7 +83,7 @@ const features = [
         even easier.
       </div>
     ),
-    btmElements: <img className="h-fit" src={feature6} alt="" />,
+    btmElements: <img className="w-full h-auto" src={feature6} alt="" />,
   },
 ];
 
