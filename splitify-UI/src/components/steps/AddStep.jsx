@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import "../../styles/index.css";
 import ContactCard from "../costs/ContactCard";
 import ConfirmButtonTray from "./ConfirmButtonTray";
+
 const AddStep = ({
   newPerson,
   newPeople,
@@ -29,6 +30,7 @@ const AddStep = ({
   handleUpdatePersonName,
   selectedPeople,
 }) => {
+
   /* function formatPhoneNumber(phone) {
     const digits = phone.replace(/\D/g, "");
     if (digits.length !== 11) return "Invalid phone number";

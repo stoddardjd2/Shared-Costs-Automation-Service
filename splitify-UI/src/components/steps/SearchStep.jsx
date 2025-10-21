@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Search, Plus, ArrowLeft, Users, ArrowRight } from "lucide-react";
 import StepIndicator from "./StepIndicator";
 import ChargeDisplay from "../costs/ChargeDisplay";
 import ContactCard from "../costs/ContactCard";
 import ConfirmButtonTray from "./ConfirmButtonTray";
+import { useData } from "../../contexts/DataContext";
+import { useNavigate } from "react-router-dom";
 
 const SearchStep = ({
   searchQuery,
@@ -23,6 +25,16 @@ const SearchStep = ({
   onDeletePerson,
   handleUpdatePersonName,
 }) => {
+  const { participants } = useData();
+  console.log("participants", participants);
+
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (participants.length == 0) {
+      navigate("/dashboard/add/newperson");
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50 mt-10">
       {/* Main content with padding bottom to prevent button tray overlap */}

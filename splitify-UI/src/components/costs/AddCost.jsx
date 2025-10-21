@@ -82,11 +82,8 @@ const AddCost = ({ setView }) => {
         // );
         break;
       case STEPS.SEARCH:
-        setCurrentStep(
-          !chargeState.isManualCharge
-            ? STEPS.CHARGE_SEARCH
-            : STEPS.CHARGE_DETAILS
-        );
+        // setCurrentStep(STEPS.ADD);
+        // setCurrentStep(STEPS.SEARCH);
         navigate("/dashboard");
         break;
       case STEPS.SPLIT: // ADD THIS CASE
@@ -94,6 +91,7 @@ const AddCost = ({ setView }) => {
         navigate("/dashboard/add");
         break;
       case STEPS.ADD:
+        navigate("/dashboard/add");
         setCurrentStep(STEPS.SEARCH);
         break;
 
