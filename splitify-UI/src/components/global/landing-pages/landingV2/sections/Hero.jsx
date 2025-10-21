@@ -3,7 +3,8 @@ import dashboardImg from  "../assets/dashboard-high-res.png?format=webp&quality=
 import dashboardPhoneImg from "../assets/dashboard-phone.png?format=webp&quality=80";
 import Star from "../assets/Star";
 import overdueTextPhoneImg from "../assets/overdueTextPhone.png?format=webp&quality=80";
-import heroBg from "../assets/hero-bg.png?format=webp"; // ✅ bundler-friendly
+import heroBg from "../assets/hero-bg.png?format=webp"; 
+import heroBg2 from "../assets/hero-bg-2.png?format=webp";
 
 import {
   VenmoLogo,
@@ -27,7 +28,7 @@ const Logos = [
 export default function Hero() {
   return (
     <section
-      className="pt-16 relative"
+      className="pt-16 relative "
       style={
         // {
         //   background: "rgba(179, 220, 250, 1.0)",
@@ -38,7 +39,7 @@ export default function Hero() {
           background: `url(${heroBg})`,
           backgroundRepeat: "no-repeat" /* prevents tiling */,
           backgroundSize: "cover",
-          backgroundPosition: "center",
+          backgroundPosition:"50% 0%",
 
           // background
 
