@@ -19,7 +19,7 @@ const features = [
   {
     title: (
       <div>
-        Auto
+        Auto text
         <br className="hidden [@media(min-width:580px)]:inline" /> reminders
       </div>
     ),
@@ -35,8 +35,8 @@ const features = [
   {
     title: (
       <div>
-        Simple <br className="hidden [@media(min-width:580px)]:inline" />{" "}
-        payments
+        Pay with <br className="hidden [@media(min-width:580px)]:inline" />{" "}
+        Link
       </div>
     ),
     description:
