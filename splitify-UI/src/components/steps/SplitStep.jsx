@@ -147,8 +147,7 @@ const SplitStep = ({
     disableDynamicCosts ||
     userData.plan == "free";
 
-  const isMarkAsPaidEveryoneDisabled =
-    userData.plan == "free";
+  const isMarkAsPaidEveryoneDisabled = userData.plan == "free";
 
   // State for dynamic costs tracking - use previous setting in edit mode, otherwise default based on plaidMatch
   const [isDynamic, setIsDynamic] = useState(
@@ -679,20 +678,22 @@ const SplitStep = ({
   if (showRequestSentScreen) {
     // after sent request, show confirmation screen
     return (
-      <RequestSentScreen
-        setHide={setHide}
-        request={submittedRequest}
-        onClose={() => {
-          navigate("/dashboard");
-          setView("dashboard");
-          root.scrollTo({ top: 0, behavior: "instant" });
-        }}
-        onAgain={() => {
-          navigate("/dashboard/add");
-          setView("add");
-          root.scrollTo({ top: 0, behavior: "instant" });
-        }}
-      />
+      <>
+        <RequestSentScreen
+          setHide={setHide}
+          request={submittedRequest}
+          onClose={() => {
+            navigate("/dashboard");
+            setView("dashboard");
+            root.scrollTo({ top: 0, behavior: "instant" });
+          }}
+          onAgain={() => {
+            navigate("/dashboard/add");
+            setView("add");
+            root.scrollTo({ top: 0, behavior: "instant" });
+          }}
+        />
+      </>
     );
   }
 

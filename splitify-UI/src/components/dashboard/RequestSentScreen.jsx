@@ -163,7 +163,7 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
           >
             <div className="w-24 h-24 mx-auto bg-opacity-200 backdrop-blur-3xl rounded-full flex items-center justify-center shadow-2xl border-4 border-white">
               {/* <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center"> */}
-                <Check className="w-12 h-12 text-white" />
+              <Check className="w-12 h-12 text-white" />
               {/* </div> */}
             </div>
 
@@ -225,7 +225,10 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
                 : "translate-y-4 opacity-0"
             } text-base`}
           >
-            Participants will recieve an email and text message.
+            Text and emails have been sent all participants.
+            <br></br>
+            <br></br>
+            *IMPORTANT* First time participants must opt in to text messages via email they recieved.
           </p>
 
           {/* Recipients with delivery animation */}
@@ -249,10 +252,10 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
                   <div
                     className={`absolute -top-8 left-1/2 transform -translate-x-1/2 transition-all duration-1000 
                       ${
-                      animationStage >= 6
-                        ? "translate-y-0 opacity-100"
-                        : "-translate-y-4 opacity-0"
-                    }
+                        animationStage >= 6
+                          ? "translate-y-0 opacity-100"
+                          : "-translate-y-4 opacity-0"
+                      }
                     `}
                     // style={{ transitionDelay: `${400 + index * 200}ms` }}
                   ></div>

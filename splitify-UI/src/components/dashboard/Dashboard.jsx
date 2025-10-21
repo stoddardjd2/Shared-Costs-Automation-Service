@@ -131,11 +131,11 @@ const Dashboard = () => {
 
             {/* Main Dashboard Sections */}
             <div className="space-y-6">
-              {paymentMethods?.cashapp && paymentMethods?.venmo ? (
+              {/* {paymentMethods?.cashapp && paymentMethods?.venmo ? (
                 ""
               ) : (
                 <PaymentMethodPrompt />
-              )}
+              )} */}
 
               {costs.length !== 0 && <OverdueAlerts />}
               <RecurringCostsSection
