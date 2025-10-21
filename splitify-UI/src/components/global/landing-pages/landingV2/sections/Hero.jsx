@@ -1,9 +1,9 @@
 import CtaBtn from "../builders/CtaBtn";
-import dashboardImg from "../assets/dashboard-high-res.png";
-import dashboardPhoneImg from "../assets/dashboard-phone.png";
+import dashboardImg from  "../assets/dashboard-high-res.png?format=webp&quality=80";
+import dashboardPhoneImg from "../assets/dashboard-phone.png?format=webp&quality=80";
 import Star from "../assets/Star";
-import overdueTextPhoneImg from "../assets/overdueTextPhone.png";
-import heroBg from "../assets/hero-bg.png"; // ✅ bundler-friendly
+import overdueTextPhoneImg from "../assets/overdueTextPhone.png?format=webp&quality=80";
+import heroBg from "../assets/hero-bg.png?format=webp"; // ✅ bundler-friendly
 
 import {
   VenmoLogo,
@@ -39,7 +39,6 @@ export default function Hero() {
           backgroundRepeat: "no-repeat" /* prevents tiling */,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          backgroundAttachment: "fixed", // 👈 keeps it fixed
 
           // background
 
