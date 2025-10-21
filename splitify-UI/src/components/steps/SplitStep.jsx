@@ -153,7 +153,6 @@ const SplitStep = ({
   const [isDynamic, setIsDynamic] = useState(
     selectedCharge?.isDynamic || false
   );
-  console.log("IS DYNAMIC", isDynamic)
   // const [isDynamic, setIsDynamic] = useState(false);
   const [showDynamicInfo, setShowDynamicInfo] = useState(false);
   const [isHoveringDynamicInfo, setIsHoveringDynamicInfo] = useState(false);
@@ -398,7 +397,6 @@ const SplitStep = ({
           individualAmount = roundToTwo(
             Number(editableTotalAmount / (selectedPeople.length + 1))
           );
-          console.log("AMOUNT IND", individualAmount);
           break;
         case "equal":
           individualAmount = roundToTwo(
@@ -436,7 +434,6 @@ const SplitStep = ({
       calculateTotalAmountOwed(costEntry.participants)
     );
 
-    console.log("ENTRY", costEntry);
     return costEntry;
   }
 

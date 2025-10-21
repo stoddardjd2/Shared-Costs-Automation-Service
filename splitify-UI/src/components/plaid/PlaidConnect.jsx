@@ -53,7 +53,6 @@ export default function PlaidConnect({
       pushLog("Public token received from Link.");
       setLoading(true);
 
-      console.log("EXCHANGE", pubToken);
       const accessToken = await plaidAPI.exchangePublicToken(pubToken);
       const res = await savePlaidAccessToken(accessToken);
       if (res.success) {
