@@ -61,12 +61,12 @@ export default function Hero() {
             {/* <p className="text-center  smaller mx-4 sm:mx-auto px-4 sm:px-[clamp(2rem,5vw,2rem)] py-2 mb-6 rounded-[60px] bg-white/100 text-gray-600 font-normal w-fit">
               *LIMITED TIME* New users now have free access to premium features.
             </p> */}
-            <h1 className="text-center mb-2">
+            <h1 className="text-center mb-2 sm:mb-4 md:mb-6">
               Split bills, <br className="inline sm:hidden"></br> not
               friendships.
             </h1>
-            <p className="text-center text-gray-700">
-              A bill splitting app that sends email & text messages for you until you get paid, plus it tracks everything.
+            <p className="text-center text-gray-700  mb-2">
+              Splitify splits your bills, sends email & texts until you get paid and tracks everything.
             </p>
             <p className="text-center font-semibold text-gray-700">
               No chasing. No awkward follow-ups. No confusion.
