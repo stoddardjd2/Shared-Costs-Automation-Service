@@ -63,7 +63,7 @@ export default function Hero() {
             </p> */}
             <h1 className="text-center mb-2 sm:mb-4 md:mb-6">
               Split bills, <br className="inline sm:hidden"></br> not
-              friendships.
+              friendships
             </h1>
             <p className="text-center text-gray-700  mb-2">
               Splitify splits your bills, sends email & texts until you get paid and tracks everything.
