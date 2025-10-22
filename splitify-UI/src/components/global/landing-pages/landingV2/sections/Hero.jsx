@@ -66,7 +66,7 @@ export default function Hero() {
               friendships.
             </h1>
             <p className="text-center text-gray-700">
-              Splitify sends email & text messages for you until you get paid.
+              A bill splitting app that sends email & text messages for you until you get paid, plus it tracks everything.
             </p>
             <p className="text-center font-semibold text-gray-700">
               No chasing. No awkward follow-ups. No confusion.
