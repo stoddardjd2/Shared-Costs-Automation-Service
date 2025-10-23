@@ -5,28 +5,21 @@ import demo2Img from "../assets/demo-2.png";
 import demo3Img from "../assets/demo-3.png";
 import { useEffect, useRef, useState } from "react";
 
-/** Use one IO per card, but:
- *  - start a bit early so decoding can finish (rootMargin)
- *  - unobserve once visible to prevent thrash
- */
-function useInView(options = { threshold: 0.05, rootMargin: "150px 0px" }) {
+function useInView(options = { threshold: 0.2, rootMargin: "0px" }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const node = ref.current;
-    if (!node || visible) return;
+    if (!node) return;
 
     const obs = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setVisible(true);
-        obs.unobserve(entry.target); // stop toggling forever
-      }
+      setVisible(entry.isIntersecting);
     }, options);
 
     obs.observe(node);
     return () => obs.disconnect();
-  }, [options, visible]);
+  }, [options]);
 
   return { ref, visible };
 }
@@ -63,18 +56,15 @@ export default function HowItWorks() {
             <br />
             <span>3 simple steps</span>
           </h2>
-
           <div className="max-w-[330px] flex flex-col gap-[clamp(1rem,1vw,1.25rem)]">
             <p className="text-gray-600">
-              <span className="font-medium">
-                No calculators. No group chats. No excel sheets.
-              </span>{" "}
-              Just splits that actually get paid.
+              <span className="font-medium">No calculators. No group chats. No excel sheets.</span> Just splits that
+              actually get paid.
             </p>
             <CtaBtn
               variation={"Landing-v2-HowItWorks-TEST-A"}
               whiteArrow={true}
-              className="w-fit font-semibold mt-0 px-6 py-3 shadow-lg cursor-pointer hover:bg-blue-700 transition-colors"
+              className={`w-fit font-semibold mt-0 px-6 py-3 shadow-lg cursor-pointer hover:bg-blue-700 transition-all`}
             />
           </div>
         </div>
@@ -98,31 +88,20 @@ export default function HowItWorks() {
 }
 
 function StepCard({ number, title, description, imgSrc, delayMs = 0 }) {
-  // Start a bit early so decoding is done; stop after first intersection
-  const { ref, visible } = useInView({
-    threshold: 0.05,
-    rootMargin: "150px 0px",
-  });
+  const { ref, visible } = useInView({ threshold: 0.2 });
 
   return (
     <div
       ref={ref}
+      // initial state is hidden; becomes visible once in view
       className={[
         "w-full flex flex-col h-[390px] bg-white border border-gray-200 rounded-2xl shadow-lg",
-        "[content-visibility:auto] [contain-intrinsic-size:390px]",
-        // Mobile: opacity only (no transform → crisp text)
-        "transition-opacity duration-500 ease-out",
-        // Desktop+: add transform animation (slide)
-        "md:transform-gpu md:transition-transform",
-        "motion-reduce:transition-none",
-        visible
-          ? "opacity-100 md:translate-y-0"
-          : "opacity-0 md:translate-y-12",
+        "transition-all duration-1000 ease-out will-change-transform will-change-opacity",
+        "motion-reduce:transition-none", // respect reduced-motion
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
       ].join(" ")}
       style={{
-        transitionDelay: `${delayMs}ms`,
-        // Only hint transform on desktop where we actually use it
-        willChange: visible ? "auto" : "opacity, transform",
+        transitionDelay: `${delayMs}ms`
       }}
     >
       <div className="p-4">
@@ -135,14 +114,11 @@ function StepCard({ number, title, description, imgSrc, delayMs = 0 }) {
         <p className="text-gray-600">{description}</p>
       </div>
 
-      <div className="w-full h-full mt-6 rounded-tl-[20px] opacity-60 hover:opacity-100 transition-opacity bg-blue-50 relative overflow-hidden">
+      <div className="w-full h-full mt-6 rounded-tl-[20px]  transition-all hover:opacity-100 opacity-60 bg-blue-50 relative overflow-hidden">
         <img
-          className="absolute left-[24px] top-[24px] rounded-2xl pointer-events-none"
+          className="absolute left-[24px] top-[24px] rounded-2xl"
           src={imgSrc}
           alt=""
-          loading="lazy"
-          decoding="async"
-          fetchpriority="low"
         />
       </div>
     </div>
