@@ -618,6 +618,8 @@ async function runRecurringRequestsNow() {
     const currentDateTime = new Date();
     const activeRecurringRequests = await Request.find({
       isRecurring: true,
+      isPaused: { $ne: true },
+      isDeleted: { $ne: true },
     }).lean();
     schedulerMetrics.lastRunProcessedCount = activeRecurringRequests.length;
 

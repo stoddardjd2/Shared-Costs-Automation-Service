@@ -27,21 +27,7 @@ export default function PricingTable() {
   const [isAnnual, setIsAnnual] = useState(true);
 
   const plans = [
-    {
-      name: "Free (no card needed)",
-      id: "free",
-      price: "0",
-      annualPrice: "0",
-      description: "Includes everything you need to automate your bill splits",
-      features: [
-        "*LIMITED TIME* Unlimited text messages and requests",
-        "Recurring splits",
-        "Automated reminders",
-        "Instant bill splitting calculations",
-        "Payment tracking",
-      ],
-      cta: "Sign Up Free",
-    },
+  
     {
       name: "Premium",
       id: "premium",
@@ -49,16 +35,33 @@ export default function PricingTable() {
       annualPrice: "3.99",
       includes: "Includes everything in Free",
       description:
-        "For those who want to save more time, plus unlock powerful features",
+        "For those who want to save more time, plus unlock powerful features.",
       features: [
         "Unlimited text messages and requests",
         "Plaid bank connection",
         "Automatically update split amounts as bills change.",
-        "Customizable Text & Email Messages (Coming soon)",
+        // "Customizable Text & Email Messages (Coming soon)",
         "Schedule requests for later",
       ],
       cta: "Get Started",
+    },
+      {
+      name: "Free *LIMITED TIME*",
+      id: "free",
+      price: "0",
+      annualPrice: "0",
+      description: "Includes everything you need to automate your bill splits. No card.",
+      features: [
+        "*LIMITED TIME* Unlimited text messages and requests",
+        "Recurring splits",
+        "Automated reminders",
+        "Instant bill splitting calculations",
+        "Payment tracking",
+         "Customizable Text & Email Messages (Coming soon)",
+      ],
+      cta: "Sign Up Free",
       popular: true,
+
     },
     {
       name: "Professional",
@@ -66,7 +69,7 @@ export default function PricingTable() {
       price: "29",
       annualPrice: "20",
       includes: "Includes everything in Premium",
-      description: "For our bill splitting pros",
+      description: "For our bill splitting pros.",
       features: [
         "Advanced analytics (Coming Soon)",
         "Priority support",

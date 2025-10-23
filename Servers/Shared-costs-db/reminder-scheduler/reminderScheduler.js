@@ -88,7 +88,7 @@ async function processRequestReminders(request) {
   let updatedRequest = false;
   for (let i = 0; i < request.paymentHistory.length; i++) {
     const paymentEntry = request.paymentHistory[i];
-  
+
     // // Skip if no reminder date set or not yet due
     if (!paymentEntry.nextReminderDate || paymentEntry.nextReminderDate > now) {
       continue;
@@ -301,6 +301,7 @@ async function getSchedulerStatus() {
     // Count total active requests
     const activeRequestsCount = await Request.countDocuments({
       isCompleted: { $ne: true },
+
     });
 
     return {
