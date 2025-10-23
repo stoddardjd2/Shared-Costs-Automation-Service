@@ -27,7 +27,6 @@ export default function PricingTable() {
   const [isAnnual, setIsAnnual] = useState(true);
 
   const plans = [
-  
     {
       name: "Premium",
       id: "premium",
@@ -45,23 +44,23 @@ export default function PricingTable() {
       ],
       cta: "Get Started",
     },
-      {
+    {
       name: "Free *LIMITED TIME*",
       id: "free",
       price: "0",
       annualPrice: "0",
-      description: "Includes everything you need to automate your bill splits. No card.",
+      description:
+        "Includes everything you need to automate your bill splits. No card.",
       features: [
         "*LIMITED TIME* Unlimited text messages and requests",
         "Recurring splits",
         "Automated reminders",
         "Instant bill splitting calculations",
         "Payment tracking",
-         "Customizable Text & Email Messages (Coming soon)",
+        "Customizable Text & Email Messages (Coming soon)",
       ],
       cta: "Sign Up Free",
       popular: true,
-
     },
     {
       name: "Professional",
@@ -100,9 +99,7 @@ export default function PricingTable() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <SectionIndicator className="mx-auto" title="Pricing" />
-            <h2 className=" mb-3">
-              The most advanced bill splitting tool
-            </h2>
+            <h2 className=" mb-3">The most advanced bill splitting tool</h2>
             <p className="mb-6">
               Everything you need for free, plus some paid features for the
               smart ones.
@@ -119,6 +116,13 @@ export default function PricingTable() {
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, amount: 0.2 }}
+                className={[
+                  // put popular first on mobile, normal order from sm+
+                  plan.popular ? "order-[-1] lg:order-none" : "",
+       
+                ]
+                  .join(" ")
+                  .trim()}
               >
                 <div
                   className={`border border-gray-200 relative bg-white rounded-lg p-8 shadow-lg transition-shadow hover:shadow-xl ${
