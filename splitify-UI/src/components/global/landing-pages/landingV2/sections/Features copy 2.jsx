@@ -1,31 +1,22 @@
 import SectionIndicator from "../builders/SectionIndicator";
-import feature1 from "../assets/features-images-new/feature-1.png";
-import feature2 from "../assets/features-images-new/feature-2.png";
-import feature3 from "../assets/features-images-new/feature-3.png";
-import feature4 from "../assets/features-images-new/feature-4.png";
-import feature5 from "../assets/features-images-new/feature-5.png";
-import feature6 from "../assets/features-images-new/feature-6.png";
+import feature1 from "../assets/feature-1.png";
+import feature2 from "../assets/feature-2.png";
+import feature3 from "../assets/feature-3.png";
+import feature4 from "../assets/feature-4.png";
+import feature5 from "../assets/feature-5.png";
+import feature6 from "../assets/feature-6.png";
 import Carousel from "../builders/Carousel";
-import Repeat from "../assets/feature-icons/repeat.svg?react";
-import Dynamic from "../assets/feature-icons/dynamic.svg?react";
-import Message from "../assets/feature-icons/message.svg?react";
-import Link from "../assets/feature-icons/link.svg?react";
-import Payment from "../assets/feature-icons/payment.svg?react";
-import Bank from "../assets/feature-icons/bank.svg?react";
 import { motion, useAnimation, useInView } from "framer-motion";
 import { useEffect, useRef } from "react";
 
 const features = [
   {
-    icon: <Dynamic className="w-5 h-5 [&>path]:stroke-[40px] " />,
     title: <div>Splits update automatically</div>,
     description:
       "If bills change, Splitify updates split amounts before sending again. Perfect for utilites.",
     btmElements: <img className="w-full h-auto" src={feature1} alt="" />,
   },
   {
-    icon: <Message className="w-5 h-5 p-[.6px] [&>path]:stroke-[40px] " />,
-
     title: <div>Auto text reminders</div>,
     description: (
       <p className="text-gray-600">
@@ -36,10 +27,14 @@ const features = [
     ),
     btmElements: <img className="w-full h-auto" src={feature3} alt="" />,
   },
+  {
+    title: <div>Pay with link</div>,
+    description:
+      "Splitify sends a link to your crew so they can pay any way they want.",
+    btmElements: <img className="w-full h-auto" src={feature4} alt="" />,
+  },
 
   {
-    icon: <Payment className="w-5 h-5 p-[2px] [&>path]:stroke-[25px] " />,
-
     title: <div>Detailed payment history</div>,
     description: (
       <div>
@@ -49,27 +44,13 @@ const features = [
     ),
     btmElements: <img className="w-full h-auto" src={feature5} alt="" />,
   },
-    {
-    icon: <Link className="w-5 h-5 [&>path]:stroke-[16px] " />,
-
-    title: <div className="">Pay with link</div>,
-    description:
-      "Splitify sends a link to your crew so they can pay any way they want. Venmo, cashapp, etc.",
-    btmElements: <img className="w-full h-auto" src={feature4} alt="" />,
-  },
-
   {
-    icon: <Repeat className="w-5 h-5 [&>path]:stroke-[40px] " />,
     title: <div>Recurring splits</div>,
     description:
       "Automate splits for utilities, Wi-Fi, or subscriptions. Set it once, forget the rest.",
-    btmElements: <img className="w-full h-auto" src={feature2} alt="" />,
+    btmElements: <img className="w-full " src={feature2} alt="" />,
   },
   {
-    icon: (
-      <Bank className="w-5 h-5 p-[1px] -translate-y-[1px] [&>path]:stroke-[40px] " />
-    ),
-
     title: <div>Connect your bank</div>,
     description: (
       <div>
@@ -129,7 +110,6 @@ export default function Features() {
                 title={feature.title}
                 description={feature.description}
                 btmElements={feature.btmElements}
-                icon={feature.icon}
               />
             </AnimatedInView>
           ))}
@@ -140,20 +120,17 @@ export default function Features() {
   );
 }
 
-function FeatureCard({ btmElements, title, description, icon }) {
+function FeatureCard({ btmElements, title, description }) {
   return (
-    <div className="flex flex-col overflow-hidden w-full h-full bg-white border border-gray-200 rounded-2xl shadow-lg">
-      <div className="p-4">
+    <div className="flex flex-col h-full overflow-hidden w-full  bg-white border border-gray-200 rounded-2xl shadow-lg">
+      <div className="p-4 pb-0">
         <div className="flex items-center mb-2">
-          {/* <div className="rounded-[60px] flex-shrink-0 text-white mr-4 w-8 h-8 flex items-center justify-center primary-color">
-            {icon}
-          </div> */}
           <h4>{title}</h4>
         </div>
-        <div className="text-gray-600">{description}</div>
+        <p className="text-gray-600">{description}</p>
       </div>
-      <div className="w-full rounded-tl-[10px]  shadow-lg bg-blue-50 opacity-60 transition-all hover:opacity-100 rounded-bl-[10px] mt-auto pt-4 pl-4 overflow-hidden h-fit flex items-end">
-        <div className="rounded-tl-xl overflow-hidden w-full">
+      <div className="w-full  opacity-60 transition-all hover:opacity-100 rounded-bl-[10px] mt-auto p-2 pb-0 overflow-hidden h-fit flex items-end">
+        <div className="rounded-bl-xl overflow-hidden w-full">
           {btmElements}
         </div>
       </div>

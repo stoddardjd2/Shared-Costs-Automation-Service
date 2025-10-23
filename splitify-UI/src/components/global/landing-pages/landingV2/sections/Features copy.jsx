@@ -1,32 +1,28 @@
 import SectionIndicator from "../builders/SectionIndicator";
-import feature1 from "../assets/features-images-new/feature-1.png";
-import feature2 from "../assets/features-images-new/feature-2.png";
-import feature3 from "../assets/features-images-new/feature-3.png";
-import feature4 from "../assets/features-images-new/feature-4.png";
-import feature5 from "../assets/features-images-new/feature-5.png";
-import feature6 from "../assets/features-images-new/feature-6.png";
+import feature1 from "../assets/feature-1.png";
+import feature2 from "../assets/feature-2.png";
+import feature3 from "../assets/feature-3.png";
+import feature4 from "../assets/feature-4.png";
+import feature5 from "../assets/feature-5.png";
+import feature6 from "../assets/feature-6.png";
 import Carousel from "../builders/Carousel";
-import Repeat from "../assets/feature-icons/repeat.svg?react";
-import Dynamic from "../assets/feature-icons/dynamic.svg?react";
-import Message from "../assets/feature-icons/message.svg?react";
-import Link from "../assets/feature-icons/link.svg?react";
-import Payment from "../assets/feature-icons/payment.svg?react";
-import Bank from "../assets/feature-icons/bank.svg?react";
 import { motion, useAnimation, useInView } from "framer-motion";
 import { useEffect, useRef } from "react";
 
 const features = [
   {
-    icon: <Dynamic className="w-5 h-5 [&>path]:stroke-[40px] " />,
-    title: <div>Splits update automatically</div>,
+    title: "Splits update automatically",
     description:
       "If bills change, Splitify updates split amounts before sending again. Perfect for utilites.",
     btmElements: <img className="w-full h-auto" src={feature1} alt="" />,
   },
   {
-    icon: <Message className="w-5 h-5 p-[.6px] [&>path]:stroke-[40px] " />,
-
-    title: <div>Auto text reminders</div>,
+    title: (
+      <div>
+        Auto text
+        <br className="hidden [@media(min-width:580px)]:inline" /> reminders
+      </div>
+    ),
     description: (
       <p className="text-gray-600">
         Missing payments? Splitify follows up with email{" "}
@@ -36,11 +32,24 @@ const features = [
     ),
     btmElements: <img className="w-full h-auto" src={feature3} alt="" />,
   },
+  {
+    title: (
+      <div>
+        Pay with <br className="hidden [@media(min-width:580px)]:inline" /> link
+      </div>
+    ),
+    description:
+      "Splitify sends a link to your crew so they can pay any way they want.",
+    btmElements: <img className="w-full h-auto" src={feature4} alt="" />,
+  },
 
   {
-    icon: <Payment className="w-5 h-5 p-[2px] [&>path]:stroke-[25px] " />,
-
-    title: <div>Detailed payment history</div>,
+    title: (
+      <div>
+        Detailed <br className="hidden [@media(min-width:580px)]:inline" />{" "}
+        payment history
+      </div>
+    ),
     description: (
       <div>
         Splitify keeps a clear record of who’s paid. No stress, no confusion,
@@ -49,28 +58,24 @@ const features = [
     ),
     btmElements: <img className="w-full h-auto" src={feature5} alt="" />,
   },
-    {
-    icon: <Link className="w-5 h-5 [&>path]:stroke-[16px] " />,
-
-    title: <div className="">Pay with link</div>,
-    description:
-      "Splitify sends a link to your crew so they can pay any way they want. Venmo, cashapp, etc.",
-    btmElements: <img className="w-full h-auto" src={feature4} alt="" />,
-  },
-
   {
-    icon: <Repeat className="w-5 h-5 [&>path]:stroke-[40px] " />,
-    title: <div>Recurring splits</div>,
+    title: (
+      <div>
+        Recurring <br className="hidden [@media(min-width:580px)]:inline" />{" "}
+        splits
+      </div>
+    ),
     description:
       "Automate splits for utilities, Wi-Fi, or subscriptions. Set it once, forget the rest.",
-    btmElements: <img className="w-full h-auto" src={feature2} alt="" />,
+    btmElements: <img className="w-full " src={feature2} alt="" />,
   },
   {
-    icon: (
-      <Bank className="w-5 h-5 p-[1px] -translate-y-[1px] [&>path]:stroke-[40px] " />
+    title: (
+      <div>
+        Connect <br className="hidden [@media(min-width:580px)]:inline" /> your
+        bank
+      </div>
     ),
-
-    title: <div>Connect your bank</div>,
     description: (
       <div>
         Optionally, connect your bank account with Plaid to make bill splitting
@@ -119,20 +124,19 @@ export default function Features() {
         {/* features grid */}
         <div className="mt-14 grid gap-4 auto-rows-fr grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
           {/* <Carousel gap="20px" slidesPerView={3} loop autoPlay interval={4000}> */}
-          {features.map((feature, index) => (
-            <AnimatedInView
-              key={index}
-              delay={index * 0.14} // stagger: 0s, 140ms, 280ms, ...
-              className="w-full"
-            >
-              <FeatureCard
-                title={feature.title}
-                description={feature.description}
-                btmElements={feature.btmElements}
-                icon={feature.icon}
-              />
-            </AnimatedInView>
-          ))}
+            {features.map((feature, index) => (
+              <AnimatedInView
+                key={index}
+                delay={index * 0.14} // stagger: 0s, 140ms, 280ms, ...
+                className="w-full"
+              >
+                <FeatureCard
+                  title={feature.title}
+                  description={feature.description}
+                  btmElements={feature.btmElements}
+                />
+              </AnimatedInView>
+            ))}
           {/* </Carousel>   */}
         </div>
       </div>
@@ -140,19 +144,17 @@ export default function Features() {
   );
 }
 
-function FeatureCard({ btmElements, title, description, icon }) {
+function FeatureCard({ btmElements, title, description }) {
   return (
-    <div className="flex flex-col overflow-hidden w-full h-full bg-white border border-gray-200 rounded-2xl shadow-lg">
+    <div className="flex flex-col h-full overflow-hidden w-full  bg-white border border-gray-200 rounded-2xl shadow-lg">
       <div className="p-4">
-        <div className="flex items-center mb-2">
-          {/* <div className="rounded-[60px] flex-shrink-0 text-white mr-4 w-8 h-8 flex items-center justify-center primary-color">
-            {icon}
-          </div> */}
-          <h4>{title}</h4>
+        <div className="flex items-center mb-4">
+          <h3>{title}</h3>
         </div>
-        <div className="text-gray-600">{description}</div>
+        <p className="text-gray-600">{description}</p>
       </div>
-      <div className="w-full rounded-tl-[10px]  shadow-lg bg-blue-50 opacity-60 transition-all hover:opacity-100 rounded-bl-[10px] mt-auto pt-4 pl-4 overflow-hidden h-fit flex items-end">
+
+      <div className="w-full  opacity-60 transition-all hover:opacity-100 rounded-tl-[10px]  shadow-lg bg-blue-50 mt-auto pt-4 pl-4 overflow-hidden h-fit flex items-end">
         <div className="rounded-tl-xl overflow-hidden w-full">
           {btmElements}
         </div>

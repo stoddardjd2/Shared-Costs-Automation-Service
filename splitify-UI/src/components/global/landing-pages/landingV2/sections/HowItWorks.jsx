@@ -58,7 +58,7 @@ export default function HowItWorks() {
           </h2>
           <div className="max-w-[330px] flex flex-col gap-[clamp(1rem,1vw,1.25rem)]">
             <p className="text-gray-600">
-              No calculators. No group chats. No excel sheets. Just splits that
+              <span className="font-medium">No calculators. No group chats. No excel sheets.</span> Just splits that
               actually get paid.
             </p>
             <CtaBtn
