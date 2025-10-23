@@ -207,11 +207,19 @@ async function processReminders() {
     // Skip if no reminder date set or not yet due
     // Skip if paused or delete
     const requests = await Request.find({
-      isDelete: { $ne: true }, // Not deleted,
-      iPaused: { $ne: true }, // Not paused,
-      // FLIP for dev
-      "paymentHistory.nextReminderDate": { $lte: now }, // Has reminders due
-    });
+      $and: [
+        {
+          $or: [
+            { isDeleted: { $ne: true } },
+            { isDeleted: { $exists: false } },
+          ],
+        },
+        {
+          $or: [{ isPaused: { $ne: true } }, { isPaused: { $exists: false } }],
+        },
+      ],
+      "paymentHistory.nextReminderDate": { $lte: now },
+    }).lean();
 
     console.log(`📋 Found ${requests.length} requests with due reminders`);
 
@@ -301,7 +309,6 @@ async function getSchedulerStatus() {
     // Count total active requests
     const activeRequestsCount = await Request.countDocuments({
       isCompleted: { $ne: true },
-
     });
 
     return {

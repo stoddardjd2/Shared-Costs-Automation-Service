@@ -527,8 +527,20 @@ function startRecurringRequestsCron() {
         const currentDateTime = new Date();
         const activeRecurringRequests = await Request.find({
           isRecurring: true,
-          isDelete: { $ne: true }, // Not deleted,
-          iPaused: { $ne: true }, // Not paused,
+          $and: [
+            {
+              $or: [
+                { isPaused: { $ne: true } },
+                { isPaused: { $exists: false } },
+              ],
+            },
+            {
+              $or: [
+                { isDeleted: { $ne: true } },
+                { isDeleted: { $exists: false } },
+              ],
+            },
+          ],
         }).lean();
         schedulerMetrics.lastRunProcessedCount = activeRecurringRequests.length;
 
@@ -618,8 +630,17 @@ async function runRecurringRequestsNow() {
     const currentDateTime = new Date();
     const activeRecurringRequests = await Request.find({
       isRecurring: true,
-      isPaused: { $ne: true },
-      isDeleted: { $ne: true },
+      $and: [
+        {
+          $or: [{ isPaused: { $ne: true } }, { isPaused: { $exists: false } }],
+        },
+        {
+          $or: [
+            { isDeleted: { $ne: true } },
+            { isDeleted: { $exists: false } },
+          ],
+        },
+      ],
     }).lean();
     schedulerMetrics.lastRunProcessedCount = activeRecurringRequests.length;
 
