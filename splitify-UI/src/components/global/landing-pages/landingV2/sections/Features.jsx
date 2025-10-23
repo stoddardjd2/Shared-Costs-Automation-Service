@@ -1,10 +1,10 @@
 import SectionIndicator from "../builders/SectionIndicator";
-import feature1 from "../assets/features-images-new/feature-1.png";
-import feature2 from "../assets/features-images-new/feature-2.png";
-import feature3 from "../assets/features-images-new/feature-3.png";
-import feature4 from "../assets/features-images-new/feature-4.png";
-import feature5 from "../assets/features-images-new/feature-5.png";
-import feature6 from "../assets/features-images-new/feature-6.png";
+import feature1 from "../assets/features-images-new/feature-1.png?format=webp&quality=80";
+import feature2 from "../assets/features-images-new/feature-2.png?format=webp&quality=80";
+import feature3 from "../assets/features-images-new/feature-3.png?format=webp&quality=80";
+import feature4 from "../assets/features-images-new/feature-4.png?format=webp&quality=80";
+import feature5 from "../assets/features-images-new/feature-5.png?format=webp&quality=80";
+import feature6 from "../assets/features-images-new/feature-6.png?format=webp&quality=80";
 import Carousel from "../builders/Carousel";
 import Repeat from "../assets/feature-icons/repeat.svg?react";
 import Dynamic from "../assets/feature-icons/dynamic.svg?react";
@@ -122,7 +122,7 @@ export default function Features() {
           {features.map((feature, index) => (
             <AnimatedInView
               key={index}
-              delay={index * 0.14} // stagger: 0s, 140ms, 280ms, ...
+              delay={index * .14} // stagger: 0s, 140ms, 280ms, ...
               className="w-full"
             >
               <FeatureCard

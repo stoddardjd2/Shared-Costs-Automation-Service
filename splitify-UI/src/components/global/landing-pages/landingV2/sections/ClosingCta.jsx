@@ -1,6 +1,6 @@
 import Star from "../assets/Star";
 import CtaBtn from "../builders/CtaBtn";
-import splittingPhoneImg from "../assets/splittingPhone.png";
+import splittingPhoneImg from "../assets/splittingPhone.png?format=webp&quality=80";
 import heroBg from "../assets/hero-bg.png"; // ✅ bundler-friendly
 
 export default function ClosingCta() {
