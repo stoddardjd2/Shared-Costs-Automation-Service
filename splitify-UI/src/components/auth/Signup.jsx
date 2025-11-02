@@ -51,6 +51,7 @@ const Signup = () => {
       try {
         const res = await googleOauth(code);
         if (res.success) {
+          console.log("route to", `/dashboard${location.search}`)
           navigate(`/dashboard${location.search}`);
         }
       } catch (error) {

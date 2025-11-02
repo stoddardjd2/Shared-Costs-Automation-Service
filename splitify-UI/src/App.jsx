@@ -60,7 +60,7 @@ const App = () => {
       <Suspense fallback={<Fallback />}>
         <Routes>
           {/* Public routes */}
-          <Route path="/test" element={<Test />} />
+          {/* <Route path="/test" element={<Test />} /> */}
 
           <Route path="/" element={<LandingPageV2 />} />
 
