@@ -149,7 +149,7 @@ const Signup = () => {
         });
         console.log("route to", `/dashboard${location.search}`);
 
-        navigate(`/dashboard${location.search}}`);
+        navigate(`/dashboard${location.search}`);
 
         // showNotification(
         //   "Account created successfully! Welcome aboard!",

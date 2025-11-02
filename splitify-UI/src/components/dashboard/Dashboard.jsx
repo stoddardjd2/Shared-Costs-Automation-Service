@@ -44,6 +44,9 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
+    console.log("dashboard loiaded")
+
+
     // if user selected plan from landing page, popup to continue that process
     const params = new URLSearchParams(location.search);
 
