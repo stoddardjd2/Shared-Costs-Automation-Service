@@ -15,14 +15,12 @@ const contactSchema = new Schema({
   },
   email: {
     type: String,
-    required: [true, "Email is required"],
+    // required: [false, "Email is required"],
     trim: true,
   },
-
-  // no longer required
   phone: {
     type: String,
-    // required: [false, "Contact phone number is required"],
+    // required: [true, "Contact phone number is required"],
     trim: true,
   },
   avatar: {
@@ -115,7 +113,7 @@ const userSchema = new Schema(
     },
     email: {
       type: String,
-      required: [true, "Email is required"],
+      required: [false, "Email is required"],
       lowercase: true,
       match: [
         /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
@@ -133,6 +131,8 @@ const userSchema = new Schema(
       minlength: [6, "Password must be at least 6 characters"],
       select: false,
     },
+    addedFromContact: { type: Boolean },
+
     plan: {
       type: String,
       required: true,

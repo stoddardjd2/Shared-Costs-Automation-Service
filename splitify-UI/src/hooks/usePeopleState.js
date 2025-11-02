@@ -14,6 +14,7 @@ export const usePeopleState = () => {
   const [newPeople, setNewPeople] = useState([]);
   // const [isPhoneInUse, setIsPhoneInUse] = useState(false); // kept for backward-compat
   const [emailError, setEmailError] = useState(false);
+  const [phoneError, setPhoneError] = useState(false);
   // Tailwind colors
   const allowedColors = [
     "bg紫-500",
@@ -83,7 +84,7 @@ export const usePeopleState = () => {
     // Build contact with only provided fields
     const person = {
       name,
-      ...(rawPhone ? { phone: normalizePhoneNumber(rawPhone) } : {}),
+      ...(rawPhone ? { phone: `+${normalizePhoneNumber(rawPhone)}` } : {}),
       ...(email ? { email } : {}),
       avatar: initials,
       color: getRandomColor(),
@@ -99,12 +100,14 @@ export const usePeopleState = () => {
         setPeople((prev) => [...prev, created]);
         setNewPeople((prev) => [...prev, created]);
         setEmailError(false);
+        setPhoneError(false);
         return true;
       }
     } catch (error) {
       console.error("Error adding contact:", error);
       // Preserve existing behavior for phone duplicates; optionally expand later for email dupes.
       setEmailError(error);
+      setPhoneError(error);
       return false;
     }
 
@@ -170,6 +173,8 @@ export const usePeopleState = () => {
     handleAddNewPerson,
     emailError,
     setEmailError,
+    setPhoneError,
+    phoneError,
     handleDeletePerson,
     handleUpdatePersonName,
     // setIsPhoneInUse,

@@ -47,7 +47,7 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
         setHide(false);
         setTimeout(() => setHide(true), 100);
       }}
-      className="overflow-hidden  z-50 fixed flex-col inset-0 bg-gradient-to-br from-blue-900 via-blue-700 to-blue-600 flex items-start justify-start"
+      className="overflow-hidden  z-50 fixed flex-col inset-0 bg-gradient-to-br from-blue-600 via-blue-500 to-blue-600 flex items-start justify-start"
     >
       {/* Background elements */}
       <div className=" relative max-h-[75dvh] sm:max-h-[95dvh]  overflow-auto scroll-h  [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
@@ -202,7 +202,7 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
           </div>
 
           {/* Amount with zoom effect */}
-          <div
+          {/* <div
             className={`relative mb-8 transform transition-all duration-700 ${
               animationStage >= 5
                 ? "scale-100 opacity-100"
@@ -216,7 +216,7 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
                 </span>
               </div>
             </div>
-          </div>
+          </div> */}
 
           <p
             className={`text-white text-opacity-90 mb-8 max-w-md mx-auto transform transition-all duration-600 delay-300 ${
@@ -225,10 +225,7 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
                 : "translate-y-4 opacity-0"
             } text-base`}
           >
-            Text and emails have been sent all participants.
-            <br></br>
-            <br></br>
-            *IMPORTANT* First time participants must opt in to text messages via email they recieved.
+            Texts have been sent to your crew.
           </p>
 
           {/* Recipients with delivery animation */}

@@ -7,9 +7,9 @@ async function sendRequestsRouter(reminderData, routes = ["text", "email"]) {
   // TODO: Implement your SMS/Email sending logic here
   //Generate payment URL
   try {
-    const participant = await User.findById(reminderData.participantId, {
-      "textMessagesAllowed.isAllowed": true,
-    });
+    // const participant = await User.findById(reminderData.participantId, {
+    //   "textMessagesAllowed.isAllowed": true,
+    // });
 
     function getFrequency(requestData) {
       const { frequency, customInterval, customUnit } = requestData;
@@ -66,10 +66,10 @@ async function sendRequestsRouter(reminderData, routes = ["text", "email"]) {
     );
 
     console.log(`URL FOR ${name}!`, finalUrl);
-    if (routes.includes("email")) {
-      console.log("sending email");
-      sendEmailRequest(requester, name, amount, finalUrl, user.email);
-    }
+    // if (routes.includes("email")) {
+    //   console.log("sending email");
+    //   sendEmailRequest(requester, name, amount, finalUrl, user.email);
+    // }
 
     const message = `Hi ${name},
 ${requester} sent you a payment request.
@@ -82,7 +82,7 @@ To complete your payment, visit: ${finalUrl}
 Sent via Splitify
 `;
 
-    if (routes.includes("text") && participant.textMessagesAllowed.isAllowed) {
+    if (routes.includes("text")) {
       console.log("sending text");
       sendTextMessage(user.phone, "+18333702013", message);
     }

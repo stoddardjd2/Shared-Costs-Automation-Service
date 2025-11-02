@@ -29,8 +29,7 @@ const features = [
     title: <div>Auto text reminders</div>,
     description: (
       <p className="text-gray-600">
-        Missing payments? Splitify follows up with email{" "}
-        <span className="italic font-medium">and</span> text messages until you
+        Missing payments? Splitify follows up with text messages until you
         get paid.
       </p>
     ),

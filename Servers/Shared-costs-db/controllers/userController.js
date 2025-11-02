@@ -151,15 +151,15 @@ const addContactToUser = async (req, res) => {
   try {
     const userId = req.user._id; // From auth middleware
     const { name, phone, avatar, color, email } = req.body;
-    const emailClean = email.toLowerCase().trim();
+    // const emailClean = email.toLowerCase().trim();
 
-    // prevent adding self
-    if (emailClean == req.user.email) {
-      return res.status(404).json({ message: "Cannot add self" });
-    }
+    // // prevent adding self
+    // if (emailClean == req.user.email) {
+    //   return res.status(404).json({ message: "Cannot add self" });
+    // }
 
-    // phone is not required
-    if (!name || !emailClean || !avatar || !color) {
+    // email is not required
+    if (!name || !phone || !avatar || !color) {
       return res
         .status(400)
         .json({ message: "Name, phone, avatar, and color are required." });
@@ -172,7 +172,7 @@ const addContactToUser = async (req, res) => {
     let phoneExists;
     if (phone) {
       phoneExists = user.contacts.some(
-        (contact) => contact.phone.trim() === phone.trim()
+        (contact) => contact?.phone?.trim() === phone.trim()
       );
     }
 
@@ -183,34 +183,42 @@ const addContactToUser = async (req, res) => {
     }
 
     // check for duplicate email
-    const emailExists = user.contacts.some(
-      (contact) => contact.email.trim() === emailClean.trim()
-    );
+    // const emailExists = user.contacts.some(
+    //   (contact) => contact.email.trim() === emailClean.trim()
+    // );
 
-    if (emailExists) {
-      return res
-        .status(409)
-        .json({ message: "Contact with this email already exists." });
-    }
+    // if (emailExists) {
+    //   return res
+    //     .status(409)
+    //     .json({ message: "Contact with this email already exists." });
+    // }
 
     // Add new contact as new User in DB if not added yet
-    const prevUser = await User.findOne({ email: emailClean.toLowerCase() });
+    console.log("phone add", phone.trim(), phone);
+    const prevUser = await User.findOne({ phone: phone.trim() });
     let newUser;
     if (!prevUser) {
-      newUser = new User({ email: emailClean, name: name });
+      newUser = new User({
+        phone: phone.trim(),
+        name: name,
+        addedFromContact: true,
+      });
       await newUser.save();
     }
 
     // Add new contact
+    
     const newContact = {
       name: name.trim(),
       avatar: avatar.trim(),
       color: color.trim(),
-      email: emailClean,
+      phone: phone.trim(),
+      // email: emailClean,
       // Add user Id (either newly created or one found)
       _id: prevUser ? prevUser._id : newUser._id,
-      ...(phone ? phone.trim : {}),
     };
+
+    console.log("new contanct", newContact);
     user.contacts.push(newContact);
     await user.save();
 

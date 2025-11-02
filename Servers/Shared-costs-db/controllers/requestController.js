@@ -122,7 +122,7 @@ const createRequest = async (req, res) => {
               // Optionally store email if you want to track or reference it
             
             // MAY NEED TO REMOVE:
-              $set: { email: participant.email },
+              // $set: { email: participant.email },
             },
             { new: true }
           );
@@ -134,16 +134,16 @@ const createRequest = async (req, res) => {
     // if already opted in, then ignore
 
     // this process could be improved:
-    const participantsTextPermissions = await checkTextMessagePermissions(
-      requestData.participants
-    );
+    // const participantsTextPermissions = await checkTextMessagePermissions(
+    //   requestData.participants
+    // );
 
-    const mailingResults = await emailNonApprovedParticipants(
-      participantsTextPermissions,
-      (requesterId = req.user._id), // or whatever identifies the sender
-      (requesterName = req.user.name),
-      requestData
-    );
+    // const mailingResults = await emailNonApprovedParticipants(
+    //   participantsTextPermissions,
+    //   (requesterId = req.user._id), // or whatever identifies the sender
+    //   (requesterName = req.user.name),
+    //   requestData
+    // );
 
     // send initial payment request to those approved for text messages or send after user opts in
     // Using send reminder function as intial request even though it is not a reminder

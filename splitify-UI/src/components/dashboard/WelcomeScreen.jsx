@@ -28,7 +28,7 @@ export default function WelcomeScreen({setShowFirstTimePrompt}) {
     {
       icon: <Send className="w-5 h-5" />,
       title: "Send Requests",
-      description: "Send payment requests via text and email to your friends",
+      description: "Send payment requests via text messages to your friends",
     },
     {
       icon: <CreditCard className="w-5 h-5" />,

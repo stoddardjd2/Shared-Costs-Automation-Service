@@ -1,5 +1,5 @@
 import Hero from "./sections/Hero";
-import Hero2 from "./sections/Hero2";
+import Hero2 from "./sections/Hero2"; 
 import "./landingPageV2Styling.css";
 import Navbar from "./builders/Navbar";
 import Footer from "./builders/Footer";

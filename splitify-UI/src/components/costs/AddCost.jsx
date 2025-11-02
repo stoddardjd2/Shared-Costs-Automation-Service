@@ -217,6 +217,8 @@ const AddCost = ({ setView }) => {
             onDeletePerson={handleDeletePerson}
             setEmailError={peopleState.setEmailError}
             emailError={peopleState.emailError}
+            phoneError={peopleState.phoneError}
+            setPhoneError={peopleState.setPhoneError}
             selectedPeople={peopleState.selectedPeople}
           />
         );

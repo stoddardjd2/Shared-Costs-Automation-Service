@@ -66,7 +66,7 @@ export default function Hero() {
               friendships
             </h1>
             <p className="text-center text-gray-700  mb-2">
-              Bills split, email & texts sent until you get paid, and everything
+              Bills split, texts sent until you get paid, and everything
               tracked for you.
             </p>
             <p className="text-center font-semibold text-gray-700">

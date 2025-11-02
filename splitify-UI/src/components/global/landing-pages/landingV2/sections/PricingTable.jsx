@@ -57,7 +57,7 @@ export default function PricingTable() {
         "Automated reminders",
         "Instant bill splitting calculations",
         "Payment tracking",
-        "Customizable Text & Email Messages (Coming soon)",
+        "Customizable Text Messages (Coming soon)",
       ],
       cta: "Sign Up Free",
       popular: true,
