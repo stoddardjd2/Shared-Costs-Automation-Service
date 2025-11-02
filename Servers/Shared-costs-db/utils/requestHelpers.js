@@ -84,7 +84,7 @@ const calculateNextReminderDate = (nextDueDate, reminderFrequency) => {
 //   return dueDate;
 // }
 
-function calculateDueDate(daysFromNow, startDate = new Date()) {
+function calculateDaysFromNow(daysFromNow, startDate = new Date()) {
   const dueDate = new Date(startDate);
   dueDate.setUTCDate(dueDate.getUTCDate() + daysFromNow);
   return dueDate;
@@ -289,7 +289,7 @@ async function emailNonApprovedParticipants(
 
 module.exports = {
   calculateNextReminderDate,
-  calculateDueDate,
+  calculateDaysFromNow,
   checkTextMessagePermissions,
   emailNonApprovedParticipants,
 };

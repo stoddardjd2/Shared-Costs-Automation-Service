@@ -211,21 +211,33 @@ function calculateNextReminderDate(dueDate, reminderFrequency) {
   return addIntervalToDate(dueDate, interval.count, interval.unit);
 }
 
+function calculateDaysFromNow(daysFromNow, startDate = new Date()) {
+  const dueDate = new Date(startDate);
+  dueDate.setUTCDate(dueDate.getUTCDate() + daysFromNow);
+  return dueDate;
+}
+
 /**
  * Create a paymentHistory entry. Accepts an optional presetId so the caller
  * can generate the _id up front and pass it through to notifications.
  */
 function createPaymentHistoryEntry(requestDocument, requestSentDate, presetId) {
-  const dueDate = calculateDueDate(
-    requestSentDate,
-    requestDocument.reminderFrequency,
-    requestDocument?.customInterval,
-    requestDocument?.customUnit
-  );
-  const nextReminderDate = calculateNextReminderDate(
-    dueDate,
-    requestDocument.reminderFrequency
-  );
+  const dueInDays = 7;
+  const dueDate = calculateDaysFromNow(dueInDays);
+  // calculateDueDate(
+  //   requestSentDate,
+  //   requestDocument.reminderFrequency,
+  //   requestDocument?.customInterval,
+  //   requestDocument?.customUnit
+  // );
+
+  // send reminders 3 days after due date
+  const remindInDays = 3
+  const nextReminderDate = calculateDaysFromNow(remindInDays);
+  // calculateNextReminderDate(
+  //   dueDate,
+  //   requestDocument.reminderFrequency
+  // );
 
   const participantsData = (requestDocument.participants || []).map(
     (participant) => ({

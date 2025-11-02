@@ -19,7 +19,8 @@ import {
   XCircle,
   Filter,
   ChevronDown,
-  PauseCircle, // ⬅️ added
+  PauseCircle,
+  Repeat, // ⬅️ added
 } from "lucide-react";
 import { useData } from "../../contexts/DataContext";
 import { getFrequencyColor, getNextDueStatus } from "../../utils/helpers";
@@ -520,7 +521,8 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                           title="Next request date"
                           className="items-center ml-auto flex gap-2 text-gray-600 px-3 py-1.5 rounded-lg w-fit"
                         >
-                          <Calendar className="w-4 h-4" />
+                          {/* <Calendar className="w-4 h-4" /> */}
+                          <RefreshCw className="w-4 h-4"/>
                           <span className="text-sm">
                             {/* {cost.isRecurring ? "Next: " : "Due: "} */}
                             {FormatDueDate(cost.nextDue)}

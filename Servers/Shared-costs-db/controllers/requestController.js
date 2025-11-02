@@ -6,7 +6,7 @@ const { mongoose } = require("mongoose");
 const sendRequestsRouter = require("../send-request-helpers/sendRequestsRouter");
 const {
   calculateNextReminderDate,
-  calculateDueDate,
+  calculateDaysFromNow,
   checkTextMessagePermissions,
   emailNonApprovedParticipants,
 } = require("../utils/requestHelpers");
@@ -41,8 +41,8 @@ const createRequest = async (req, res) => {
   try {
     const userId = req.user._id; // From auth middleware
     const {
-      // assume due immediately
-      dueInDays = 0,
+      // assume due in week
+      dueInDays = 7,
       reminderFrequency = "weekly",
       ...requestData
     } = req.body;
@@ -56,13 +56,16 @@ const createRequest = async (req, res) => {
       }
     }
     // Calculate due date - accepts starting date param
-    const dueDate = calculateDueDate(dueInDays);
+    const dueDate = calculateDaysFromNow(dueInDays);
 
     // Calculate next reminder date based on frequency
-    const nextReminderDate = calculateNextReminderDate(
-      dueDate,
-      reminderFrequency
-    );
+    // send reminder on day its due
+    const remindInDays = 3;
+    const nextReminderDate = calculateDaysFromNow(remindInDays);
+    // calculateNextReminderDate(
+    //   dueDate,
+    //   reminderFrequency
+    // );
     let request;
 
     // Create initial payment history entry if startTiming is now
@@ -120,8 +123,8 @@ const createRequest = async (req, res) => {
             {
               $push: { participantForRequests: request._id },
               // Optionally store email if you want to track or reference it
-            
-            // MAY NEED TO REMOVE:
+
+              // MAY NEED TO REMOVE:
               // $set: { email: participant.email },
             },
             { new: true }

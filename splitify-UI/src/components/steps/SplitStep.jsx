@@ -314,6 +314,13 @@ const SplitStep = ({
   };
 
   function getCostEntry() {
+    console.log(
+      "AMOUNT",
+      splitType == "percentage"
+        ? null
+        : Number(roundToTwo(editableTotalAmount / (participants.length + 1))),
+      editableTotalAmount
+    );
     function roundToTwo(num) {
       const n = Number(num);
       if (Number.isNaN(n));
@@ -715,7 +722,7 @@ const SplitStep = ({
             </button>
             <div className="flex-1">
               <h1 className={`text-3xl font-bold text-gray-900`}>
-                {isEditMode ? `Edit Requests` : "Split Bill"}
+                {isEditMode ? `Edit Requests` : "Split Costs"}
               </h1>
               <p className="text-gray-600">
                 {isEditMode

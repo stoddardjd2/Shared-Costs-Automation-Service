@@ -152,7 +152,7 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
           )}
         </div>
 
-        <div className="relative z-10 text-center h-full p-10 w-screen ">
+        <div className="relative z-10 text-center h-full p-10 w-screen overflow-auto">
           {/* Success icon (appears after send animation) */}
           <div
             className={`relative mb-8 transform transition-all duration-1000 ${
