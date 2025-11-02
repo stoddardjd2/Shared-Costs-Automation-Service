@@ -30,7 +30,7 @@ function useInView(options = { threshold: 0.1, rootMargin: "0px" }) {
 
 // Memoized StepCard component
 const StepCard = memo(function StepCard({ number, title, description, imgSrc, delayMs = 0 }) {
-  const { ref, visible } = useInView({ threshold: 0.2 });
+  const { ref, visible } = useInView({ threshold: 0, rootMargin: "0px 0px 50% 0px" });
 
   // Pre-compute className to avoid re-creating on every render
   const cardClassName = useMemo(() => {
