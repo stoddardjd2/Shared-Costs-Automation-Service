@@ -1,13 +1,14 @@
-import Test from "./components/Test.jsx";
-
-// App.jsx
 import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate, Outlet, useNavigate } from "react-router-dom";
+import { Component } from "react";
+
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import { DataProvider } from "./contexts/DataContext";
 
-// 🔹 Lazily load everything that isn't needed for the first paint.
-//    Especially anything that might import Stripe.
+// Lazies
+// const Test = lazy(() => import("./components/Test.jsx"));
+
 const Loginv2 = lazy(() => import("./components/auth/Loginv2"));
 const Signup = lazy(() => import("./components/auth/Signup"));
 const ResetPasswordPage = lazy(() =>
@@ -27,15 +28,12 @@ const LandingPageOfficial = lazy(() =>
 const LandingPageV2 = lazy(() =>
   import("./components/global/landing-pages/landingV2/LandingPageV2")
 );
-// const LandingPage = lazy(() => import("./components/global/landing-pages/Claude/LandingPage"));
-// const LandingPage2 = lazy(() => import("./components/global/landing-pages/Claude/LandingPage2"));
 
 const PaymentPage = lazy(() => import("./payment-components/PaymentPage"));
 const PaymentPortal = lazy(() =>
   import("./components/global/PaymentPortal.jsx")
 );
 
-// Other pages
 const SmsOptInPage = lazy(() =>
   import("./components/global/opt-in-pages/SmsOptInPage.jsx")
 );
@@ -46,11 +44,12 @@ const TermsAndConditions = lazy(() =>
   import("./components/global/about/TermsAndConditions.jsx")
 );
 
-// If you have protected route wrapper, keep it non-lazy if it's tiny.
-// Otherwise you can lazy it too:
-import ProtectedRoute from "./components/auth/ProtectedRoute";
-
-const Fallback = () => null; // or a tiny spinner
+// Minimal fallback to avoid blank screen during chunk fetch
+const Fallback = () => (
+  <div className="min-h-screen grid place-items-center">
+    <div className="animate-spin h-6 w-6 rounded-full border-2 border-gray-300 border-t-transparent" />
+  </div>
+);
 
 const App = () => {
   const navigate = useNavigate();
@@ -58,105 +57,137 @@ const App = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Suspense fallback={<Fallback />}>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/test" element={<Test />} />
+        <ChunkErrorBoundary>
+          <Routes>
+            {/* Public routes */}
+            {/* <Route path="/test" element={<Test />} /> */}
 
-          <Route path="/" element={<LandingPageV2 />} />
+            <Route path="/" element={<LandingPageV2 />} />
+            <Route path="/landing/*" element={<LandingPageV2 />} />
+            <Route path="/landing/2" element={<LandingPageOfficial />} />
 
-          <Route path="/landing/*" element={<LandingPageV2 />}></Route>
-          <Route path="/landing/2" element={<LandingPageOfficial />} />
+            <Route path="/login" element={<Loginv2 />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route
+              path="/reset-password/:token"
+              element={<ResetPasswordPage />}
+            />
 
-          <Route path="/login" element={<Loginv2 />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route
-            path="/reset-password/:token"
-            element={<ResetPasswordPage />}
-          />
+            {/* Protected routes */}
+            <Route
+              path="/dashboard/*"
+              element={
+                <AuthProvider>
+                  <ProtectedRoute>
+                    <DataProvider>
+                      <Navbar />
+                      <div className="max-w-7xl mx-auto py-0 pt-[50px]">
+                        <Dashboard />
+                      </div>
+                    </DataProvider>
+                  </ProtectedRoute>
+                </AuthProvider>
+              }
+            />
 
-          {/* Protected routes */}
-          <Route
-            path="/dashboard/*"
-            element={
-              <AuthProvider>
-                <ProtectedRoute>
-                  <DataProvider>
-                    <Navbar />
-                    <div className="max-w-7xl mx-auto py-0 pt-[50px]">
-                      <Dashboard />
-                    </div>
-                  </DataProvider>
-                </ProtectedRoute>
-              </AuthProvider>
-            }
-          />
+            {/* Stripe/payment-related */}
+            <Route
+              path="/payment"
+              element={
+                <>
+                  <GlobalNavbar />
+                  <PaymentPage />
+                </>
+              }
+            />
+            <Route
+              path="/PaymentPortal"
+              element={
+                <>
+                  <GlobalNavbar />
+                  <PaymentPortal />
+                </>
+              }
+            />
 
-          {/* Stripe pages (lazy chunk; won’t load on /landing) */}
-          <Route
-            path="/payment"
-            element={
-              <>
-                <GlobalNavbar />
-                <PaymentPage />
-              </>
-            }
-          />
-          <Route
-            path="/PaymentPortal"
-            element={
-              <>
-                <GlobalNavbar />
-                <PaymentPortal />
-              </>
-            }
-          />
+            {/* Misc pages */}
+            <Route
+              path="/smsOptIn"
+              element={
+                <>
+                  <GlobalNavbar
+                    options={{
+                      features: false,
+                      security: false,
+                      pricing: false,
+                      createFreeAccount: true,
+                      signup: true,
+                    }}
+                  />
+                  <SmsOptInPage />
+                </>
+              }
+            />
 
-          {/* Misc pages */}
-          <Route
-            path="/smsOptIn"
-            element={
-              <>
-                <GlobalNavbar
-                  options={{
-                    features: false,
-                    security: false,
-                    pricing: false,
-                    createFreeAccount: true,
-                    signup: true,
-                  }}
-                />
-                <SmsOptInPage />
-              </>
-            }
-          />
+            <Route
+              path="/about"
+              element={
+                <>
+                  <GlobalNavbar
+                    options={{
+                      features: false,
+                      security: false,
+                      pricing: false,
+                      createFreeAccount: true,
+                      signup: true,
+                    }}
+                  />
+                  <Outlet />
+                  <GlobalFooter />
+                </>
+              }
+            >
+              <Route path="privacyPolicy" element={<PrivacyPolicy />} />
+              <Route
+                path="termsAndConditions"
+                element={<TermsAndConditions />}
+              />
+            </Route>
 
-          <Route
-            path="/about"
-            element={
-              <>
-                <GlobalNavbar
-                  options={{
-                    features: false,
-                    security: false,
-                    pricing: false,
-                    createFreeAccount: true,
-                    signup: true,
-                  }}
-                />
-                <Outlet />
-                <GlobalFooter />
-              </>
-            }
-          >
-            <Route path="privacyPolicy" element={<PrivacyPolicy />} />
-            <Route path="termsAndConditions" element={<TermsAndConditions />} />
-          </Route>
-
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
+            {/* Catch-all */}
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </ChunkErrorBoundary>
       </Suspense>
     </div>
   );
 };
 
 export default App;
+
+class ChunkErrorBoundary extends Component {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(err) {
+    const msg = String(err?.message || "");
+    const once = sessionStorage.getItem("chunk-reloaded");
+    const isChunkLoadError =
+      msg.includes("Loading chunk") ||
+      msg.includes("Failed to fetch dynamically imported module") ||
+      msg.includes("ChunkLoadError");
+
+    if (!once && isChunkLoadError) {
+      sessionStorage.setItem("chunk-reloaded", "1");
+      location.reload();
+    }
+  }
+
+  render() {
+    // If we get here *and* reload didn't happen (e.g., other errors), render nothing.
+    return this.state.hasError ? null : this.props.children;
+  }
+}
