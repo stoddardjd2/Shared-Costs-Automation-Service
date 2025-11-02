@@ -22,7 +22,7 @@
         "logo": "https://splitify.io/assets/roundedLogo.png",
         "sameAs": [
           "https://www.producthunt.com/products/splitify-2",
-          "https://huntscreens.com/en/products/splitify",
+          "https://huntscreens.com/en/products/splitify"
         ],
         "contactPoint": [
           {
@@ -33,6 +33,24 @@
           }
         ]
       }
+    </script>
+
+    <script>
+      (function () {
+        console.log("force reload")
+        // Only once
+        if (sessionStorage.getItem("vfix_reloaded")) return;
+        window.addEventListener("error", (e) => {
+          // Module load failures often start with "Failed to fetch dynamically imported module"
+          if (
+            e.message &&
+            e.message.includes("Failed to fetch dynamically imported module")
+          ) {
+            sessionStorage.setItem("vfix_reloaded", "1");
+            location.reload();
+          }
+        });
+      })();
     </script>
   </head>
   <body>
