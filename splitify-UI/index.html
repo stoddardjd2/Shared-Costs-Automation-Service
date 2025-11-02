@@ -36,21 +36,25 @@
     </script>
 
     <script>
-      (function () {
-        console.log("force reload")
-        // Only once
-        if (sessionStorage.getItem("vfix_reloaded")) return;
-        window.addEventListener("error", (e) => {
-          // Module load failures often start with "Failed to fetch dynamically imported module"
-          if (
-            e.message &&
-            e.message.includes("Failed to fetch dynamically imported module")
-          ) {
-            sessionStorage.setItem("vfix_reloaded", "1");
-            location.reload();
-          }
-        });
-      })();
+            (function () {
+              console.log("force reload")
+              // Only once
+              if (sessionStorage.getItem("vfix_reloaded")) return;
+              window.addEventListener("error", (e) => {
+                // Module load failures often start with "Failed to fetch dynamically imported module"
+                if (
+                  e.message &&
+                  e.message.includes("Failed to fetch dynamically imported module")
+                ) {
+                  sessionStorage.setItem("vfix_reloaded", "1");
+                  if (import.meta.env.VITE_ENV_PRODUCTION) {
+        location.replace("http://localhost:5173/login");
+      } else {
+        location.replace("https://splitify.io/login");
+      }
+                }
+              });
+            })();
     </script>
   </head>
   <body>
