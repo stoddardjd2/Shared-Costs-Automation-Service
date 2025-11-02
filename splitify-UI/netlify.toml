@@ -2,11 +2,6 @@
   command = "rm -rf node_modules package-lock.json && npm install && npm run build"
   publish = "dist"
 
-# SPA fallback
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
 
 # 👇 Ensure index.html isn't cached for long
 [[headers]]
@@ -25,3 +20,9 @@
   for = "/*"
   [headers.values]
     Cross-Origin-Opener-Policy = "same-origin-allow-popups"
+
+    # SPA fallback
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
