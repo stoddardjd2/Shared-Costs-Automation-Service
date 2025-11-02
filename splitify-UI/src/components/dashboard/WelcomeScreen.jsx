@@ -28,7 +28,7 @@ export default function WelcomeScreen({setShowFirstTimePrompt}) {
     {
       icon: <Send className="w-5 h-5" />,
       title: "Send Requests",
-      description: "Send payment requests via text messages to your friends",
+      description: "Splitify sends text messages to your friends",
     },
     {
       icon: <CreditCard className="w-5 h-5" />,
@@ -44,7 +44,7 @@ export default function WelcomeScreen({setShowFirstTimePrompt}) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 min-h-screen bg-white flex items-center justify-center p-4 sm:p-6 lg:p-8">
+    <div className="fixed inset-0 z-50 min-h-screen bg-white flex items-center justify-center p-4 sm:p-6 lg:p-8 overflow-auto">
       <div
         className={`w-full max-w-2xl mx-auto text-center transition-all duration-700 ${
           isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
@@ -56,7 +56,7 @@ export default function WelcomeScreen({setShowFirstTimePrompt}) {
           </h1>
 
           <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 leading-relaxed px-2">
-            Split bills and manage payments with friends and family.
+            Split bills and manage payments with friends.
           </p>
 
           {/* Responsive button layout */}
@@ -82,7 +82,7 @@ export default function WelcomeScreen({setShowFirstTimePrompt}) {
         </div>
 
         {/* Responsive features grid */}
-        <div className="grid gap-4 sm:gap-6 mb-8 px-2">
+        <div className="grid gap-4 sm:gap-6 px-2">
           {features.map((feature, index) => (
             <div
               key={index}
