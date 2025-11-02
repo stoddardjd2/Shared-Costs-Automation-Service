@@ -51,7 +51,6 @@ const Signup = () => {
       try {
         const res = await googleOauth(code);
         if (res.success) {
-          console.log("route to", `/dashboard${location.search}`)
           navigate(`/dashboard${location.search}`);
         }
       } catch (error) {
@@ -148,6 +147,8 @@ const Signup = () => {
           event_category: "engagement",
           event_label: `Create Account Button CTA-Signup`,
         });
+        console.log("route to", `/dashboard${location.search}`);
+
         navigate(`/dashboard${location.search}}`);
 
         // showNotification(
