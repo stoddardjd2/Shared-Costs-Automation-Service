@@ -1,31 +1,25 @@
+# netlify.toml
 [build]
-  command = "rm -rf node_modules package-lock.json && npm install && npm run build"
+  command = "npm ci && npm run build"
   publish = "dist"
 
-# ✅ Serve assets with correct MIME type
-[[redirects]]
-  from = "/assets/*"
-  to = "/assets/:splat"
-  status = 200
-
-# ✅ Serve static files correctly
-[[redirects]]
-  from = "/favicon.ico"
-  to = "/favicon.ico"
-  status = 200
-
-[[redirects]]
-  from = "/robots.txt"
-  to = "/robots.txt"
-  status = 200
-
-[[redirects]]
-  from = "/sitemap.xml"
-  to = "/sitemap.xml"
-  status = 200
-
-# ✅ Catch-all fallback for SPA — keep this LAST
+# SPA fallback
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cross-Origin-Opener-Policy = "same-origin-allow-popups"
