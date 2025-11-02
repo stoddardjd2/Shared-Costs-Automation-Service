@@ -167,17 +167,27 @@ async function processRequestReminders(request) {
     }
 
     // Update next reminder date or mark as complete
-    if (request.isRecurring) {
-      paymentEntry.nextReminderDate = calculateNextReminderDate(
-        now,
-        request.reminderFrequency
-      );
+    if (
+      !paymentEntry.markedAsPaid ||
+      !(paymentEntry.paymentAmount >= paymentEntry.amount)
+    ) {
+      function calculateDaysFromNow(daysFromNow, startDate = new Date()) {
+        const dueDate = new Date(startDate);
+        dueDate.setUTCDate(dueDate.getUTCDate() + daysFromNow);
+        return dueDate;
+      }
+
+      paymentEntry.nextReminderDate = calculateDaysFromNow(3);
+      // calculateNextReminderDate(
+      //   now,
+      //   request.reminderFrequency
+      // );
       updatedRequest = true;
     } else {
-      request.isCompleted = true;
-      paymentEntry.nextReminderDate = null;
-      updatedRequest = true;
-      console.log(`📝 One-time request "${request.name}" marked as completed`);
+      // request.isCompleted = true;
+      // paymentEntry.nextReminderDate = null;
+      // updatedRequest = true;
+      // console.log(`📝 One-time request "${request.name}" marked as completed`);
     }
   }
 
