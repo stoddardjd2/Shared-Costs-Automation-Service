@@ -33,7 +33,6 @@ const Loginv2 = () => {
   const googleLogin = useGoogleLogin({
     onSuccess: async ({ code }) => {
       try {
-        console.log("code", code);
         const res = await googleOauth(code);
         if (res.success) {
           navigate("/dashboard");
