@@ -16,6 +16,7 @@ import {
   setUserId,
 } from "../../googleAnalytics/googleAnalyticsHelpers";
 import WelcomeScreen from "./WelcomeScreen";
+import ContactForm from "./ContactForm";
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation(); // 👈 read current URL
@@ -107,7 +108,7 @@ const Dashboard = () => {
       case /^\/dashboard$/.test(path):
       default:
         return (
-          <div className="mx-auto px-4 sm:px-6 py-0 pb-24">
+          <div className="mx-auto px-4 sm:px-6 py-0 pb-0">
             {/* Header */}
             <div className="flex items-center justify-between gap-4 mb-6 mt-8">
               <div className="flex-1 min-w-0">
@@ -165,6 +166,7 @@ const Dashboard = () => {
               <Plus className="w-5 h-5" />
               <span className="sm:hidden">New Request</span>
             </button>
+            <ContactForm />
           </div>
         );
     }

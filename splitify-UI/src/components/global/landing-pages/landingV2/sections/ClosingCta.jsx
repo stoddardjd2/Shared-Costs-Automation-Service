@@ -42,8 +42,8 @@ export default function ClosingCta() {
               Make your next split the easiest one yet.
             </h2>
             <p className="mt-4 w-9/12 mx-auto md:mx-0 text-center md:text-start">
-              Splitify keeps things clear, quick and friendly. No follow-ups. No
-              confusion. Works with any payment app.
+              Splitify keeps things clear, quick and friendly. <br></br> No follow-ups. No
+              confusion. Just automatic bill splits.
             </p>
             <CtaBtn
               animate={true}

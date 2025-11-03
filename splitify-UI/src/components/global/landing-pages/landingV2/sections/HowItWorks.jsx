@@ -90,7 +90,7 @@ export default function HowItWorks() {
       imgSrc: demo2Img,
     },
     {
-      title: "Texts sent for you",
+      title: "Sends texts for you",
       description: "Splitify sends requests and reminders for you with a link for others to pay.",
       imgSrc: demo1Img,
     },

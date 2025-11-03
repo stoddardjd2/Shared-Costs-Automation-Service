@@ -144,6 +144,10 @@ const AddStep = ({
                 <span className="text-sm">{emailError.message}</span>
               </div>
             )}
+              <div className="mt-2 flex items-center gap-2 text-orange-600">
+                <AlertCircle className="w-4 h-4 flex-shrink-0 text-orange-600" />
+                <span className="text-sm">Only add people you know, misuse will result in a permanent ban</span>
+              </div>
           </div>
 
           {/* Submit */}
