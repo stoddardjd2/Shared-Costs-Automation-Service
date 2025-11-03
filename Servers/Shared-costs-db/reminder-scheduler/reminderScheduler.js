@@ -229,7 +229,7 @@ async function processReminders() {
         },
       ],
       "paymentHistory.nextReminderDate": { $lte: now },
-    }).lean();
+    })
 
     console.log(`📋 Found ${requests.length} requests with due reminders`);
 
