@@ -44,7 +44,7 @@ export default function WelcomeScreen({setShowFirstTimePrompt}) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 min-h-screen bg-white flex items-center justify-center p-4 sm:p-6 lg:p-8 overflow-auto">
+    <div className="fixed inset-0 z-50 min-h-screen bg-white flex items-start justify-center p-2 !pt-14 sm:p-4 lg:p-8 overflow-auto">
       <div
         className={`w-full max-w-2xl mx-auto text-center transition-all duration-700 ${
           isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
