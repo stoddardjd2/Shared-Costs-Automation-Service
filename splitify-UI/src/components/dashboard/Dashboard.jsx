@@ -16,6 +16,7 @@ import {
   setUserId,
 } from "../../googleAnalytics/googleAnalyticsHelpers";
 import WelcomeScreen from "./WelcomeScreen";
+import InstallPWAButton from "../PWA/InstallPWAButton";
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation(); // 👈 read current URL
@@ -44,14 +45,13 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    console.log("dashboard loiaded")
-
+    console.log("dashboard loiaded");
 
     // if user selected plan from landing page, popup to continue that process
     const params = new URLSearchParams(location.search);
 
     if (params?.get("plan")) {
-      console.log("location.search", location.search)
+      console.log("location.search", location.search);
       navigate(`/dashboard/premium${location.search}`);
 
       // show first time welcome screen and navigate user to make first request
@@ -109,6 +109,7 @@ const Dashboard = () => {
       default:
         return (
           <div className="mx-auto px-4 sm:px-6 py-0 pb-24">
+            <InstallPWAButton />
             {/* Header */}
             <div className="flex items-center justify-between gap-4 mb-6 mt-8">
               <div className="flex-1 min-w-0">
