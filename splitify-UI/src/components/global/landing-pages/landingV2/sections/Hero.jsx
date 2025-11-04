@@ -1,5 +1,5 @@
 import CtaBtn from "../builders/CtaBtn";
-import dashboardImg from "../assets/dashboard-high-res.png?format=webp&quality=80";
+import dashboardImg from "../assets/dashboard-high-res-patched.png?format=webp&quality=80";
 import dashboardPhoneImg from "../assets/dashboard-phone.png?format=webp&quality=80";
 import Star from "../assets/Star";
 import overdueTextPhoneImg from "../assets/overdueTextPhone.png?format=webp&quality=80";
