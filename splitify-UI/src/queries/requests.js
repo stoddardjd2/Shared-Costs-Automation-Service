@@ -106,6 +106,7 @@ export const getRequest = async (requestId) => {
 };
 
 export const createRequest = async (requestData) => {
+  console.log("req data", requestData)
   const result = await apiRequest("/requests", {
     method: "POST",
     body: requestData,

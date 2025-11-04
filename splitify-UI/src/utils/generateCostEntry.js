@@ -99,49 +99,61 @@ export default function generateCostEntry({
       return dt;
     }
 
-    // Anchor date: 'now' at UTC midnight, or the provided start date
+    // Today at UTC midnight
     const now = new Date();
-    const base =
-      startTiming === "now"
-        ? new Date(
-            Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-          )
-        : dateFromYMD(startTiming, "utc");
+    const todayUTC = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+    );
 
-    if (startTiming !== "now" && base.getTime() > Date.now()) {
+    // Anchor date
+    const base =
+      startTiming === "now" ? todayUTC : dateFromYMD(startTiming, "utc");
+
+    // If start is in the future, the next due date is the start
+    if (startTiming !== "now" && base.getTime() > now.getTime()) {
       return toYMDUTC(base);
     }
 
-    let next;
+    // Determine step (count, unit) from recurringType/custom
+    let count = 1;
+    let unit;
     switch (recurringType) {
       case "daily":
-        next = addUTC(base, 1, "days");
+        unit = "days";
         break;
       case "weekly":
-        next = addUTC(base, 1, "weeks");
+        unit = "weeks";
         break;
       case "biweekly":
-        next = addUTC(base, 2, "weeks");
+        unit = "weeks";
+        count = 2;
         break;
       case "monthly":
-        next = addUTC(base, 1, "months");
+        unit = "months";
         break;
       case "yearly":
-        next = addUTC(base, 1, "years");
+        unit = "years";
         break;
       case "custom": {
-        const count = Number(customInterval || 0);
-        if (!count) return null;
-        const unit = String(customUnit || "").toLowerCase();
-        if (unit === "days") next = addUTC(base, count, "days");
-        else if (unit === "weeks") next = addUTC(base, count, "weeks");
-        else if (unit === "months") next = addUTC(base, count, "months");
-        else if (unit === "years") next = addUTC(base, count, "years");
-        else return null;
+        const c = Number(customInterval);
+        const u = String(customUnit || "").toLowerCase();
+        if (!(c > 0)) return null;
+        if (!["days", "weeks", "months", "years"].includes(u)) return null;
+        count = c;
+        unit = u;
         break;
       }
       default:
         return null;
+    }
+
+    // Advance to the first due date on/after todayUTC
+    // Start with first period after (or equal to) base
+    let next = addUTC(base, count, unit);
+    // If base itself is today and you want "tomorrow/next period", this is already correct.
+    // If base was in the past, catch up by stepping until next >= todayUTC
+    while (next < todayUTC) {
+      next = addUTC(next, count, unit);
     }
 
     return toYMDUTC(next);

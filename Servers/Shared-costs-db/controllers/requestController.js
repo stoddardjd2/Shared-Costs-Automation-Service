@@ -91,6 +91,7 @@ const createRequest = async (req, res) => {
 
       // Create request in DB with initial history entry
       const now = new Date();
+      console.log("init data", requestData)
       request = await Request.create({
         ...requestData,
         owner: userId,
