@@ -95,7 +95,7 @@ const createRequest = async (req, res) => {
         owner: userId,
         reminderFrequency: reminderFrequency,
         paymentHistory: [initialHistory], // Add initial history as subdocument
-        lastSent: new Date(),
+        lastSent:new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())),//set to start of current day so timing works with scheduler
       });
     } else {
       // for future payment, do not add history yet as has not sent request
