@@ -46,7 +46,7 @@
   }
 
   p {
-    font-size: clamp(0.9rem, 0.4rem + 0.4vw, 1.125rem);
+    font-size: clamp(0.95rem, 0.8rem + 0.4vw, 1.125rem);
     color: #292929;
     line-height: 1.65;
   }
