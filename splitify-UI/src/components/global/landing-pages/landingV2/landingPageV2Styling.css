@@ -17,7 +17,7 @@
      p : 1rem    → 1.125rem
   */
   h1 {
-    font-size: clamp(2.25rem, 1.5rem + 3.5vw, 5rem);
+    font-size: clamp(2.45rem, 1.5rem + 3.5vw, 5rem);
     /* font-size: clamp(2.25rem, 1.5rem + 3.5vw, 4.5rem); */
     font-weight: bold;
     color: #222222;
@@ -46,7 +46,7 @@
   }
 
   p {
-    font-size: clamp(0.95rem, 0.8rem + 0.4vw, 1.125rem);
+    font-size: clamp(0.9rem, 0.4rem + 0.4vw, 1.125rem);
     color: #292929;
     line-height: 1.65;
   }
