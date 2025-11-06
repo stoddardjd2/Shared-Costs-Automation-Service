@@ -456,6 +456,9 @@ async function getUsers(req, res, next) {
     const match = {};
     if (req.query.plan) match.plan = req.query.plan;
     if (req.query.email) match.email = new RegExp(req.query.email, "i");
+    
+    // filter out users added by contacts
+    match.addedFromContact = { $ne: true };
 
     const pipeline = [
       { $match: match },
