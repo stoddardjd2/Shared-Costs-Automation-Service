@@ -42,9 +42,37 @@ export default {
         "0%, 100%": { transform: "translateX(0) translateY(2px)" },
         "50%": { transform: "translateX(6px) translateY(2px)" },
       },
+      smoothUp: {
+        "0%": {
+          opacity: "0",
+          transform: "translateY(24px) scale(1)",
+        },
+        "60%": {
+          opacity: "1",
+          // transform: "translateY(-22px) scale(1.000)",
+        },
+        "100%": {
+          transform: "translateY(0) scale(1)",
+        },
+      },
+      smoothUp2: {
+        "0%": {
+          opacity: "0",
+          transform: "translateY(100px) scale(1)",
+        },
+        "60%": {
+          opacity: "1",
+        },
+        "100%": {
+          transform: "translateY(0px) scale(1)",
+        },
+      },
     },
+
     animation: {
       arrowNudge: "arrowNudge 1.4s ease-in-out infinite",
+      "smooth-up": "smoothUp 3.5s cubic-bezier(0.16,1,0.3,1) both",
+      "smooth-up2": "smoothUp2 3.5s cubic-bezier(0.16,1,0.3,1) both",
     },
   },
   plugins: [],
