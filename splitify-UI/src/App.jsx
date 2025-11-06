@@ -12,6 +12,7 @@ import {
 } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { DataProvider } from "./contexts/DataContext";
+import AdminUsersOverview from "./components/admin/AdminUsersOverview.jsx";
 
 // 🔹 Lazily load everything that isn't needed for the first paint.
 //    Especially anything that might import Stripe.
@@ -79,7 +80,7 @@ const BlogStatic = () => {
           signup: true,
         }}
       /> */}
-        <div></div>
+      <div></div>
       {/* <iframe title={`blog-${slug}`} src={src} style={{ width: "100%", minHeight: "100vh", border: 0 }} /> */}
       {/* <GlobalFooter /> */}
     </>
@@ -204,6 +205,15 @@ const App = () => {
         >
           <Route path="privacyPolicy" element={<PrivacyPolicy />} />
           <Route path="termsAndConditions" element={<TermsAndConditions />} />
+        </Route>
+
+        {/* admin */}
+        <Route path="/admin" >
+          {/* DEFAULT DASHBOARD INDEX */}
+          <Route index element={<Navigate to="/" />} />
+
+          {/* USERS SUBPAGE */}
+          <Route path="users" element={<AdminUsersOverview />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" />} />

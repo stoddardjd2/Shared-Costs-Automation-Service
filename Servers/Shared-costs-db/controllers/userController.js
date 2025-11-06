@@ -1,11 +1,11 @@
 const User = require("../models/User");
+const Request = require("../models/Request");
 const jwt = require("jsonwebtoken");
 // server.js
 const { validationResult } = require("express-validator");
 const sendRequestsRouter = require("../send-request-helpers/sendRequestsRouter");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
-const Request = require("../models/Request");
 const { jwtDecode } = require("jwt-decode");
 const { normalizePhone } = require("../utils/general");
 const { ObjectId } = require("mongodb");
@@ -442,49 +442,101 @@ const resetPasswordHandler = async (req, res) => {
   }
 };
 
-// @desc    Get all users
-// @route   GET /api/users
-// @access  Public
-const getUsers = async (req, res) => {
+// GET /api/admin/users?limit=50&page=1
+async function getUsers(req, res, next) {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = Math.max(
+      1,
+      Math.min(200, Number(req.query.limit) || 99999999999999)
+    );
+    const page = Math.max(1, Number(req.query.page) || 1);
     const skip = (page - 1) * limit;
 
-    // Build filter object
-    const filter = { isActive: true };
-    if (req.query.role) filter.role = req.query.role;
-    if (req.query.search) {
-      filter.$or = [
-        { name: { $regex: req.query.search, $options: "i" } },
-        { email: { $regex: req.query.search, $options: "i" } },
-      ];
-    }
+    // Optional filters
+    const match = {};
+    if (req.query.plan) match.plan = req.query.plan;
+    if (req.query.email) match.email = new RegExp(req.query.email, "i");
 
-    const users = await User.find(filter)
-      .select("-password")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    const pipeline = [
+      { $match: match },
+      { $sort: { createdAt: -1 } },
+      {
+        $facet: {
+          items: [
+            { $skip: skip },
+            { $limit: limit },
 
-    const total = await User.countDocuments(filter);
+            // --- REMOVE sensitive user fields here ---
+            {
+              $project: {
+                password: 0,
+                "OAuth.google.accessToken": 0,
+                "OAuth.google.refreshToken": 0,
+                "OAuth.google.idToken": 0,
+                "plaid.accessToken": 0,
+                __v: 0,
+              },
+            },
 
-    res.status(200).json({
-      success: true,
-      count: users.length,
-      total,
-      page,
-      pages: Math.ceil(total / limit),
-      data: users,
-    });
+            // Keep order of request ids
+            { $addFields: { requestIds: "$requests" } },
+
+            // Lookup requests safely
+            {
+              $lookup: {
+                from: "requests",
+                let: { reqIds: "$requests" },
+                pipeline: [
+                  { $match: { $expr: { $in: ["$_id", "$$reqIds"] } } },
+                  // --- REMOVE sensitive request fields here ---
+                  {
+                    $project: {
+                      __v: 0,
+                      sensitiveInternalNotes: 0, // example remove
+                      privateLogs: 0,
+                    },
+                  },
+                ],
+                as: "_requestDocs",
+              },
+            },
+
+            // Reassign request docs back (preserving original order optional)
+            {
+              $addFields: {
+                requests: "$_requestDocs",
+              },
+            },
+
+            // Drop helpers
+            { $project: { _requestDocs: 0, requestIds: 0 } },
+          ],
+
+          meta: [{ $count: "total" }],
+        },
+      },
+      {
+        $addFields: {
+          total: { $ifNull: [{ $arrayElemAt: ["$meta.total", 0] }, 0] },
+          page: page,
+          limit: limit,
+        },
+      },
+      { $project: { meta: 0 } },
+    ];
+
+    const [result] = await User.aggregate(pipeline).allowDiskUse(true);
+    console.log("Admin getUsers result:", result);
+    res.status(200).json(result || { items: [], total: 0, page, limit });
   } catch (error) {
+    console.error("Get all users error:", error);
     res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: "Get all users error",
       error: error.message,
     });
   }
-};
+}
 
 // @desc    Get single user
 // @route   GET /api/users/:id

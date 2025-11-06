@@ -91,3 +91,11 @@ export const updateLastActive = async () => {
     method: "POST",
   });
 };
+
+
+export const getUsers = async () => {
+  const endpoint = `/users/all`;
+  return await apiRequest(endpoint, {
+    method: "POST",
+  });
+};

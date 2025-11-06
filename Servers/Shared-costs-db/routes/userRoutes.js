@@ -102,6 +102,8 @@ router.post("/addPaymentMethod", addPaymentMethod);
 router.post("/lastActive", updateLastActive);
 
 // Admin only routes
-router.delete("/:id", authorize("admin"), deleteUser);
+router.use(authorize("admin"));
+router.delete("/:id", deleteUser);
+router.post("/all", getUsers);
 
 module.exports = router;
