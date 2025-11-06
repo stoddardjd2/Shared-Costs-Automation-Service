@@ -20,11 +20,22 @@ const PLAN_COLORS = {
   unknown: "#9CA3AF", // gray
 };
 
+const WINDOW_DAYS = { "24h": 1, "7d": 7, "30d": 30, all: Infinity };
+
 export default function AdminUsersOverview() {
   const [query, setQuery] = useState("");
   const [planFilter, setPlanFilter] = useState("all");
   const [activeWindow, setActiveWindow] = useState("24h"); // 24h | 7d | 30d
   const [users, setUsers] = useState([]);
+  const [avgTextCost, setAvgTextCost] = useState(0.0085); // adjustable avg SMS cost
+
+  // Per-section windows
+  const [winCosts, setWinCosts] = useState("all");       // 24h | 7d | 30d | all
+  const [winDaily, setWinDaily] = useState("30d");       // 24h | 7d | 30d | all
+  const [winSenders, setWinSenders] = useState("30d");   // 24h | 7d | 30d | all
+  const [winPlan, setWinPlan] = useState("all");         // 24h | 7d | 30d | all
+  const [winLatestMsgs, setWinLatestMsgs] = useState("7d"); // 24h | 7d | 30d | all
+  const [winMsgByUser, setWinMsgByUser] = useState("30d");  // 24h | 7d | 30d | all
 
   useEffect(() => {
     async function fetchUsers() {
@@ -48,6 +59,43 @@ export default function AdminUsersOverview() {
   const within = (date, days) => (date ? date >= daysAgo(days) : false);
   const mask = (s, vis = 4) =>
     s && s.length > vis ? `${s.slice(0, vis)}•••${s.slice(-3)}` : s || "—";
+
+  const isWithinDays = (date, days, nowRef = new Date()) => {
+    if (!date) return false;
+    if (!Number.isFinite(days)) return true; // Infinity => all time
+    const cutoff = new Date(nowRef.getTime() - days * 24 * 60 * 60 * 1000);
+    return date >= cutoff;
+  };
+
+  const countHistoryWithinDays = (history, days) => {
+    if (!Array.isArray(history) || !history.length) return 0;
+    const cutoff = daysAgo(days).getTime();
+    let n = 0;
+    for (const h of history) {
+      const d = asDate(h?.at);
+      if (d && d.getTime() >= cutoff) n++;
+    }
+    return n;
+  };
+
+  const countHistoryInWindow = (history, days, nowRef = new Date()) => {
+    if (!Array.isArray(history) || !history.length) return 0;
+    if (!Number.isFinite(days)) return history.length;
+    const cutoff = new Date(nowRef.getTime() - days * 24 * 60 * 60 * 1000).getTime();
+    let n = 0;
+    for (const h of history) {
+      const d = asDate(h?.at);
+      if (d && d.getTime() >= cutoff) n++;
+    }
+    return n;
+  };
+
+  const toYMDLocal = (d) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  };
 
   // ===== Derived: filtering =====
   const filtered = useMemo(() => {
@@ -77,7 +125,18 @@ export default function AdminUsersOverview() {
       withStripe: 0,
       byPlan: {},
       totalRequests: 0,
+      messages: {
+        textTotal: 0,
+        emailTotal: 0,
+        text24h: 0,
+        email24h: 0,
+        text7d: 0,
+        email7d: 0,
+        text30d: 0,
+        email30d: 0,
+      },
     };
+
     filtered.forEach((u) => {
       const created = asDate(u.createdAt);
       const lastActive = asDate(u.lastActive);
@@ -91,6 +150,19 @@ export default function AdminUsersOverview() {
       const p = (u.plan || "unknown").toLowerCase();
       c.byPlan[p] = (c.byPlan[p] || 0) + 1;
       if (Array.isArray(u.requests)) c.totalRequests += u.requests.length;
+
+      // ---- Messages
+      const ms = u?.messagesSent || {};
+      const t = ms.text || {};
+      const e = ms.email || {};
+      c.messages.textTotal += Number(t.total || 0);
+      c.messages.emailTotal += Number(e.total || 0);
+      c.messages.text24h += countHistoryWithinDays(t.history, 1);
+      c.messages.email24h += countHistoryWithinDays(e.history, 1);
+      c.messages.text7d += countHistoryWithinDays(t.history, 7);
+      c.messages.email7d += countHistoryWithinDays(e.history, 7);
+      c.messages.text30d += countHistoryWithinDays(t.history, 30);
+      c.messages.email30d += countHistoryWithinDays(e.history, 30);
     });
     return c;
   }, [filtered]);
@@ -148,25 +220,22 @@ export default function AdminUsersOverview() {
     [filtered]
   );
 
-  // ===== NEW: Requests derived data =====
-  // Normalize per-user requests → flatten to allRequests with owner info
+  // ===== Requests derived data =====
   const allRequests = useMemo(() => {
     const list = [];
     filtered.forEach((u) => {
       const reqs = Array.isArray(u.requests) ? u.requests : [];
       reqs.forEach((r) => {
-        // handle legacy case where r might be just { $oid: ... }
         if (r && typeof r === "object" && !r.$oid) {
           list.push({
             ...r,
-            _ownerUser: u, // attach owner doc
+            _ownerUser: u,
             _ownerName: u.name || u.email || "—",
             _ownerEmail: u.email || "—",
           });
         }
       });
     });
-    // sort newest createdAt first
     return list.sort(
       (a, b) => (asDate(b.createdAt) || 0) - (asDate(a.createdAt) || 0)
     );
@@ -174,7 +243,6 @@ export default function AdminUsersOverview() {
 
   const latestRequests = useMemo(() => allRequests.slice(0, 10), [allRequests]);
 
-  // Requests grouped by user (for the "Requests by User" section)
   const requestsByUser = useMemo(() => {
     return filtered
       .map((u) => {
@@ -184,6 +252,183 @@ export default function AdminUsersOverview() {
       .filter((row) => row.requests.length > 0)
       .sort((a, b) => b.requests.length - a.requests.length);
   }, [filtered]);
+
+  // ===== NEW: Messages derived data =====
+  const latestMessagesAll = useMemo(() => {
+    const list = [];
+    filtered.forEach((u) => {
+      const ms = u?.messagesSent || {};
+      const tH = Array.isArray(ms?.text?.history) ? ms.text.history : [];
+      const eH = Array.isArray(ms?.email?.history) ? ms.email.history : [];
+
+      for (const h of tH) {
+        const at = asDate(h?.at);
+        if (at) {
+          list.push({
+            type: "text",
+            at,
+            forUserId: h?.forUserId,
+            participantName: h?.participantName || "—",
+            _ownerName: u.name || u.email || "—",
+            _ownerEmail: u.email || "—",
+          });
+        }
+      }
+      for (const h of eH) {
+        const at = asDate(h?.at);
+        if (at) {
+          list.push({
+            type: "email",
+            at,
+            forUserId: h?.forUserId,
+            participantName: h?.participantName || "—",
+            _ownerName: u.name || u.email || "—",
+            _ownerEmail: u.email || "—",
+          });
+        }
+      }
+    });
+    return list.sort((a, b) => b.at - a.at);
+  }, [filtered]);
+
+  const latestMessages = useMemo(() => {
+    const days = WINDOW_DAYS[winLatestMsgs];
+    const subset = latestMessagesAll.filter((m) =>
+      isWithinDays(m.at, days, now)
+    );
+    return subset.slice(0, 50);
+  }, [latestMessagesAll, winLatestMsgs, now]);
+
+  const messagesByUser = useMemo(() => {
+    const days = WINDOW_DAYS[winMsgByUser];
+    return filtered
+      .map((u) => {
+        const ms = u?.messagesSent || {};
+        const tH = ms.text?.history || [];
+        const eH = ms.email?.history || [];
+        const textCount = countHistoryInWindow(tH, days, now);
+        const emailCount = countHistoryInWindow(eH, days, now);
+        const lastMessageAt = [...tH, ...eH]
+          .map((h) => asDate(h?.at))
+          .filter((d) => (days === Infinity ? d : isWithinDays(d, days, now)))
+          .sort((a, b) => b - a)[0] || null;
+
+        return {
+          user: u,
+          textTotal: textCount,
+          emailTotal: emailCount,
+          lastMessageAt,
+        };
+      })
+      .sort(
+        (a, b) => b.textTotal + b.emailTotal - (a.textTotal + a.emailTotal)
+      );
+  }, [filtered, winMsgByUser, now]);
+
+  // ===== NEW: Cost / Forecast derived data (window-aware) =====
+  const costStats = useMemo(() => {
+    const days = WINDOW_DAYS[winCosts];
+    // windowed texts count
+    let textsInWindow = 0;
+    filtered.forEach((u) => {
+      const tH = u?.messagesSent?.text?.history || [];
+      textsInWindow += countHistoryInWindow(tH, days, now);
+    });
+
+    // For reference
+    const c24 = counts.messages.text24h * avgTextCost;
+    const c7 = counts.messages.text7d * avgTextCost;
+    const c30 = counts.messages.text30d * avgTextCost;
+    const lifetime = counts.messages.textTotal * avgTextCost;
+
+    // Forecast: use the selected window’s average daily rate; if 'all', fallback to last 30d
+    const baseDays = Number.isFinite(days) ? days : 30;
+    let baseWindowTexts = 0;
+    filtered.forEach((u) => {
+      const tH = u?.messagesSent?.text?.history || [];
+      baseWindowTexts += countHistoryInWindow(tH, baseDays, now);
+    });
+    const forecastNext30 = (baseWindowTexts / Math.max(1, baseDays)) * 30 * avgTextCost;
+
+    return {
+      windowCost: textsInWindow * avgTextCost,
+      lifetime,
+      c24,
+      c7,
+      c30,
+      forecastNext30,
+      windowLabel: winCosts,
+    };
+  }, [filtered, counts.messages, avgTextCost, winCosts, now]);
+
+  // texts per day (window-aware visualization)
+  const messagesDailyWindow = useMemo(() => {
+    const daysSel = WINDOW_DAYS[winDaily];
+    // cap graph to max 30 bars for readability
+    const graphDays = Number.isFinite(daysSel) ? Math.min(daysSel, 30) : 30;
+
+    const map = new Map();
+    for (let i = graphDays - 1; i >= 0; i--) {
+      const d = daysAgo(i);
+      map.set(toYMDLocal(d), 0);
+    }
+
+    filtered.forEach((u) => {
+      const tH = u?.messagesSent?.text?.history || [];
+      for (const h of tH) {
+        const at = asDate(h?.at);
+        if (!at) continue;
+        // Only count messages in selected window
+        if (!isWithinDays(at, daysSel, now)) continue;
+        const key = toYMDLocal(at);
+        if (map.has(key)) map.set(key, map.get(key) + 1);
+      }
+    });
+
+    return Array.from(map, ([ymd, count]) => ({
+      day: fmtDay(new Date(ymd)),
+      count,
+    }));
+  }, [filtered, winDaily, now]);
+
+  // cost by plan (window-aware)
+  const costByPlan = useMemo(() => {
+    const days = WINDOW_DAYS[winPlan];
+    const agg = {};
+    filtered.forEach((u) => {
+      const plan = (u.plan || "unknown").toLowerCase();
+      const tH = u?.messagesSent?.text?.history || [];
+      const texts = countHistoryInWindow(tH, days, now);
+      agg[plan] = (agg[plan] || 0) + texts;
+    });
+    return Object.entries(agg)
+      .map(([plan, texts]) => ({
+        plan,
+        texts,
+        cost: texts * avgTextCost,
+      }))
+      .sort((a, b) => b.cost - a.cost);
+  }, [filtered, avgTextCost, winPlan, now]);
+
+  // top senders (window-aware)
+  const topSendersWindow = useMemo(() => {
+    const days = WINDOW_DAYS[winSenders];
+    const rows = filtered.map((u) => {
+      const tH = u?.messagesSent?.text?.history || [];
+      const textWin = countHistoryInWindow(tH, days, now);
+      const lastAt = tH
+        .map((h) => asDate(h?.at))
+        .filter((d) => (days === Infinity ? d : isWithinDays(d, days, now)))
+        .sort((a, b) => b - a)[0];
+      return {
+        user: u,
+        textWin,
+        costWin: textWin * avgTextCost,
+        lastMessageAt: lastAt || null,
+      };
+    });
+    return rows.sort((a, b) => b.costWin - a.costWin).slice(0, 10);
+  }, [filtered, avgTextCost, winSenders, now]);
 
   function getActivityStatus(lastActive) {
     if (!lastActive) {
@@ -298,6 +543,182 @@ export default function AdminUsersOverview() {
           </div>
         </section>
 
+        {/* NEW: Message KPI row */}
+        <section>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Kpi
+              title="Texts Sent (Total)"
+              value={counts.messages.textTotal}
+              sub={`${counts.messages.text30d} in last 30d`}
+            />
+            <Kpi
+              title="Emails Sent (Total)"
+              value={counts.messages.emailTotal}
+              sub={`${counts.messages.email30d} in last 30d`}
+            />
+            <Kpi
+              title="Texts (24h)"
+              value={counts.messages.text24h}
+              sub={`${counts.messages.text7d} in last 7d`}
+            />
+            <Kpi
+              title="Emails (24h)"
+              value={counts.messages.email24h}
+              sub={`${counts.messages.email7d} in last 7d`}
+            />
+          </div>
+        </section>
+
+        {/* === NEW: Messaging — stacked rows (no overflow) === */}
+        <section className="space-y-6">
+          {/* Costs & Forecast (row) */}
+          <Card
+            title={
+              <div className="flex items-center justify-between gap-3">
+                <span>Messaging Costs &amp; Forecast</span>
+                <WindowPicker value={winCosts} onChange={setWinCosts} />
+              </div>
+            }
+          >
+            <div className="flex flex-wrap items-end gap-3 mb-4">
+              <label className="text-sm text-gray-600">
+                Avg Text Cost ($)
+                <input
+                  type="number"
+                  step="0.0001"
+                  min="0"
+                  value={avgTextCost}
+                  onChange={(e) =>
+                    setAvgTextCost(
+                      Math.max(0, Number.parseFloat(e.target.value || "0"))
+                    )
+                  }
+                  className="ml-2 h-9 w-28 rounded-lg border border-gray-300 px-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </label>
+              <div className="text-xs text-gray-500">
+                Applies to estimates in this section.
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <Kpi title={`Cost (${labelOf(winCosts)})`} value={`$${costNumber(costStats.windowCost)}`} />
+              <Kpi title="24h Cost" value={`$${costNumber(costStats.c24)}`} />
+              <Kpi title="7d Cost" value={`$${costNumber(costStats.c7)}`} />
+              <Kpi title="30d Cost" value={`$${costNumber(costStats.c30)}`} />
+              <Kpi
+                title="Forecast Next 30d"
+                value={`$${costNumber(costStats.forecastNext30)}`}
+                sub="Proj. from selected window avg"
+              />
+            </div>
+          </Card>
+
+          {/* Texts per Day (row) */}
+          <Card
+            title={
+              <div className="flex items-center justify-between gap-3">
+                <span>Texts per Day</span>
+                <WindowPicker value={winDaily} onChange={setWinDaily} />
+              </div>
+            }
+          >
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={messagesDailyWindow}
+                  margin={{ left: 8, right: 8, top: 10 }}
+                >
+                  <XAxis dataKey="day" tick={{ fontSize: 12 }} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                  <Tooltip formatter={(v) => [v, "Texts"]} />
+                  <Bar dataKey="count" fill="#10B981" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+
+          {/* Top Senders (row) */}
+          <Card
+            title={
+              <div className="flex items-center justify-between gap-3">
+                <span>Top Senders (by Cost)</span>
+                <WindowPicker value={winSenders} onChange={setWinSenders} />
+              </div>
+            }
+          >
+            <div className="overflow-auto rounded-xl border border-gray-200 bg-white">
+              <table className="min-w-full text-sm">
+                <thead className="bg-gray-50 text-gray-600">
+                  <tr>
+                    <Th>User</Th>
+                    <Th>Email</Th>
+                    <Th>Texts</Th>
+                    <Th>Est. Cost</Th>
+                    <Th>Last Msg</Th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {topSendersWindow.map((r, i) => (
+                    <tr key={i} className="hover:bg-gray-50">
+                      <Td><UserTiny user={r.user} /></Td>
+                      <Td className="max-w-[240px] truncate">{r.user.email}</Td>
+                      <Td>{r.textWin}</Td>
+                      <Td>${costNumber(r.costWin)}</Td>
+                      <Td>{fmtDate(r.lastMessageAt)}</Td>
+                    </tr>
+                  ))}
+                  {topSendersWindow.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="p-6 text-center text-gray-500">
+                        No senders in this window.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+          {/* Cost by Plan (row) */}
+          <Card
+            title={
+              <div className="flex items-center justify-between gap-3">
+                <span>Cost by Plan</span>
+                <WindowPicker value={winPlan} onChange={setWinPlan} />
+              </div>
+            }
+          >
+            <div className="overflow-auto rounded-xl border border-gray-200">
+              <table className="min-w-full text-sm">
+                <thead className="bg-gray-50 text-gray-600">
+                  <tr>
+                    <Th>Plan</Th>
+                    <Th>Texts</Th>
+                    <Th>Est. Cost</Th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {costByPlan.map((row, i) => (
+                    <tr key={i} className="hover:bg-gray-50">
+                      <Td className="uppercase">{row.plan}</Td>
+                      <Td>{Number(row.texts).toLocaleString()}</Td>
+                      <Td>${costNumber(row.cost)}</Td>
+                    </tr>
+                  ))}
+                  {costByPlan.length === 0 && (
+                    <tr>
+                      <td colSpan={3} className="p-4 text-center text-gray-500">
+                        No message data in this window.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </section>
+
         {/* Charts Row */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card title="Daily Signups (14d)">
@@ -409,9 +830,16 @@ export default function AdminUsersOverview() {
                     user={u}
                     subtitle={`Joined ${fmtRelative(asDate(u.createdAt), now)}`}
                   />
-                  <span className="text-xs text-gray-500">
-                    {(u.plan || "—").toUpperCase()}
-                  </span>
+                  <div className="flex flex-col gap-2">
+                    <span className="text-xs text-gray-500 ml-auto">
+                      {(u.plan || "—").toUpperCase()}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {Array.isArray(u.requests) && u.requests.length > 0
+                        ? `${u.requests.length} Requests`
+                        : "—"}
+                    </span>
+                  </div>
                 </li>
               ))}
               {newUsersList.length === 0 && (
@@ -454,184 +882,85 @@ export default function AdminUsersOverview() {
           </Card>
         </section>
 
-        {/* Data Tables */}
-        <section className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          <Card title="Plaid-Enabled Users">
-            <div className="overflow-auto rounded-xl border border-gray-200 bg-white">
-              <table className="min-w-full text-sm">
-                <thead className="bg-gray-50 text-gray-600">
-                  <tr>
-                    <Th>Name</Th>
-                    <Th>Email</Th>
-                    <Th>Enabled On</Th>
-                    <Th>Last Used</Th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {usersWithPlaid.map((u, i) => (
-                    <tr key={i} className="hover:bg-gray-50">
-                      <Td>
-                        <UserTiny user={u} />
-                      </Td>
-                      <Td>{u.email}</Td>
-                      <Td>{fmtDate(asDate(u?.plaid?.enabledOn))}</Td>
-                      <Td>{fmtDate(asDate(u?.plaid?.lastUsed))}</Td>
-                    </tr>
-                  ))}
-                  {usersWithPlaid.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="p-6 text-center text-gray-500">
-                        No users with Plaid enabled.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-
-          <Card title="Users With Stripe">
-            <div className="overflow-auto rounded-xl border border-gray-200 bg-white">
-              <table className="min-w-full text-sm">
-                <thead className="bg-gray-50 text-gray-600">
-                  <tr>
-                    <Th>Name</Th>
-                    <Th>Email</Th>
-                    <Th>Plan</Th>
-                    <Th>Created</Th>
-                    <Th>Requests</Th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {usersStripe.map((u, i) => (
-                    <tr key={i} className="hover:bg-gray-50">
-                      <Td>
-                        <UserTiny user={u} />
-                      </Td>
-                      <Td>{u.email}</Td>
-                      <Td className="uppercase">{u.plan || "—"}</Td>
-                      <Td>{fmtDate(asDate(u.createdAt))}</Td>
-                      <Td>
-                        {Array.isArray(u.requests)
-                          ? u.requests.filter((r) => r && r._id && !r.$oid)
-                              .length
-                          : 0}
-                      </Td>
-                    </tr>
-                  ))}
-                  {usersStripe.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="p-6 text-center text-gray-500">
-                        No users with Stripe.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+        {/* NEW: Latest Messages (window-aware) */}
+        <section>
+          <Card
+            title={
+              <div className="flex items-center justify-between gap-3">
+                <span>Latest Messages</span>
+                <WindowPicker value={winLatestMsgs} onChange={setWinLatestMsgs} />
+              </div>
+            }
+          >
+            <ul className="divide-y divide-gray-200 rounded-xl border border-gray-200 overflow-hidden bg-white">
+              {latestMessages.map((m, i) => (
+                <li
+                  key={i}
+                  className="p-3 flex items-center justify-between gap-4"
+                >
+                  <div className="min-w-0">
+                    <div className="font-medium truncate">
+                      {m.participantName}{" "}
+                      <span className="text-xs uppercase ml-2 px-2 py-0.5 rounded-lg border border-gray-200 text-gray-600">
+                        {m.type}
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-500 truncate">
+                      {m._ownerName} · {fmtRelative(m.at, now)}
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-500">{fmtDate(m.at)}</div>
+                </li>
+              ))}
+              {latestMessages.length === 0 && (
+                <EmptyRow text="No messages in this window." />
+              )}
+            </ul>
           </Card>
         </section>
 
-        {/* NEW: All Requests Table */}
+        {/* NEW: Messages by User (window-aware) */}
         <section>
-          <Card title="All Requests">
-            <div className="overflow-auto rounded-xl border border-gray-200 bg-white">
-              <table className="min-w-full text-sm">
-                <thead className="bg-gray-50 text-gray-600">
-                  <tr>
-                    <Th>Name</Th>
-                    <Th>Owner</Th>
-                    <Th>Amount</Th>
-                    <Th>Recurring</Th>
-                    <Th>Participants</Th>
-                    <Th>Created</Th>
-                    <Th>Due Next</Th>
-                    <Th>Last Sent</Th>
-                    <Th>Total Owed</Th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {allRequests.map((r, i) => (
-                    <tr key={i} className="hover:bg-gray-50">
-                      <Td className="max-w-[240px] truncate">
-                        {r.name || "—"}
-                      </Td>
-                      <Td className="max-w-[220px] truncate">
-                        {r._ownerName}{" "}
-                        <span className="text-xs text-gray-400">
-                          ({r._ownerEmail})
-                        </span>
-                      </Td>
-                      <Td>${Number(r.amount || 0).toFixed(2)}</Td>
-                      <Td className="uppercase">
-                        {r.isRecurring
-                          ? r.frequency || "recurring"
-                          : "one-time"}
-                      </Td>
-                      <Td>
-                        {Array.isArray(r.participants)
-                          ? r.participants.length
-                          : 0}
-                      </Td>
-                      <Td>{fmtDate(asDate(r.createdAt))}</Td>
-                      <Td>{fmtDate(asDate(r.nextDue))}</Td>
-                      <Td>{fmtDate(asDate(r.lastSent))}</Td>
-                      <Td>${Number(r.totalAmountOwed || 0).toFixed(2)}</Td>
-                    </tr>
-                  ))}
-                  {allRequests.length === 0 && (
-                    <tr>
-                      <td colSpan={9} className="p-6 text-center text-gray-500">
-                        No requests found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </section>
-
-        {/* NEW: Requests by User */}
-        <section>
-          <Card title="Requests by User">
+          <Card
+            title={
+              <div className="flex items-center justify-between gap-3">
+                <span>Messages by User</span>
+                <WindowPicker value={winMsgByUser} onChange={setWinMsgByUser} />
+              </div>
+            }
+          >
             <div className="overflow-auto rounded-xl border border-gray-200 bg-white">
               <table className="min-w-full text-sm">
                 <thead className="bg-gray-50 text-gray-600">
                   <tr>
                     <Th>User</Th>
                     <Th>Email</Th>
-                    <Th>Count</Th>
-                    <Th>Recent (up to 3)</Th>
+                    <Th>Texts</Th>
+                    <Th>Emails</Th>
+                    <Th>Last Message</Th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {requestsByUser.map(({ user, requests }, i) => (
+                  {messagesByUser.map((row, i) => (
                     <tr key={i} className="hover:bg-gray-50">
                       <Td>
-                        <UserTiny user={user} />
+                        <UserTiny user={row.user} />
                       </Td>
-                      <Td className="max-w-[260px] truncate">{user.email}</Td>
-                      <Td>{requests.length}</Td>
-                      <Td className="max-w-[420px] truncate">
-                        {requests
-                          .slice()
-                          .sort(
-                            (a, b) =>
-                              (asDate(b.createdAt) || 0) -
-                              (asDate(a.createdAt) || 0)
-                          )
-                          .slice(0, 3)
-                          .map((r) => r.name)
-                          .filter(Boolean)
-                          .join(" · ") || "—"}
+                      <Td className="max-w-[260px] truncate">
+                        {row.user.email}
                       </Td>
+                      <Td>{row.textTotal}</Td>
+                      <Td>{row.emailTotal}</Td>
+                      <Td>{fmtDate(row.lastMessageAt)}</Td>
                     </tr>
                   ))}
-                  {requestsByUser.length === 0 && (
+                  {messagesByUser.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="p-6 text-center text-gray-500">
-                        No users with requests.
+                      <td
+                        colSpan={5}
+                        className="p-6 text-center text-gray-500"
+                      >
+                        No message data in this window.
                       </td>
                     </tr>
                   )}
@@ -657,58 +986,73 @@ export default function AdminUsersOverview() {
                     <Th>Last Active</Th>
                     <Th>Contacts</Th>
                     <Th>Requests</Th>
+                    <Th>Texts</Th>
+                    <Th>Emails</Th>
+                    <Th>Est. Cost</Th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {filtered.map((u, i) => (
-                    <tr key={i} className="hover:bg-gray-50">
-                      <Td>
-                        <div className="flex items-center gap-3">
-                          <Avatar
-                            src={u?.OAuth?.google?.picture}
-                            fallback={initials(u?.name)}
-                          />
-                          <div>
-                            <div className="font-medium">{u.name || "—"}</div>
-                            <div className="text-xs text-gray-500">
-                              Google: {mask(u?.OAuth?.google?.sub, 6)}
+                  {filtered.map((u, i) => {
+                    const ms = u?.messagesSent || {};
+                    const tTotal = Number(ms?.text?.total || 0);
+                    const eTotal = Number(ms?.email?.total || 0);
+                    const estCost = Number(tTotal * avgTextCost).toFixed(4);
+                    return (
+                      <tr key={i} className="hover:bg-gray-50">
+                        <Td>
+                          <div className="flex items-center gap-3">
+                            <Avatar
+                              src={u?.OAuth?.google?.picture}
+                              fallback={initials(u?.name)}
+                            />
+                            <div>
+                              <div className="font-medium">{u.name || "—"}</div>
+                              <div className="text-xs text-gray-500">
+                                Google: {mask(u?.OAuth?.google?.sub, 6)}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </Td>
-                      <Td>{u.email}</Td>
-                      <Td className="uppercase">{u.plan || "—"}</Td>
-                      <Td className="uppercase">{u.role || "—"}</Td>
-                      <Td>
-                        {(() => {
-                          const status = getActivityStatus(
-                            asDate(u.lastActive)
-                          );
-                          return (
-                            <span
-                              className={`inline-flex items-center px-2 py-1 rounded-lg text-[11px] font-medium border ${status.color}`}
-                            >
-                              {status.label}
-                            </span>
-                          );
-                        })()}
-                      </Td>
-                      <Td>{fmtDate(asDate(u.createdAt))}</Td>
-                      <Td>{fmtDate(asDate(u.lastActive))}</Td>
-                      <Td>
-                        {Array.isArray(u.contacts) ? u.contacts.length : 0}
-                      </Td>
-                      <Td>
-                        {Array.isArray(u.requests)
-                          ? u.requests.filter((r) => r && r._id && !r.$oid)
-                              .length
-                          : 0}
-                      </Td>
-                    </tr>
-                  ))}
+                        </Td>
+                        <Td>{u.email}</Td>
+                        <Td className="uppercase">{u.plan || "—"}</Td>
+                        <Td className="uppercase">{u.role || "—"}</Td>
+                        <Td>
+                          {(() => {
+                            const status = getActivityStatus(
+                              asDate(u.lastActive)
+                            );
+                            return (
+                              <span
+                                className={`inline-flex items-center px-2 py-1 rounded-lg text-[11px] font-medium border ${status.color}`}
+                              >
+                                {status.label}
+                              </span>
+                            );
+                          })()}
+                        </Td>
+                        <Td>{fmtDate(asDate(u.createdAt))}</Td>
+                        <Td>{fmtDate(asDate(u.lastActive))}</Td>
+                        <Td>
+                          {Array.isArray(u.contacts) ? u.contacts.length : 0}
+                        </Td>
+                        <Td>
+                          {Array.isArray(u.requests)
+                            ? u.requests.filter((r) => r && r._id && !r.$oid)
+                                .length
+                            : 0}
+                        </Td>
+                        <Td>{tTotal}</Td>
+                        <Td>{eTotal}</Td>
+                        <Td>${estCost}</Td>
+                      </tr>
+                    );
+                  })}
                   {filtered.length === 0 && (
                     <tr>
-                      <td colSpan={9} className="p-6 text-center text-gray-500">
+                      <td
+                        colSpan={12}
+                        className="p-6 text-center text-gray-500"
+                      >
                         No users match the current filters.
                       </td>
                     </tr>
@@ -720,7 +1064,7 @@ export default function AdminUsersOverview() {
         </section>
 
         <footer className="py-10 text-center text-xs text-gray-400">
-          Splitify Admin · v1.1
+          Splitify Admin · v1.3
         </footer>
       </main>
     </div>
@@ -732,7 +1076,11 @@ function Card({ title, children }) {
   return (
     <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-base font-semibold tracking-tight">{title}</h2>
+        <h2 className="text-base font-semibold tracking-tight">
+          {typeof title === "string" ? title : null}
+        </h2>
+        {/* if title is a custom node with controls */}
+        {typeof title !== "string" ? title : null}
       </div>
       {children}
     </section>
@@ -744,7 +1092,7 @@ function Kpi({ title, value, sub }) {
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
       <div className="text-sm text-gray-500">{title}</div>
       <div className="mt-1 text-3xl font-semibold">
-        {Number(value).toLocaleString()}
+        {typeof value === "number" ? Number(value).toLocaleString() : value}
       </div>
       {sub && <div className="mt-1 text-xs text-gray-500">{sub}</div>}
     </div>
@@ -812,6 +1160,32 @@ function EmptyRow({ text }) {
   return <div className="p-4 text-sm text-gray-500 text-center">{text}</div>;
 }
 
+function WindowPicker({ value, onChange }) {
+  const opts = [
+    { k: "24h", label: "24h" },
+    { k: "7d", label: "7d" },
+    { k: "30d", label: "30d" },
+    { k: "all", label: "All" },
+  ];
+  return (
+    <div className="inline-flex gap-1">
+      {opts.map((o) => (
+        <button
+          key={o.k}
+          onClick={() => onChange(o.k)}
+          className={`px-2.5 py-1 text-xs rounded-lg border ${
+            value === o.k
+              ? "bg-blue-600 text-white border-blue-600"
+              : "bg-white border-gray-300"
+          }`}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /* ===== Utilities ===== */
 function fmtDate(d) {
   if (!d) return "—";
@@ -853,4 +1227,18 @@ function initials(name) {
     .slice(0, 2)
     .map((p) => p[0]?.toUpperCase())
     .join("");
+}
+
+function costNumber(n) {
+  if (n < 1) return n.toFixed(4);
+  if (n < 100) return n.toFixed(2);
+  return Number(n.toFixed(2)).toLocaleString();
+}
+
+function labelOf(key) {
+  if (key === "all") return "All";
+  if (key === "24h") return "24h";
+  if (key === "7d") return "7d";
+  if (key === "30d") return "30d";
+  return key;
 }

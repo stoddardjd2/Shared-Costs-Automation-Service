@@ -91,9 +91,10 @@ const createRequest = async (req, res) => {
 
       // Create request in DB with initial history entry
       const now = new Date();
-      console.log("init data", requestData)
+      console.log("init data", requestData);
       request = await Request.create({
         ...requestData,
+        createdAt: now,
         owner: userId,
         reminderFrequency: reminderFrequency,
         paymentHistory: [initialHistory], // Add initial history as subdocument

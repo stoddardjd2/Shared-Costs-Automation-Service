@@ -34,6 +34,7 @@ async function sendRequestsRouter(reminderData, routes = ["text", "email"]) {
         }
       }
     }
+    console.log("REMINDER DATA", reminderData);
 
     const urlBase = `${process.env.CLIENT_URL}/paymentPortal`;
     const userId = reminderData.participantId;
@@ -45,6 +46,7 @@ async function sendRequestsRouter(reminderData, routes = ["text", "email"]) {
     // const frequency = getFrequency(reminderData.requestData);
     const requester = reminderData.requestOwner;
     const chargeName = reminderData.requestName;
+    const OwnerId = reminderData.requestDatal.owner;
     // const cashapp = reminderData.requestOwnerPaymentMethods?.cashapp || null;
     // const venmo = reminderData.requestOwnerPaymentMethods?.venmo || null;
     // const allowMarkAsPaidForEveryone =
@@ -85,6 +87,25 @@ Sent via Splitify
     if (routes.includes("text")) {
       console.log("sending text");
       sendTextMessage(user.phone, "+18333702013", message);
+
+      // Update owner metrics: count texts sent and log details (timestamp, userId, participantName)
+      try {
+        const ownerId = reminderData?.requestData?.owner;
+        if (ownerId) {
+          await User.findByIdAndUpdate(ownerId, {
+            $inc: { "messagesSent.text.total": 1 },
+            $push: {
+              "messagesSent.text.history": {
+                at: new Date(),
+                forUserId: userId,
+                participantName: name,
+              },
+            },
+          });
+        }
+      } catch (e) {
+        console.log("failed to update text metrics", e);
+      }
     }
     return true;
   } catch (err) {

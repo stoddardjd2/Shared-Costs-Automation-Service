@@ -194,7 +194,28 @@ const userSchema = new Schema(
       lastUsed: Date,
       accessToken: { type: String, select: false },
     },
-
+    messagesSent: {
+      text: {
+        total: { type: Number, default: 0 },
+        history: [
+          {
+            at: Date,
+            forUserId: Schema.Types.ObjectId,
+            participantName: String,
+          },
+        ],
+      },
+      email: {
+        total: { type: Number, default: 0 },
+        history: [
+          {
+            at: Date,
+            forUserId: Schema.Types.ObjectId,
+            participantName: String,
+          },
+        ],
+      },
+    },
     lastActive: Date,
     OAuth: {
       google: {
