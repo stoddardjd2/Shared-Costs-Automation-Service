@@ -77,6 +77,7 @@ export default function Hero() {
               animate={true}
               variation={"Landing-v2-HERO-TEST-A"}
               whiteArrow={true}
+              text="Split a Bill"
               className={`relative  z-0 sm:mt-[50px] w-fit mx-auto font-semibold !mt-8 px-6 py-3 
                    shadow-lg cursor-pointer hover:bg-blue-700 transition-all`}
             />

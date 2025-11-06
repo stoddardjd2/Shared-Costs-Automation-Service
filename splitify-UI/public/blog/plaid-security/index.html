@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      How Splitify Uses Plaid for Secure Bank Connections &mdash; Splitify Blog
+    </title>
+    <meta
+      name="description"
+      content="Learn how Splitify connects to your bank via Plaid without storing credentials, and how we protect your data with tokenized access and data minimization."
+    />
+    <link rel="canonical" href="/blog/plaid-security/" />
+    <link rel="stylesheet" href="/blog/blog.css" />
+    <script type="module" src="/blog/builders/splitify-navbar.js"></script>
+  </head>
+  <body>
+    <splitify-navbar login signup></splitify-navbar>
+
+    <div class="wrap">
+      <main class="container">
+        <article>
+          <header class="post-header">
+            <div>
+              <span class="tag">Deep Dive</span
+              ><span class="tag">Security</span>
+            </div>
+            <h1 class="post-title">
+              How Splitify Uses Plaid for Secure Bank Connections
+            </h1>
+            <p class="post-subtitle">Security and privacy in every sync</p>
+            <div class="post-meta">
+              <span>By Splitify Team</span><span>&middot;</span
+              ><time datetime="2025-02-01">February 1, 2025</time
+              ><span>&middot;</span><span>7 min read</span>
+            </div>
+          </header>
+          <div class="blog-content">
+            <p>
+              Plaid is our partner for secure bank connections. Your login
+              credentials never touch Splitify&mdash;Plaid tokenizes access so
+              we can sync transactions without storing sensitive details.
+            </p>
+
+            <h2>Tokenized access</h2>
+            <p>
+              You log in directly with your bank through Plaid. Plaid exchanges
+              your credentials for a secure access token, and Splitify stores
+              only the token necessary to refresh your data&mdash;never your
+              actual username or password.
+            </p>
+
+            <h2>Data minimization</h2>
+            <p>
+              We request only the scopes required for Splitify to work. You can
+              revoke access anytime from Splitify or your bank. Disconnecting
+              removes the token from our systems.
+            </p>
+
+            <h2>Defense in depth</h2>
+            <p>
+              We encrypt data in transit and at rest, follow least-privilege
+              access, and monitor for unusual activity. Logs are retained for
+              troubleshooting and audited on a regular cadence.
+            </p>
+
+            <h2>Your control, always</h2>
+            <ul>
+              <li>View and disconnect linked accounts from settings.</li>
+              <li>Control which notifications you receive and how often.</li>
+              <li>Export your data any time from your dashboard.</li>
+            </ul>
+
+            <p>
+              Have questions about privacy or security?
+              <a href="/privacy">Read our Privacy Policy</a> or reach out to
+              support.
+            </p>
+          </div>
+          <hr />
+          <p><a href="/blog/">&larr; Back to blog</a></p>
+        </article>
+      </main>
+      <footer class="site-footer">
+        <div class="container footer-inner">
+          <span>&copy; 2025 Splitify</span>
+          <span class="footer-links"
+            ><a href="/privacy">Privacy</a><a href="/terms">Terms</a></span
+          >
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

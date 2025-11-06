@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import SmartSplitLogo from "../../../../../assets/SmartSplitLogo.svg?react";
 import { Link, useNavigate } from "react-router-dom";
 import { trackCreateAccount } from "../../../../../googleAnalytics/googleAnalyticsHelpers";
-const Navbar = () => {
+const Navbar = ({ variationActive = false }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [transitionComplete, setTransitionComplete] = useState(false);
   const fadeTimerRef = useRef(null);
@@ -153,7 +153,7 @@ const Navbar = () => {
           <div
             className={`nav-animate transition-all duration-500 ease-out border-overlay ${
               isScrolled
-                ? `bg-white rounded-2xl px-3 sm:px-8 py-2 sm:py-4 shadow-2xl shadow-black/50  ${
+                ? `bg-white rounded-2xl px-3 sm:px-6 py-2 sm:py-4 shadow-2xl shadow-black/50  ${
                     transitionComplete ? "show-border" : ""
                   }`
                 : "px-3 sm:px-6 bg-transparent"
@@ -166,58 +166,80 @@ const Navbar = () => {
                 className="flex items-center gap-2 sm:gap-3 cursor-pointer group"
                 aria-label="Go to top"
               >
-                <SmartSplitLogo className="w-9 h-9 sm:w-[45px] sm:h-[45px] shrink-0" />
-                <span className="font-semibold leading-none text-blue-600 text-lg sm:text-2xl">
+                <SmartSplitLogo className="w-9 h-9  shrink-0" />
+                <span className="font-bold leading-none text-blue-600 text-lg sm:text-2xl">
                   Splitify
                 </span>
               </button>
 
               {/* Nav */}
-              <div className="hidden lg:flex items-center gap-2 sm:gap-8 ml-[8%]">
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    scrollToSection("howItWorks");
-                  }}
-                  className={`px-4 py-2 rounded-lg font-semibold transition-transform duration-300 hover:-translate-y-0.5 text-sm border-2 ${
-                    isScrolled
-                      ? `${
-                          transitionComplete
-                            ? "border-white/0 hover:border-white/80"
-                            : "border-transparent"
-                        } text-gray-800 hover:bg-white/10`
-                      : "border-white/0 text-white hover:bg-black/5"
-                  }`}
-                >
-                  <span className="inline sm:text-[1rem] text-gray-500">
-                    How it works
-                  </span>
-                </button>
+              {!variationActive && (
+                <div className="hidden lg:flex items-center gap-2 sm:gap-8 ml-[8%]">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      scrollToSection("howItWorks");
+                    }}
+                    className={`px-4 py-2 rounded-lg font-semibold transition-transform duration-300 hover:-translate-y-0.5 text-sm border-2 ${
+                      isScrolled
+                        ? `${
+                            transitionComplete
+                              ? "border-white/0 hover:border-white/80"
+                              : "border-transparent"
+                          } text-gray-800 hover:bg-white/10`
+                        : "border-white/0 text-white hover:bg-black/5"
+                    }`}
+                  >
+                    <span className="inline sm:text-[1rem] text-gray-500">
+                      How it works
+                    </span>
+                  </button>
 
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    scrollToSection("features");
-                  }}
-                  className={`px-4 py-2 rounded-lg font-semibold transition-transform duration-300 hover:-translate-y-0.5 text-sm border-2 ${
-                    isScrolled
-                      ? `${
-                          transitionComplete
-                            ? "border-white/0 hover:border-white/80"
-                            : "border-transparent"
-                        } text-gray-800 hover:bg-white/10`
-                      : "border-white/0 text-white hover:bg-black/5"
-                  }`}
-                >
-                  <span className="inline sm:text-[1rem] text-gray-500">
-                    Features
-                  </span>
-                </button>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      scrollToSection("features");
+                    }}
+                    className={`px-4 py-2 rounded-lg font-semibold transition-transform duration-300 hover:-translate-y-0.5 text-sm border-2 ${
+                      isScrolled
+                        ? `${
+                            transitionComplete
+                              ? "border-white/0 hover:border-white/80"
+                              : "border-transparent"
+                          } text-gray-800 hover:bg-white/10`
+                        : "border-white/0 text-white hover:bg-black/5"
+                    }`}
+                  >
+                    <span className="inline sm:text-[1rem] text-gray-500">
+                      Features
+                    </span>
+                  </button>
 
-                <button
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      scrollToSection("pricing");
+                    }}
+                    className={`px-4 py-2 rounded-lg font-semibold transition-transform duration-300 hover:-translate-y-0.5 text-sm border-2 ${
+                      isScrolled
+                        ? `${
+                            transitionComplete
+                              ? "border-white/0 hover:border-white/80"
+                              : "border-transparent"
+                          } text-gray-800  hover:bg-white/10`
+                        : "border-white/0 text-white hover:bg-black/5"
+                    }`}
+                  >
+                    <span className="inline sm:text-[1rem]  text-gray-500">
+                      Pricing
+                    </span>
+                  </button>
+
+                  {/* <button
                   onClick={(e) => {
-                    e.preventDefault();
-                    scrollToSection("pricing");
+                    document.getElementById('root').scrollTo({ top: 0, behavior: "instant" });
+
+                    navigate("/blog");
                   }}
                   className={`px-4 py-2 rounded-lg font-semibold transition-transform duration-300 hover:-translate-y-0.5 text-sm border-2 ${
                     isScrolled
@@ -230,10 +252,11 @@ const Navbar = () => {
                   }`}
                 >
                   <span className="inline sm:text-[1rem]  text-gray-500">
-                    Pricing
+                    Blog
                   </span>
-                </button>
-              </div>
+                </button> */}
+                </div>
+              )}
 
               {/* Actions */}
               <div className="flex items-center gap-2 sm:gap-4">
@@ -257,7 +280,7 @@ const Navbar = () => {
 
                 <Link
                   className={`px-3 sm:px-7 py-2 transition-all  sm:py-3 rounded-lg text-white font-semibold duration-300 hover:-translate-y-0.5 text-sm sm:text-base shadow-md ${
-                    isScrolled
+                    isScrolled || variationActive
                       ? "bg-blue-600 hover:bg-blue-700 transition-all"
                       : "bg-white"
                   }`}
@@ -268,7 +291,7 @@ const Navbar = () => {
                 >
                   <span
                     className={`hidden transition-all  sm:inline text-gray-800 ${
-                      isScrolled ? "text-white " : ""
+                      isScrolled || variationActive ? "text-white " : ""
                     }`}
                   >
                     Create Your Free Account

@@ -1,2 +1,6 @@
 User-agent: *
 Allow: /
+
+# Sitemap location
+Sitemap: https://splitify.io/sitemap.xml
+

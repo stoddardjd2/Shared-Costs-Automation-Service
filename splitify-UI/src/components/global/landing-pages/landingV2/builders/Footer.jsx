@@ -180,6 +180,17 @@ export default function Footer() {
                     Pricing
                   </button>
                 </li>
+                <li>
+                  <button
+                    onClick={(e) => {
+                      document.getElementById("root").scrollTo({ top: 0, left: 0, behavior: "instant" }); 
+                      navigate("/blog");
+                    }}
+                    className="text-gray-600 hover:text-blue-600 transition-colors text-sm"
+                  >
+                    Blog
+                  </button>
+                </li>
               </ul>
             </div>
 

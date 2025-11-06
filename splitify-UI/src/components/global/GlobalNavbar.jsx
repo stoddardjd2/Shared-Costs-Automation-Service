@@ -44,8 +44,10 @@ const GlobalNavbar = ({
             }}
             className="flex-shrink-0 flex items-center space-x-3 cursor-pointer"
           >
-            <SmartSplitLogo className="w-8 h-8" />
-            <div className="text-2xl font-bold text-blue-600">Splitify</div>
+            <SmartSplitLogo className="w-9 h-9" />
+            <span className="font-bold leading-none text-blue-600 text-lg sm:text-2xl">
+              Splitify
+            </span>{" "}
           </div>
 
           {/* Desktop Navigation */}

@@ -2,14 +2,7 @@
 
 // App.jsx
 import React, { Suspense, lazy, useEffect } from "react";
-import {
-  Routes,
-  Route,
-  Navigate,
-  Outlet,
-  useNavigate,
-  useParams,
-} from "react-router-dom";
+import { Routes, Route, Navigate, Outlet, useNavigate, useParams } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { DataProvider } from "./contexts/DataContext";
 
@@ -63,10 +56,9 @@ const BlogStatic = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    window.location.href = `/blog/${slug}/index.html`;
-    // navigate('/blog/${slug}/index.html')
+    navigate('/blog/${slug}/index.html')
   }, []);
-
+  
   return (
     <>
       {/* <GlobalNavbar
@@ -79,8 +71,8 @@ const BlogStatic = () => {
           signup: true,
         }}
       /> */}
-        <div></div>
-      {/* <iframe title={`blog-${slug}`} src={src} style={{ width: "100%", minHeight: "100vh", border: 0 }} /> */}
+      <div>test</div>
+      <iframe title={`blog-${slug}`} src={src} style={{ width: "100%", minHeight: "100vh", border: 0 }} />
       {/* <GlobalFooter /> */}
     </>
   );
@@ -102,7 +94,7 @@ const App = () => {
 
         <Route path="/landing/*" element={<LandingPageV2 />}></Route>
         <Route path="/landing/2" element={<LandingPageOfficial />} />
-
+        
         {/* Blog routes */}
         <Route path="/blog/:slug/*" element={<BlogStatic />} />
         <Route
@@ -115,7 +107,7 @@ const App = () => {
                   security: false,
                   pricing: false,
                   createFreeAccount: true,
-                  signup: true,
+                  signup: true,  
                   login: true,
                 }}
               />

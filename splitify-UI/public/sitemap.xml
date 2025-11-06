@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://splitify.io/</loc>
+  </url>
+  <url>
+    <loc>https://splitify.io/landing/</loc>
+  </url>
+  <url>
+    <loc>https://splitify.io/blog/</loc>
+  </url>
+
+  <!-- Static blog posts -->
+  <url><loc>https://splitify.io/blog/getting-started/</loc></url>
+  <url><loc>https://splitify.io/blog/recurring-bills/</loc></url>
+  <url><loc>https://splitify.io/blog/automated-reminders/</loc></url>
+  <url><loc>https://splitify.io/blog/partial-payments/</loc></url>
+  <url><loc>https://splitify.io/blog/plaid-security/</loc></url>
+  <url><loc>https://splitify.io/blog/stripe-payments/</loc></url>
+  <url><loc>https://splitify.io/blog/dynamic-splits/</loc></url>
+  <url><loc>https://splitify.io/blog/roommates-utilities-case-study/</loc></url>
+  <url><loc>https://splitify.io/blog/best-apps-to-split-bills-2025/</loc></url>
+
+  <!-- Public SPA pages -->
+  <url><loc>https://splitify.io/signup</loc></url>
+  <url><loc>https://splitify.io/login</loc></url>
+  <url><loc>https://splitify.io/about/privacyPolicy</loc></url>
+  <url><loc>https://splitify.io/about/termsAndConditions</loc></url>
+</urlset>
