@@ -12,7 +12,9 @@ import {
 } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { DataProvider } from "./contexts/DataContext";
-import AdminUsersOverview from "./components/admin/AdminUsersOverview.jsx";
+const AdminUsersOverview = lazy(() =>
+  import("./components/admin/AdminUsersOverview.jsx")
+);
 
 // 🔹 Lazily load everything that isn't needed for the first paint.
 //    Especially anything that might import Stripe.
@@ -208,7 +210,7 @@ const App = () => {
         </Route>
 
         {/* admin */}
-        <Route path="/admin" >
+        <Route path="/admin">
           {/* DEFAULT DASHBOARD INDEX */}
           <Route index element={<Navigate to="/" />} />
 

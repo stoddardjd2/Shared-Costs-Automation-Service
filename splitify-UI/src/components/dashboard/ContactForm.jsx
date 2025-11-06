@@ -109,8 +109,8 @@ export default function ContactForm() {
         }
       `}</style>
 
-      <footer className="footer-section pt-8 text-white py-6 border-t border-gray-200 ">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+      <footer className="footer-section w-full  pt-8 mt-8 text-white py-6 border-t border-gray-200 ">
+        <div className=" w-full flex flex-col md:flex-row md:items-start md:justify-between gap-6">
           {/* Left: Brand + Links */}
           <div className="flex-1 flex flex-col md:flex-row gap-x-20 gap-y-8">
             <div>
