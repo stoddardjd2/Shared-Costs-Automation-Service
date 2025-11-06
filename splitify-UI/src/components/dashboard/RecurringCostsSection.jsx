@@ -522,7 +522,7 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                           className="items-center ml-auto flex gap-2 text-gray-600 px-3 py-1.5 rounded-lg w-fit"
                         >
                           {/* <Calendar className="w-4 h-4" /> */}
-                          <RefreshCw className="w-4 h-4"/>
+                          <RefreshCw className="w-4 h-4" />
                           <span className="text-sm">
                             {/* {cost.isRecurring ? "Next: " : "Due: "} */}
                             {FormatDueDate(cost.nextDue)}
@@ -545,18 +545,7 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                               const statusColor = getStatusColor(
                                 participant.status
                               );
-                              console.log(
-                                "USER",
-                                user,
-                                "participants",
-                                cost.participants
-                              );
-                              console.log(
-                                "Cost",
-                                cost,
-                                "participant",
-                                participant
-                              );
+
                               return (
                                 <div
                                   key={user._id}
@@ -618,7 +607,7 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                 <button
                   onClick={() => {
                     setView("addRequest");
-                    navigate('/dashboard/add')
+                    navigate("/dashboard/add");
                     const root = document.getElementById("root");
                     if (root)
                       root.scrollTo({ top: 0, left: 0, behavior: "instant" });

@@ -17,6 +17,7 @@ import {
 } from "../../googleAnalytics/googleAnalyticsHelpers";
 import WelcomeScreen from "./WelcomeScreen";
 import ContactForm from "./ContactForm";
+import { updateLastActive } from '../../queries/user';
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation(); // 👈 read current URL
@@ -42,16 +43,25 @@ const Dashboard = () => {
       pageview(null, "Landing_Page");
       setUserId(userData._id);
     }
+
+    function isSameUTCDay(a, b) {
+      return (
+        a.getUTCFullYear() === b.getUTCFullYear() &&
+        a.getUTCMonth() === b.getUTCMonth() &&
+        a.getUTCDate() === b.getUTCDate()
+      );
+    }
+    // if not same day, update last active
+    if (!isSameUTCDay(new Date(userData.lastActive), new Date())) {
+      updateLastActive();
+    }
   });
 
   useEffect(() => {
-    console.log("dashboard loiaded");
-
     // if user selected plan from landing page, popup to continue that process
     const params = new URLSearchParams(location.search);
 
     if (params?.get("plan")) {
-      console.log("location.search", location.search);
       navigate(`/dashboard/premium${location.search}`);
 
       // show first time welcome screen and navigate user to make first request

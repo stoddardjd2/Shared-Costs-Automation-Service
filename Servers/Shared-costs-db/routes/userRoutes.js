@@ -17,7 +17,8 @@ const {
   addPaymentMethod,
   updateContactForUser,
   handleGoogleCallback,
-  handleGoogleAuth
+  handleGoogleAuth,
+  updateLastActive,
 } = require("../controllers/userController");
 
 const { protect, authorize } = require("../middleware/auth");
@@ -78,8 +79,6 @@ router.post("/", validateUser, createUser);
 router.post("/auth/google/", handleGoogleAuth);
 // router.get("/auth/google/callback", handleGoogleCallback);
 
-
-
 router.post("/forgot-password", forgotPassword);
 router.put("/reset-password/:token", resetPassword);
 router.post("/check-token", checkIfValidToken);
@@ -99,6 +98,8 @@ router.get("/:id", getUser);
 router.put("/:id", validateUpdate, updateUser);
 
 router.post("/addPaymentMethod", addPaymentMethod);
+
+router.post("/lastActive", updateLastActive);
 
 // Admin only routes
 router.delete("/:id", authorize("admin"), deleteUser);

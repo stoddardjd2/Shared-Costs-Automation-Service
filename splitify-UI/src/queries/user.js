@@ -84,3 +84,10 @@ export const addPaymentMethod = async (paymentMethod, paymentAddress) => {
     body: { paymentMethod: paymentMethod.toLowerCase(), paymentAddress },
   });
 };
+
+export const updateLastActive = async () => {
+  const endpoint = `/users/lastActive`;
+  return await apiRequest(endpoint, {
+    method: "POST",
+  });
+};

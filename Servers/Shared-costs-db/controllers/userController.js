@@ -207,7 +207,7 @@ const addContactToUser = async (req, res) => {
     }
 
     // Add new contact
-    
+
     const newContact = {
       name: name.trim(),
       avatar: avatar.trim(),
@@ -1208,6 +1208,25 @@ async function handleGoogleCallback(req, res) {
   }
 }
 
+const updateLastActive = async (req, res) => {
+  console.log("updating last active", req.user._id, new Date());
+  try {
+    const userId = req.user._id; // From auth middleware
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    user.lastActive = new Date();
+    await user.save();
+
+    return res.status(200).json({ message: "Last active updated." });
+    // send user info after handling account
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
 module.exports = {
   getUsers,
   getUser,
@@ -1226,4 +1245,5 @@ module.exports = {
   updateContactForUser,
   handleGoogleAuth,
   handleGoogleCallback,
+  updateLastActive,
 };

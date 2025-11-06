@@ -195,6 +195,7 @@ const userSchema = new Schema(
       accessToken: { type: String, select: false },
     },
 
+    lastActive: Date,
     OAuth: {
       google: {
         sub: { type: String },
