@@ -15,7 +15,7 @@ import { getUsers } from "../../queries/user";
 
 const PLAN_COLORS = {
   premium: "#6366F1", // indigo
-  pro: "#10B981", // green
+  professional: "#10B981", // green
   basic: "#F59E0B", // amber
   unknown: "#9CA3AF", // gray
 };
@@ -508,7 +508,7 @@ export default function AdminUsersOverview() {
             >
               <option value="all">All plans</option>
               <option value="free">Free</option>
-              <option value="pro">Pro</option>
+              <option value="professional">Professional</option>
               <option value="premium">Premium</option>
               <option value="unknown">Unknown</option>
             </select>
