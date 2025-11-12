@@ -29,6 +29,25 @@ const schedulerMetrics = {
 
 // ------------------------ Utility Functions ------------------------
 
+async function handleDynamicCost(requestDocument) {
+  if (requestDocument?.isDynamic) {
+    console.log("DYNAMIC COST SCHEDULED FOR:", requestDocument.name);
+    try {
+      const updatedDynamicData = await resolveDynamicAmountIfEnabled(
+        requestDocument
+      );
+      requestDocument.participants = updatedDynamicData.newParticipants;
+      console.log(
+        "DYNAMIC UPDATE: UPDATED PARCITIPANTS WITH NEW COSTS:",
+        requestDocument.participants
+      );
+    } catch (e) {
+      console.error("Dynamic amount (recurring) failed:", e?.message || e);
+      throw e;
+    }
+  }
+}
+
 function normalizeStartTiming(startTimingValue) {
   if (!startTimingValue) return null;
   if (typeof startTimingValue === "string") {
@@ -232,7 +251,7 @@ function createPaymentHistoryEntry(requestDocument, requestSentDate, presetId) {
   // );
 
   // send reminders 3 days after due date
-  const remindInDays = 3
+  const remindInDays = 3;
   const nextReminderDate = calculateDaysFromNow(remindInDays);
   // calculateNextReminderDate(
   //   dueDate,
@@ -368,6 +387,9 @@ async function processRecurringRequestIfDue(
           requestDocument
         )
       ) {
+        // handle dynamic cost
+        handleDynamicCost(requestDocument)
+
         const requestSentDate = currentDate;
         // Generate history id up front and pass it through
         const paymentHistoryId = new ObjectId();
@@ -376,6 +398,8 @@ async function processRecurringRequestIfDue(
           requestSentDate,
           paymentHistoryId
         );
+
+      
 
         for (const participant of requestDocument.participants || []) {
           try {
@@ -427,27 +451,7 @@ async function processRecurringRequestIfDue(
     const requestSentDate = currentDate;
 
     // DYNAMIC COST
-    // let overrideAmount = null;
-    // let newTotalAmount = null;
-
-    if (requestDocument?.isDynamic) {
-      console.log("DYNAMIC COST SCHEDULED FOR:", requestDocument.name);
-      try {
-        const updatedDynamicData = await resolveDynamicAmountIfEnabled(
-          requestDocument
-        );
-        requestDocument.participants = updatedDynamicData.newParticipants;
-        console.log(
-          "DYNAMIC UPDATE: UPDATED PARCITIPANTS WITH NEW COSTS:",
-          requestDocument.participants
-        );
-      } catch (e) {
-        console.error("Dynamic amount (recurring) failed:", e?.message || e);
-        throw e;
-      }
-    }
-    // if (newAmount != null) paymentHistoryEntry.amount = newAmount;
-    // if (newAmount != null) paymentHistoryEntry.totalAmount = newTotalAmount;
+    handleDynamicCost(requestDocument);
 
     const paymentHistoryId = new ObjectId();
     const paymentHistoryEntry = createPaymentHistoryEntry(

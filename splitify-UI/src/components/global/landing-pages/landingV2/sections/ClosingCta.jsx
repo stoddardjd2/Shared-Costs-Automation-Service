@@ -6,7 +6,7 @@ import heroBg from "../assets/hero-bg.png"; // ✅ bundler-friendly
 export default function ClosingCta() {
   return (
     <section
-      className="relative mb-0 overflow-hidden"
+      className="relative py-5 mb-0 overflow-hidden"
       style={
         // {
         //   background: "rgba(179, 220, 250, 1.0)",

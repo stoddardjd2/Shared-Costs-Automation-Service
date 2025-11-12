@@ -103,7 +103,7 @@ export default function Hero() {
               for you.
             </p>
             <p className="text-center font-semibold text-gray-700">
-              No chasing. No awkward follow-ups. No confusion.
+              No chasing. No awkward follow-ups. <br className="inline sm:hidden" /> No confusion.
             </p>
 
             <CtaBtn
