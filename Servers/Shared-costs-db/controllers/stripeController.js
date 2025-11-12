@@ -435,22 +435,24 @@ async function handleStripeWebHook(req, res) {
   console.log("stripe webhook received");
 
   // Convert a Stripe unix-second timestamp to Date, only if valid.
-  // Returns undefined instead of Invalid Date so we can omit from $set.
   const stripeTsToDate = (ts) =>
     Number.isFinite(ts) ? new Date(ts * 1000) : undefined;
 
-  // Build a $set object that only includes defined values.
+  // Build a $set object that only includes defined / non-NaN values.
   const definedOnly = (obj) =>
     Object.fromEntries(
-      Object.entries(obj).filter(([, v]) => v !== undefined && v !== Number.NaN)
+      Object.entries(obj).filter(
+        ([, v]) =>
+          v !== undefined && !(typeof v === "number" && Number.isNaN(v))
+      )
     );
 
   const sig = req.headers["stripe-signature"];
-  // const raw = req.rawBody;
-
   let event;
 
   try {
+    // IMPORTANT: req.body must be the raw body (Buffer/string),
+    // not JSON-parsed. Make sure your middleware is set up accordingly.
     event = stripe.webhooks.constructEvent(
       req.body,
       sig,
@@ -462,6 +464,7 @@ async function handleStripeWebHook(req, res) {
   }
 
   console.log("STRIPE WEBHOOK EVENT TYPE:", event.type);
+
   try {
     switch (event.type) {
       case "invoice.payment_succeeded": {
@@ -508,12 +511,16 @@ async function handleStripeWebHook(req, res) {
         const startUnix = sub?.current_period_start ?? subLine?.period?.start;
         const endUnix = sub?.current_period_end ?? subLine?.period?.end;
 
+        const isActiveOrTrialing = sub
+          ? ["active", "trialing"].includes(sub.status)
+          : false;
+
         const update = definedOnly({
-          "subscription.id": sub?.id ?? subId, // set if we have something
+          "subscription.id": sub?.id ?? subId,
           "subscription.planKey": planKey ?? user.subscription?.planKey ?? null,
           "subscription.interval":
             interval ?? user.subscription?.interval ?? null,
-          "subscription.status": sub?.status, // leave undefined if no sub
+          "subscription.status": sub?.status,
           "subscription.currentPeriodStart": stripeTsToDate(startUnix),
           "subscription.currentPeriodEnd": stripeTsToDate(endUnix),
           "subscription.cancelAtPeriodEnd":
@@ -521,21 +528,23 @@ async function handleStripeWebHook(req, res) {
               ? sub.cancel_at_period_end
               : undefined,
           "subscription.latestInvoiceId": invoice.id,
-          // Prefer sub.default_payment_method; fallback to invoice’s PI payment_method if present
+          // Prefer subscription default_payment_method, then invoice.default_payment_method
           "subscription.defaultPaymentMethodId":
             (typeof sub?.default_payment_method === "object"
               ? sub.default_payment_method?.id
               : sub?.default_payment_method) ??
-            invoice?.payment_intent?.payment_method ??
             invoice?.default_payment_method ??
             undefined,
-          isPremium: sub
-            ? ["active", "trialing"].includes(sub.status)
-            : undefined,
-          plan: plan ?? undefined,
+
+          // 🔑 Only mark as premium if the sub is actually active or trialing
+          isPremium: isActiveOrTrialing ? true : undefined,
+
+          // 🔑 Only move them off "free" if the sub is active/trialing
+          plan: isActiveOrTrialing
+            ? plan ?? user.plan ?? "free"
+            : user.plan ?? "free",
         });
 
-        // If nothing to set, don’t make a noisy update
         if (Object.keys(update).length) {
           await User.updateOne({ _id: user._id }, { $set: update });
         }
@@ -545,13 +554,15 @@ async function handleStripeWebHook(req, res) {
       case "customer.subscription.resumed":
       case "customer.subscription.updated":
       case "customer.subscription.created": {
-        const sub = event.data.object; // full subscription object here
+        const sub = event.data.object;
         const customerId = sub.customer;
 
         const user = await User.findOne({ stripeCustomerId: customerId });
         if (!user) break;
 
         const { planKey, interval, plan } = inferPlanFromSubscription(sub);
+
+        const isActiveOrTrialing = ["active", "trialing"].includes(sub.status);
 
         const update = definedOnly({
           "subscription.id": sub.id,
@@ -570,8 +581,10 @@ async function handleStripeWebHook(req, res) {
             (typeof sub.default_payment_method === "object"
               ? sub.default_payment_method?.id
               : sub.default_payment_method) ?? undefined,
-          isPremium: ["active", "trialing"].includes(sub.status),
-          plan: plan ?? "free",
+
+          // 🔑 Only grant premium + plan if the sub is actually active/trialing
+          isPremium: isActiveOrTrialing,
+          plan: isActiveOrTrialing ? plan ?? user.plan ?? "free" : "free",
         });
 
         await User.updateOne({ _id: user._id }, { $set: update });
@@ -602,6 +615,7 @@ async function handleStripeWebHook(req, res) {
         );
         break;
       }
+
       case "customer.subscription.paused":
       case "customer.subscription.deleted": {
         const sub = event.data.object;
@@ -616,7 +630,7 @@ async function handleStripeWebHook(req, res) {
             $set: {
               "subscription.status": "canceled",
               isPremium: false,
-              plan: "free", // remove plan on cancel
+              plan: "free",
             },
           }
         );
@@ -624,7 +638,6 @@ async function handleStripeWebHook(req, res) {
       }
 
       default:
-        // ignore others
         break;
     }
 

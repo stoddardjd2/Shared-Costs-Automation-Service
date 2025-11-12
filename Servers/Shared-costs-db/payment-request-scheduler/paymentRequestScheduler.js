@@ -484,12 +484,7 @@ async function processRecurringRequestIfDue(
       requestDocument?.customInterval,
       requestDocument?.customUnit
     );
-    console.log(
-      "NEXT DUE DATE:",
-      requestNextDueDate,
-      "FOR",
-      requestDocument.name
-    );
+
 
     await Request.updateOne(
       { _id: requestDocument._id, lastSent: requestDocument.lastSent },
