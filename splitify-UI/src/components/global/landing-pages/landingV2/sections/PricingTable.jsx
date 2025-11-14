@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { gaEvent } from "../../../../../googleAnalytics/googleAnalyticsHelpers";
 import SectionIndicator from "../builders/SectionIndicator";
 import { motion } from "framer-motion";
+import FadeInWrapper from "../builders/FadeInWrapper";
 
 // 🆕 cardVariants now accepts custom delay
 const cardVariants = {
@@ -98,13 +99,15 @@ export default function PricingTable() {
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <SectionIndicator className="mx-auto" title="Pricing" />
-            <h2 className=" mb-3">The most advanced bill splitting tool</h2>
-            <p className="mb-6">
-              Everything you need for free, plus some paid features for the
-              smart ones.
-            </p>
-            <BillingToggle isAnnual={isAnnual} setIsAnnual={setIsAnnual} />
+            <FadeInWrapper>
+              <SectionIndicator className="mx-auto" title="Pricing" />
+              <h2 className=" mb-3">The most advanced bill splitting tool</h2>
+              <p className="mb-6">
+                Everything you need for free, plus some paid features for the
+                smart ones.
+              </p>
+              <BillingToggle isAnnual={isAnnual} setIsAnnual={setIsAnnual} />
+            </FadeInWrapper>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6">
@@ -119,7 +122,6 @@ export default function PricingTable() {
                 className={[
                   // put popular first on mobile, normal order from sm+
                   plan.popular ? "order-[-1] lg:order-none" : "",
-       
                 ]
                   .join(" ")
                   .trim()}

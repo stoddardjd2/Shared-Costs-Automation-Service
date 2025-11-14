@@ -14,6 +14,7 @@ import Payment from "../assets/feature-icons/payment.svg?react";
 import Bank from "../assets/feature-icons/bank.svg?react";
 import { motion, useAnimation, useInView } from "framer-motion";
 import { useEffect, useRef } from "react";
+import FadeInWrapper from "../builders/FadeInWrapper";
 
 const features = [
   {
@@ -29,8 +30,8 @@ const features = [
     title: <div>Auto text reminders</div>,
     description: (
       <p className="text-gray-600">
-        Missing payments? Splitify follows up with text messages until you
-        get paid.
+        Missing payments? Splitify follows up with text messages until you get
+        paid.
       </p>
     ),
     btmElements: <img className="w-full h-auto" src={feature3} alt="" />,
@@ -48,7 +49,7 @@ const features = [
     ),
     btmElements: <img className="w-full h-auto" src={feature5} alt="" />,
   },
-    {
+  {
     icon: <Link className="w-5 h-5 [&>path]:stroke-[16px] " />,
 
     title: <div className="">Pay with link</div>,
@@ -105,15 +106,17 @@ export default function Features() {
   return (
     <section id="features" className="p-[clamp(1rem,5vw,2.5rem)]">
       <div className="constrained-width w-full">
-        <SectionIndicator className={"mx-auto"} title={"Features"} />
-        <h2 className="text-center">It's more than just a split button</h2>
-        <p className="text-center mt-4 lg:w-3/5 mx-auto text-gray-600">
-          Splitify does the work for you, so you don’t have to worry or waste
-          time.
-          <div className="mt-2 italic text-gray-600">
-            Fast, friendly, reliable.
-          </div>
-        </p>
+        <FadeInWrapper>
+          <SectionIndicator className={"mx-auto"} title={"Features"} />
+          <h2 className="text-center">It's more than just a split button</h2>
+          <p className="text-center mt-4 lg:w-3/5 mx-auto text-gray-600">
+            Splitify does the work for you, so you don’t have to worry or waste
+            time.
+            <div className="mt-2 italic text-gray-600">
+              Fast, friendly, reliable.
+            </div>
+          </p>
+        </FadeInWrapper>
 
         {/* features grid */}
         <div className="mt-14 grid gap-4 auto-rows-fr grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
@@ -121,7 +124,7 @@ export default function Features() {
           {features.map((feature, index) => (
             <AnimatedInView
               key={index}
-              delay={index * .14} // stagger: 0s, 140ms, 280ms, ...
+              delay={index * 0.14} // stagger: 0s, 140ms, 280ms, ...
               className="w-full"
             >
               <FeatureCard
@@ -144,9 +147,6 @@ function FeatureCard({ btmElements, title, description, icon }) {
     <div className="flex flex-col overflow-hidden w-full h-full bg-white border border-gray-200 rounded-2xl shadow-lg">
       <div className="p-4">
         <div className="flex items-center mb-2">
-          {/* <div className="rounded-[60px] flex-shrink-0 text-white mr-4 w-8 h-8 flex items-center justify-center primary-color">
-            {icon}
-          </div> */}
           <h4>{title}</h4>
         </div>
         <div className="text-gray-600">{description}</div>

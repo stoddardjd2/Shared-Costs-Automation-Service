@@ -2,6 +2,7 @@ import Star from "../assets/Star";
 import CtaBtn from "../builders/CtaBtn";
 import splittingPhoneImg from "../assets/splittingPhone.png?format=webp&quality=80";
 import heroBg from "../assets/hero-bg.png"; // ✅ bundler-friendly
+import FadeInWrapper from "../builders/FadeInWrapper";
 
 export default function ClosingCta() {
   return (
@@ -30,28 +31,37 @@ export default function ClosingCta() {
     >
       <div className="constrained-width relative z-10 p-[clamp(1rem,5vw,2rem)]">
         <div className="flex-col-reverse md:flex-row flex justify-between gap-[clamp(1rem,5vw,5rem)] ">
-          <div className="">
-            <img
-              src={splittingPhoneImg}
-              className="mx-auto md:-translate-x-4  w-[clamp(20rem,30rem+20vw,60rem)]"
-            />
-          </div>
+          <FadeInWrapper
+            initial={{ opacity: 0, y: 50 }}
+          >
+            <div className="">
+              <img
+                src={splittingPhoneImg}
+                className="mx-auto md:-translate-x-4  w-[clamp(20rem,30rem+20vw,60rem)]"
+              />
+            </div>
+          </FadeInWrapper>
+
 
           <div className="my-auto">
-            <h2 className="text-center md:text-start">
-              Make your next split the easiest one yet.
-            </h2>
-            <p className="mt-4 w-9/12 mx-auto md:mx-0 text-center md:text-start">
-              Splitify keeps things clear, quick and friendly. <br></br> No follow-ups. No
-              confusion. Just automatic bill splits.
-            </p>
-            <CtaBtn
-              animate={true}
-              variation={"Landing-v2-ClosingCTA-TEST-A"}
-              whiteArrow={true}
-              className={`sm:mt-[50px] mx-auto md:mx-0 w-fit font-semibold !mt-8 px-6 py-3 
+            <FadeInWrapper>
+              <h2 className="text-center md:text-start">
+                Make your next split the easiest one yet.
+              </h2>
+              <p className="mt-4 w-9/12 mx-auto md:mx-0 text-center md:text-start">
+                Splitify keeps things clear, quick and friendly. <br></br> No
+                follow-ups. No confusion. Just automatic bill splits.
+              </p>
+            </FadeInWrapper>
+            <FadeInWrapper delaySec={0.4}>
+              <CtaBtn
+                animate={true}
+                variation={"Landing-v2-ClosingCTA-TEST-A"}
+                whiteArrow={true}
+                className={`sm:mt-[50px] mx-auto md:mx-0 w-fit font-semibold !mt-8 px-6 py-3 
                    shadow-lg cursor-pointer hover:bg-blue-700 transition-all`}
-            />
+              />
+            </FadeInWrapper>
           </div>
         </div>
       </div>
