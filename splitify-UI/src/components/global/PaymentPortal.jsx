@@ -43,7 +43,7 @@ const getPaymentMethods = (initial, paymentDetails) => [
     paymentUrl:
       paymentDetails.paymentMethods?.venmo &&
       paymentDetails.paymentMethods.venmo?.trim() !== ""
-        ? `https://venmo.com/pay?txn=pay&recipients=${
+        ? `https://venmo.com/?txn=pay&recipients=${
             paymentDetails.paymentMethods.venmo
           }&amount=${paymentDetails.amountOwed}&note=${encodeURIComponent(
             paymentDetails.requestName || "Payment"
@@ -704,9 +704,10 @@ export default function PaymentPage() {
 
           <div className="grid gap-3">
             {paymentMethods.map((method) => (
-              <button
+              <a
                 key={method.id}
-                onClick={() => handlePaymentSelect(method)}
+                href={method.paymentUrl || "#"}
+                // onClick={() => handlePaymentSelect(method)}
                 disabled={isProcessing}
                 className={`
                   relative w-full rounded-lg p-4 transition-all duration-200
@@ -723,6 +724,7 @@ export default function PaymentPage() {
                   color: method.textColor,
                 }}
               >
+                {console.log("URL:", method.paymentUrl)}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-[24px]">{method.icon}</div>
@@ -738,7 +740,7 @@ export default function PaymentPage() {
                     )}
                   </div>
                 </div>
-              </button>
+              </a>
             ))}
           </div>
         </div>
