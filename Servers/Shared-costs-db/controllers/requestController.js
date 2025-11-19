@@ -779,7 +779,6 @@ const handleToggleMarkAsPaid = async (req, res) => {
 const handlePaymentDetails = async (req, res) => {
   try {
     const { requestId, paymentHistoryId, userId } = req.params;
-
     const requestObjectId = new ObjectId(requestId);
     const historyObjectId = new ObjectId(paymentHistoryId);
     const participantObjectId = new ObjectId(userId);
@@ -797,7 +796,6 @@ const handlePaymentDetails = async (req, res) => {
     const owner = await User.findById(new ObjectId(requestDocument.owner));
     const OwnerName = owner.name;
     const ownerPaymentMethods = owner.paymentMethods;
-    console.log("OWNER", owner);
 
     const convertToNumber = (value) =>
       typeof value === "number" ? value : Number(value ?? 0);
@@ -827,6 +825,21 @@ const handlePaymentDetails = async (req, res) => {
         paidInFull = true; // fully paid
       }
     }
+
+    console.log("paymentPortal details:", {
+      success: true,
+      isPaidInFull: paidInFull,
+      amountOwed: amountLeft,
+      owedTo: OwnerName,
+      allowMarkAsPaidForEveryone:
+        requestDocument?.allowMarkAsPaidForEveryone || false,
+      paymentMethods: ownerPaymentMethods,
+      dueDate: thisPaymentHistory.dueDate,
+      amountPaid: thisParticipant.amount,
+      requestName: requestDocument.name,
+      datePaid: thisParticipant.paidDate || thisParticipant.markedAsPaidDate,
+      message: `Request ${paidInFull ? "paid in full" : "not paid in full"}`,
+    });
 
     return res.status(200).json({
       success: true,

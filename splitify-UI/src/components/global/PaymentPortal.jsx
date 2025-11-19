@@ -363,6 +363,57 @@ const PageLayout = ({ children, header }) => (
   </div>
 );
 
+function InvalidRequestView() {
+  return (
+    <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+      {/* Header */}
+      <div className="bg-red-500 p-8 text-white text-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-16 w-16 rounded-full bg-white/20 grid place-items-center ring-2 ring-white/30">
+            <AlertCircle className="w-8 h-8" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">Bad Request</h1>
+            <p className="text-red-100 mt-1">
+              Something went wrong on our backend, please let us know about this
+              issue so we can resolve it.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-8">
+        <div className="text-center mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-3">
+            Unable to Process Payment
+          </h2>
+          <p className="text-gray-600 mb-4">
+            The payment link you're trying to access had something go wrong on our servers. Please try again or contact us for assistance.
+          </p>
+          {/* <div className="bg-gray-50 rounded-lg p-4 text-left">
+            <p className="text-sm text-gray-700 mb-2">This could happen if:</p>
+            <ul className="text-sm text-gray-600 space-y-1">
+              <li>• The link has expired</li>
+              <li>• Required information is missing</li>
+              <li>• The payment has already been processed</li>
+              <li>• The link was corrupted or incomplete</li>
+            </ul>
+          </div> */}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="mt-6 text-center">
+          <p className="text-xs text-gray-500">
+            Please contact the person who sent you this payment link for
+            assistance.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function InvalidUrlView() {
   return (
     <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
@@ -438,10 +489,10 @@ export default function PaymentPage() {
   const [isAlreadyPaid, setIsAlreadyPaid] = useState(false);
   const [paidDate, setPaidDate] = useState(null);
   const [invalidUrl, setInvalidUrl] = useState(false);
+  const [invalidRequest, setInvalidRequest] = useState(false);
   const [amountPaid, setAmountPaid] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [paymentDetails, setPaymentDetails] = useState({});
-
   const [paymentMethods, setPaymentMethods] = useState([]);
 
   useEffect(() => {
@@ -456,6 +507,8 @@ export default function PaymentPage() {
         paymentHistoryId,
         userId
       );
+
+      console.log("res,!", res);
       if (res.success) {
         const {
           allowMarkAsPaidForEveryone,
@@ -486,6 +539,9 @@ export default function PaymentPage() {
           setAmountPaid(res.data.amountPaid);
           setPaidDate(formatDate(res.data.datePaid));
         }
+      } else {
+        console.error("Error fetching payment details:", res.error);
+        setInvalidRequest(true);
       }
 
       setTimeout(() => {
@@ -553,6 +609,14 @@ export default function PaymentPage() {
       setIsProcessing(false);
     }, 1500);
   };
+
+  if (invalidRequest) {
+    return (
+      <PageLayout>
+        <InvalidRequestView />
+      </PageLayout>
+    );
+  }
 
   if (invalidUrl) {
     return (
