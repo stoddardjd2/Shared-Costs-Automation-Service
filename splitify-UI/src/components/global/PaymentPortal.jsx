@@ -41,11 +41,27 @@ const getPaymentMethods = (initial, paymentDetails) => [
     bgColor: "#3D95CE",
     textColor: "white",
     paymentUrl:
-      paymentDetails.paymentMethods?.venmo && paymentDetails.paymentMethods.venmo?.trim() !== ""
-        ? `https://venmo.com/u/${paymentDetails.paymentMethods.venmo}?txn=pay&amount=${
-            paymentDetails.amountOwed
-          }&note=${encodeURIComponent(paymentDetails.requestName || "Payment")}`
-        : "https://venmo.com/",
+      paymentDetails.paymentMethods?.venmo &&
+      paymentDetails.paymentMethods.venmo.trim() !== ""
+        ? (() => {
+            const username = paymentDetails.paymentMethods.venmo.trim();
+            const amount = paymentDetails.amountOwed;
+            const note = encodeURIComponent(
+              paymentDetails.requestName || "Payment"
+            );
+
+            // venmo:// deep link (preferred for mobile)
+            const deepLink = `venmo://pay?txn=pay&recipients=${username}&amount=${amount}&note=${note}`;
+
+            // fallback for desktop (opens profile)
+            const webFallback = `https://venmo.com/u/${username}`;
+
+            return { deepLink, webFallback };
+          })()
+        : {
+            deepLink: "https://venmo.com/",
+            webFallback: "https://venmo.com/",
+          },
     icon: (
       <svg
         fill="#ffffff"
@@ -62,7 +78,8 @@ const getPaymentMethods = (initial, paymentDetails) => [
     bgColor: "#00D632",
     textColor: "white",
     paymentUrl:
-      paymentDetails.paymentMethods?.cashapp && paymentDetails.paymentMethods.cashapp?.trim() !== ""
+      paymentDetails.paymentMethods?.cashapp &&
+      paymentDetails.paymentMethods.cashapp?.trim() !== ""
         ? `https://cash.app/$${paymentDetails.paymentMethods.cashapp}/${paymentDetails.amountOwed}`
         : "https://cash.app/",
     icon: (
@@ -134,7 +151,8 @@ const getPaymentMethods = (initial, paymentDetails) => [
     bgColor: "#0070BA",
     textColor: "white",
     paymentUrl:
-      paymentDetails.paymentMethods?.paypal && paymentDetails.paymentMethods.paypal?.trim() !== ""
+      paymentDetails.paymentMethods?.paypal &&
+      paymentDetails.paymentMethods.paypal?.trim() !== ""
         ? `https://www.paypal.me/${paymentDetails.paymentMethods.paypal}/${paymentDetails.amountOwed}`
         : "https://paypal.me/",
     icon: (
@@ -457,7 +475,7 @@ export default function PaymentPage() {
           dueDate,
           owedTo,
           requestName,
-          paymentMethods
+          paymentMethods,
         } = res.data;
 
         const paymentDetailsFiller = {
@@ -466,7 +484,7 @@ export default function PaymentPage() {
           dueDate,
           owedTo,
           requestName,
-          paymentMethods
+          paymentMethods,
         };
 
         setPaymentDetails({ ...paymentDetailsFiller });
