@@ -42,26 +42,14 @@ const getPaymentMethods = (initial, paymentDetails) => [
     textColor: "white",
     paymentUrl:
       paymentDetails.paymentMethods?.venmo &&
-      paymentDetails.paymentMethods.venmo.trim() !== ""
-        ? (() => {
-            const username = paymentDetails.paymentMethods.venmo.trim();
-            const amount = paymentDetails.amountOwed;
-            const note = encodeURIComponent(
-              paymentDetails.requestName || "Payment"
-            );
+      paymentDetails.paymentMethods.venmo?.trim() !== ""
+        ? `https://venmo.com/pay?txn=pay&recipients=${
+            paymentDetails.paymentMethods.venmo
+          }&amount=${paymentDetails.amountOwed}&note=${encodeURIComponent(
+            paymentDetails.requestName || "Payment"
+          )}`
+        : "https://venmo.com/",
 
-            // venmo:// deep link (preferred for mobile)
-            const deepLink = `venmo://pay?txn=pay&recipients=${username}&amount=${amount}&note=${note}`;
-
-            // fallback for desktop (opens profile)
-            const webFallback = `https://venmo.com/u/${username}`;
-
-            return { deepLink, webFallback };
-          })()
-        : {
-            deepLink: "https://venmo.com/",
-            webFallback: "https://venmo.com/",
-          },
     icon: (
       <svg
         fill="#ffffff"
