@@ -403,12 +403,7 @@ function InvalidRequestView() {
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-gray-500">
-            Please contact the person who sent you this payment link for
-            assistance.
-          </p>
-        </div>
+
       </div>
     </div>
   );
