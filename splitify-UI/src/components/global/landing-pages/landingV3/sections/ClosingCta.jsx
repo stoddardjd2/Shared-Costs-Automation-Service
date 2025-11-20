@@ -44,13 +44,13 @@ export default function ClosingCta() {
 
 
           <div className="my-auto">
-            <FadeInWrapper>
+            <FadeInWrapper >
               <h2 className="text-center md:text-start">
-                Make your next split the easiest one yet.
+                Make your next request the  easiest one yet.
               </h2>
               <p className="mt-4 w-9/12 mx-auto md:mx-0 text-center md:text-start">
                 Splitify keeps things clear, quick and friendly. <br></br> No
-                follow-ups. No confusion. Just automatic bill splits.
+                follow-ups. No confusion. Just automatic payment requests.
               </p>
             </FadeInWrapper>
             <FadeInWrapper delaySec={0.4}>

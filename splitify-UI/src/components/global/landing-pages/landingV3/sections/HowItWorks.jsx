@@ -96,7 +96,7 @@ export default function HowItWorks() {
         <div className="flex gap-y-[1rem] gap-x-20 flex-wrap justify-between">
           <FadeInWrapper>
             <h2 className="m-0">
-              <span className="whitespace-nowrap">Get paid in</span>
+              <span className="whitespace-nowrap">Get paid back in</span>
               <br />
               <span>3 simple steps</span>
             </h2>
