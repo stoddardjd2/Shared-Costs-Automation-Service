@@ -108,7 +108,7 @@ export default function HowItWorks() {
                 <span className="font-medium">
                   No calculators. No group chats. No excel sheets.
                 </span>{" "}
-                Just splits that actually get paid.
+                Just requests that actually get paid.
               </p>
               <CtaBtn
                 variation="Landing-v2-HowItWorks-TEST-A"

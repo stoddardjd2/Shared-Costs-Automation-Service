@@ -3,7 +3,11 @@ const sendTextMessage = require("./sendTextMessage");
 const User = require("../models/User");
 
 // routes is array of strings with channels to send messages to EX: ["text", "email"]
-async function sendRequestsRouter(reminderData, routes = ["text", "email"]) {
+async function sendRequestsRouter(
+  reminderData,
+  routes = ["text", "email"],
+  isReminder = false
+) {
   // TODO: Implement your SMS/Email sending logic here
   //Generate payment URL
   try {
@@ -73,7 +77,22 @@ async function sendRequestsRouter(reminderData, routes = ["text", "email"]) {
     //   sendEmailRequest(requester, name, amount, finalUrl, user.email);
     // }
 
-    const message = `Hi ${name},
+
+
+    let message = "";
+    if (isReminder) {
+      message = `Hi ${name},
+you have an overdue payment for ${requester}.
+
+AMOUNT OWED: $${amount}
+FOR: ${chargeName}
+
+To complete your payment, visit: ${finalUrl}
+
+Sent via Splitify
+`;
+    } else {
+      message = `Hi ${name},
 ${requester} sent you a payment request.
 
 AMOUNT REQUESTED: $${amount}
@@ -83,6 +102,9 @@ To complete your payment, visit: ${finalUrl}
 
 Sent via Splitify
 `;
+    }
+
+
 
     if (routes.includes("text")) {
       sendTextMessage(user.phone, "+18333702013", message);

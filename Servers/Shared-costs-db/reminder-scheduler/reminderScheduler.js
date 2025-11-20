@@ -129,20 +129,24 @@ async function processRequestReminders(request) {
           new ObjectId(participant.participantId)
         );
 
-        await sendRequestsRouter({
-          requestId: request._id,
-          requestName: request.name,
-          requestOwner: owner.name,
-          requestOwnerPaymentMethods: owner?.paymentMethods || {},
-          participantId: participant.participantId,
-          participantName: partcipantInfo.name,
-          paymentHistoryId: paymentEntry._id,
-          // expectedAmount: participant.expectedAmount,
-          // paidAmount: participant.paidAmount,
-          stillOwes: participant.stillOwes,
-          dueDate: paymentEntry.dueDate,
-          requestData: request,
-        });
+        await sendRequestsRouter(
+          {
+            requestId: request._id,
+            requestName: request.name,
+            requestOwner: owner.name,
+            requestOwnerPaymentMethods: owner?.paymentMethods || {},
+            participantId: participant.participantId,
+            participantName: partcipantInfo.name,
+            paymentHistoryId: paymentEntry._id,
+            // expectedAmount: participant.expectedAmount,
+            // paidAmount: participant.paidAmount,
+            stillOwes: participant.stillOwes,
+            dueDate: paymentEntry.dueDate,
+            requestData: request,
+          },
+          ["text", "email"],
+          true // isReminder
+        );
 
         // Update the participant's reminder status in paymentHistory
         const historyParticipant = paymentEntry.participants.find(
@@ -229,7 +233,7 @@ async function processReminders() {
         },
       ],
       "paymentHistory.nextReminderDate": { $lte: now },
-    })
+    });
 
     console.log(`📋 Found ${requests.length} requests with due reminders`);
 

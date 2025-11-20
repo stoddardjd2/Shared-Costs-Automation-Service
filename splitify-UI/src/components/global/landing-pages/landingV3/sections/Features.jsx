@@ -99,7 +99,7 @@ export default function Features() {
       <div className="constrained-width w-full">
         <FadeInWrapper>
           <SectionIndicator className={"mx-auto"} title={"Features"} />
-          <h2 className="text-center">Features that make bill splitting easy</h2>
+          <h2 className="text-center">Features that make getting paid back easy</h2>
           <p className="text-center mt-4 lg:w-3/5 mx-auto text-gray-600">
             Splitify does the work for you, so you can set it up once and forget.
             <div className="mt-2 italic text-gray-600">

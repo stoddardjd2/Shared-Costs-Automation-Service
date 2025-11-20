@@ -100,7 +100,7 @@ export default function Hero() {
               <br className="inline sm:hidden" /> pay you back.
             </h1>
             <p className="text-center text-gray-700 mb-2 max-w-[800px] mx-auto">
-             Splitify uses proven techniques to get you paid back and paid fast. Experience less stress, fewer arguments, and more confidence that you won’t be stuck covering other people's bills.
+             Splitify uses proven techniques to get you paid back more often and faster. Experience less stress, fewer arguments, and more confidence that you won’t be stuck covering other people's bills.
             </p>
             <p className="text-center font-semibold text-gray-700">
               No chasing. No awkward conversations.{" "}
