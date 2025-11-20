@@ -30,12 +30,16 @@ const Navbar = lazy(() => import("./components/dashboard/Navbar"));
 const GlobalNavbar = lazy(() => import("./components/global/GlobalNavbar"));
 const GlobalFooter = lazy(() => import("./components/global/GlobalFooter.jsx"));
 
-const LandingPageOfficial = lazy(() =>
+const LandingPageV1 = lazy(() =>
   import("./components/global/landing-pages/figma/LandingPage")
 );
 
 const LandingPageV2 = lazy(() =>
   import("./components/global/landing-pages/landingV2/LandingPageV2")
+);
+
+const LandingPageV3 = lazy(() =>
+  import("./components/global/landing-pages/landingV3/LandingPageV3")
 );
 // const LandingPage = lazy(() => import("./components/global/landing-pages/Claude/LandingPage"));
 // const LandingPage2 = lazy(() => import("./components/global/landing-pages/Claude/LandingPage2"));
@@ -101,10 +105,11 @@ const App = () => {
         {/* Public routes */}
         {/* <Route path="/test" element={<Test />} /> */}
 
-        <Route path="/" element={<LandingPageV2 />} />
+        <Route path="/" element={<LandingPageV3 />} />
 
-        <Route path="/landing/*" element={<LandingPageV2 />}></Route>
-        <Route path="/landing/2" element={<LandingPageOfficial />} />
+        <Route path="/landing/*" element={<LandingPageV3 />}></Route>
+        <Route path="/landing/2" element={<LandingPageV2 />} />
+        <Route path="/landing/3" element={<LandingPageV1 />} />
 
         {/* Blog routes */}
         <Route path="/blog/:slug/*" element={<BlogStatic />} />
@@ -164,6 +169,7 @@ const App = () => {
             <>
               <GlobalNavbar />
               <PaymentPortal />
+              <GlobalFooter />
             </>
           }
         />
