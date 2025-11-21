@@ -57,3 +57,13 @@ body {
   background-size: 200% 200%;
   animation: gradient 2s ease-in-out infinite;
 }
+
+@keyframes splitify-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.splitify-spinner {
+  animation: splitify-spin 0.6s linear infinite;
+}

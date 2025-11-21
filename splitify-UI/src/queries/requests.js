@@ -106,7 +106,7 @@ export const getRequest = async (requestId) => {
 };
 
 export const createRequest = async (requestData) => {
-  console.log("req data", requestData)
+  console.log("req data", requestData);
   const result = await apiRequest("/requests", {
     method: "POST",
     body: requestData,
@@ -226,4 +226,13 @@ export const handleDeleteRequest = async (requestId) => {
   return await apiRequest(`/requests/delete/${requestId}`, {
     method: "POST",
   });
+};
+
+export const handleLogPaymentView = async (requestId, paymentHistoryId, userId) => {
+  return await apiRequest(
+    `/requests/logPaymentView/${requestId}/${paymentHistoryId}/${userId}`,
+    {
+      method: "POST",
+    }
+  );
 };

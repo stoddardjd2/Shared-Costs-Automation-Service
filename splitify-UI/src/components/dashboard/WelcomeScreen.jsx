@@ -65,7 +65,7 @@ export default function WelcomeScreen({setShowFirstTimePrompt}) {
               onClick={handleGetStarted}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors duration-200"
             >
-              <span>Split Your First Bill</span>
+              <span>Split Your First Request</span>
               <ArrowRight className="w-4 h-4" />
             </button>
             <button

@@ -424,13 +424,6 @@ const handlePayment = async (req, res) => {
       });
     }
 
-    // deny request if allowed mark as paid disabled
-    if (!currentRequest.allowMarkAsPaidForEveryone) {
-      return res.status(401).json({
-        error: "User not authorized to mark as paid",
-      });
-    }
-
     // Find the specific payment history entry and participant
     const paymentEntry = currentRequest.paymentHistory.find(
       (payment) => payment._id.toString() === paymentHistoryId
@@ -444,6 +437,8 @@ const handlePayment = async (req, res) => {
     const currentPaymentAmount = participant.paymentAmount || 0;
     const paidDate = participant.paidDate;
     const isMarkedAsPaid = participant.markedAsPaid;
+    const amountOwed = originalAmount - paymentAmount;
+
     // Check if payment has already been made in full or overpaid
     if (currentPaymentAmount >= originalAmount || isMarkedAsPaid) {
       return res.status(400).json({
@@ -474,7 +469,8 @@ const handlePayment = async (req, res) => {
       });
     }
 
-    // Proceed with the update if checks pass
+    // mark as paid by user (not master/source of truth)
+    let userMarkedAsPaid = null;
     const result = await Request.findOneAndUpdate(
       {
         _id: new ObjectId(requestId),
@@ -487,6 +483,9 @@ const handlePayment = async (req, res) => {
             paymentAmount,
           "paymentHistory.$[payment].participants.$[participant].paidDate":
             new Date(),
+          "paymentHistory.$[payment].participants.$[participant].participantMarkedAsPaid": true,
+          "paymentHistory.$[payment].participants.$[participant].participantMarkedAsPaidDate":
+            new Date(),
         },
       },
       {
@@ -497,44 +496,109 @@ const handlePayment = async (req, res) => {
         new: true,
       }
     );
+    userMarkedAsPaid = true;
 
-    const amountOwed = originalAmount - paymentAmount;
+    // const amountOwed = originalAmount - paymentAmount;
 
     // Update User model to track this payment
-    const userUpdate = await User.findByIdAndUpdate(
-      userId,
-      {
-        $push: {
-          paymentHistory: {
-            requestId: new ObjectId(requestId),
-            paymentHistoryId: new ObjectId(paymentHistoryId),
-            originalAmount: originalAmount,
-            amountPaid: paymentAmount,
-            amountOwed: amountOwed,
-            paidDate: new Date(),
-            requestName: currentRequest.name,
-            isFullyPaid: amountOwed <= 0,
+    // const userUpdate = await User.findByIdAndUpdate(
+    //   userId,
+    //   {
+    //     $push: {
+    //       paymentHistory: {
+    //         requestId: new ObjectId(requestId),
+    //         paymentHistoryId: new ObjectId(paymentHistoryId),
+    //         originalAmount: originalAmount,
+    //         amountPaid: paymentAmount,
+    //         amountOwed: amountOwed,
+    //         paidDate: new Date(),
+    //         requestName: currentRequest.name,
+    //         isFullyPaid: amountOwed <= 0,
+    //       },
+    //     },
+    //     $inc: {
+    //       totalPaymentsMade: 1,
+    //       totalAmountPaid: paymentAmount,
+    //     },
+    //     $set: {
+    //       lastPaymentDate: new Date(),
+    //     },
+    //   },
+    //   {
+    //     upsert: true,
+    //     new: true,
+    //   }
+    // );
+
+    // mark as paid for master if setting enabled:
+    let masterMarkedAsPaid = null;
+    if (currentRequest.allowMarkAsPaidForEveryone) {
+      // Proceed with the update if checks pass
+      const result = await Request.findOneAndUpdate(
+        {
+          _id: new ObjectId(requestId),
+          "paymentHistory._id": new ObjectId(paymentHistoryId),
+          "paymentHistory.participants._id": new ObjectId(userId),
+        },
+        {
+          $set: {
+            "paymentHistory.$[payment].participants.$[participant].paymentAmount":
+              paymentAmount,
+            "paymentHistory.$[payment].participants.$[participant].paidDate":
+              new Date(),
+            "paymentHistory.$[payment].participants.$[participant].markedAsPaid": true,
+            "paymentHistory.$[payment].participants.$[participant].markedAsPaidDate":
+              new Date(),
           },
         },
-        $inc: {
-          totalPaymentsMade: 1,
-          totalAmountPaid: paymentAmount,
+        {
+          arrayFilters: [
+            { "payment._id": new ObjectId(paymentHistoryId) },
+            { "participant._id": new ObjectId(userId) },
+          ],
+          new: true,
+        }
+      );
+      masterMarkedAsPaid = true;
+
+      // Update User model to track this payment
+      const userUpdate = await User.findByIdAndUpdate(
+        userId,
+        {
+          $push: {
+            paymentHistory: {
+              requestId: new ObjectId(requestId),
+              paymentHistoryId: new ObjectId(paymentHistoryId),
+              originalAmount: originalAmount,
+              amountPaid: paymentAmount,
+              amountOwed: amountOwed,
+              paidDate: new Date(),
+              requestName: currentRequest.name,
+              isFullyPaid: amountOwed <= 0,
+            },
+          },
+          $inc: {
+            totalPaymentsMade: 1,
+            totalAmountPaid: paymentAmount,
+          },
+          $set: {
+            lastPaymentDate: new Date(),
+          },
         },
-        $set: {
-          lastPaymentDate: new Date(),
-        },
-      },
-      {
-        upsert: true,
-        new: true,
-      }
-    );
+        {
+          upsert: true,
+          new: true,
+        }
+      );
+    }
 
     return res.status(200).json({
       success: true,
       message: "Payment updated successfully",
       data: {
         request: result,
+        masterMarkedAsPaid: masterMarkedAsPaid,
+        userMarkedAsPaid: userMarkedAsPaid,
         paymentSummary: {
           originalAmount: originalAmount,
           amountPaid: paymentAmount,
@@ -852,6 +916,7 @@ const handlePaymentDetails = async (req, res) => {
       dueDate: thisPaymentHistory.dueDate,
       amountPaid: thisParticipant.amount,
       requestName: requestDocument.name,
+      participantMarkedAsPaid:thisParticipant.participantMarkedAsPaid,
       datePaid: thisParticipant.paidDate || thisParticipant.markedAsPaidDate,
       message: `Request ${paidInFull ? "paid in full" : "not paid in full"}`,
     });
@@ -1097,6 +1162,44 @@ const handleDeleteRequest = async (req, res) => {
   }
 };
 
+const handleLogPaymentView = async (req, res) => {
+  try {
+    const { requestId, paymentHistoryId, userId } = req.params;
+    const requestObjectId = new ObjectId(requestId);
+    const historyObjectId = new ObjectId(paymentHistoryId);
+    const participantObjectId = new ObjectId(userId);
+
+    const requestDocument = await Request.updateOne(
+      { _id: requestObjectId },
+      {
+        $set: {
+          "paymentHistory.$[history].participants.$[participant].paymentLinkClicked": true,
+          "paymentHistory.$[history].participants.$[participant].paymentLinkClickedDate":
+            new Date(),
+        },
+      },
+      {
+        arrayFilters: [
+          { "history._id": historyObjectId },
+          { "participant._id": participantObjectId },
+        ],
+      }
+    );
+
+    console.log("logging", requestDocument);
+    return res.status(200).json({
+      success: true,
+      message: "Payment view logged successfully",
+    });
+  } catch (error) {
+    console.error("Error marking payment link clicked:", error);
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createRequest,
   getRequests,
@@ -1107,4 +1210,5 @@ module.exports = {
   handlePaymentDetails,
   handleDeleteRequest,
   handleTogglePauseRequest,
+  handleLogPaymentView,
 };

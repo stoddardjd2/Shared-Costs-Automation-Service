@@ -25,6 +25,10 @@ const paymentParticipantSchema = new Schema({
   reminderSent: { type: Boolean },
   reminderSentDate: { type: Date },
   markedAsPaidDate: { type: Date },
+  participantMarkedAsPaid: { type: Boolean },
+  participantMarkedAsPaidDate: { type: Date },
+  paymentLinkClicked: { type: Boolean },
+  paymentLinkClickedDate: { type: Date },
   requestSentDate: Date,
 });
 

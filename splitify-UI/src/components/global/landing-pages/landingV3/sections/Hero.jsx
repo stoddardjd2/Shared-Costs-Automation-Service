@@ -105,7 +105,7 @@ export default function Hero() {
             </p>
             <p className="text-center font-semibold text-gray-700">
               No chasing. No awkward conversations.{" "}
-              <br className="inline sm:hidden" /> No confusion.
+              <br className="inline sm:hidden" /> No arguments.
             </p>
 
             <CtaBtn

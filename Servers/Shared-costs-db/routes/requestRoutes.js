@@ -9,6 +9,7 @@ const {
   handlePaymentDetails,
   handleDeleteRequest,
   handleTogglePauseRequest,
+  handleLogPaymentView,
 } = require("../controllers/requestController");
 
 const { protect, authorize } = require("../middleware/auth");
@@ -25,7 +26,10 @@ router.use(protect);
 router.post("/", createRequest);
 router.get("/", getRequests);
 router.put("/:id", updateRequest);
-router.patch("/reminder/:requestId/:paymentHistoryId/:userId", handleSendReminder)
+router.patch(
+  "/reminder/:requestId/:paymentHistoryId/:userId",
+  handleSendReminder
+);
 router.post("/delete/:requestId", handleDeleteRequest);
 router.post("/pause/:requestId", handleTogglePauseRequest);
 
@@ -37,6 +41,11 @@ router.patch(
 router.get(
   "/paymentDetails/:requestId/:paymentHistoryId/:userId",
   handlePaymentDetails
+);
+
+router.post(
+  "/logPaymentView/:requestId/:paymentHistoryId/:userId",
+  handleLogPaymentView
 );
 
 module.exports = router;

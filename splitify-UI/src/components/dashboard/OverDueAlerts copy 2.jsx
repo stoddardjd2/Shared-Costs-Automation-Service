@@ -4,7 +4,7 @@ import { useData } from "../../contexts/DataContext";
 import RequestButton from "./RequestButton";
 import PaymentHistoryParticipantDetails from "./PaymentHistoryParticipantDetails";
 
-const OverdueAlerts = ({ setView, setSelectedCost }) => {
+const OverdueAlerts = () => {
   const { costs, participants } = useData();
   const [isDismissed, setIsDismissed] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -77,33 +77,24 @@ const OverdueAlerts = ({ setView, setSelectedCost }) => {
         0
       );
 
-      // mutate stats minimally to keep structure
-      stats.totalAmount += overdueAmount;
-      stats.totalRequests += 1;
-
-      // ✅ only count unique people across all overdue requests
-      overdueParticipants.forEach((p) => {
-        const pid = normalizeId(p._id || p.participantId || p.userId);
-        if (pid) stats.totalParticipants.add(pid);
-      });
-
-      return stats;
+      return {
+        totalAmount: stats.totalAmount + overdueAmount,
+        totalParticipants: stats.totalParticipants + overdueParticipants.length,
+        totalRequests: stats.totalRequests + 1,
+      };
     },
-    {
-      totalAmount: 0,
-      totalParticipants: new Set(), // ✅ store unique IDs
-      totalRequests: 0,
-    }
+    { totalAmount: 0, totalParticipants: 0, totalRequests: 0 }
   );
-
-  const uniqueOverduePeopleCount = overdueStats.totalParticipants.size; // ✅
 
   if (isDismissed) return null;
 
   // ---------- No Overdue UI ----------
   if (overduePaymentRequests.length === 0) {
     return (
-      <div className="rounded-2xl bg-blue-600 shadow-sm border border-blue-200/60 p-4 mb-6">
+      <div
+ 
+        className="rounded-2xl bg-blue-600 shadow-sm border border-blue-200/60 p-4 mb-6"
+      >
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-white/20 grid place-items-center">
             <svg
@@ -134,7 +125,10 @@ const OverdueAlerts = ({ setView, setSelectedCost }) => {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden mb-6">
       {/* Alert Banner */}
-      <div className="bg-blue-600 p-5 relative">
+      <div
+ 
+        className="bg-blue-600 p-5 relative"
+      >
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
@@ -147,8 +141,8 @@ const OverdueAlerts = ({ setView, setSelectedCost }) => {
               </h3>
               <p className="text-white/80 text-base">
                 ${overdueStats.totalAmount.toFixed(2)} from{" "}
-                {uniqueOverduePeopleCount}{" "}
-                {uniqueOverduePeopleCount !== 1 ? "people" : "person"}
+                {overdueStats.totalParticipants}{" "}
+                {overdueStats.totalParticipants !== 1 ? "people" : "person"}
               </p>
             </div>
           </div>
@@ -156,6 +150,14 @@ const OverdueAlerts = ({ setView, setSelectedCost }) => {
 
         {/* Actions */}
         <div className="flex gap-2 mt-3">
+          {/* Example bulk button if needed later:
+          <RequestButton
+            isRequestAll={true}
+            className="px-3 py-1.5 text-sm bg-white/10 border border-white/30"
+          >
+            Request All Payments
+          </RequestButton> */}
+
           <button
             onClick={() => setShowDetails((s) => !s)}
             className="bg-white/15 hover:bg-white/25 border border-white/30 text-white px-6 py-3 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-300 flex items-center gap-2 backdrop-blur-md translate-y-0 hover:-translate-y-0.5 shadow-none hover:shadow-lg hover:shadow-black/10"
@@ -212,16 +214,25 @@ const OverdueAlerts = ({ setView, setSelectedCost }) => {
                         {request.costName}
                       </h3>
                     </div>
+
+                    {/* Due date */}
+                    <div className="flex items-center gap-2 text-gray-600 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+                      <Calendar className="w-4 h-4" />
+                      <span className="text-sm">
+                        Due {formatDate(dueDate)} ({daysOverdue} day
+                        {daysOverdue !== 1 ? "s" : ""} overdue)
+                      </span>
+                    </div>
                   </div>
 
                   {/* Amount summary */}
-                  <div className="flex justify-between items-center items-start mb-3">
+                  <div className="flex justify-start items-start mb-3">
                     <div className="text-left">
-                      <div className="flex items-baseline gap-2 text-sm font-medium  text-gray-500">
-                        <div className="text-lg font-medium text-black">
+                      <div className="flex items-baseline gap-2">
+                        <div className="text-lg font-bold text-black">
                           ${overdueAmount.toFixed(2)}
                         </div>
-                        Total Owed
+                        Total overdue
                       </div>
                       {overdueParticipants.length !== 1 && (
                         <div className="text-sm">
@@ -229,21 +240,6 @@ const OverdueAlerts = ({ setView, setSelectedCost }) => {
                           {request.participants?.length ?? 0} participants
                         </div>
                       )}
-                    </div>
-
-                    {/* Due date */}
-                    <div className="flex items-center gap-2 text-gray-600 backdrop-blur-sm px-3 py-1.5 rounded-lg">
-                      <span className="">
-                        <span className="mr-2 font-medium text-sm text-gray-500 ">
-                          Due
-                        </span>
-                        <span className="text-lg font-medium text-gray-900">
-                          {new Date(dueDate).toLocaleDateString()}
-                          {/*                           
-                          ({daysOverdue} day
-                          {daysOverdue !== 1 ? "s" : ""} overdue) */}
-                        </span>
-                      </span>
                     </div>
                   </div>
 

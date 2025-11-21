@@ -439,7 +439,7 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                                   </span>
                                 </div>
                               )}
-                              <span className="text-sm font-medium"></span>
+                 
                             </div>
                           </div>
                         </div>

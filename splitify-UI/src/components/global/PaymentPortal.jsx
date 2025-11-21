@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { handlePayment } from "../../queries/requests";
+import { handleLogPaymentView, handlePayment } from "../../queries/requests";
 import { Info as InfoIcon, AlertCircle, Home, RefreshCw } from "lucide-react"; // the info-in-a-circle icon
 import { handlePaymentDetails } from "../../queries/requests";
 // Constants
@@ -389,7 +389,8 @@ function InvalidRequestView() {
             Unable to Process Payment
           </h2>
           <p className="text-gray-600 mb-4">
-            The payment link you're trying to access had something go wrong on our servers. Please try again or contact us for assistance.
+            The payment link you're trying to access had something go wrong on
+            our servers. Please try again or contact us for assistance.
           </p>
           {/* <div className="bg-gray-50 rounded-lg p-4 text-left">
             <p className="text-sm text-gray-700 mb-2">This could happen if:</p>
@@ -403,7 +404,6 @@ function InvalidRequestView() {
         </div>
 
         {/* Action Buttons */}
-
       </div>
     </div>
   );
@@ -458,6 +458,92 @@ function InvalidUrlView() {
   );
 }
 
+function PaidToggle({
+  initialPaid = false,
+  onConfirm, // async function returning { success: true } or throwing
+  minSpinnerTime = 600, // ms
+}) {
+  const [paid, setPaid] = useState(initialPaid);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleClick = async () => {
+    if (paid || loading) return;
+
+    setLoading(true);
+    setError(null);
+
+    const startTime = Date.now();
+    let success = false;
+    let errorMessage = null;
+
+    try {
+      if (onConfirm) {
+        const res = await onConfirm(); // expected: { success: true }
+        console.log("TOGGLE", res);
+        if (!res || res.success !== true) {
+          throw new Error("Backend did not confirm success");
+        }
+      }
+
+      success = true;
+    } catch (err) {
+      console.error("Mark as paid failed:", err);
+      errorMessage = "Something went wrong. Please try again.";
+    }
+
+    // 🔁 Enforce minimum spinner time (applies to both success & error)
+    const elapsed = Date.now() - startTime;
+    const remaining = Math.max(0, minSpinnerTime - elapsed);
+    if (remaining > 0) {
+      await new Promise((resolve) => setTimeout(resolve, remaining));
+    }
+
+    // Now update UI
+    if (success) {
+      setPaid(true);
+    } else if (errorMessage) {
+      setError(errorMessage);
+    }
+
+    setLoading(false);
+  };
+
+  return (
+    <div className="w-full">
+      <button
+        onClick={handleClick}
+        disabled={loading || paid}
+        className={`
+          w-full rounded-lg px-4 py-3 text-center font-semibold transition-all
+          disabled:opacity-70 disabled:cursor-not-allowed mt-20
+          ${
+            paid
+              ? "bg-green-100 border border-green-400 text-green-700"
+              : "bg-gray-100 border border-gray-300 text-gray-700 hover:bg-gray-200"
+          }
+        `}
+      >
+        {paid ? (
+          <span className="flex justify-center items-center gap-2">
+            Payment Confirmed <CheckIcon className="w-5 h-5" />
+          </span>
+        ) : loading ? (
+          <div className="flex items-center justify-center gap-2">
+            <span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full splitify-spinner" />
+            <span>Processing...</span>
+          </div>
+        ) : (
+          "Mark as Paid"
+        )}
+      </button>
+
+      {error && (
+        <p className="mt-1 text-xs text-red-500 text-center">{error}</p>
+      )}
+    </div>
+  );
+}
 // Main Component
 export default function PaymentPage() {
   const params = useMemo(() => new URLSearchParams(window.location.search), []);
@@ -496,6 +582,16 @@ export default function PaymentPage() {
       setInvalidUrl(true);
     }
 
+    async function logPaymentView() {
+      console.log("Logging payment view...");
+      const res = await handleLogPaymentView(
+        requestId,
+        paymentHistoryId,
+        userId
+      );
+      console.log("Logged payment view:", res);
+    }
+
     async function getPaymentDetails() {
       const res = await handlePaymentDetails(
         requestId,
@@ -503,7 +599,6 @@ export default function PaymentPage() {
         userId
       );
 
-      console.log("res,!", res);
       if (res.success) {
         const {
           allowMarkAsPaidForEveryone,
@@ -512,6 +607,7 @@ export default function PaymentPage() {
           owedTo,
           requestName,
           paymentMethods,
+          participantMarkedAsPaid,
         } = res.data;
 
         const paymentDetailsFiller = {
@@ -521,6 +617,7 @@ export default function PaymentPage() {
           owedTo,
           requestName,
           paymentMethods,
+          participantMarkedAsPaid,
         };
 
         setPaymentDetails({ ...paymentDetailsFiller });
@@ -544,11 +641,13 @@ export default function PaymentPage() {
       }, 500);
     }
     getPaymentDetails();
+    logPaymentView();
   }, []);
 
   const handleMarkAsPaid = async () => {
     const { requestId, paymentHistoryId, userId, paymentAmount } = initial;
     setIsProcessing(true);
+    let results;
     try {
       const res = await handlePayment(
         requestId,
@@ -556,6 +655,8 @@ export default function PaymentPage() {
         userId,
         paymentAmount
       );
+      results = res;
+      console.log("PAYMENT", res);
 
       if (res?.success === true) {
         setTimeout(() => {
@@ -569,12 +670,14 @@ export default function PaymentPage() {
         setIsProcessing(false);
       } else {
         setIsProcessing(false);
-        alert("Payment confirmation failed. Please try again.");
+        // alert("Payment confirmation failed. Please try again.");
       }
     } catch (error) {
       setIsProcessing(false);
       console.error("Payment error:", error);
-      alert("An error occurred while confirming payment. Please try again.");
+      // alert("An error occurred while confirming payment. Please try again.");
+    } finally {
+      return results;
     }
   };
 
@@ -661,11 +764,11 @@ export default function PaymentPage() {
             paymentDetails={paymentDetails}
             amountPaid={amountPaid || paymentDetails.amountOwed}
           />
-          <SuccessMessage
+          {/* <SuccessMessage
             initial={initial}
             paymentDetails={paymentDetails}
             isAlreadyPaid={isAlreadyPaid}
-          />
+          /> */}
         </div>
       </PageLayout>
     );
@@ -805,7 +908,7 @@ export default function PaymentPage() {
         </div>
 
         {/* Mark as Paid Button */}
-        {paymentDetails.allowMarkAsPaidForEveryone && (
+        {/* {paymentDetails.allowMarkAsPaidForEveryone && (
           <>
             <div className="relative mb-6 mt-6">
               <div className="absolute inset-0 flex items-center">
@@ -848,7 +951,14 @@ export default function PaymentPage() {
               </button>
             </div>
           </>
-        )}
+        )} */}
+
+        <PaidToggle
+          className="mt-20"
+          initialPaid={paymentDetails.participantMarkedAsPaid}
+          onChange={() => console.log("Marked as paid!")}
+          onConfirm={handleMarkAsPaid}
+        />
 
         <p className="text-xs text-gray-500 text-center mt-4">
           By continuing, you agree to our Terms of Service and Privacy Policy

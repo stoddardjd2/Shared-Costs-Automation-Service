@@ -26,14 +26,20 @@ import { useData } from "../../contexts/DataContext";
 import { getFrequencyColor, getNextDueStatus } from "../../utils/helpers";
 import { amountRange } from "../../utils/amountHelper.js";
 
-const RecurringCostsSection = ({ setSelectedCost, setView }) => {
+const RecurringCostsSection = ({
+  setSelectedCost,
+  setView,
+  activeTab,
+  setActiveTab,
+  searchTerm,
+  setSearchTerm,
+  currentPage,
+  setCurrentPage,
+}) => {
   const { costs, participants, updateCost } = useData();
   const navigate = useNavigate();
 
   // Tab and filtering state
-  const [activeTab, setActiveTab] = useState("recurring"); // 'recurring' | 'onetime' | 'paused'
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const itemsPerPage = 5;
@@ -105,9 +111,9 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
   );
 
   // Reset pagination when filters change
-  React.useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, statusFilter, activeTab]);
+  // React.useEffect(() => {
+  //   setCurrentPage(1);
+  // }, [searchTerm, statusFilter, activeTab]);
 
   // Close dropdowns when clicking outside
   React.useEffect(() => {
@@ -198,11 +204,6 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
     }
   };
 
-  const handleManageCost = (cost) => {
-    setSelectedCost(cost);
-    setView("requestDetails");
-  };
-
   const getStatusFilterLabel = () => {
     switch (statusFilter) {
       case "paid":
@@ -223,7 +224,10 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
         <div className="mb-6">
           <div className="flex space-x-1 bg-white p-1 rounded-lg shadow-sm border border-slate-200/60">
             <button
-              onClick={() => setActiveTab("recurring")}
+              onClick={() => {
+                setCurrentPage(1);
+                setActiveTab("recurring");
+              }}
               className={`flex-1 py-3 px-1 xs:px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
                 activeTab === "recurring"
                   ? "bg-blue-600 text-white shadow-sm"
@@ -237,7 +241,10 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
             </button>
 
             <button
-              onClick={() => setActiveTab("onetime")}
+              onClick={() => {
+                setCurrentPage(1);
+                setActiveTab("onetime");
+              }}
               className={`flex-1 py-3 px-1 xs:px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
                 activeTab === "onetime"
                   ? "bg-blue-600 text-white shadow-sm"
@@ -252,7 +259,10 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
 
             {/* ✅ New Paused tab */}
             <button
-              onClick={() => setActiveTab("paused")}
+              onClick={() => {
+                setCurrentPage(1);
+                setActiveTab("paused");
+              }}
               className={`flex-1 py-3 px-1 xs:px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
                 activeTab === "paused"
                   ? "bg-blue-600 text-white shadow-sm"
@@ -275,7 +285,10 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
               type="text"
               placeholder="Search payment requests..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setCurrentPage(1);
+                setSearchTerm(e.target.value);
+              }}
               className="w-full pl-10 pr-4 py-2 border border-slate-200/60 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-500 bg-white"
             />
           </div>
@@ -424,7 +437,19 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                 return (
                   <div
                     key={cost._id}
-                    className="p-6 hover:bg-slate-50/50 transition-all duration-200 group"
+                    onClick={() => {
+                      const root = document.getElementById("root");
+                      if (root) {
+                        root.scrollTo({
+                          top: 0,
+                          left: 0,
+                          behavior: "instant",
+                        });
+                      }
+                      setSelectedCost(cost);
+                      setView("requestDetails");
+                    }}
+                    className="p-6 hover:bg-slate-100/50 transition-all duration-200 group cursor-pointer"
                   >
                     {/* Header line with cost name and manage button */}
                     <div className="flex items-center justify-between gap-3 mb-3">
@@ -435,7 +460,7 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                       </div>
 
                       {/* Manage button */}
-                      <button
+                      {/* <button
                         onClick={() => {
                           const root = document.getElementById("root");
                           if (root) {
@@ -451,7 +476,7 @@ const RecurringCostsSection = ({ setSelectedCost, setView }) => {
                         title="Manage cost"
                       >
                         <MoreVertical className="w-5 h-5" />
-                      </button>
+                      </button> */}
                     </div>
 
                     {/* Price and People */}

@@ -1105,7 +1105,7 @@ const SplitStep = ({
                     Equal Split
                   </h4>
                   <p className="text-gray-600 text-xs">
-                    Everyone pays their share (including you)
+                    Everyone pays their share <strong>(including you)</strong>
                   </p>
                 </div>
               </div>

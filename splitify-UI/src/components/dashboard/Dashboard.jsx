@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { act, useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Plus } from "lucide-react";
 import RecurringCostsSection from "./RecurringCostsSection";
@@ -17,7 +17,7 @@ import {
 } from "../../googleAnalytics/googleAnalyticsHelpers";
 import WelcomeScreen from "./WelcomeScreen";
 import ContactForm from "./ContactForm";
-import { updateLastActive } from '../../queries/user';
+import { updateLastActive } from "../../queries/user";
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation(); // 👈 read current URL
@@ -37,6 +37,12 @@ const Dashboard = () => {
   const [view, setView] = useState("dashboard"); // kept to minimize changes (not used for routing now)
   const [selectedCost, setSelectedCost] = useState(null);
   const [showFirstTimePrompt, setShowFirstTimePrompt] = useState(false);
+
+  // high state level for recurring cost section
+  const [activeTab, setActiveTab] = useState("recurring"); // 'recurring' | 'onetime' | 'paused'
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  console.log("CURRENT PAGE", currentPage, searchTerm);
   // Google analytics:
   useEffect(() => {
     if (userData) {
@@ -150,7 +156,12 @@ const Dashboard = () => {
                 <PaymentMethodPrompt />
               )} */}
 
-              {costs.length !== 0 && <OverdueAlerts />}
+              {costs.length !== 0 && (
+                <OverdueAlerts
+                  setView={setView}
+                  setSelectedCost={setSelectedCost}
+                />
+              )}
               <RecurringCostsSection
                 setView={(v) => {
                   setView(v);
@@ -158,6 +169,12 @@ const Dashboard = () => {
                     navigate("/dashboard/request/details"); // 👈 open details
                 }}
                 setSelectedCost={setSelectedCost}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
               />
             </div>
 

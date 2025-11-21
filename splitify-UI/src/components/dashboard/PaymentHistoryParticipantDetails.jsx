@@ -8,6 +8,8 @@ import {
   Send,
   Repeat,
   RefreshCw,
+  EyeIcon,
+  CheckIcon,
 } from "lucide-react";
 import { handleToggleMarkAsPaid } from "../../queries/requests";
 import { useData } from "../../contexts/DataContext";
@@ -45,24 +47,47 @@ export default function PaymentHistoryParticipantDetails({
   };
 
   const monthDay = (input, daysToAdd = 0) => {
-    try{
-    const raw = input && input.$date ? input.$date : input;
-    const base = new Date(raw);
-    if (Number.isNaN(base)) return "";
+    try {
+      const raw = input && input.$date ? input.$date : input;
+      const base = new Date(raw);
+      if (Number.isNaN(base)) return "";
 
-    // Add days in UTC to avoid DST edge cases
-    const d = new Date(base);
-    if (daysToAdd) d.setUTCDate(d.getUTCDate() + daysToAdd);
+      // Add days in UTC to avoid DST edge cases
+      const d = new Date(base);
+      if (daysToAdd) d.setUTCDate(d.getUTCDate() + daysToAdd);
 
-    return new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      day: "numeric",
-      timeZone: "America/Los_Angeles",
-    }).format(d);
-  }catch(err){
-    console.log("invalid time value @ monthDay")
-    return null
-  }
+      return new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        timeZone: "America/Los_Angeles",
+      }).format(d);
+    } catch (err) {
+      console.log("invalid time value @ monthDay");
+      return null;
+    }
+  };
+
+  const monthDayHourLocal = (input, daysToAdd = 0) => {
+    try {
+      const raw = input && input.$date ? input.$date : input;
+      const base = new Date(raw);
+      if (Number.isNaN(base)) return "";
+
+      // Add days in UTC to avoid DST edge cases
+      const d = new Date(base);
+      if (daysToAdd) d.setUTCDate(d.getUTCDate() + daysToAdd);
+
+      return new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit", // remove if you only want hours
+        // no timeZone → uses local timezone automatically
+      }).format(d);
+    } catch (err) {
+      console.log("invalid time value @ monthDayHourLocal");
+      return null;
+    }
   };
 
   const getStatusIndicatorColor = () => {
@@ -82,14 +107,20 @@ export default function PaymentHistoryParticipantDetails({
   };
 
   return (
-    <div className="flex flex-col gap-[13px]  border border-b-2 p-3 rounded-xl">
+    <div
+      className={`flex flex-col gap-[13px]  border border-b-2 p-3 rounded-xl`}
+    >
       <div className="flex gap-1 flex-wrap justify-between">
-        <div className="flex justify-between w-full flex-wrap gap-y-4 gap-x-2">
+        <div className="flex justify-between w-full flex-wrap gap-y-4 gap-x-2 ">
           <div className="flex gap-4 ">
             <Avatar user={user} color={getStatusIndicatorColor()} />
             <div className="flex-col flex justify-between">
-              <div className="font-semibold truncate max-w-[120px]">{user.name}</div>
-              <div className="text-sm text-gray-800">${participant.amount.toFixed(2)}</div>
+              <div className="font-semibold truncate max-w-[120px]">
+                {user.name}
+              </div>
+              <div className="text-sm text-gray-800">
+                ${participant.amount.toFixed(2)}
+              </div>
             </div>
           </div>
           <MarkAsPaidButton
@@ -102,23 +133,45 @@ export default function PaymentHistoryParticipantDetails({
             setIsPaid={setIsPaid}
           />
         </div>
-
+        {console.log("test", paymentHistoryRequest)}
         {!isPaidEscapeLocalState && (
-          <div className="flex gap-5 justify-between w-full">
+          <div className="flex gap-5 justify-between w-full opacity-70">
             <div className="w-full justify-between border border-white/30 text-gray-600 rounded-lg text-sm font-semibold transition-all duration-300 flex flex-col gap-1 mt-2 shadow-none disabled:opacity-50 disabled:cursor-auto text-sm flex-shrink-0">
               <div className="flex items-center gap-3">
                 <Send className="w-4 h-4 flex-shrink-0" />
-                <span>Sent {monthDay(participant?.requestSentDate)}</span>
+                <span>Sent: {monthDay(participant?.requestSentDate)}</span>
               </div>
               <div className="flex items-center gap-3">
                 <RefreshCw className="w-4 h-4 flex-shrink-0" />
                 <span>
-                  Reminder scheduled for{" "}
-                  {monthDay(
-                    paymentHistoryRequest?.nextReminderDate
-                  )}
+                  Reminder scheduled:{" "}
+                  {monthDay(paymentHistoryRequest?.nextReminderDate)}
                 </span>
               </div>
+              {participant?.paymentLinkClicked && (
+                <div className="flex items-center gap-3">
+                  <EyeIcon className="w-4 h-4 flex-shrink-0" />
+                  <span>
+                    Link clicked:{" "}
+                    {participant?.paymentLinkClicked
+                      ? monthDayHourLocal(participant?.paymentLinkClickedDate)
+                      : "False"}
+                  </span>
+                </div>
+              )}
+              {participant?.participantMarkedAsPaid && (
+                <div className="flex items-center gap-3">
+                  <CheckIcon className="w-4 h-4 flex-shrink-0" />
+                  <span>
+                    Participant marked paid:{" "}
+                    {participant?.participantMarkedAsPaid
+                      ? monthDayHourLocal(
+                          participant?.participantMarkedAsPaidDate
+                        )
+                      : "False"}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         )}
