@@ -253,12 +253,8 @@ export default function PaymentMethodsStep({
   ]);
 
   const handleSaveAndContinue = async () => {
-    // ✅ hard guard
-    // if (!hasAtLeastOnePaymentMethod) return;
-
     setSubmitting(true);
 
-    // Start from current state, ensure enabled exists
     const nextPM = {
       ...paymentMethods,
       enabled: { ...(paymentMethods.enabled || {}) },
@@ -271,7 +267,6 @@ export default function PaymentMethodsStep({
         if (!isEnabled) continue;
 
         if (type === "plaidBank") {
-          // plaidBank is boolean only, no value to sanitize
           nextPM.plaidBank = true;
           continue;
         }
@@ -281,7 +276,6 @@ export default function PaymentMethodsStep({
           const value = (nextPM.other || "").trim();
 
           if (!name || !value) {
-            // required fields missing → disable
             nextPM.enabled.other = false;
             continue;
           }
@@ -291,7 +285,6 @@ export default function PaymentMethodsStep({
           continue;
         }
 
-        // Normal methods
         const rawUnsanitized = (nextPM[type] || "").trim();
 
         if (!rawUnsanitized) {
@@ -306,18 +299,28 @@ export default function PaymentMethodsStep({
           continue;
         }
 
-        // write back cleaned value
         nextPM[type] = cleaned;
       }
 
-      // ✅ SINGLE server request with full structure
+      // ✅ NEW: clear values for anything NOT enabled
+      const allKeys = ["venmo", "cashapp", "paypal", "zelle", "other"]; // add more if needed
+      allKeys.forEach((k) => {
+        if (!nextPM.enabled[k]) {
+          // normal methods -> wipe stored value
+          if (k !== "other") {
+            nextPM[k] = "";
+          } else {
+            // other -> wipe BOTH fields
+            nextPM.other = "";
+            nextPM.otherName = "";
+          }
+        }
+      });
+
       const res = await savePaymentMethods(nextPM);
-      console.log("res", res);
       if (!res?.success) throw new Error("Failed to save payment methods");
 
-      // Sync local state to what we sent
       setPaymentMethods(nextPM);
-
       onNext?.();
     } catch (e) {
       console.error(e);

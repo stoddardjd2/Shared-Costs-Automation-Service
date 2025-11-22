@@ -951,124 +951,138 @@ export default function PaymentPage() {
         )}
 
         {/* Payment Methods */}
-        {/* Payment Methods */}
         <div className="space-y-4 mt-4">
           <h3 className="text-gray-500 tracking-wide">Select Payment Method</h3>
 
-          {/* Framer stagger container */}
-          <motion.div
-            className="grid gap-3 w-full"
-            initial="hidden"
-            animate="show"
-            variants={{
-              hidden: {},
-              show: {
-                transition: {
-                  staggerChildren: 0.08,
-                  delayChildren: 0.05,
+          {paymentMethods.length === 0 ? (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+              <div className="flex items-start gap-3">
+                <InfoIcon className="w-5 h-5 text-amber-700 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-amber-900">
+                  <div className="font-semibold mb-1">
+                    No payment methods available
+                  </div>
+                  <p className="text-amber-800">
+                    Please contact the person in charge of this bill to add a
+                    payment method.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <motion.div
+              className="grid gap-3 w-full"
+              initial="hidden"
+              animate="show"
+              variants={{
+                hidden: {},
+                show: {
+                  transition: {
+                    staggerChildren: 0.08,
+                    delayChildren: 0.05,
+                  },
                 },
-              },
-            }}
-          >
-            {paymentMethods.map((method) => {
-              const isOther = method.id === "other";
-              const showInstructions =
-                isOther &&
-                method.instructions?.trim() &&
-                selectedMethod?.id === "other";
+              }}
+            >
+              {paymentMethods.map((method) => {
+                const isOther = method.id === "other";
+                const showInstructions =
+                  isOther &&
+                  method.instructions?.trim() &&
+                  selectedMethod?.id === "other";
 
-              return (
-                <motion.div
-                  key={method.id}
-                  className="w-full"
-                  variants={{
-                    hidden: { opacity: 0, y: 8, scale: 0.98 },
-                    show: {
-                      opacity: 1,
-                      y: 0,
-                      scale: 1,
-                      transition: { duration: 0.35, ease: "easeOut" },
-                    },
-                  }}
-                >
-                  {/* ✅ motion.a must be block + w-full to avoid skinny glitch */}
-                  <motion.a
-                    onClick={(e) => {
-                      handleClickPaymentOption(method.name);
-
-                      if (isOther) {
-                        e.preventDefault(); // no navigation
-                        setSelectedMethod((prev) =>
-                          prev?.id === "other" ? null : method
-                        );
-                        return;
-                      }
-
-                      setSelectedMethod(method);
+                return (
+                  <motion.div
+                    key={method.id}
+                    className="w-full"
+                    variants={{
+                      hidden: { opacity: 0, y: 8, scale: 0.98 },
+                      show: {
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        transition: { duration: 0.35, ease: "easeOut" },
+                      },
                     }}
-                    href={isOther ? undefined : method.paymentUrl || "#"}
-                    className={`
-              block w-full
-              relative rounded-lg p-4 transition-all duration-200
-              ${
-                isProcessing && selectedMethod?.id === method.id
-                  ? "ring-4 ring-blue-100 scale-[0.98]"
-                  : "hover:shadow-lg hover:brightness-95"
-              }
-              ${isProcessing ? "cursor-not-allowed" : "cursor-pointer"}
-            `}
-                    style={{
-                      backgroundColor: method.bgColor,
-                      color: method.textColor,
-                    }}
-                    whileTap={{ scale: 0.985 }}
                   >
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center gap-3">
-                        <div className="w-[24px] shrink-0">{method.icon}</div>
-                        <span className="font-medium text-base text-nowrap">
-                          {method.name}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {isProcessing && selectedMethod?.id === method.id ? (
-                          <Spinner color={method.textColor} />
-                        ) : (
-                          <ArrowIcon
-                            className={`w-5 h-5 transition-transform ${
-                              isOther && selectedMethod?.id === "other"
-                                ? "rotate-90"
-                                : ""
-                            }`}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </motion.a>
+                    <motion.a
+                      onClick={(e) => {
+                        handleClickPaymentOption(method.name);
 
-                  {/* ✅ Animated inline instructions for Other */}
-                  {showInstructions && (
-                    <motion.div
-                      className="mt-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700 w-full"
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      transition={{ duration: 0.2 }}
+                        if (isOther) {
+                          e.preventDefault();
+                          setSelectedMethod((prev) =>
+                            prev?.id === "other" ? null : method
+                          );
+                          return;
+                        }
+
+                        setSelectedMethod(method);
+                      }}
+                      href={isOther ? undefined : method.paymentUrl || "#"}
+                      className={`
+                        block w-full
+                        relative rounded-lg p-4 transition-all duration-200
+                        ${
+                          isProcessing && selectedMethod?.id === method.id
+                            ? "ring-4 ring-blue-100 scale-[0.98]"
+                            : "hover:shadow-lg hover:brightness-95"
+                        }
+                        ${
+                          isProcessing ? "cursor-not-allowed" : "cursor-pointer"
+                        }
+                      `}
+                      style={{
+                        backgroundColor: method.bgColor,
+                        color: method.textColor,
+                      }}
+                      whileTap={{ scale: 0.985 }}
                     >
-                      <div className="font-semibold text-gray-900 mb-1">
-                        Instructions
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-3">
+                          <div className="w-[24px] shrink-0">{method.icon}</div>
+                          <span className="font-medium text-base text-nowrap">
+                            {method.name}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {isProcessing && selectedMethod?.id === method.id ? (
+                            <Spinner color={method.textColor} />
+                          ) : (
+                            <ArrowIcon
+                              className={`w-5 h-5 transition-transform ${
+                                isOther && selectedMethod?.id === "other"
+                                  ? "rotate-90"
+                                  : ""
+                              }`}
+                            />
+                          )}
+                        </div>
                       </div>
-                      <div className="whitespace-pre-wrap leading-relaxed">
-                        {method.instructions}
-                      </div>
-                    </motion.div>
-                  )}
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </div>
+                    </motion.a>
 
+                    {showInstructions && (
+                      <motion.div
+                        className="mt-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700 w-full"
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="font-semibold text-gray-900 mb-1">
+                          Instructions
+                        </div>
+                        <div className="whitespace-pre-wrap leading-relaxed">
+                          {method.instructions}
+                        </div>
+                      </motion.div>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          )}
+        </div>
         {/* Mark as Paid Button */}
         {/* {paymentDetails.allowMarkAsPaidForEveryone && (
           <>
