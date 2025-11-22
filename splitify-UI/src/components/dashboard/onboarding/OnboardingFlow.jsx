@@ -363,6 +363,7 @@ export default function OnboardingWizard({
     secondaryLabel = "Back",
     onSecondary,
     showSkip,
+    showBack = true,
     skipLabel = "Skip for now",
     onSkip,
   }) => (
@@ -382,14 +383,16 @@ export default function OnboardingWizard({
       </button>
 
       <div className="flex items-center justify-between">
-        <button
-          type="button"
-          onClick={onSecondary}
-          className="inline-flex items-center justify-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors px-2 py-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>{secondaryLabel}</span>
-        </button>
+        {showBack && (
+          <button
+            type="button"
+            onClick={onSecondary}
+            className="inline-flex items-center justify-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors px-2 py-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>{secondaryLabel}</span>
+          </button>
+        )}
 
         {showSkip && (
           <button
@@ -410,7 +413,7 @@ export default function OnboardingWizard({
       <SectionTitle
         icon={<Sparkles className="w-6 h-6" />}
         title="Let’s set you up"
-        subtitle="Takes about 15 seconds. Then you can send your first request."
+        subtitle="Takes about 30 seconds. Then you can send your first request."
       />
 
       <div className="grid gap-3 sm:gap-4">
@@ -515,6 +518,7 @@ export default function OnboardingWizard({
           (profile.heardFrom === "other" && !profile.heardFromOther.trim())
         }
         onSecondary={back}
+        showBack={false}
       />
     </div>
   );
@@ -965,7 +969,6 @@ export default function OnboardingWizard({
     );
   };
 
-
   const renderChallenge = () => {
     console.log("render challenge");
     const toggle = (key) => {
@@ -1162,12 +1165,17 @@ export default function OnboardingWizard({
   return (
     <div
       className={`fixed inset-0 z-[6000] min-h-dvh bg-white flex items-start justify-center overflow-auto 
-    ${(stepKey !== "plaid" || !showPremiumModal) && "sm:pt-10 p-2 sm:!p-2 lg:!p-2"}
+    ${
+      (stepKey !== "plaid" || !showPremiumModal) &&
+      "sm:pt-10 p-2 sm:!p-2 lg:!p-2"
+    }
   `}
     >
       {console.log("SHOW PREMIUM MODAL", showPremiumModal)}
       <div
-        className={`w-full ${(stepKey !== "plaid" || !showPremiumModal) && "max-w-2xl"} mx-auto transition-all duration-700 ${
+        className={`w-full ${
+          (stepKey !== "plaid" || !showPremiumModal) && "max-w-2xl"
+        } mx-auto transition-all duration-700 ${
           isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
         }`}
       >
