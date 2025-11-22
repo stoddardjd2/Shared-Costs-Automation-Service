@@ -438,7 +438,7 @@ export default function SplitifyPremiumModal({
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] min-w-[1000px] overflow-auto ${navbarPadding && "mt-[65px]"}`}
+      className={`fixed inset-0 z-[9999] ${navbarPadding && "mt-[65px]"}`}
       role="dialog"
       d
       aria-modal="true"

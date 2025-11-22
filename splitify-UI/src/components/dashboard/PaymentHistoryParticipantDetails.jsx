@@ -194,7 +194,7 @@ export default function PaymentHistoryParticipantDetails({
             />
             <DetailRow
               icon={<UserCheck className="w-4 h-4" />}
-              label="Participant says they paid"
+              label="They say its paid"
               value={
                 participant?.participantMarkedAsPaid
                   ? monthDayHourLocal(participant?.participantMarkedAsPaidDate)
@@ -230,7 +230,7 @@ function DetailRow({ icon, label, value }) {
   return (
     <div className="flex items-start gap-2">
       <div className="mt-0.5 text-gray-500">{icon}</div>
-      <div className="flex gap-1">
+      <div className="flex gap-1 text-nowrap">
         <span className="font-semibold text-gray-800">{label}:</span>
         <span className="text-gray-700">{value || "—"}</span>
       </div>

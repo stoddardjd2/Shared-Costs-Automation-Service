@@ -400,7 +400,7 @@ export default function PaymentMethodsStep({
       <SectionTitle
         icon={<CreditCard className="w-6 h-6" />}
         title="How should people pay you back?"
-        subtitle="We’ll include these links in every reminder."
+        subtitle="We’ll include these links in every request sent."
       />
 
       <div className="grid grid-cols-2 gap-2 sm:gap-3">
@@ -480,9 +480,9 @@ export default function PaymentMethodsStep({
         </div>
       )}
 
-      <div className="mt-3 border border-gray-100 rounded-lg p-3 text-left text-sm text-gray-600">
-        Your payment links will appear in every text message reminder.
-      </div>
+      {/* <div className="mt-3 border border-gray-100 rounded-lg p-3 text-left text-sm text-gray-600">
+        Your payment links will appear in every text message request.
+      </div> */}
       {!hasAtLeastOnePaymentMethod && (
         <div className="mt-3 border border-gray-100 rounded-lg p-3 text-left text-sm text-red-600">
           Please add at least one payment method so people can pay you.

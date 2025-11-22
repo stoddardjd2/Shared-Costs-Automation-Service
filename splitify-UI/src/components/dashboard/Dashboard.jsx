@@ -43,7 +43,10 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("recurring"); // 'recurring' | 'onetime' | 'paused'
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  console.log("CURRENT PAGE", currentPage, searchTerm);
+  const [isOnboardingCompleted, setIsOnboardingCompleted] = useState(
+    userData?.onboarding?.isCompleted
+  );
+
   // Google analytics:
   useEffect(() => {
     if (userData) {
@@ -91,8 +94,10 @@ const Dashboard = () => {
     return () => clearTimeout(t);
   }, []);
 
-  if (!userData?.onboarding?.isCompleted) {
-    return <OnboardingFlow />;
+  if (!isOnboardingCompleted) {
+    return (
+      <OnboardingFlow setIsOnboardingCompleted={setIsOnboardingCompleted} />
+    );
     // <WelcomeScreen setShowFirstTimePrompt={setShowFirstTimePrompt} />;
   }
 
