@@ -1161,8 +1161,8 @@ export default function OnboardingWizard({
   // ---------------------- Main Render ----------------------
   return (
     <div
-      className={`fixed inset-0 z-[6000] min-h-screen bg-white flex items-start justify-center overflow-auto 
-    ${(stepKey !== "plaid" || !showPremiumModal) && "pt-10 p-2 sm:!p-2 lg:!p-2"}
+      className={`fixed inset-0 z-[6000] min-h-dvh bg-white flex items-start justify-center overflow-auto 
+    ${(stepKey !== "plaid" || !showPremiumModal) && "sm:pt-10 p-2 sm:!p-2 lg:!p-2"}
   `}
     >
       {console.log("SHOW PREMIUM MODAL", showPremiumModal)}
