@@ -34,11 +34,15 @@ const faqItems = [
     answer:
       "When you create a request, Splitify sends an initial text with the amount owed and a link. If someone hasn’t paid yet, Splitify sends friendly automated reminders after the due date—without you having to send an awkward text yourself.",
   },
-//   {
-//     question: "Will Splitify spam my roommates?",
-//     answer:
-//       "No. You control when reminders go out and how often. Messages are short, clear, and focused on the specific bill. You can pause reminders, cancel a request, or mark someone as paid at any time.",
-//   },
+  {
+    question: "Will Splitify spam my roommates?",
+    answer:
+      "No. You control how often reminders are sent. Messages are short, clear, and focused on the specific bill. You can pause reminders, cancel a request, or mark someone as paid at any time.",
+  },
+  {
+    question: "Can I control what is sent in the text messages?",
+    answer: `Currently texts are not customizable however that feature will be added soon. Text are friendly, simple and professional.`,
+  },
   {
     question: "What payment methods can people use?",
     answer:
@@ -63,7 +67,7 @@ export default function FAQSection() {
       id="faq"
       className="p-[clamp(1rem,5vw,2.5rem)] bg-gray-50 scroll-mt-24"
     >
-      <div className="sm:max-w-[70%] mx-auto">
+      <div className="sm:w-[90%] md:w-[70%] mx-auto">
         <FadeInWrapper>
           <div className="text-center mb-10">
             <SectionIndicator className="mx-auto" title="FAQ" />
@@ -75,7 +79,7 @@ export default function FAQSection() {
           </div>
         </FadeInWrapper>
 
-        <div className="space-y-4">
+        <div className="space-y-4 ">
           {faqItems.map((item, index) => {
             const isOpen = openIndex === index;
             return (

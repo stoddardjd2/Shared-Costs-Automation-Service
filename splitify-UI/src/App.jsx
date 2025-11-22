@@ -49,6 +49,11 @@ const PaymentPortal = lazy(() =>
   import("./components/global/PaymentPortal.jsx")
 );
 
+// Mark as paid link page for owner to mark as confirmed:
+const MarkAsPaidConfirmPage = lazy(() =>
+  import("./components/secure-links/MarkAsPaidConfirmPage.jsx")
+);
+
 // Other pages
 const SmsOptInPage = lazy(() =>
   import("./components/global/opt-in-pages/SmsOptInPage.jsx")
@@ -152,9 +157,24 @@ const App = () => {
             </AuthProvider>
           }
         />
+        {/* protected */}
+        <Route
+          path="/markAsPaid/*"
+          element={
+            <AuthProvider>
+              <ProtectedRoute>
+                <DataProvider>
+                  <Navbar />
+                  <MarkAsPaidConfirmPage />
+                  <GlobalFooter />
+                </DataProvider>
+              </ProtectedRoute>
+            </AuthProvider>
+          }
+        />
 
         {/* Stripe pages (lazy chunk; won’t load on /landing) */}
-        <Route
+        {/* <Route
           path="/payment"
           element={
             <>
@@ -162,7 +182,7 @@ const App = () => {
               <PaymentPage />
             </>
           }
-        />
+        /> */}
         <Route
           path="/PaymentPortal"
           element={

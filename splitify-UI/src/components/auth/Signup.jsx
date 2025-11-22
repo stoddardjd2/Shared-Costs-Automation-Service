@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { createUser } from "../../queries/auth";
+import { createUser, sendPhoneCode } from "../../queries/auth";
 import { useGoogleLogin } from "@react-oauth/google";
 import { googleOauth } from "../../queries/auth";
 import {
@@ -20,6 +20,8 @@ import {
   pageview,
   gaEvent,
 } from "../../googleAnalytics/googleAnalyticsHelpers";
+import PhoneInput from "../common/PhoneInput";
+import VerifyPhone from "./VerifyPhone";
 const Signup = () => {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -27,6 +29,7 @@ const Signup = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    phone: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -34,6 +37,9 @@ const Signup = () => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [notification, setNotification] = useState(null);
   const [consent, setConsent] = useState(false);
+  const [isVerifyingPhone, setIsVerifyingPhone] = useState(false);
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -98,18 +104,23 @@ const Signup = () => {
     //   return;
     // }
 
-    if (!formData.firstName.trim() || !formData.lastName.trim()) {
-      showNotification("Please enter your first and last name", "error");
-      return;
-    }
+    // if (!formData.firstName.trim() || !formData.lastName.trim()) {
+    //   showNotification("Please enter your first and last name", "error");
+    //   return;
+    // }
 
-    if (!formData.email.trim()) {
-      showNotification("Please enter your email address", "error");
-      return;
-    }
+    // if (!formData.email.trim()) {
+    //   showNotification("Please enter your email address", "error");
+    //   return;
+    // }
 
     if (!formData.password) {
       showNotification("Please enter a password", "error");
+      return;
+    }
+
+    if (!formData.phone) {
+      showNotification("Please enter your phone number", "error");
       return;
     }
 
@@ -130,72 +141,82 @@ const Signup = () => {
       );
       return;
     }
-    setIsLoading(true);
 
-    try {
-      const userData = {
-        name: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
-        email: formData.email.trim().toLowerCase(),
-        password: formData.password,
-      };
-
-      const response = await createUser(userData);
-
-      // Assuming createUser returns a response object
-      if (response && response.success) {
-        gaEvent("signup_completed", {
-          event_category: "engagement",
-          event_label: `Create Account Button CTA-Signup`,
-        });
-        console.log("route to", `/dashboard${location.search}`);
-
-        navigate(`/dashboard${location.search}`);
-
-        // showNotification(
-        //   "Account created successfully! Welcome aboard!",
-        //   "success"
-        // );
-        // // Optional: Navigate to login or dashboard after successful signup
-        // setTimeout(() => {
-        //   navigate("/dashboard");
-        // }, 2000);
-      } else {
-        // Handle API error response
-        const errorMessage =
-          response?.errors?.[0]?.msg ||
-          response?.message ||
-          "Failed to create account. Please try again.";
-        showNotification(errorMessage, "error");
-      }
-    } catch (error) {
-      // Handle network errors or other exceptions
-      console.error("Signup error:", error);
-
-      if (error.response) {
-        // Server responded with error status
-        const errorMessage =
-          error.response.data?.message ||
-          error.response.data?.error ||
-          `Server error (${error.response.status}). Please try again.`;
-        showNotification(errorMessage, "error");
-      } else if (error.request) {
-        // Network error
-        showNotification(
-          "Network error. Please check your connection and try again.",
-          "error"
-        );
-      } else {
-        // Other error
-        showNotification(
-          "An unexpected error occurred. Please try again.",
-          "error"
-        );
-      }
-    } finally {
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 300);
+    const res = await sendPhoneCode(formData.phone);
+    console.log("RES FOR CODE", res);
+    if (!res) {
+      showNotification("Failed to send code to phone number", "error");
     }
+    setIsVerifyingPhone(true);
+
+    // if (isPhoneVerified) {
+    //   setIsLoading(true);
+
+    //   try {
+    //     const userData = {
+    //       // name: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
+    //       email: formData.email.trim().toLowerCase(),
+    //       password: formData.password,
+    //       phone: formData.phone.trim(),
+    //     };
+
+    //     const response = await createUser(userData);
+
+    //     // Assuming createUser returns a response object
+    //     if (response && response.success) {
+    //       gaEvent("signup_completed", {
+    //         event_category: "engagement",
+    //         event_label: `Create Account Button CTA-Signup`,
+    //       });
+
+    //       navigate(`/dashboard${location.search}`);
+
+    //       // showNotification(
+    //       //   "Account created successfully! Welcome aboard!",
+    //       //   "success"
+    //       // );
+    //       // // Optional: Navigate to login or dashboard after successful signup
+    //       // setTimeout(() => {
+    //       //   navigate("/dashboard");
+    //       // }, 2000);
+    //     } else {
+    //       // Handle API error response
+    //       const errorMessage =
+    //         response?.errors?.[0]?.msg ||
+    //         response?.message ||
+    //         "Failed to create account. Please try again.";
+    //       showNotification(errorMessage, "error");
+    //     }
+    //   } catch (error) {
+    //     // Handle network errors or other exceptions
+    //     console.error("Signup error:", error);
+
+    //     if (error.response) {
+    //       // Server responded with error status
+    //       const errorMessage =
+    //         error.response.data?.message ||
+    //         error.response.data?.error ||
+    //         `Server error (${error.response.status}). Please try again.`;
+    //       showNotification(errorMessage, "error");
+    //     } else if (error.request) {
+    //       // Network error
+    //       showNotification(
+    //         "Network error. Please check your connection and try again.",
+    //         "error"
+    //       );
+    //     } else {
+    //       // Other error
+    //       showNotification(
+    //         "An unexpected error occurred. Please try again.",
+    //         "error"
+    //       );
+    //     }
+    //   } finally {
+    //     setTimeout(() => {
+    //       setIsLoading(false);
+    //     }, 300);
+    //   }
+    // }
   };
 
   const passwordsMatch =
@@ -209,6 +230,11 @@ const Signup = () => {
     lowercase: /[a-z]/.test(formData.password),
     number: /\d/.test(formData.password),
   };
+
+  if (isVerifyingPhone)
+    return (
+      <VerifyPhone password={formData.password} initialPhone={formData.phone} />
+    );
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -263,7 +289,7 @@ const Signup = () => {
         )}
 
         {/* Additional Options */}
-        <div className="mt-6">
+        {/* <div className="mt-6">
           <div className="mt-6 gap-3">
             <button
               onClick={() => {
@@ -303,14 +329,14 @@ const Signup = () => {
               Or sign up with
             </span>
           </div>
-        </div>
+        </div> */}
 
         {/* Signup Form */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
           <div className="p-8">
             <div className="space-y-6">
               {/* Name Fields */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label
                     htmlFor="firstName"
@@ -347,10 +373,10 @@ const Signup = () => {
                     placeholder="Doe"
                   />
                 </div>
-              </div>
+              </div> */}
 
               {/* Email Field */}
-              <div>
+              {/* <div>
                 <label
                   htmlFor="email"
                   className="block text-sm font-medium text-gray-700 mb-2"
@@ -373,6 +399,26 @@ const Signup = () => {
                     placeholder="john@example.com"
                   />
                 </div>
+              </div> */}
+
+              {/* phone field */}
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Phone Number
+                </label>
+                <PhoneInput
+                  onChange={(target) => {
+                    console.log("formdata", formData);
+                    setFormData((prev) => ({
+                      ...prev,
+                      phone: target.target.value,
+                    }));
+                  }}
+                  value={formData.phone}
+                />
               </div>
 
               {/* Password Field */}

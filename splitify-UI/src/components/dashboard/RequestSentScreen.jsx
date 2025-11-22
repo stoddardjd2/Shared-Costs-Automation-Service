@@ -47,7 +47,7 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
         setHide(false);
         setTimeout(() => setHide(true), 100);
       }}
-      className="overflow-hidden  z-50 fixed flex-col inset-0 bg-gradient-to-br from-blue-600 via-blue-500 to-blue-600 flex items-start justify-start"
+      className="overflow-hidden  z-[3000] fixed flex-col inset-0 bg-gradient-to-br from-blue-600 via-blue-500 to-blue-600 flex items-start justify-start"
     >
       {/* Background elements */}
       <div className=" relative max-h-[75dvh] sm:max-h-[95dvh]  overflow-auto scroll-h  [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">

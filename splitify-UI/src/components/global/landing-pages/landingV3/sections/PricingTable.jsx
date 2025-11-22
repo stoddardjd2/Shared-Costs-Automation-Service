@@ -101,7 +101,7 @@ export default function PricingTable() {
           <div className="text-center mb-12">
             <FadeInWrapper>
               <SectionIndicator className="mx-auto" title="Pricing" />
-              <h2 className=" mb-3">Splitify puts money back in your pocket</h2>
+              <h2 className=" mb-3">Splitify puts money in your pocket</h2>
               <p className="mb-6">
                 Everything you need for free, plus some paid features for the
                 smart ones.

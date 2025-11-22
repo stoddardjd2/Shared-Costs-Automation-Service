@@ -96,12 +96,15 @@ export default function Hero() {
           {/* copy */}
           <div className=" animate-smooth-up pb-0 sm:pb-[clamp(1rem,5vw,2.5rem)] p-[clamp(2rem,5vw,2.5rem)] pt-0 sticky top-[90px] sm:top-[clamp(95px,9vw,190px)] mb-0 sm:mb-[clamp(0.4rem,0.5rem+4vw,5rem)] ">
             <h1 className="text-center mb-2 sm:mb-4 md:mb-6 max-w-[1000px] mx-auto">
-              Get your roommates to actually{" "}
-              <br className="inline sm:hidden" /> pay you back with Splitify.
+              Get your roommates to actually <br className="inline sm:hidden" />{" "}
+              pay you back with Splitify
             </h1>
             <p className="text-center text-gray-700 mb-2 max-w-[800px] mx-auto">
-             Splitify uses proven techniques to get you paid back more often and faster.
+              {/* Splitify uses proven techniques to get you paid back more often and faster. */}
               {/* Experience less stress, fewer arguments, and more confidence that you won’t be stuck covering other people's bills. */}
+              Splitify is your AI bill manager that splits your bills, sends
+              text messages for requests & reminders and tracks everything so
+              you never miss a payment.
             </p>
             <p className="text-center font-semibold text-gray-700">
               No chasing. No awkward conversations.{" "}

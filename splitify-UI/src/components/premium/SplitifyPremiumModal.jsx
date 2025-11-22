@@ -37,9 +37,9 @@ const DEFAULT_PRICING = {
 };
 
 const DEFAULT_COPY = {
-  headline: "Unlock smarter splits",
+  headline: "Unlock smarter requests",
   subheadline:
-    "Get the most advanced bill splitting features that you can't get anywhere else.",
+    "Upgrade to save more time and get access to customizable features.",
   dataAssurance:
     "We never store or have direct access to your bank credentials. Splitify only retains minimal details for the transaction you choose.",
 };
@@ -104,6 +104,7 @@ export default function SplitifyPremiumModal({
   featureCopy = DEFAULT_COPY,
   showPlaidOnly = true,
   showPremium = true,
+  navbarPadding = false,
 }) {
   const { userData, setUserData } = useData();
   const userEmail = userData?.email || "";
@@ -232,7 +233,7 @@ export default function SplitifyPremiumModal({
 
   const PlaidCard = ({ plan }) => (
     <div
-      className={`relative bg-white rounded-lg p-8 shadow-lg transition-shadow hover:shadow-xl ${
+      className={` relative bg-white rounded-lg p-8 shadow-lg transition-shadow hover:shadow-xl ${
         plan.popular ? "ring-2 ring-blue-600" : ""
       }`}
     >
@@ -272,7 +273,7 @@ export default function SplitifyPremiumModal({
         {plan.features.map((feature, featureIndex) => (
           <li key={featureIndex} className="flex items-start gap-3">
             <Check className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-600" />
-            <span className="text-gray-700">{feature}</span>
+            <span className="text-gray-700 text-start">{feature}</span>
           </li>
         ))}
       </ul>
@@ -321,7 +322,7 @@ export default function SplitifyPremiumModal({
         {plan.features.map((feature, featureIndex) => (
           <li key={featureIndex} className="flex items-start gap-3">
             <Check className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-600" />
-            <span className="text-gray-700">{feature}</span>
+            <span className="text-gray-700 text-start">{feature}</span>
           </li>
         ))}
       </ul>
@@ -340,7 +341,7 @@ export default function SplitifyPremiumModal({
     return (
       <div className="flex flex-col h-full min-h-0">
         {/* Header */}
-        <div className="relative flex items-center gap-4 border-b border-gray-100 p-6 sm:p-8 flex-none">
+        <div className="relative flex items-center gap-4 border-b border-gray-100 pl-2 p-6 sm:p-8 flex-none">
           <button
             onClick={() => {
               setStep("choose");
@@ -365,14 +366,14 @@ export default function SplitifyPremiumModal({
               {formatPrice(pricing?.[selection?.planKey]?.[billing])}
             </p>
           </div>
-          <button
+          {/* <button
             ref={closeBtnRef}
             onClick={onClose}
             aria-label="Close"
-            className="absolute right-4 top-4 inline-flex items-center justify-center rounded-full p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            className="absolute right-2 top-2 inline-flex items-center justify-center rounded-full p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
           >
             <X className="h-5 w-5" />
-          </button>
+          </button> */}
         </div>
 
         {/* Body */}
@@ -437,45 +438,43 @@ export default function SplitifyPremiumModal({
 
   return (
     <div
-      className="fixed inset-0 z-[1000]"
+      className={`fixed inset-0 z-[9999] min-w-[1000px] overflow-auto ${navbarPadding && "mt-[65px]"}`}
       role="dialog"
+      d
       aria-modal="true"
       aria-labelledby="splitify-premium-title"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose?.();
       }}
     >
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
-
       {/* Scrollable overlay container */}
-      <div className="fixed inset-0 overflow-y-auto">
+      <div className="">
         {/* Align top on mobile, center on sm+ */}
         <div
           onClick={(e) => {
             if (e.target !== e.currentTarget) return;
             onClose();
           }}
-          className="flex min-h-dvh items-start sm:items-center justify-center"
+          className="flex min-h-screen w-full items-start sm:items-center justify-center"
         >
           {/* Panel */}
-          <div className="w-full max-w-5xl bg-white shadow-2xl ring-1 ring-black/5 min-h-[100svh] sm:min-h-0 max-h-[100svh] sm:max-h-[85vh] flex flex-col overflow-hidden sm:m-10 sm:rounded-xl">
+          <div className="w-full min-h-screen bg-white shadow-2xl ring-1 ring-black/5 flex flex-col overflow-hidden">
             {/* CHOOSE STEP */}
             {step === "choose" && (
-              <div className="flex-1 min-h-0 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto">
                 {/* Header */}
-                <div className="relative flex items-start gap-4 border-b border-gray-100 p-6 sm:p-8 flex-none">
-                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
-                    <Sparkles className="h-5 w-5" />
+                <div className="relative flex-col items-start gap-4 border-b border-gray-100 p-6 sm:p-8 flex-none">
+                  <div className=" mb-3 mx-auto h-10 w-10 flex items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
+                    <Sparkles className="h-5 w-5 " />
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 items-center flex flex-col">
                     <h2
                       id="splitify-premium-title"
-                      className="text-xl sm:text-2xl font-semibold tracking-tight"
+                      className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2"
                     >
                       {featureCopy.headline}
                     </h2>
-                    <p className="mt-1 text-sm text-gray-600">
+                    <p className="text-sm sm:text-base text-gray-600 leading-relaxed max-w-xl">
                       {featureCopy.subheadline}
                     </p>
                   </div>
@@ -496,7 +495,7 @@ export default function SplitifyPremiumModal({
                 />
 
                 {/* Cards */}
-                <div className="grid grid-cols-1 gap-y-8 gap-4 p-6 sm:grid-cols-2 sm:gap-6 sm:p-8">
+                <div className="grid max-w-[1000px] mx-auto grid-cols-1 gap-y-8 gap-4 p-6 sm:grid-cols-2 sm:gap-6 sm:p-8">
                   {showPlaidOnly && <PlaidCard plan={plans[1]} />}
                   {showPremium && <PremiumCard plan={plans[2]} />}
                 </div>

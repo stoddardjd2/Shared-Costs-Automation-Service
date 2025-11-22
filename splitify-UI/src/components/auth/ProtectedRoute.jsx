@@ -1,16 +1,18 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import React, { useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 const ProtectedRoute = ({ children }) => {
   const { isValidToken, loading } = useAuth();
   const navigate = useNavigate();
-  
+  const location = useLocation();
+
   useEffect(() => {
     if (!loading && !isValidToken) {
-      navigate('/login');
+      const intendedUrl = location.pathname + location.search;
+      navigate(`/login?redirect=${encodeURIComponent(intendedUrl)}`);
     }
-  }, [isValidToken, loading, navigate]);
+  }, [isValidToken, loading, navigate, location]);
 
   if (loading) {
     return (
@@ -19,7 +21,7 @@ const ProtectedRoute = ({ children }) => {
       </div>
     );
   }
-  
+
   return isValidToken ? children : null;
 };
 

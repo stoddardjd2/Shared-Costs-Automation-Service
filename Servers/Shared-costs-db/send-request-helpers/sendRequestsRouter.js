@@ -71,13 +71,10 @@ async function sendRequestsRouter(
       { email: 1, phone: 1, _id: 0 }
     );
 
-    console.log(`URL FOR ${name}!`, finalUrl);
     // if (routes.includes("email")) {
     //   console.log("sending email");
     //   sendEmailRequest(requester, name, amount, finalUrl, user.email);
     // }
-
-
 
     let message = "";
     if (isReminder) {
@@ -104,10 +101,8 @@ Sent via Splitify
 `;
     }
 
-
-
     if (routes.includes("text")) {
-      sendTextMessage(user.phone, "+18333702013", message);
+      sendTextMessage(user.phone, undefined, message);
 
       // Update owner metrics: count texts sent and log details (timestamp, userId, participantName)
       try {

@@ -2,6 +2,22 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const { Schema, Types } = mongoose;
 
+const onboardingCategorySchema = new Schema(
+  {
+    preset: {
+      type: [String],
+      default: [],
+      set: (v) => [...new Set((v || []).filter(Boolean))], // dedupe + remove falsy
+    },
+    other: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+  },
+  { _id: false } // prevents extra _id for each subdoc
+);
+
 // Contact sub-schema with a unique contactId
 const contactSchema = new Schema({
   // contactId: {
@@ -151,9 +167,25 @@ const userSchema = new Schema(
       type: Date,
     },
     paymentMethods: {
-      cashapp: String,
-      venmo: String,
-      paypal: String,
+      venmo: { type: String },
+      cashapp: { type: String },
+      paypal: { type: String },
+      zelle: { type: String },
+
+      // Boolean — user has connected Plaid bank
+      plaidBank: { type: Boolean },
+
+      otherName: { type: String }, // e.g. "Apple Pay"
+      other: { type: String }, // e.g. phone/email/handle
+
+      enabled: {
+        venmo: { type: Boolean, default: false },
+        cashapp: { type: Boolean, default: false },
+        paypal: { type: Boolean, default: false },
+        zelle: { type: Boolean, default: false },
+        plaidBank: { type: Boolean, default: false },
+        other: { type: Boolean, default: false },
+      },
     },
     contacts: [contactSchema], // <-- Contacts with unique IDs
     textMessagesAllowed: { type: TextConsentSchema, default: () => ({}) },
@@ -215,6 +247,19 @@ const userSchema = new Schema(
           },
         ],
       },
+    },
+
+    onboarding: {
+      heardFrom: { type: onboardingCategorySchema },
+      useCase: { type: onboardingCategorySchema },
+      splitWith: { type: onboardingCategorySchema },
+      challenge: { type: onboardingCategorySchema },
+      isCompleted: Boolean,
+    },
+    reminderPreference: {
+      type: String,
+      enum: ["daily", "3days", "weekly", "once"],
+      default: null,
     },
     lastActive: Date,
     OAuth: {

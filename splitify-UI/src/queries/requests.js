@@ -228,11 +228,30 @@ export const handleDeleteRequest = async (requestId) => {
   });
 };
 
-export const handleLogPaymentView = async (requestId, paymentHistoryId, userId) => {
+export const handleLogPaymentView = async (
+  requestId,
+  paymentHistoryId,
+  userId
+) => {
   return await apiRequest(
     `/requests/logPaymentView/${requestId}/${paymentHistoryId}/${userId}`,
     {
       method: "POST",
+    }
+  );
+};
+
+export const handleLogLastClickedPaymentMethod = async (
+  requestId,
+  paymentHistoryId,
+  userId,
+  paymentMethodName
+) => {
+  return await apiRequest(
+    `/requests/logLastClickedPaymentMethod/${requestId}/${paymentHistoryId}/${userId}`,
+    {
+      method: "POST",
+      body: { paymentMethodName: paymentMethodName },
     }
   );
 };

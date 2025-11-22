@@ -10,6 +10,7 @@ const {
   checkTextMessagePermissions,
   emailNonApprovedParticipants,
 } = require("../utils/requestHelpers");
+const sendReminder = require("../send-request-helpers/sendTextMessage");
 // const createRequest = () => {};
 
 const getRequests = async (req, res) => {
@@ -498,38 +499,6 @@ const handlePayment = async (req, res) => {
     );
     userMarkedAsPaid = true;
 
-    // const amountOwed = originalAmount - paymentAmount;
-
-    // Update User model to track this payment
-    // const userUpdate = await User.findByIdAndUpdate(
-    //   userId,
-    //   {
-    //     $push: {
-    //       paymentHistory: {
-    //         requestId: new ObjectId(requestId),
-    //         paymentHistoryId: new ObjectId(paymentHistoryId),
-    //         originalAmount: originalAmount,
-    //         amountPaid: paymentAmount,
-    //         amountOwed: amountOwed,
-    //         paidDate: new Date(),
-    //         requestName: currentRequest.name,
-    //         isFullyPaid: amountOwed <= 0,
-    //       },
-    //     },
-    //     $inc: {
-    //       totalPaymentsMade: 1,
-    //       totalAmountPaid: paymentAmount,
-    //     },
-    //     $set: {
-    //       lastPaymentDate: new Date(),
-    //     },
-    //   },
-    //   {
-    //     upsert: true,
-    //     new: true,
-    //   }
-    // );
-
     // mark as paid for master if setting enabled:
     let masterMarkedAsPaid = null;
     if (currentRequest.allowMarkAsPaidForEveryone) {
@@ -590,6 +559,67 @@ const handlePayment = async (req, res) => {
           new: true,
         }
       );
+    }
+
+    // Text owner when payment recieved if opted in and premium:
+    try {
+      console.log("marked paid, try send text");
+      const ownerId = currentRequest.owner; // the creator of the request
+      const owner = await User.findById(ownerId).select(
+        "phone reminderPreference plan name"
+      );
+
+      console.log(
+        "booleans",
+        currentRequest.allowPaymentNotificationsInfo,
+        owner,
+        owner.phone,
+        // owner.reminderPreference.payments === true && // your opt-in flag
+        ["professional", "premium", "free"].includes(owner.plan)
+      );
+      if (
+        currentRequest.allowPaymentNotificationsInfo &&
+        owner &&
+        owner.phone &&
+        // owner.reminderPreference.payments === true && // your opt-in flag
+        ["professional", "premium", "free"].includes(owner.plan) // allowed plans (INCLUDES FREE FOR NOW)
+      ) {
+        console.log("sending text");
+
+        const participantUser = await User.findById(userId).select("name");
+
+        const safeAmount =
+          paymentAmount ?? participant?.paymentAmount ?? originalAmount ?? 0;
+requestId, paymentHistoryId, userId 
+
+
+    const urlBase = `${process.env.CLIENT_URL}/markAsPaid`;
+   const url = new URL(urlBase);
+    url.searchParams.set("userId", userId);
+    url.searchParams.set("paymentHistoryId", paymentHistoryId);
+    url.searchParams.set("requestId", requestId);
+    // url.searchParams.set("name", name);
+    const finalUrl = url.toString();
+
+
+        const body = `Hi ${owner.name},
+${participantUser?.name || "a participant"} marked their request as paid.
+
+AMOUNT: $${safeAmount}
+FOR: ${currentRequest.name}
+
+Confirm you recieved the payment then click URL to mark as paid: ${finalUrl}
+
+Sent via Splitify
+`;
+
+        const to = owner.phone;
+
+        // IMPORTANT: don't pass "" as from — let sendReminder use its default
+        sendReminder(to, undefined, body);
+      }
+    } catch (err) {
+      console.error("Error sending owner payment notification:", err);
     }
 
     return res.status(200).json({
@@ -875,7 +905,6 @@ const handlePaymentDetails = async (req, res) => {
     // ✅ Step-by-step boolean evaluation
     let paidInFull = false;
     let amountLeft;
-    console.log("thisParticipant", thisParticipant);
 
     if (thisParticipant) {
       const amountOwed = convertToNumber(thisParticipant.amount);
@@ -890,21 +919,6 @@ const handlePaymentDetails = async (req, res) => {
       }
     }
 
-    console.log("paymentPortal details:", {
-      success: true,
-      isPaidInFull: paidInFull,
-      amountOwed: amountLeft,
-      owedTo: OwnerName,
-      allowMarkAsPaidForEveryone:
-        requestDocument?.allowMarkAsPaidForEveryone || false,
-      paymentMethods: ownerPaymentMethods,
-      dueDate: thisPaymentHistory.dueDate,
-      amountPaid: thisParticipant.amount,
-      requestName: requestDocument.name,
-      datePaid: thisParticipant.paidDate || thisParticipant.markedAsPaidDate,
-      message: `Request ${paidInFull ? "paid in full" : "not paid in full"}`,
-    });
-
     return res.status(200).json({
       success: true,
       isPaidInFull: paidInFull,
@@ -916,7 +930,8 @@ const handlePaymentDetails = async (req, res) => {
       dueDate: thisPaymentHistory.dueDate,
       amountPaid: thisParticipant.amount,
       requestName: requestDocument.name,
-      participantMarkedAsPaid:thisParticipant.participantMarkedAsPaid,
+      markedAsPaid: thisParticipant.markedAsPaid,
+      participantMarkedAsPaid: thisParticipant.participantMarkedAsPaid,
       datePaid: thisParticipant.paidDate || thisParticipant.markedAsPaidDate,
       message: `Request ${paidInFull ? "paid in full" : "not paid in full"}`,
     });
@@ -1200,6 +1215,45 @@ const handleLogPaymentView = async (req, res) => {
   }
 };
 
+const handleLogLastClickedPaymentMethod = async (req, res) => {
+  try {
+    const { requestId, paymentHistoryId, userId } = req.params;
+    const { paymentMethodName } = req.body;
+    const requestObjectId = new ObjectId(requestId);
+    const historyObjectId = new ObjectId(paymentHistoryId);
+    const participantObjectId = new ObjectId(userId);
+
+    console.log("lastClickedPaymentMethod", paymentMethodName);
+
+    const requestDocument = await Request.updateOne(
+      { _id: requestObjectId },
+      {
+        $set: {
+          "paymentHistory.$[history].participants.$[participant].lastClickedPaymentMethod":
+            paymentMethodName,
+        },
+      },
+      {
+        arrayFilters: [
+          { "history._id": historyObjectId },
+          { "participant._id": participantObjectId },
+        ],
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Last clicked method logged",
+    });
+  } catch (error) {
+    console.error("Error logging last clicked method:", error);
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createRequest,
   getRequests,
@@ -1211,4 +1265,5 @@ module.exports = {
   handleDeleteRequest,
   handleTogglePauseRequest,
   handleLogPaymentView,
+  handleLogLastClickedPaymentMethod,
 };

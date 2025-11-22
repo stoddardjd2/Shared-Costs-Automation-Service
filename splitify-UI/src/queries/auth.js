@@ -167,6 +167,56 @@ const googleOauth = async (code) => {
   }
 };
 
+const sendPhoneCode = async (phone) => {
+  try {
+    const response = await fetch(`${API_URL}/users/sendPhoneCode`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ phone: phone }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      console.log("failed to send code", data.message);
+      return false;
+    }
+    return data;
+  } catch (error) {
+    console.error("Error:", error);
+    throw error;
+  }
+};
+
+const verifyPhoneCode = async (phone, phoneCode, password) => {
+  try {
+    const response = await fetch(`${API_URL}/users/verifyPhoneCode`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        phone: phone,
+        phoneCode: phoneCode,
+        password: password,
+      }),
+    });
+
+
+
+    const data = await response.json();
+    if (!response.ok) {
+      console.log("verification failed", data.message);
+      return false;
+    }
+    return data;
+  } catch (error) {
+    console.error("Error:", error);
+    throw error;
+  }
+};
+
 export {
   createUser,
   loginUser,
@@ -175,4 +225,6 @@ export {
   verifyToken,
   API_URL,
   googleOauth,
+  sendPhoneCode,
+  verifyPhoneCode,
 };

@@ -29,6 +29,7 @@ const paymentParticipantSchema = new Schema({
   participantMarkedAsPaidDate: { type: Date },
   paymentLinkClicked: { type: Boolean },
   paymentLinkClickedDate: { type: Date },
+  lastClickedPaymentMethod: { type: String },
   requestSentDate: Date,
 });
 
@@ -74,6 +75,7 @@ const requestSchema = new Schema({
   startDate: { type: Date }, // for when startTiming is "later"
   lastSent: { type: Date },
   isDynamic: { type: Boolean, default: false },
+  allowPaymentNotificationsInfo: { type: Boolean, default: false },
   allowMarkAsPaidForEveryone: { type: Boolean, default: false },
   isPlaidCharge: Boolean,
   totalAmount: Number,

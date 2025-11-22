@@ -15,6 +15,7 @@ import {
   CreditCard,
   Inbox,
   Smartphone,
+  X,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useData } from "../../contexts/DataContext";
@@ -23,6 +24,7 @@ import PwaInstallPrompt from "./PwaInstallPrompt";
 import SplitifyPremiumModal from "../premium/SplitifyPremiumModal";
 import { handleCreatePortalSession } from "../../queries/stripe";
 import { clearUserId } from "../../googleAnalytics/googleAnalyticsHelpers";
+import PaymentMethodsStep from "./onboarding/PaymentMethodsStep";
 const Navbar = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showPaymentMethodPrompt, setShowPaymentMethodPrompt] = useState(false);
@@ -31,6 +33,7 @@ const Navbar = () => {
   const { userData, setUserData } = useData();
   const navigate = useNavigate();
   const location = useLocation();
+
   // Demo user data
 
   // Close dropdown when clicking outside
@@ -91,6 +94,31 @@ const Navbar = () => {
         <path d="M3 9L21 9" stroke="currentColor" strokeWidth="2" />
       </svg>
     );
+  }
+
+  function formatPhonePretty(raw = "") {
+    if (!raw) return "";
+
+    // Remove everything except digits
+    let digits = raw.replace(/\D/g, "");
+
+    // Remove leading "1" if present (we'll add +1 later)
+    if (digits.startsWith("1")) {
+      digits = digits.slice(1);
+    }
+
+    // Limit to 10 digits
+    digits = digits.slice(0, 10);
+
+    // Build parts
+    const area = digits.slice(0, 3);
+    const mid = digits.slice(3, 6);
+    const last = digits.slice(6, 10);
+
+    // Format progressively
+    if (digits.length <= 3) return `+1 (${area}`;
+    if (digits.length <= 6) return `+1 (${area}) ${mid}`;
+    return `+1 (${area}) ${mid}-${last}`;
   }
 
   const getPlanIcon = (plan) => {
@@ -157,15 +185,14 @@ const Navbar = () => {
     setShowPremiumPrompt(path.startsWith("/dashboard/premium"));
   }, [location.pathname]);
 
-
   return (
-    <nav className="bg-white border-b border-slate-200/60 shadow-sm fixed top-0 w-full z-50">
+    <nav className="bg-white border-b border-slate-200/60 shadow-sm fixed top-0 w-full z-[1000]">
       <div className="max-w-7xl mx-auto">
         <div className="flex px-4 sm:px-6 justify-between items-center h-16">
           {/* Logo/Brand */}
           <div
             onClick={() => {
-              navigate(0);
+              navigate('/dashboard');
             }}
             className="flex-shrink-0 flex items-center space-x-3 cursor-pointer"
           >
@@ -221,7 +248,9 @@ const Navbar = () => {
                   <div className="text-sm font-medium text-gray-900">
                     {userData.name}
                   </div>
-                  <div className="text-xs text-gray-600">{userData.email}</div>
+                  <div className="text-xs text-gray-600">
+                    {formatPhonePretty(userData.phone)}
+                  </div>
                 </div>
 
                 <ChevronDown
@@ -342,7 +371,7 @@ const Navbar = () => {
                     }}
                     className="flex items-center w-full px-4 py-4 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                   >
-                    <Settings className="w-4 h-4 mr-3" />
+                    <CreditCard className="w-4 h-4 mr-3" />
                     Edit Payment Methods
                   </button>
 
@@ -385,10 +414,26 @@ const Navbar = () => {
         isOpen={showPaymentMethodPrompt}
         onClose={() => setShowPaymentMethodPrompt(false)}
       >
-        <PaymentMethodPrompt
+        <PaymentMethodsStep
+          isOnboarding={false}
+          paymentMethods={userData.paymentMethods}
+          setPaymentMethods={(update) =>
+            setUserData((prev) => {
+              const prevPM = prev.paymentMethods;
+
+              const nextPM =
+                typeof update === "function" ? update(prevPM) : update;
+
+              return { ...prev, paymentMethods: nextPM };
+            })
+          }
+          onNext={() => setShowPaymentMethodPrompt(false)}
+          onBack={() => setShowPaymentMethodPrompt(false)}
+        />
+        {/* <PaymentMethodPrompt
           setShowPaymentMethodPrompt={setShowPaymentMethodPrompt}
           isEditingFromSettings={true}
-        />
+        /> */}
       </FullscreenModal>
 
       <SplitifyPremiumModal
@@ -417,14 +462,20 @@ function FullscreenModal({ isOpen, onClose, children }) {
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed p-2 inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 flex items-center pt-10 justify-center bg-white p-2">
       <div
-        className="flex justify-center items-center"
+        className="relative  items-center h-full"
         onClick={(e) => e.stopPropagation()} // Prevent closing on inside click
       >
+        {/* Exit button */}
+        <button
+          onClick={onClose}
+          className="absolute -top-3 -right-3 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-full p-1 shadow-sm transition"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        {/* Modal content */}
         <div className="max-w-[28rem]">{children}</div>
       </div>
     </div>

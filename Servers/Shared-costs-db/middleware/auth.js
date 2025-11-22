@@ -65,4 +65,27 @@ const authorize = (...roles) => {
   };
 };
 
-module.exports = { protect, authorize };
+// Grant access based on allowed subscription plans
+const authorizePlan = (...allowedPlans) => {
+  return (req, res, next) => {
+    const userPlan = req.user?.plan;
+
+    if (!userPlan) {
+      return res.status(403).json({
+        success: false,
+        message: "No subscription plan found for this user.",
+      });
+    }
+
+    if (!allowedPlans.includes(userPlan)) {
+      return res.status(403).json({
+        success: false,
+        message: `Your plan "${userPlan}" does not include access to this feature.`,
+      });
+    }
+
+    next();
+  };
+};
+
+module.exports = { protect, authorize, authorizePlan };

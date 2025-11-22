@@ -2,6 +2,8 @@ import { Users, RotateCcw, TrendingUp, Info, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useData } from "../../contexts/DataContext";
 import { amountRange } from "../../utils/amountHelper";
+import SelectedPeopleDisplay from "./SelectedPeopleDisplay";
+
 export default function ConfirmButtonTray({
   selectedPeople,
   onConfirm,
@@ -205,51 +207,7 @@ export default function ConfirmButtonTray({
                       : "ml-auto max-w-[60%] justify-end "
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="flex -space-x-3">
-                      {selectedPeople.slice(0, 5).map((person, index) => {
-                        const user = participants.find(
-                          (u) => u._id === person._id
-                        );
-
-                        return (
-                          <div
-                            key={user._id}
-                            className={`w-10 h-10 rounded-xl ${user.color} flex items-center justify-center text-white font-semibold text-sm border-3 border-white shadow-md relative group/avatar hover:translate-x-2 transition-transform duration-200`}
-                            style={{ zIndex: selectedPeople.length - index }}
-                          >
-                            {user.avatar}
-                            {/* Tooltip */}
-                            <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs py-2 px-3 rounded-lg opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                              {user.name}
-                              <div className="absolute top-[28px] left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                      {selectedPeople.length > 5 && (
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center text-white font-semibold text-xs border-3 border-white shadow-md relative group/avatar hover:translate-x-2 transition-transform duration-200">
-                          +{selectedPeople.length - 5}
-                          {/* Tooltip for overflow count */}
-                          <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs py-2 px-3 rounded-lg opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                            {selectedPeople.length - 5} more{" "}
-                            {selectedPeople.length - 5 === 1
-                              ? "person"
-                              : "people"}
-                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* People count indicator */}
-                    <div className="flex items-center gap-1 text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded-lg">
-                      <Users className="w-4 h-4" />
-                      <span className="font-medium">
-                        {selectedPeople.length}
-                      </span>
-                    </div>
-                  </div>
+                  <SelectedPeopleDisplay selectedPeople={selectedPeople} />
                 </div>
               </div>
 

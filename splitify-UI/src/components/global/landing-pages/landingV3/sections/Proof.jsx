@@ -139,7 +139,7 @@ export default function Proof() {
     },
     {
       icon: "✓",
-      text: "No-signup payment links recieved through text means roommates have no excuse not to pay.",
+      text: "Payment links sent by text—no signup needed—so your roommates have no excuse not to pay.",
     },
   ];
 
@@ -186,7 +186,7 @@ export default function Proof() {
 
         <FadeInWrapper delaySec={0.2}>
           <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8">
-            <h3 className="mb-6">The result? Less stress, fewer arguments and paid requests.</h3>
+            <h3 className="mb-6">The result? Less stress, fewer arguments and more payments collected.</h3>
             <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4">
               {features.map((feature, index) => (
                 <FeaturePoint

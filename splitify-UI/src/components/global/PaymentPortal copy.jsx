@@ -6,8 +6,6 @@ import {
 } from "../../queries/requests";
 import { Info as InfoIcon, AlertCircle, Home, RefreshCw } from "lucide-react"; // the info-in-a-circle icon
 import { handlePaymentDetails } from "../../queries/requests";
-import { motion } from "framer-motion";
-
 // Constants
 const THEME_PRIMARY = "rgb(37 99 235)";
 const SUCCESS_GRADIENT = "linear-gradient(135deg, #10B981 0%, #059669 100%)";
@@ -40,200 +38,127 @@ const formatDate = (dateString) => {
 const getCurrentDate = () => formatDate(new Date());
 
 // Payment method configurations
-const getPaymentMethods = (initial, paymentDetails) => {
-  const pm = paymentDetails.paymentMethods || {};
-  const enabled = pm.enabled || {};
-
-  const hasValue = (key) =>
-    typeof pm[key] === "string" && pm[key].trim() !== "";
-
-  const isShown = (key) => enabled[key] === true || hasValue(key);
-
-  const methods = [];
-
-  // Venmo
-  if (isShown("venmo")) {
-    methods.push({
-      id: "venmo",
-      name: "Venmo",
-      bgColor: "#3D95CE",
-      textColor: "white",
-      paymentUrl: hasValue("venmo")
-        ? `https://venmo.com/?txn=pay&recipients=${pm.venmo}&amount=${
-            paymentDetails.amountOwed
-          }&note=${encodeURIComponent(paymentDetails.requestName || "Payment")}`
+const getPaymentMethods = (initial, paymentDetails) => [
+  {
+    id: "venmo",
+    name: "Venmo",
+    bgColor: "#3D95CE",
+    textColor: "white",
+    paymentUrl:
+      paymentDetails.paymentMethods?.venmo &&
+      paymentDetails.paymentMethods.venmo?.trim() !== ""
+        ? `https://venmo.com/?txn=pay&recipients=${
+            paymentDetails.paymentMethods.venmo
+          }&amount=${paymentDetails.amountOwed}&note=${encodeURIComponent(
+            paymentDetails.requestName || "Payment"
+          )}`
         : "https://venmo.com/",
-      icon: (
-        <svg
-          fill="#ffffff"
-          viewBox="0 0 512 512"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d="M444.17,32H70.28C49.85,32,32,46.7,32,66.89V441.6C32,461.91,49.85,480,70.28,480H444.06C464.6,480,480,461.8,480,441.61V66.89C480.12,46.7,464.6,32,444.17,32ZM278,387H174.32L132.75,138.44l90.75-8.62,22,176.87c20.53-33.45,45.88-86,45.88-121.87,0-19.62-3.36-33-8.61-44L365.4,124.1c9.56,15.78,13.86,32,13.86,52.57C379.25,242.17,323.34,327.26,278,387Z"></path>
-        </svg>
-      ),
-    });
-  }
 
-  // Cash App
-  if (isShown("cashapp")) {
-    methods.push({
-      id: "cashapp",
-      name: "Cash App",
-      bgColor: "#00D632",
-      textColor: "white",
-      paymentUrl: hasValue("cashapp")
-        ? `https://cash.app/$${pm.cashapp}/${paymentDetails.amountOwed}`
+    icon: (
+      <svg
+        fill="#ffffff"
+        viewBox="0 0 512 512"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M444.17,32H70.28C49.85,32,32,46.7,32,66.89V441.6C32,461.91,49.85,480,70.28,480H444.06C464.6,480,480,461.8,480,441.61V66.89C480.12,46.7,464.6,32,444.17,32ZM278,387H174.32L132.75,138.44l90.75-8.62,22,176.87c20.53-33.45,45.88-86,45.88-121.87,0-19.62-3.36-33-8.61-44L365.4,124.1c9.56,15.78,13.86,32,13.86,52.57C379.25,242.17,323.34,327.26,278,387Z"></path>
+      </svg>
+    ),
+  },
+  {
+    id: "cashapp",
+    name: "Cash App",
+    bgColor: "#00D632",
+    textColor: "white",
+    paymentUrl:
+      paymentDetails.paymentMethods?.cashapp &&
+      paymentDetails.paymentMethods.cashapp?.trim() !== ""
+        ? `https://cash.app/$${paymentDetails.paymentMethods.cashapp}/${paymentDetails.amountOwed}`
         : "https://cash.app/",
-      icon: (
-        <svg
-          fill="#ffffff"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d="M23.59 3.47A5.1 5.1 0 0 0 20.54.42C19.23 0 18.04 0 15.62 0H8.36c-2.4 0-3.61 0-4.9.4A5.1 5.1 0 0 0 .41 3.46C0 4.76 0 5.96 0 8.36v7.27c0 2.41 0 3.6.4 4.9a5.1 5.1 0 0 0 3.05 3.05c1.3.41 2.5.41 4.9.41h7.28c2.41 0 3.61 0 4.9-.4a5.1 5.1 0 0 0 3.06-3.06c.41-1.3.41-2.5.41-4.9V8.38c0-2.41 0-3.61-.41-4.91zM17.42 8.1l-.93.93a.5.5 0 0 1-.67.01 5 5 0 0 0-3.22-1.18c-.97 0-1.94.32-1.94 1.21 0 .9 1.04 1.2 2.24 1.65 2.1.7 3.84 1.58 3.84 3.64 0 2.24-1.74 3.78-4.58 3.95l-.26 1.2a.49.49 0 0 1-.48.39H9.63l-.09-.01a.5.5 0 0 1-.38-.59l.28-1.27a6.54 6.54 0 0 1-2.88-1.57v-.01a.48.48 0 0 1 0-.68l1-.97a.49.49 0 0 1 .67 0c.91.86 2.13 1.34 3.39 1.32 1.3 0 2.17-.55 2.17-1.42 0-.87-.88-1.1-2.54-1.72-1.76-.63-3.43-1.52-3.43-3.6 0-2.42 2.01-3.6 4.39-3.71l.25-1.23a.48.48 0 0 1 .48-.38h1.78l.1.01c.26.06.43.31.37.57l-.27 1.37c.9.3 1.75.77 2.48 1.39l.02.02c.19.2.19.5 0 .68z"></path>
-        </svg>
-      ),
-    });
-  }
+    icon: (
+      <svg
+        fill="#ffffff"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M23.59 3.47A5.1 5.1 0 0 0 20.54.42C19.23 0 18.04 0 15.62 0H8.36c-2.4 0-3.61 0-4.9.4A5.1 5.1 0 0 0 .41 3.46C0 4.76 0 5.96 0 8.36v7.27c0 2.41 0 3.6.4 4.9a5.1 5.1 0 0 0 3.05 3.05c1.3.41 2.5.41 4.9.41h7.28c2.41 0 3.61 0 4.9-.4a5.1 5.1 0 0 0 3.06-3.06c.41-1.3.41-2.5.41-4.9V8.38c0-2.41 0-3.61-.41-4.91zM17.42 8.1l-.93.93a.5.5 0 0 1-.67.01 5 5 0 0 0-3.22-1.18c-.97 0-1.94.32-1.94 1.21 0 .9 1.04 1.2 2.24 1.65 2.1.7 3.84 1.58 3.84 3.64 0 2.24-1.74 3.78-4.58 3.95l-.26 1.2a.49.49 0 0 1-.48.39H9.63l-.09-.01a.5.5 0 0 1-.38-.59l.28-1.27a6.54 6.54 0 0 1-2.88-1.57v-.01a.48.48 0 0 1 0-.68l1-.97a.49.49 0 0 1 .67 0c.91.86 2.13 1.34 3.39 1.32 1.3 0 2.17-.55 2.17-1.42 0-.87-.88-1.1-2.54-1.72-1.76-.63-3.43-1.52-3.43-3.6 0-2.42 2.01-3.6 4.39-3.71l.25-1.23a.48.48 0 0 1 .48-.38h1.78l.1.01c.26.06.43.31.37.57l-.27 1.37c.9.3 1.75.77 2.48 1.39l.02.02c.19.2.19.5 0 .68z"></path>
+      </svg>
+    ),
+  },
 
-  // PayPal
-  if (isShown("paypal")) {
-    methods.push({
-      id: "paypal",
-      name: "PayPal",
-      bgColor: "#0070BA",
-      textColor: "white",
-      paymentUrl: hasValue("paypal")
-        ? `https://www.paypal.me/${pm.paypal}/${paymentDetails.amountOwed}`
+  // {
+  //   id: "zelle",
+  //   name: "Zelle",
+  //   bgColor: "#6D1ED4",
+  //   textColor: "white",
+  //   paymentUrl: "https://www.zellepay.com/get-started",
+  //   icon: (
+  //     <svg
+  //       fill="#ffffff"
+  //       viewBox="0 0 24 24"
+  //       xmlns="http://www.w3.org/2000/svg"
+  //     >
+  //       <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.568 17.334h-7.568L16.432 6.666H9.568L7.432 17.334h7.568L8.568 6.666h7.568L17.568 17.334z" />
+  //       <path d="M15.134 9.866H8.866l2.268-3.2h6.268l-2.268 3.2zM8.866 14.134h6.268l-2.268 3.2H6.598l2.268-3.2z" />
+  //     </svg>
+  //   ),
+  // },
+  {
+    id: "applepay",
+    name: "Apple Pay",
+    bgColor: "#000000",
+    textColor: "white",
+    paymentUrl: "https://www.apple.com/apple-pay/",
+    icon: (
+      <svg
+        fill="#ffffff"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+      </svg>
+    ),
+  },
+  {
+    id: "googlepay",
+    name: "Google Pay",
+    bgColor: "#4285F4",
+    textColor: "white",
+    paymentUrl: "https://pay.google.com/",
+    icon: (
+      <svg
+        fill="#ffffff"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+      </svg>
+    ),
+  },
+  {
+    id: "paypal",
+    name: "PayPal",
+    bgColor: "#0070BA",
+    textColor: "white",
+    paymentUrl:
+      paymentDetails.paymentMethods?.paypal &&
+      paymentDetails.paymentMethods.paypal?.trim() !== ""
+        ? `https://www.paypal.me/${paymentDetails.paymentMethods.paypal}/${paymentDetails.amountOwed}`
         : "https://paypal.me/",
-      icon: (
-        <svg
-          fill="#ffffff"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.982.382-1.064.9l-1.106 7.006zm2.146-10.814a.641.641 0 0 0 .633-.74L8.930 2.717a.641.641 0 0 1 .633-.74h4.008c1.295 0 2.233.259 2.845.833.612.574.918 1.407.918 2.833 0 .259-.018.5-.053.740-.018.259-.053.518-.118.777-.018.037-.018.074-.035.111-.353 1.704-1.353 2.833-3.08 3.481-.595.222-1.295.333-2.104.333H9.222z" />
-        </svg>
-      ),
-    });
-  }
+    icon: (
+      <svg
+        fill="#ffffff"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.982.382-1.064.9l-1.106 7.006zm2.146-10.814a.641.641 0 0 0 .633-.74L8.930 2.717a.641.641 0 0 1 .633-.74h4.008c1.295 0 2.233.259 2.845.833.612.574.918 1.407.918 2.833 0 .259-.018.5-.053.740-.018.259-.053.518-.118.777-.018.037-.018.074-.035.111-.353 1.704-1.353 2.833-3.08 3.481-.595.222-1.295.333-2.104.333H9.222z" />
+      </svg>
+    ),
+  },
+];
 
-  // Zelle
-  if (isShown("zelle")) {
-    methods.push({
-      id: "zelle",
-      name: "Zelle",
-      bgColor: "#6D1ED4",
-      textColor: "white",
-      paymentUrl: "https://www.zellepay.com/get-started",
-      icon: (
-        <div className="bg-white w-6 h-6 rounded-[100px] flex items-center justify-center">
-          <svg
-            className="w-4 h-4 r"
-            viewBox="0 0 178 290"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <g filter="url(#filter0_d_0_1)">
-              <path
-                d="M14.6289 240.599C6.48898 234.24 5.04575 222.485 11.4053 214.346L137.05 53.5277C143.41 45.3878 155.164 43.9446 163.304 50.3041C171.444 56.6637 172.887 68.4179 166.527 76.5577L40.8825 237.376C34.5229 245.515 22.7688 246.959 14.6289 240.599Z"
-                fill="rgb(109, 30, 212)"
-              />
-            </g>
-
-            <rect
-              y="37"
-              width="171"
-              height="42"
-              rx="13"
-              fill="rgb(109, 30, 212)"
-            />
-
-            <path
-              d="M7 225C7 217.82 12.8203 212 20 212H165C172.18 212 178 217.82 178 225V241C178 248.18 172.18 254 165 254H20C12.8203 254 7 248.18 7 241V225Z"
-              fill="rgb(109, 30, 212)"
-            />
-
-            <path
-              d="M67 6C67 2.68629 69.6863 0 73 0H104C107.314 0 110 2.68629 110 6V37C110 40.3137 107.314 43 104 43H73C69.6863 43 67 40.3137 67 37V6Z"
-              fill="rgb(109, 30, 212)"
-            />
-
-            <path
-              d="M67 253C67 249.686 69.6863 247 73 247H104C107.314 247 110 249.686 110 253V284C110 287.314 107.314 290 104 290H73C69.6863 290 67 287.314 67 284V253Z"
-              fill="rgb(109, 30, 212)"
-            />
-
-            <defs>
-              <filter
-                id="filter0_d_0_1"
-                x="3.43956"
-                y="46.3384"
-                width="171.053"
-                height="206.227"
-                filterUnits="userSpaceOnUse"
-                colorInterpolationFilters="sRGB"
-              >
-                <feFlood floodOpacity="0" result="BackgroundImageFix" />
-                <feColorMatrix
-                  in="SourceAlpha"
-                  type="matrix"
-                  values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-                  result="hardAlpha"
-                />
-                <feOffset dy="4" />
-                <feGaussianBlur stdDeviation="2" />
-                <feComposite in2="hardAlpha" operator="out" />
-                <feColorMatrix
-                  type="matrix"
-                  values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
-                />
-                <feBlend
-                  mode="normal"
-                  in2="BackgroundImageFix"
-                  result="effect1_dropShadow_0_1"
-                />
-                <feBlend
-                  mode="normal"
-                  in="SourceGraphic"
-                  in2="effect1_dropShadow_0_1"
-                  result="shape"
-                />
-              </filter>
-            </defs>
-          </svg>
-        </div>
-      ),
-    });
-  }
-
-  // Other
-  // Other (instructions, not a link)
-  if (isShown("other")) {
-    const otherValue = pm.other?.trim() || "";
-    const otherName = pm.otherName?.trim() || "Other";
-
-    methods.push({
-      id: "other",
-      name: otherName,
-      bgColor: "#111827",
-      textColor: "white",
-      paymentUrl: null, // ❗ DO NOT LINK ANYWHERE
-      instructions: otherValue, // <--- custom instructions (text)
-      icon: (
-        <svg
-          fill="#ffffff"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 14.5h-2v-2h2v2zm1.07-7.75l-.9.92A2.5 2.5 0 0012 13h-1v-1c0-.83.34-1.5 1.02-2.18l1.24-1.26a1.5 1.5 0 10-2.56-1.06H9a3 3 0 115.07 2.25z" />
-        </svg>
-      ),
-    });
-  }
-
-  return methods;
-};
 // Common Icons
 const CheckIcon = ({ className = "w-8 h-8" }) => (
   <svg
@@ -654,7 +579,6 @@ export default function PaymentPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [paymentDetails, setPaymentDetails] = useState({});
   const [paymentMethods, setPaymentMethods] = useState([]);
-  const [showOtherInstructions, setShowOtherInstructions] = useState(false);
 
   useEffect(() => {
     const { requestId, paymentHistoryId, userId } = initial;
@@ -951,122 +875,50 @@ export default function PaymentPage() {
         )}
 
         {/* Payment Methods */}
-        {/* Payment Methods */}
         <div className="space-y-4 mt-4">
           <h3 className="text-gray-500 tracking-wide">Select Payment Method</h3>
 
-          {/* Framer stagger container */}
-          <motion.div
-            className="grid gap-3 w-full"
-            initial="hidden"
-            animate="show"
-            variants={{
-              hidden: {},
-              show: {
-                transition: {
-                  staggerChildren: 0.08,
-                  delayChildren: 0.05,
-                },
-              },
-            }}
-          >
-            {paymentMethods.map((method) => {
-              const isOther = method.id === "other";
-              const showInstructions =
-                isOther &&
-                method.instructions?.trim() &&
-                selectedMethod?.id === "other";
-
-              return (
-                <motion.div
-                  key={method.id}
-                  className="w-full"
-                  variants={{
-                    hidden: { opacity: 0, y: 8, scale: 0.98 },
-                    show: {
-                      opacity: 1,
-                      y: 0,
-                      scale: 1,
-                      transition: { duration: 0.35, ease: "easeOut" },
-                    },
-                  }}
-                >
-                  {/* ✅ motion.a must be block + w-full to avoid skinny glitch */}
-                  <motion.a
-                    onClick={(e) => {
-                      handleClickPaymentOption(method.name);
-
-                      if (isOther) {
-                        e.preventDefault(); // no navigation
-                        setSelectedMethod((prev) =>
-                          prev?.id === "other" ? null : method
-                        );
-                        return;
-                      }
-
-                      setSelectedMethod(method);
-                    }}
-                    href={isOther ? undefined : method.paymentUrl || "#"}
-                    className={`
-              block w-full
-              relative rounded-lg p-4 transition-all duration-200
-              ${
-                isProcessing && selectedMethod?.id === method.id
-                  ? "ring-4 ring-blue-100 scale-[0.98]"
-                  : "hover:shadow-lg hover:brightness-95"
-              }
-              ${isProcessing ? "cursor-not-allowed" : "cursor-pointer"}
-            `}
-                    style={{
-                      backgroundColor: method.bgColor,
-                      color: method.textColor,
-                    }}
-                    whileTap={{ scale: 0.985 }}
-                  >
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center gap-3">
-                        <div className="w-[24px] shrink-0">{method.icon}</div>
-                        <span className="font-medium text-base text-nowrap">
-                          {method.name}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {isProcessing && selectedMethod?.id === method.id ? (
-                          <Spinner color={method.textColor} />
-                        ) : (
-                          <ArrowIcon
-                            className={`w-5 h-5 transition-transform ${
-                              isOther && selectedMethod?.id === "other"
-                                ? "rotate-90"
-                                : ""
-                            }`}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </motion.a>
-
-                  {/* ✅ Animated inline instructions for Other */}
-                  {showInstructions && (
-                    <motion.div
-                      className="mt-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700 w-full"
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className="font-semibold text-gray-900 mb-1">
-                        Instructions
-                      </div>
-                      <div className="whitespace-pre-wrap leading-relaxed">
-                        {method.instructions}
-                      </div>
-                    </motion.div>
-                  )}
-                </motion.div>
-              );
-            })}
-          </motion.div>
+          <div className="grid gap-3">
+            {paymentMethods.map((method) => (
+              <a
+                onClick={() => handleClickPaymentOption(method.name)}
+                key={method.id}
+                href={method.paymentUrl || "#"}
+                // onClick={() => handlePaymentSelect(method)}
+                disabled={isProcessing}
+                className={`
+                  relative w-full rounded-lg p-4 transition-all duration-200
+                  ${
+                    isProcessing && selectedMethod?.id === method.id
+                      ? "ring-4 ring-blue-100 scale-[0.98]"
+                      : "hover:shadow-lg hover:brightness-95"
+                  }
+                  ${isProcessing ? "cursor-not-allowed" : "cursor-pointer"}
+                  disabled:opacity-60
+                `}
+                style={{
+                  backgroundColor: method.bgColor,
+                  color: method.textColor,
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-[24px]">{method.icon}</div>
+                    <span className="font-medium text-base text-nowrap">
+                      {method.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {isProcessing && selectedMethod?.id === method.id ? (
+                      <Spinner color={method.textColor} />
+                    ) : (
+                      <ArrowIcon className="w-5 h-5" />
+                    )}
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
         </div>
 
         {/* Mark as Paid Button */}

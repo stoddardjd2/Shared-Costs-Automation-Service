@@ -1,18 +1,19 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import RequestButton from "./RequestButton";
 import {
   Check,
-  Timer,
-  Hourglass,
-  Pause,
   Send,
-  Repeat,
   RefreshCw,
   EyeIcon,
-  CheckIcon,
+  UserCheck,
+  ChevronDown,
+  ChevronUp,
+  DollarSign,
+  CreditCard,
 } from "lucide-react";
 import { handleToggleMarkAsPaid } from "../../queries/requests";
 import { useData } from "../../contexts/DataContext";
+
 export default function PaymentHistoryParticipantDetails({
   costId,
   participant,
@@ -24,27 +25,47 @@ export default function PaymentHistoryParticipantDetails({
   const [isPaid, setIsPaid] = useState(
     participant.paymentAmount >= participant.amount || participant.markedAsPaid
   );
-  const isPaidEscapeLocalState =
-    participant.paymentAmount >= participant.amount || participant.markedAsPaid;
   const { setCosts } = useData();
 
-  // Get subtle status indicator color
-  const getParticipantStatus = () => {
-    // check if paid full balance or greater
-    if (participant.paymentAmount >= participant.amount) {
-      return "paid";
-    }
+  // ✅ Hide details by default
+  const [showDetails, setShowDetails] = useState(false);
 
-    // Check if overdue
+  const getParticipantStatus = () => {
+    if (
+      participant.paymentAmount >= participant.amount ||
+      participant.markedAsPaid
+    )
+      return "paid";
+
     const dueDate = new Date(paymentHistoryRequest.dueDate);
     const today = new Date();
-
-    // Set both dates to start of day for accurate comparison
     dueDate.setHours(0, 0, 0, 0);
     today.setHours(0, 0, 0, 0);
 
     return dueDate < today ? "overdue" : "pending";
   };
+
+  // subtle status dot color
+  const getStatusIndicatorColor = () => {
+    const status = getParticipantStatus();
+    switch (status) {
+      case "paid":
+        return "bg-green-500";
+      case "pending":
+        return "bg-blue-500";
+      case "overdue":
+        return "bg-red-500";
+      default:
+        return "bg-gray-400";
+    }
+  };
+
+  const statusLabel = useMemo(() => {
+    const s = getParticipantStatus();
+    if (s === "paid") return "Paid";
+    if (s === "overdue") return "Overdue";
+    return "Pending";
+  }, [participant, paymentHistoryRequest]);
 
   const monthDay = (input, daysToAdd = 0) => {
     try {
@@ -52,7 +73,6 @@ export default function PaymentHistoryParticipantDetails({
       const base = new Date(raw);
       if (Number.isNaN(base)) return "";
 
-      // Add days in UTC to avoid DST edge cases
       const d = new Date(base);
       if (daysToAdd) d.setUTCDate(d.getUTCDate() + daysToAdd);
 
@@ -73,7 +93,6 @@ export default function PaymentHistoryParticipantDetails({
       const base = new Date(raw);
       if (Number.isNaN(base)) return "";
 
-      // Add days in UTC to avoid DST edge cases
       const d = new Date(base);
       if (daysToAdd) d.setUTCDate(d.getUTCDate() + daysToAdd);
 
@@ -81,8 +100,7 @@ export default function PaymentHistoryParticipantDetails({
         month: "short",
         day: "numeric",
         hour: "numeric",
-        minute: "2-digit", // remove if you only want hours
-        // no timeZone → uses local timezone automatically
+        minute: "2-digit",
       }).format(d);
     } catch (err) {
       console.log("invalid time value @ monthDayHourLocal");
@@ -90,42 +108,37 @@ export default function PaymentHistoryParticipantDetails({
     }
   };
 
-  const getStatusIndicatorColor = () => {
-    const status = getParticipantStatus(participant, paymentHistoryRequest);
-    switch (status) {
-      case "paid":
-        return "bg-green-500";
-      case "pending":
-        return "bg-blue-500";
-      case "partial":
-        return "bg-yellow-500"; // Added specific color for partial
-      case "overdue":
-        return "bg-red-500"; // Changed from orange to red for more distinction
-      default:
-        return "bg-gray-400";
-    }
-  };
-
   return (
-    <div
-      className={`flex flex-col gap-[13px]  border border-b-2 p-3 rounded-xl`}
-    >
-      <div className="flex gap-1 flex-wrap justify-between">
-        <div className="flex justify-between w-full flex-wrap gap-y-4 gap-x-2 ">
-          <div className="flex gap-4 ">
-            <Avatar user={user} color={getStatusIndicatorColor()} />
-            <div className="flex-col flex justify-between">
-              <div className="font-semibold truncate max-w-[120px]">
+    <div className="flex flex-col gap-3 border border-gray-100 bg-white p-3 sm:p-4 rounded-2xl shadow-sm">
+      {/* Top row */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex gap-3 min-w-0">
+          <Avatar user={user} color={getStatusIndicatorColor()} enableStatus />
+
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="font-semibold truncate max-w-[140px] sm:max-w-[200px]">
                 {user.name}
               </div>
-              <div className="text-sm text-gray-800">
-                ${participant.amount.toFixed(2)}
-              </div>
+
+              {/* Status pill */}
+              {/* <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-50 text-gray-700 border border-gray-100">
+                <span
+                  className={`inline-block w-2 h-2 rounded-full ${getStatusIndicatorColor()}`}
+                />
+                {statusLabel}
+              </div> */}
+            </div>
+
+            <div className="text-sm text-gray-700">
+              ${participant.amount.toFixed(2)}
             </div>
           </div>
+        </div>
+
+        <div className="flex items-center gap-2">
           <MarkAsPaidButton
             participant={participant}
-            // status={getParticipantStatus()}
             costId={costId}
             paymentHistoryRequest={paymentHistoryRequest}
             isPaid={isPaid}
@@ -133,48 +146,93 @@ export default function PaymentHistoryParticipantDetails({
             setIsPaid={setIsPaid}
           />
         </div>
-        {console.log("test", paymentHistoryRequest)}
-        {!isPaidEscapeLocalState && (
-          <div className="flex gap-5 justify-between w-full opacity-70">
-            <div className="w-full justify-between border border-white/30 text-gray-600 rounded-lg text-sm font-semibold transition-all duration-300 flex flex-col gap-1 mt-2 shadow-none disabled:opacity-50 disabled:cursor-auto text-sm flex-shrink-0">
-              <div className="flex items-center gap-3">
-                <Send className="w-4 h-4 flex-shrink-0" />
-                <span>Sent: {monthDay(participant?.requestSentDate)}</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <RefreshCw className="w-4 h-4 flex-shrink-0" />
-                <span>
-                  Reminder scheduled:{" "}
-                  {monthDay(paymentHistoryRequest?.nextReminderDate)}
-                </span>
-              </div>
-              {participant?.paymentLinkClicked && (
-                <div className="flex items-center gap-3">
-                  <EyeIcon className="w-4 h-4 flex-shrink-0" />
-                  <span>
-                    Link clicked:{" "}
-                    {participant?.paymentLinkClicked
-                      ? monthDayHourLocal(participant?.paymentLinkClickedDate)
-                      : "False"}
-                  </span>
-                </div>
-              )}
-              {participant?.participantMarkedAsPaid && (
-                <div className="flex items-center gap-3">
-                  <CheckIcon className="w-4 h-4 flex-shrink-0" />
-                  <span>
-                    Participant marked paid:{" "}
-                    {participant?.participantMarkedAsPaid
-                      ? monthDayHourLocal(
-                          participant?.participantMarkedAsPaidDate
-                        )
-                      : "False"}
-                  </span>
-                </div>
-              )}
-            </div>
+      </div>
+
+      {/* Toggle button */}
+      <div className="w-full">
+        <button
+          type="button"
+          onClick={() => setShowDetails((v) => !v)}
+          className="mt-1 flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/60 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+        >
+          <span className="flex items-center gap-2 mr-3">
+            <EyeIcon className="w-4 h-4" />
+            {showDetails ? "Hide details" : "Show details"}
+          </span>
+          {showDetails ? (
+            <ChevronUp className="w-4 h-4" />
+          ) : (
+            <ChevronDown className="w-4 h-4" />
+          )}
+        </button>
+
+        {/* DETAILS (collapsed by default) */}
+        <div
+          className={`overflow-hidden transition-all duration-300 ${
+            showDetails ? "max-h-[500px] opacity-100 mt-1" : "max-h-0 opacity-0"
+          }`}
+        >
+          <div className="flex flex-col gap-2 border border-gray-100 rounded-xl p-3 text-sm text-gray-700 bg-white">
+            <DetailRow
+              icon={<Send className="w-4 h-4" />}
+              label="Sent"
+              value={monthDay(participant?.requestSentDate)}
+            />
+            <DetailRow
+              icon={<RefreshCw className="w-4 h-4" />}
+              label="Reminder scheduled"
+              value={monthDay(paymentHistoryRequest?.nextReminderDate)}
+            />
+            <DetailRow
+              icon={<EyeIcon className="w-4 h-4" />}
+              label="Link clicked"
+              value={
+                participant?.paymentLinkClicked
+                  ? monthDayHourLocal(participant?.paymentLinkClickedDate)
+                  : "No"
+              }
+            />
+            <DetailRow
+              icon={<UserCheck className="w-4 h-4" />}
+              label="Participant says they paid"
+              value={
+                participant?.participantMarkedAsPaid
+                  ? monthDayHourLocal(participant?.participantMarkedAsPaidDate)
+                  : "No"
+              }
+            />
+            <DetailRow
+              icon={<CreditCard className="w-4 h-4" />}
+              label="Likely payment method"
+              value={
+                participant?.lastClickedPaymentMethod
+                  ? participant.lastClickedPaymentMethod
+                  : "Unknown"
+              }
+            />
+            <DetailRow
+              icon={<Check className="w-4 h-4" />}
+              label="Marked as paid"
+              value={
+                participant?.markedAsPaid
+                  ? monthDayHourLocal(participant?.markedAsPaidDate)
+                  : "No"
+              }
+            />
           </div>
-        )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DetailRow({ icon, label, value }) {
+  return (
+    <div className="flex items-start gap-2">
+      <div className="mt-0.5 text-gray-500">{icon}</div>
+      <div className="flex gap-1">
+        <span className="font-semibold text-gray-800">{label}:</span>
+        <span className="text-gray-700">{value || "—"}</span>
       </div>
     </div>
   );
@@ -183,20 +241,21 @@ export default function PaymentHistoryParticipantDetails({
 function Avatar({ user, color, enableStatus = false }) {
   return (
     <div
-      className={`h-11 aspect-square relative rounded-lg ${user?.color} flex items-center justify-center text-white font-semibold text-sm border-2 border-white shadow-sm`}
+      className={`h-11 aspect-square relative rounded-xl ${
+        user?.color || "bg-gray-400"
+      } flex items-center justify-center text-white font-semibold text-sm border-2 border-white shadow-sm`}
     >
       {user.avatar}
-      {enableStatus && (
+      {/* {enableStatus && (
         <div
           className={`absolute -bottom-1.5 -right-1.5 ${color} rounded-full w-4 h-4 border-2 border-white`}
         />
-      )}
+      )} */}
     </div>
   );
 }
 
 function MarkAsPaidButton({
-  status,
   participant,
   paymentHistoryRequest,
   costId,
@@ -206,12 +265,7 @@ function MarkAsPaidButton({
 }) {
   async function handleMarkAsPaid() {
     setIsPaid(!isPaid);
-    console.log(
-      "toggle with:",
-      costId,
-      paymentHistoryRequest._id,
-      participant._id
-    );
+
     try {
       const res = await handleToggleMarkAsPaid(
         costId,
@@ -228,14 +282,14 @@ function MarkAsPaidButton({
   }
 
   return (
-    <div className="flex items-center justify-end gap-3 ml-[2px]">
+    <div className="flex items-center justify-end gap-2">
       <button
         onClick={handleMarkAsPaid}
         className={`${
           isPaid
             ? "bg-blue-600 text-white border-blue-600"
             : "bg-white text-blue-600 border-blue-600 hover:bg-blue-50"
-        } transition-all duration-200 ease-in-out w-8 h-8 flex items-center justify-center rounded-lg border-2`}
+        } transition-all duration-200 ease-in-out w-9 h-9 flex items-center justify-center rounded-xl border-2 shadow-sm`}
       >
         <Check
           className={`w-6 h-6 transition-all duration-200 ${
@@ -244,12 +298,7 @@ function MarkAsPaidButton({
         />
       </button>
 
-      {/* Simple working animation */}
-      <span
-        className={`hidden xxs:flex text-blue-600 font-medium text-sm transition-all duration-300 ease-out ${
-          isPaid ? "opacity-100 translate-x-0" : "opacity-100 translate-x-0"
-        }`}
-      >
+      <span className="hidden xxs:flex text-blue-600 font-medium text-sm">
         {isPaid ? "Paid" : "Not Paid"}
       </span>
     </div>

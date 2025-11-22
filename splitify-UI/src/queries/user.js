@@ -77,11 +77,19 @@ export const smsOptIn = async (userId, rawPhone, isAllowed, userName) => {
   });
 };
 
+// NOT IN USE:
 export const addPaymentMethod = async (paymentMethod, paymentAddress) => {
   const endpoint = `/users/addPaymentMethod`;
   return await apiRequest(endpoint, {
     method: "POST",
     body: { paymentMethod: paymentMethod.toLowerCase(), paymentAddress },
+  });
+};
+
+export const savePaymentMethods = async (paymentMethods) => {
+  return await apiRequest("/users/payment-methods", {
+    method: "POST",
+    body: { paymentMethods: paymentMethods },
   });
 };
 
@@ -92,10 +100,17 @@ export const updateLastActive = async () => {
   });
 };
 
-
 export const getUsers = async () => {
   const endpoint = `/users/all`;
   return await apiRequest(endpoint, {
     method: "POST",
+  });
+};
+
+export const saveOnboarding = async (body) => {
+  const endpoint = `/users/saveOnboarding`;
+  return await apiRequest(endpoint, {
+    method: "POST",
+    body: { ...body },
   });
 };

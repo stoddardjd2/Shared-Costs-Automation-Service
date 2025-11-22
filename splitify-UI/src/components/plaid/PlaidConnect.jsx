@@ -1,5 +1,5 @@
 import PlaidConnectBanner from "./PlaidConnectBanner";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePlaidLink } from "react-plaid-link";
 import { plaidAPI, savePlaidAccessToken } from "../../queries/plaidService";
 import PlaidTransactionsModal from "./PlaidTransactionsModal";
@@ -19,6 +19,9 @@ export default function PlaidConnect({
   setSelectedTransaction,
   selectedTransaction,
   isEditMode,
+  isOnboardingStep,
+  onPlaidLinkSuccess,
+  onPlaidLinkExit,
 }) {
   const [linkToken, setLinkToken] = useState("");
   const [linkKey, setLinkKey] = useState(0); // force re-mount per token
@@ -34,6 +37,7 @@ export default function PlaidConnect({
   const [showPremiumPrompt, setShowPremiumPrompt] = useState(false);
   const { userData, setUserData } = useData();
 
+  const onboardingRef = useRef({});
   //   const [startDate, setStartDate] = useState(() => {
   //     const d = new Date();
   //     d.setDate(d.getDate() - 30);
@@ -68,12 +72,14 @@ export default function PlaidConnect({
       //   const txns = await plaidAPI.getTransactions(at, startDate, endDate);
       //   setTransactions(Array.isArray(txns) ? txns : []);
       //   pushLog(`Fetched ${Array.isArray(txns) ? txns.length : 0} transactions.`);
+      setShowTransactions(true);
+      onPlaidLinkSuccess?.(); //for onboarding
     } catch (e) {
       setError(e?.message || "Error handling Plaid Link success.");
+      onPlaidLinkExit?.(); //for onboarding
     } finally {
       setLoading(false);
       setShouldOpen(false);
-      setShowTransactions(true);
       setLinkToken(""); // drop used token
     }
   }
@@ -87,6 +93,7 @@ export default function PlaidConnect({
     }
     setShouldOpen(false);
     setLinkToken(""); // ensure we don't reuse an old token
+    onPlaidLinkExit?.(); //for onboarding
   }
 
   function onLinkEvent(eventName /*, metadata */) {
@@ -114,10 +121,9 @@ export default function PlaidConnect({
         setLoading(false);
       }
     } else {
+      console.log("Premium plan required");
       setShowPremiumPrompt(true);
       setError("Premium plan required");
-
-      console.log("Premium plan required");
     }
   }
 
@@ -158,6 +164,28 @@ export default function PlaidConnect({
       year: "numeric",
     });
   };
+
+  if (isOnboardingStep) {
+    if (!onboardingRef.hasStartedConnect) {
+      handleConnect();
+      onboardingRef.hasStartedConnect = true;
+    }
+
+    return (
+      <>
+        {linkToken && (
+          <PlaidLinkOpener
+            key={linkKey} // <-- re-mount per token
+            token={linkToken}
+            autoOpen={shouldOpen}
+            onSuccess={onLinkSuccess}
+            onExit={onLinkExit}
+            onEvent={onLinkEvent}
+          />
+        )}
+      </>
+    );
+  }
 
   if (userData?.plaid?.isEnabled && !reloginRequired)
     return (

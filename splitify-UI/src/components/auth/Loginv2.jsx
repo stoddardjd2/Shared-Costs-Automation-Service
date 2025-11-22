@@ -8,25 +8,31 @@ import {
   User,
   AlertCircle,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { loginUser } from "../../queries/auth";
 import ForgotPasswordModal from "./ForgotPasswordModal";
 import { verifyToken } from "../../queries/auth";
 import { googleOauth } from "../../queries/auth";
 import { useGoogleLogin } from "@react-oauth/google";
+import PhoneInput from "../common/PhoneInput";
 
 const Loginv2 = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    phone: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [loginError, setLoginError] = useState(""); // New state for login errors
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
+  const [params] = useSearchParams();
+
   const navigate = useNavigate();
+  const redirectTo = params.get("redirect") || "/dashboard";
+
   // Email validation regex
 
   // google oauth:
@@ -82,10 +88,15 @@ const Loginv2 = () => {
     const newErrors = {};
 
     // Check if email is empty
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!isValidEmail(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
+    // if (!formData.email.trim()) {
+    //   newErrors.email = "Email is required";
+    // } else if (!isValidEmail(formData.email)) {
+    //   newErrors.email = "Please enter a valid email address";
+    // }
+
+    // Check if phone is empty
+    if (!formData.phone.trim()) {
+      newErrors.phone = "Phone is required";
     }
 
     // Check if password is empty
@@ -132,18 +143,19 @@ const Loginv2 = () => {
     try {
       // Properly await the loginUser function
       const isSuccessfulLogin = await loginUser({
-        email: formData.email,
+        // email: formData.email,
+        phone: formData.phone,
         password: formData.password,
       });
 
       if (isSuccessfulLogin) {
         // If login is successful, also call the context login
         console.log("LOGIN SUCCESS");
-        navigate("/dashboard");
+        navigate(redirectTo);
         // window.location.href = "/dashboard"; // Redirect to dashboard
       } else {
         // Handle login failure
-        setLoginError("Invalid email or password. Please try again.");
+        setLoginError("Invalid phone or password. Please try again.");
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -153,7 +165,7 @@ const Loginv2 = () => {
           "Network error. Please check your connection and try again."
         );
       } else if (error.response?.status === 401) {
-        setLoginError("Invalid email or password. Please try again.");
+        setLoginError("Invalid phone or password. Please try again.");
       } else if (error.response?.status === 429) {
         setLoginError("Too many login attempts. Please try again later.");
       } else {
@@ -176,7 +188,7 @@ const Loginv2 = () => {
           <p className="text-gray-600">Sign in to your account to continue</p>
         </div>
 
-        <div className="mt-6">
+        {/* <div className="mt-6">
           <div className="mt-6 gap-3">
             <button
               onClick={() => {
@@ -216,7 +228,7 @@ const Loginv2 = () => {
               Or log in with
             </span>
           </div>
-        </div>
+        </div> */}
 
         {/* Login Form */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
@@ -238,16 +250,26 @@ const Loginv2 = () => {
                   htmlFor="email"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Email address
+                  Phone Number
                 </label>
-                <div className="relative">
+                <PhoneInput
+                  onChange={(target) => {
+                    console.log("formdata", formData);
+                    setFormData((prev) => ({
+                      ...prev,
+                      phone: target.target.value,
+                    }));
+                  }}
+                  value={formData.phone}
+                />
+                {/* <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Mail className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
                     id="email"
                     name="email"
-                    type="email"
+                    type="phone"
                     autoComplete="email"
                     required
                     value={formData.email}
@@ -259,7 +281,7 @@ const Loginv2 = () => {
                     }`}
                     placeholder="Enter your email"
                   />
-                </div>
+                </div> */}
                 {errors.email && (
                   <p className="mt-1 text-sm text-red-600">{errors.email}</p>
                 )}

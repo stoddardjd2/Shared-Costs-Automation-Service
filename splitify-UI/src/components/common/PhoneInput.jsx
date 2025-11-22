@@ -7,9 +7,15 @@ function formatUSPhoneNumber(value) {
   const match = digits.match(/^(\d{0,3})(\d{0,3})(\d{0,4})$/);
   const [, a, b, c] = match || [];
 
-  if (c) return `${PREFIX}(${a}) ${b} ${c}`;
+  // Full format: +1 (123) 456-7890
+  if (c) return `${PREFIX}(${a}) ${b}-${c}`;
+
+  // Partial format: +1 (123) 456
   if (b) return `${PREFIX}(${a}) ${b}`;
+
+  // Early input: +1 (123
   if (a) return `${PREFIX}(${a}`;
+
   return PREFIX;
 }
 
@@ -44,8 +50,8 @@ export default function PhoneInput({ value, onChange }) {
       onChange={handleChange}
       onClick={enforceCursor}
       onFocus={enforceCursor}
-      placeholder="+1 (555)-123-4567"
-      className="w-full p-4 border border-gray-200 rounded-xl outline-none text-base bg-white shadow-sm transition-all hover:shadow-md focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+      placeholder="+1 (555) 123-4567"
+      className="w-full p-3 border border-gray-200 rounded-xl outline-none text-base bg-white transition-all focus:ring-2 focus:ring-blue-600 focus:border-transparent"
     />
   );
 }

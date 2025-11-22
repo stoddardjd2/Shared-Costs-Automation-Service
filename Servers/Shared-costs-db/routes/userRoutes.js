@@ -19,6 +19,10 @@ const {
   handleGoogleCallback,
   handleGoogleAuth,
   updateLastActive,
+  handleSendPhoneCode,
+  handleVerifyPhoneCode,
+  handleSaveOnboarding,
+  handleSavePaymentMethods,
 } = require("../controllers/userController");
 
 const { protect, authorize } = require("../middleware/auth");
@@ -27,16 +31,20 @@ const router = express.Router();
 
 // Validation middleware
 const validateUser = [
-  body("name")
-    .trim()
-    .notEmpty()
-    .withMessage("Name is required")
-    .isLength({ min: 2, max: 50 })
-    .withMessage("Name must be between 2 and 50 characters"),
-  body("email")
-    .isEmail()
-    .normalizeEmail()
-    .withMessage("Please provide a valid email"),
+  body("phone")
+    .customSanitizer((v) => {
+      if (!v) return v;
+
+      // Remove everything except digits and leading +
+      let cleaned = v.replace(/[^\d+]/g, "");
+
+      // Ensure only a single leading +
+      cleaned = cleaned.replace(/(?!^)\+/g, "");
+
+      return cleaned;
+    })
+    .isMobilePhone("en-US")
+    .withMessage("Please provide a valid phone"),
   body("password")
     .isLength({ min: 6 })
     .withMessage("Password must be at least 6 characters")
@@ -46,8 +54,26 @@ const validateUser = [
     ),
 ];
 
+const validatePhone = [
+  body("phone")
+    .customSanitizer((v) => {
+      if (!v) return v;
+
+      // Remove everything except digits and leading +
+      let cleaned = v.replace(/[^\d+]/g, "");
+
+      // Ensure only a single leading +
+      cleaned = cleaned.replace(/(?!^)\+/g, "");
+
+      return cleaned;
+    })
+    .isMobilePhone("en-US")
+    .withMessage("Please provide a valid phone"),
+];
+
 const validateLogin = [
   body("email")
+    .optional()
     .isEmail()
     .normalizeEmail()
     .withMessage("Please provide a valid email"),
@@ -72,8 +98,10 @@ const validateUpdate = [
 ];
 
 // Public routes
-router.post("/login", validateLogin, loginUser);
-router.post("/", validateUser, createUser);
+router.post("/login", validateLogin, validatePhone, loginUser);
+// router.post("/", validateUser, createUser); MUST CREATE USER BY VALIDATING PHONE
+router.post("/sendPhoneCode", validatePhone, handleSendPhoneCode);
+router.post("/verifyPhoneCode", validatePhone, handleVerifyPhoneCode);
 
 // GOOGLE OAUTH
 router.post("/auth/google/", handleGoogleAuth);
@@ -88,6 +116,8 @@ router.patch("/sms/user-consent/:userId", approveSmsMessages);
 // Protected routes
 router.use(protect); // All routes after this require user to logged in
 
+router.post("/saveOnboarding", handleSaveOnboarding);
+
 router.post("/contact", addContactToUser);
 router.delete("/contact", removeContactFromUser);
 router.patch("/contact/updateName", updateContactForUser);
@@ -97,7 +127,8 @@ router.get("/data", getUserData);
 router.get("/:id", getUser);
 router.put("/:id", validateUpdate, updateUser);
 
-router.post("/addPaymentMethod", addPaymentMethod);
+// router.post("/addPaymentMethod", addPaymentMethod);
+router.post("/payment-methods", handleSavePaymentMethods);
 
 router.post("/lastActive", updateLastActive);
 

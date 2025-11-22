@@ -284,8 +284,8 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
   if (showSplitStep) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 !mt-0">
-        <div className="bg-white shadow-2xl w-full h-full overflow-hidden flex flex-col">
-          <div className="flex-1 overflow-y-auto">
+        <div className="bg-gray-50 shadow-2xl w-full h-full overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-y-auto mt-12">
             <SplitStep
               selectedPeople={peopleState.selectedPeople}
               setSelectedPeople={peopleState.setSelectedPeople}

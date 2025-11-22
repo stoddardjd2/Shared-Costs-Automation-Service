@@ -18,6 +18,7 @@ import {
 import WelcomeScreen from "./WelcomeScreen";
 import ContactForm from "./ContactForm";
 import { updateLastActive } from "../../queries/user";
+import OnboardingFlow from "./onboarding/OnboardingFlow";
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation(); // 👈 read current URL
@@ -90,9 +91,9 @@ const Dashboard = () => {
     return () => clearTimeout(t);
   }, []);
 
-  if (!costs || (costs.length == 0 && showFirstTimePrompt)) {
-    // setShowFirstTimePrompt(true);
-    return <WelcomeScreen setShowFirstTimePrompt={setShowFirstTimePrompt} />;
+  if (!userData?.onboarding?.isCompleted) {
+    return <OnboardingFlow />;
+    // <WelcomeScreen setShowFirstTimePrompt={setShowFirstTimePrompt} />;
   }
 
   // 👇 Now controlled by the URL path

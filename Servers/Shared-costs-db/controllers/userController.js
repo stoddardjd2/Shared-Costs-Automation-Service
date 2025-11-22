@@ -13,12 +13,15 @@ const { mongoose } = require("mongoose");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const { OAuth2Client } = require("google-auth-library");
-
+const sendTextMessage = require("../send-request-helpers/sendTextMessage");
 const oAuth2Client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
   "postmessage"
 );
+
+// for phone verification in memory
+const phoneCodeStore = {};
 
 // Generate JWT Token
 const generateToken = (id, googleProfile) => {
@@ -59,7 +62,9 @@ const getUserData = async (req, res) => {
   try {
     const userId = req.user._id; // From auth middleware
 
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select(
+      "-password -stripeCustomerId -plaid.accessToken"
+    );
     if (!user) return res.status(404).json({ message: "User not found." });
 
     return res.status(200).json(user);
@@ -456,7 +461,7 @@ async function getUsers(req, res, next) {
     const match = {};
     if (req.query.plan) match.plan = req.query.plan;
     if (req.query.email) match.email = new RegExp(req.query.email, "i");
-    
+
     // filter out users added by contacts
     match.addedFromContact = { $ne: true };
 
@@ -578,6 +583,7 @@ const getUser = async (req, res) => {
 // @route   POST /api/users
 // @access  Public
 const createUser = async (req, res) => {
+  console.log("creating user", req.body);
   try {
     // Check for validation errors
     const errors = validationResult(req);
@@ -589,44 +595,71 @@ const createUser = async (req, res) => {
       });
     }
 
-    const { name, email, password } = req.body;
+    const { password, phone } = req.body;
 
     // Check if user already exists
-    const existingUser = await User.findByEmail(email);
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "User with this email already exists",
+    const userByPhone = await User.findOne({ phone });
+    if (userByPhone) {
+      // if phone in system, allow user to create account and attached password to phone account
+      if (userByPhone?.password) {
+        return res.status(400).json({
+          success: false,
+          message: "User with this phone number already exists",
+        });
+      } else {
+        console.log("linking account");
+        // attach password to found account with phone number
+        userByPhone.password = password;
+        userByPhone.save();
+
+        // Generate token
+        const token = generateToken(userByPhone._id);
+
+        res.status(201).json({
+          success: true,
+          message: "User linked successfully to existing number",
+          data: {
+            user: {
+              id: userByPhone._id,
+              // name: user.name,
+              phone: userByPhone.phone,
+              role: userByPhone.role,
+              profile: userByPhone.profile,
+              createdAt: userByPhone.createdAt,
+              plan: userByPhone.plan,
+            },
+            token,
+          },
+        });
+      }
+    } else {
+      // Create user
+      const user = await User.create({
+        // name,
+        phone,
+        password,
+      });
+
+      // Generate token
+      const token = generateToken(user._id);
+
+      res.status(201).json({
+        success: true,
+        message: "User created successfully",
+        data: {
+          user: {
+            id: user._id,
+            // name: user.name,
+            phone: user.phone,
+            role: user.role,
+            profile: user.profile,
+            createdAt: user.createdAt,
+            plan: user.plan,
+          },
+          token,
+        },
       });
     }
-
-    // Create user
-    const user = await User.create({
-      name,
-      email,
-      password,
-    });
-
-    // Generate token
-    const token = generateToken(user._id);
-
-    console.log("CREATED USER, ", user);
-    res.status(201).json({
-      success: true,
-      message: "User created successfully",
-      data: {
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          profile: user.profile,
-          createdAt: user.createdAt,
-          plan: user.plan,
-        },
-        token,
-      },
-    });
   } catch (error) {
     if (error.code === 11000) {
       return res.status(400).json({
@@ -662,6 +695,7 @@ const updateUser = async (req, res) => {
     if (name) user.name = name;
     if (email) user.email = email;
     if (role) user.role = role;
+    if (phone) user.phone = phone;
     if (profile) user.profile = { ...user.profile, ...profile };
     if (typeof isActive === "boolean") user.isActive = isActive;
 
@@ -674,6 +708,7 @@ const updateUser = async (req, res) => {
         id: updatedUser._id,
         name: updatedUser.name,
         email: updatedUser.email,
+        phone: updateUser.phone,
         role: updatedUser.role,
         profile: updatedUser.profile,
         isActive: updatedUser.isActive,
@@ -735,18 +770,18 @@ const deleteUser = async (req, res) => {
 // @access  Public
 const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { phone, password } = req.body;
 
-    // Check if email and password are provided
-    if (!email || !password) {
+    // Check if email or phone and password are provided
+    if (!password || !phone) {
       return res.status(400).json({
         success: false,
-        message: "Please provide email and password",
+        message: "Please provide email or phone and password",
       });
     }
 
     // Find user and include password
-    const user = await User.findByEmail(email).select("+password");
+    const user = await User.findOne({ phone }).select("+password");
 
     if (!user || !(await user.matchPassword(password))) {
       return res.status(401).json({
@@ -778,7 +813,7 @@ const loginUser = async (req, res) => {
         user: {
           id: user._id,
           name: user.name,
-          email: user.email,
+          phone: user.phone,
           role: user.role,
           profile: user.profile,
           lastLogin: user.lastLogin,
@@ -1043,17 +1078,17 @@ const addPaymentMethod = async (req, res) => {
   try {
     const { paymentMethod, paymentAddress } = req.body;
     const userId = req.user?.id; // Assuming user ID from auth middleware
-    console.log("adding payment method", paymentMethod);
+    console.log("adding payment method", paymentMethod, paymentAddress);
     // Basic validation
-    if (
-      !paymentMethod ||
-      !["cashapp", "venmo", "paypal"].includes(paymentMethod)
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid payment method type",
-      });
-    }
+    // if (
+    //   !paymentMethod ||
+    //   !["cashapp", "venmo", "paypal"].includes(paymentMethod)
+    // ) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "Invalid payment method type",
+    //   });
+    // }
 
     // Get the payment value based on type
 
@@ -1282,6 +1317,294 @@ const updateLastActive = async (req, res) => {
   }
 };
 
+// PHONE VERIFICATIONS
+const CODE_TTL_MINUTES = 10; // code expires in 10 mins
+const RESEND_COOLDOWN_SECONDS = 60; // user must wait 60s between sends
+
+// Simple 6-digit generator
+function generateCode() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+const handleSendPhoneCode = async (req, res) => {
+  try {
+    const phone = String(req.body.phone || "").trim();
+
+    if (!phone) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number is required",
+      });
+    }
+
+    const existing = phoneCodeStore[phone];
+
+    // Handle cooldown
+    if (existing?.lastSentAt) {
+      const secondsSinceLast = (Date.now() - existing.lastSentAt) / 1000;
+
+      if (secondsSinceLast < RESEND_COOLDOWN_SECONDS) {
+        return res.status(429).json({
+          success: false,
+          message: `Please wait ${Math.ceil(
+            RESEND_COOLDOWN_SECONDS - secondsSinceLast
+          )} seconds before requesting a new code.`,
+        });
+      }
+    }
+
+    // Generate + store new code
+    const code = generateCode();
+    const expiresAt = Date.now() + CODE_TTL_MINUTES * 60 * 1000;
+
+    phoneCodeStore[phone] = {
+      code,
+      expiresAt,
+      lastSentAt: Date.now(),
+    };
+
+    // Send SMS
+    const textMsg = `Your Splitify verification code is ${code}. It expires in ${CODE_TTL_MINUTES} minutes.`;
+    sendTextMessage(phone, undefined, textMsg);
+
+    return res.json({
+      success: true,
+      message: "Verification code sent",
+    });
+  } catch (err) {
+    console.error("sendPhoneVerificationCode error:", err);
+
+    const telnyxDetails =
+      err?.raw?.errors?.[0]?.detail || err?.raw?.errors?.[0]?.title || null;
+
+    return res.status(500).json({
+      success: false,
+      message: telnyxDetails || "Failed to send verification code",
+    });
+  }
+};
+
+const handleVerifyPhoneCode = async (req, res) => {
+  console.log("req", req.body);
+  try {
+    const { phone, phoneCode } = req.body;
+    const code = phoneCode;
+
+    if (!phone || !code) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone and code are required",
+      });
+    }
+
+    const entry = phoneCodeStore[phone];
+
+    if (!entry) {
+      return res.status(400).json({
+        success: false,
+        message: "No verification code found. Please request a new code.",
+      });
+    }
+
+    // Check expiration
+    if (Date.now() > entry.expiresAt) {
+      delete phoneCodeStore[phone];
+      return res.status(400).json({
+        success: false,
+        message: "Verification code expired. Request a new code.",
+      });
+    }
+
+    // Validate code
+    if (entry.code !== code) {
+      return res.status(400).json({
+        success: false,
+        message: "Incorrect code. Please try again.",
+      });
+    }
+
+    // SUCCESS — delete code so it can't be reused
+    delete phoneCodeStore[phone];
+
+    // create user with existing controller after verified
+    createUser(req, res);
+
+    // return res.json({
+    //   success: true,
+    //   message: "Phone verified successfully",
+    // });
+  } catch (err) {
+    console.error("verifyPhoneCode error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error verifying phone",
+    });
+  }
+};
+
+const handleSaveOnboarding = async (req, res) => {
+  try {
+    const userId = req.user?._id;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const {
+      name,
+      heardFrom,
+      useCase,
+      splitWith,
+      reminders = {},
+      challenge,
+    } = req.body || {};
+
+    // ----------------- helpers -----------------
+    const cleanStringArray = (arr) => {
+      if (!Array.isArray(arr)) return [];
+      const cleaned = arr.map((v) => String(v || "").trim()).filter(Boolean);
+      return [...new Set(cleaned)];
+    };
+
+    const cleanString = (v) => String(v || "").trim();
+
+    // Accepts either:
+    //  - { preset: [...], other: "..." }   (new format)
+    //  - ["a", "b", "c"]                  (legacy format)
+    const normalizeCategory = (value) => {
+      // legacy array
+      if (Array.isArray(value)) {
+        return { preset: cleanStringArray(value), other: "" };
+      }
+
+      // new object shape
+      const preset = cleanStringArray(value?.preset);
+      const other = cleanString(value?.other);
+
+      return { preset, other };
+    };
+
+    // ----------------- validate reminders.frequency -----------------
+    const allowedFrequencies = ["daily", "3days", "weekly", "once"];
+    const frequency = reminders?.frequency;
+
+    if (frequency && !allowedFrequencies.includes(frequency)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid reminders.frequency value",
+      });
+    }
+
+    // ----------------- build update -----------------
+    const update = {};
+
+    if (typeof name === "string" && name.trim()) {
+      update.name = name.trim();
+    }
+
+    if (heardFrom !== undefined) {
+      update["onboarding.heardFrom"] = normalizeCategory(heardFrom);
+    }
+
+    if (useCase !== undefined) {
+      update["onboarding.useCase"] = normalizeCategory(useCase);
+    }
+
+    if (splitWith !== undefined) {
+      update["onboarding.splitWith"] = normalizeCategory(splitWith);
+    }
+
+    if (frequency) {
+      update.reminderPreference = frequency;
+    }
+
+    if (challenge !== undefined) {
+      update["onboarding.challenge"] = normalizeCategory(challenge);
+    }
+
+    update["onboarding.isCompleted"] = true;
+
+    // If nothing to update, avoid a pointless DB write
+    if (Object.keys(update).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No valid onboarding fields provided",
+      });
+    }
+
+    // ----------------- save -----------------
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: update },
+      {
+        new: true,
+        runValidators: true,
+        context: "query",
+      }
+    ).select("-password -stripeCustomerId -plaid.accessToken");
+
+    if (!updatedUser) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      user: updatedUser,
+    });
+  } catch (err) {
+    console.error("saveOnboarding error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error saving onboarding",
+    });
+  }
+};
+
+const handleSavePaymentMethods = async (req, res) => {
+  console.log("save payment methods", req.body);
+  try {
+    const userId = req.user._id;
+    const { paymentMethods } = req.body || {};
+
+    if (!paymentMethods || typeof paymentMethods !== "object") {
+      return res.status(400).json({
+        success: false,
+        message: "paymentMethods object required",
+      });
+    }
+
+    const safe = {
+      venmo: paymentMethods.venmo || "",
+      cashapp: paymentMethods.cashapp || "",
+      paypal: paymentMethods.paypal || "",
+      zelle: paymentMethods.zelle || "",
+      plaidBank: !!paymentMethods.plaidBank,
+      otherName: paymentMethods.otherName || "",
+      other: paymentMethods.other || "",
+      enabled: {
+        venmo: !!paymentMethods.enabled?.venmo,
+        cashapp: !!paymentMethods.enabled?.cashapp,
+        paypal: !!paymentMethods.enabled?.paypal,
+        zelle: !!paymentMethods.enabled?.zelle,
+        plaidBank: !!paymentMethods.enabled?.plaidBank,
+        other: !!paymentMethods.enabled?.other,
+      },
+    };
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: { paymentMethods: safe } },
+      { new: true, runValidators: true, select: "-password" }
+    );
+
+    return res.json({ success: true, user: updatedUser });
+  } catch (err) {
+    console.error("handleSavePaymentMethods error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 module.exports = {
   getUsers,
   getUser,
@@ -1301,4 +1624,8 @@ module.exports = {
   handleGoogleAuth,
   handleGoogleCallback,
   updateLastActive,
+  handleSendPhoneCode,
+  handleVerifyPhoneCode,
+  handleSaveOnboarding,
+  handleSavePaymentMethods,
 };

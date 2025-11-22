@@ -39,6 +39,7 @@ import { useNavigate } from "react-router-dom";
 import RequestSentScreen from "../dashboard/RequestSentScreen";
 import SplitifyPremiumModal from "../premium/SplitifyPremiumModal";
 import { gaEvent } from "../../googleAnalytics/googleAnalyticsHelpers";
+import SelectedPeopleDisplay from "./SelectedPeopleDisplay";
 const SplitStep = ({
   setSelectedPeople,
   onBack,
@@ -149,6 +150,9 @@ const SplitStep = ({
 
   const isMarkAsPaidEveryoneDisabled = userData.plan == "free";
 
+  // const isPaymentNotificationsInfoDisabled = userData.plan == "free";
+  const isPaymentNotificationsInfoDisabled = false;
+
   // State for dynamic costs tracking - use previous setting in edit mode, otherwise default based on plaidMatch
   const [isDynamic, setIsDynamic] = useState(
     selectedCharge?.isDynamic || false
@@ -156,6 +160,16 @@ const SplitStep = ({
   // const [isDynamic, setIsDynamic] = useState(false);
   const [showDynamicInfo, setShowDynamicInfo] = useState(false);
   const [isHoveringDynamicInfo, setIsHoveringDynamicInfo] = useState(false);
+
+  const [showPaymentNotificationsInfo, setShowPaymentNotificationsInfo] =
+    useState(false);
+  const [
+    isHoveringPaymentNotificationsInfo,
+    setIsHoveringPaymentNotificationsInfo,
+  ] = useState(false);
+  const [allowPaymentNotificationsInfo, setAllowPaymentNotificationsInfo] =
+    useState(true);
+
   const [showRequestSentScreen, setShowRequestSentScreen] = useState(false);
   // Track previous split type to detect changes from custom
   const prevSplitTypeRef = useRef(splitType);
@@ -353,6 +367,8 @@ const SplitStep = ({
     costEntry.customUnit = recurringType === "custom" ? customUnit : null;
     costEntry.startTiming = startTiming;
     costEntry.isDynamic = isDynamic;
+
+    costEntry.allowPaymentNotificationsInfo = allowPaymentNotificationsInfo;
     costEntry.name = chargeName;
     costEntry.selectedTransaction = selectedTransaction;
 
@@ -702,8 +718,32 @@ const SplitStep = ({
     );
   }
 
+  const avatar = generateAvatar();
+  function generateAvatar() {
+    // Safety check for userData and name
+    if (!userData || !userData.name) {
+      return "?"; // Default fallback
+    }
+
+    const nameParts = userData.name
+      .trim()
+      .split(" ")
+      .filter((part) => part.length > 0);
+
+    // Handle edge cases
+    if (nameParts.length === 0) {
+      return "?"; // Fallback for empty name
+    }
+
+    const initials =
+      nameParts.length === 1
+        ? nameParts[0][0].toUpperCase()
+        : (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase(); // Fixed: was .toUpper
+
+    return initials;
+  }
   return (
-    <div className={"relative"}>
+    <div className={""}>
       {/* Main content container with bottom padding to prevent content being hidden behind ConfirmButtonTray */}
       <div className={`max-w-lg mx-auto px-4 sm:px-6 py-0 pb-48 `}>
         {/* Hide step indicator and back button in edit mode since modal has its own header */}
@@ -1097,9 +1137,24 @@ const SplitStep = ({
               }`}
             >
               <div className="flex flex-col items-center text-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
+                {/* <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
                   <User className="w-4 h-4 text-white" />
+                </div> */}
+                <div className="flex gap-2 items-center justify-center">
+                  <div
+                    className={`w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-semibold text-sm`}
+                  >
+                    {avatar}
+                  </div>
+                  <strong className="text-lg font-semibold">+</strong>
+                  <SelectedPeopleDisplay
+                    size={8}
+                    hideCount={true}
+                    selectedPeople={selectedPeople}
+                    rounded="lg"
+                  />
                 </div>
+
                 <div>
                   <h4 className="font-semibold text-gray-900 text-sm">
                     Equal Split
@@ -1146,7 +1201,7 @@ const SplitStep = ({
               <div className="flex flex-col items-center text-center gap-2">
                 <div
                   className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                    isDynamic ? "bg-gray-400" : "bg-purple-500"
+                    isDynamic ? "bg-blue-600" : "bg-blue-600"
                   }`}
                 >
                   <DollarSign className="w-4 h-4 text-white" />
@@ -1340,7 +1395,7 @@ const SplitStep = ({
         <div className="mb-6">
           <button
             onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-            className="w-full p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition-all flex items-center justify-between"
+            className="w-full p-4 bg-white hover:bg-gray-100 rounded-xl border border-gray-200 transition-all flex items-center justify-between"
           >
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-gray-600 flex items-center justify-center">
@@ -1351,7 +1406,7 @@ const SplitStep = ({
                   Advanced Options
                 </h4>
                 <p className="text-gray-600 text-xs">
-                  Mark as paid options, cost tracking & more
+                  Text notifications, cost tracking & more
                 </p>
               </div>
             </div>
@@ -1367,23 +1422,20 @@ const SplitStep = ({
         {showAdvancedOptions && (
           <div className="space-y-6 mb-6">
             {/* Total Amount Input - Always visible */}
-
             {/* Cost Tracking Section */}
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <label className="text-lg font-semibold text-gray-900">
-                  Cost Tracking
+                 Variable Cost Tracking
                 </label>
                 <div className="relative dynamic-info-tooltip">
                   <button
                     onClick={() => setShowDynamicInfo(!showDynamicInfo)}
                     onMouseEnter={() => {
                       setIsHoveringDynamicInfo(true);
-                      // setShowDynamicInfo(true);
                     }}
                     onMouseLeave={() => {
                       setIsHoveringDynamicInfo(false);
-                      // Small delay to allow clicking on the tooltip
                       setTimeout(() => {
                         if (!isHoveringDynamicInfo) {
                           setShowDynamicInfo(false);
@@ -1443,14 +1495,13 @@ const SplitStep = ({
                     if (!isDynamicCostsDisabled) {
                       setIsDynamic(true);
                     }
-                    if (userData.plan !== "free" && isPlaidCharge) {
-                    } else {
+                    if (userData.plan == "free") {
                       setShowPremiumPrompt(true);
                     }
                   }}
                   className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${
                     isDynamicCostsDisabled
-                      ? "border-gray-200 bg-gray-50 cursor-pointer opacity-60"
+                      ? "border-gray-200 bg-gray-50 cursor-pointer"
                       : isDynamic
                       ? "border-blue-600 bg-blue-50 cursor-pointer"
                       : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
@@ -1458,20 +1509,14 @@ const SplitStep = ({
                 >
                   <div
                     className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      isDynamicCostsDisabled ? "bg-gray-400" : "bg-orange-500"
+                      isDynamicCostsDisabled ? "bg-blue-600" : "bg-blue-600"
                     }`}
                   >
                     <TrendingUp className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h4
-                      className={`font-semibold text-sm ${
-                        isDynamicCostsDisabled
-                          ? "text-gray-500"
-                          : "text-gray-900"
-                      }`}
-                    >
-                      Dynamic Cost
+                    <h4 className="font-semibold text-sm text-gray-900">
+                      Variable Cost
                       {isDynamicCostsDisabled && (
                         <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
                           {splitType === "custom"
@@ -1479,19 +1524,134 @@ const SplitStep = ({
                             : recurringType === "none"
                             ? "Recurring Only"
                             : !isPlaidCharge
-                            ? "Must add charge with Plaid"
+                            ? "Must add charge with Bank"
                             : "Plaid Required"}
                         </span>
                       )}
                     </h4>
-                    <p
-                      className={`text-xs ${
-                        isDynamicCostsDisabled
-                          ? "text-gray-400"
-                          : "text-gray-600"
-                      }`}
-                    >
+                    <p className="text-xs text-gray-600">
                       Track cost changes for next payment cycle
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Text messages for request */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <label className="text-lg font-semibold text-gray-900">
+                  Text Notifications
+                </label>
+                <div className="relative dynamic-info-tooltip">
+                  <button
+                    onClick={() =>
+                      setShowPaymentNotificationsInfo(
+                        !showPaymentNotificationsInfo
+                      )
+                    }
+                    onMouseEnter={() => {
+                      setIsHoveringPaymentNotificationsInfo(true);
+                    }}
+                    onMouseLeave={() => {
+                      setIsHoveringPaymentNotificationsInfo(false);
+                      setTimeout(() => {
+                        if (!isHoveringPaymentNotificationsInfo) {
+                          setShowPaymentNotificationsInfo(false);
+                        }
+                      }, 150);
+                    }}
+                    className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                  >
+                    <Info className="w-4 h-4" />
+                  </button>
+                  {(showPaymentNotificationsInfo ||
+                    isHoveringPaymentNotificationsInfo) && (
+                    <div
+                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-[200px] bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50 break-words"
+                      onMouseEnter={() =>
+                        setIsHoveringPaymentNotificationsInfo(true)
+                      }
+                      onMouseLeave={() => {
+                        setIsHoveringPaymentNotificationsInfo(false);
+                        setShowPaymentNotificationsInfo(false);
+                      }}
+                    >
+                      <p>
+                        When someone pays you, Splitify sends you a text. Tap
+                        the link in that text to instantly mark the request as
+                        paid.
+                      </p>
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div
+                  onClick={() => {
+                    setAllowPaymentNotificationsInfo(false);
+                  }}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    !allowPaymentNotificationsInfo
+                      ? "border-blue-600 bg-blue-50"
+                      : "border-gray-200 bg-white hover:border-gray-300"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-gray-500 flex items-center justify-center">
+                      <User className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900 text-sm">
+                        Disabled
+                      </h4>
+                      <p className="text-gray-600 text-xs">
+                        You will not recieve text messages when payments are
+                        made
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  onClick={() => {
+                    if (!isPaymentNotificationsInfoDisabled) {
+                      setAllowPaymentNotificationsInfo(true);
+                    } else {
+                      setShowPremiumPrompt(true);
+                    }
+                  }}
+                  className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${
+                    isPaymentNotificationsInfoDisabled
+                      ? "border-gray-200 bg-gray-50 cursor-pointer"
+                      : allowPaymentNotificationsInfo
+                      ? "border-blue-600 bg-blue-50 cursor-pointer"
+                      : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
+                  }`}
+                >
+                  <div
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      isPaymentNotificationsInfoDisabled
+                        ? "bg-blue-600"
+                        : "bg-blue-600"
+                    }`}
+                  >
+                    <Users className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-sm text-gray-900">
+                      Enabled
+                      {isPaymentNotificationsInfoDisabled && (
+                        <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
+                          Premium Required
+                        </span>
+                      )}
+                    </h4>
+                    <p className="text-xs text-gray-600">
+                      When a payment is made, you will recieve a text with a
+                      link to instantly mark the request as paid
                     </p>
                   </div>
                 </div>
@@ -1502,18 +1662,16 @@ const SplitStep = ({
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <label className="text-lg font-semibold text-gray-900">
-                  Mark as Paid Settings
+                 Allow others to mark as paid
                 </label>
                 <div className="relative dynamic-info-tooltip">
                   <button
                     onClick={() => setShowMarkAsPaidInfo(!showMarkAsPaidInfo)}
                     onMouseEnter={() => {
                       setIsHoveringMarkAsPaidInfo(true);
-                      // setShowMarkAsPaidInfo(true);
                     }}
                     onMouseLeave={() => {
                       setIsHoveringMarkAsPaidInfo(false);
-                      // Small delay to allow clicking on the tooltip
                       setTimeout(() => {
                         if (!isHoveringMarkAsPaidInfo) {
                           setShowMarkAsPaidInfo(false);
@@ -1579,7 +1737,7 @@ const SplitStep = ({
                   }}
                   className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${
                     isMarkAsPaidEveryoneDisabled
-                      ? "border-gray-200 bg-gray-50 cursor-pointer opacity-60"
+                      ? "border-gray-200 bg-gray-50 cursor-pointer"
                       : allowMarkAsPaidForEveryone
                       ? "border-blue-600 bg-blue-50 cursor-pointer"
                       : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
@@ -1588,20 +1746,14 @@ const SplitStep = ({
                   <div
                     className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                       isMarkAsPaidEveryoneDisabled
-                        ? "bg-gray-400"
-                        : "bg-orange-500"
+                        ? "bg-blue-600"
+                        : "bg-blue-600"
                     }`}
                   >
                     <Users className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h4
-                      className={`font-semibold text-sm ${
-                        isMarkAsPaidEveryoneDisabled
-                          ? "text-gray-500"
-                          : "text-gray-900"
-                      }`}
-                    >
+                    <h4 className="font-semibold text-sm text-gray-900">
                       Everyone
                       {isMarkAsPaidEveryoneDisabled && (
                         <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
@@ -1609,13 +1761,7 @@ const SplitStep = ({
                         </span>
                       )}
                     </h4>
-                    <p
-                      className={`text-xs  ${
-                        isDynamicCostsDisabled
-                          ? "text-gray-400"
-                          : "text-gray-600"
-                      }`}
-                    >
+                    <p className="text-xs text-gray-600">
                       Others can mark their requests as paid
                     </p>
                   </div>
@@ -1681,6 +1827,7 @@ const SplitStep = ({
         />
 
         <SplitifyPremiumModal
+          navbarPadding={true}
           isOpen={showPremiumPrompt}
           onClose={() => {
             // navigate("/dashboard");

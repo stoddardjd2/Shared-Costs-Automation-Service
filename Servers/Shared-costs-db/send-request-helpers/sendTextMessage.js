@@ -1,8 +1,8 @@
 const Telnyx = require("telnyx");
 const telnyx = new Telnyx(process.env.TELNYX_API_KEY);
 
-async function sendReminder(to, from, body) {
-  console.log("text payload", to, from, body)
+async function sendReminder(to, from = "+18333702013", body) {
+  console.log("text payload", to, from, body);
   try {
     // `from` is your Telnyx number assigned to the Messaging Profile
     const res = await telnyx.messages.create({
