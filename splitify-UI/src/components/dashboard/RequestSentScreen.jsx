@@ -2,7 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Check, ArrowRight, DollarSign, Send, Plane } from "lucide-react";
 import RocketTakeoff from "./Animation/RocketTakeoff";
 import { useData } from "../../contexts/DataContext";
-const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
+const RequestSentScreen = ({
+  request,
+  onClose,
+  onAgain,
+  setHide,
+  startTimeNow,
+}) => {
   const { participants } = useData();
 
   const [animationStage, setAnimationStage] = useState(0);
@@ -190,7 +196,8 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
             }`}
           >
             <h1 className="font-bold text-white text-3xl">
-              Payment Request{request.participants.length == 1 ? "" : "s"} Sent!
+              Payment Request{request.participants.length == 1 ? "" : "s"}{" "}
+              {startTimeNow ? "Sent!" : "Scheduled!"}
             </h1>
             <div
               className={`mt-4 flex items-center justify-center space-x-2 transform transition-all duration-600 delay-200 ${
@@ -225,7 +232,9 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
                 : "translate-y-4 opacity-0"
             } text-base`}
           >
-            Texts have been sent to your crew.
+            {startTimeNow
+              ? " Texts have been sent to your crew."
+              : " Texts will be sent to your crew."}
           </p>
 
           {/* Recipients with delivery animation */}
@@ -237,7 +246,7 @@ const RequestSentScreen = ({ request, onClose, onAgain, setHide }) => {
             }`}
           >
             <p className="text-white text-opacity-80 mb-6 font-medium text-base ">
-              Delivered to:
+              Participants:
             </p>
 
             <div className="flex justify-center gap-6 flex-wrap items-center mb-8">

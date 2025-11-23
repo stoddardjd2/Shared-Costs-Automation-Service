@@ -754,6 +754,7 @@ const SplitStep = ({
             setView("add");
             root.scrollTo({ top: 0, behavior: "instant" });
           }}
+          startTimeNow={startTiming == "now"}
         />
       </>
     );
@@ -1390,7 +1391,7 @@ const SplitStep = ({
         )}
 
         {/* Start Timing Options - Only when making initial request */}
-        {!isEditMode && (
+        {isEditMode && (
           <div className="space-y-2 mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Start Time
@@ -1435,7 +1436,7 @@ const SplitStep = ({
         {/* Only show when making initial request */}
         <div className="space-y-2 mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-1">Due Date</h3>
-          {!isEditMode && (
+          {isEditMode && (
             <div className="text-sm text-gray-500 !mt-0 -translate-y-1">
               *Changes will apply for future requests
             </div>
