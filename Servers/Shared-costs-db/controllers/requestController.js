@@ -68,7 +68,6 @@ const createRequest = async (req, res) => {
       request = await Request.create({
         ...requestData,
         owner: userId,
-        reminderFrequency: reminderFrequency,
         createdAt: now,
       });
     }

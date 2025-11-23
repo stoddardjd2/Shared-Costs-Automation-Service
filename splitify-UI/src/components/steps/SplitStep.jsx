@@ -1433,117 +1433,122 @@ const SplitStep = ({
           </div>
         )}
         {/* Only show when making initial request */}
-        {recurringType !== "none" && !isEditMode && (
-          <div className="space-y-2 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">
-              Due date
-            </h3>
+        <div className="space-y-2 mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">Due Date</h3>
+          {!isEditMode && (
+            <div className="text-sm text-gray-500 !mt-0 -translate-y-1">
+              *Changes will apply for future requests
+            </div>
+          )}
 
-            {/* <p className="text-sm text-gray-600 mb-4">
+          {/* <p className="text-sm text-gray-600 mb-4">
               Reminders only start if someone hasn’t paid after the due date.
             </p> */}
 
-            <div className="grid grid-cols-2 gap-2">
-              {/* Immediately */}
-              <button
-                onClick={() => setDueInDays(1)}
-                className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
-                  dueInDays === 1
-                    ? "border-blue-600 bg-blue-50"
-                    : "border-gray-200 bg-white hover:border-gray-300"
-                }`}
-              >
-                <div className="text-left">
-                  <div className="text-sm font-medium text-gray-900">
-                    Tomorrow
-                  </div>
-                  <div className="text-xs text-gray-600 text-nowrap">
-                    Reminders start then{" "}
-                  </div>
+          <div className="grid grid-cols-2 gap-2">
+            {/* Immediately */}
+            <button
+              onClick={() => setDueInDays(1)}
+              className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
+                dueInDays === 1
+                  ? "border-blue-600 bg-blue-50"
+                  : "border-gray-200 bg-white hover:border-gray-300"
+              }`}
+            >
+              <div className="text-left">
+                <div className="text-sm font-medium text-gray-900">
+                  {startTiming == "now" ? "Tomorrow" : "Day after sent"}
                 </div>
-              </button>
+                <div className="text-xs text-gray-600 text-nowrap">
+                  Reminders start then
+                </div>
+              </div>
+            </button>
 
-              {/* 3 Days */}
-              <button
-                onClick={() => setDueInDays(3)}
-                className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
-                  dueInDays === 3
-                    ? "border-blue-600 bg-blue-50"
-                    : "border-gray-200 bg-white hover:border-gray-300"
-                }`}
-              >
-                <div className="text-left">
-                  <div className="text-sm font-medium text-gray-900">
-                    In 3 days
-                  </div>
-                  <div className="text-xs text-gray-600 text-nowrap">
-                    Reminders start then
-                  </div>
+            {/* 3 Days */}
+            <button
+              onClick={() => setDueInDays(3)}
+              className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
+                dueInDays === 3
+                  ? "border-blue-600 bg-blue-50"
+                  : "border-gray-200 bg-white hover:border-gray-300"
+              }`}
+            >
+              <div className="text-left">
+                <div className="text-sm font-medium text-gray-900">
+                  {startTiming == "now" ? "In 3 days" : "3 days after sent"}
                 </div>
-              </button>
+                <div className="text-xs text-gray-600 text-nowrap">
+                  Reminders start then
+                </div>
+              </div>
+            </button>
 
-              {/* 1 Week */}
-              <button
-                onClick={() => setDueInDays(7)}
-                className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
-                  dueInDays === 7
-                    ? "border-blue-600 bg-blue-50"
-                    : "border-gray-200 bg-white hover:border-gray-300"
-                }`}
-              >
-                <div className="text-left">
-                  <div className="text-sm font-medium text-gray-900">
-                    In 1 week
-                  </div>
-                  <div className="text-xs text-gray-600 text-nowrap">
-                    Reminders start then
-                  </div>
+            {/* 1 Week */}
+            <button
+              onClick={() => setDueInDays(7)}
+              className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
+                dueInDays === 7
+                  ? "border-blue-600 bg-blue-50"
+                  : "border-gray-200 bg-white hover:border-gray-300"
+              }`}
+            >
+              <div className="text-left">
+                <div className="text-sm font-medium text-gray-900">
+                  {startTiming == "now" ? "In a week" : "Week after sent"}
                 </div>
-              </button>
+                <div className="text-xs text-gray-600 text-nowrap">
+                  Reminders start then
+                </div>
+              </div>
+            </button>
 
-              {/* 1 Month */}
-              <button
-                onClick={() => setDueInDays(30)}
-                className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
-                  dueInDays === 30
-                    ? "border-blue-600 bg-blue-50"
-                    : "border-gray-200 bg-white hover:border-gray-300"
-                }`}
-              >
-                <div className="text-left">
-                  <div className="text-sm font-medium text-gray-900">
-                    In 1 month
-                  </div>
-                  <div className="text-xs text-gray-600 text-nowrap">
-                    Reminders start then
-                  </div>
+            {/* 1 Month */}
+            <button
+              onClick={() => setDueInDays(30)}
+              className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
+                dueInDays === 30
+                  ? "border-blue-600 bg-blue-50"
+                  : "border-gray-200 bg-white hover:border-gray-300"
+              }`}
+            >
+              <div className="text-left">
+                <div className="text-sm font-medium text-gray-900 text-nowrap">
+                  {startTiming == "now" ? "In a month" : "Month after sent"}
                 </div>
-              </button>
-            </div>
+                <div className="text-xs text-gray-600 text-nowrap">
+                  Reminders start then
+                </div>
+              </div>
+            </button>
           </div>
-        )}
+        </div>
 
-        {!isEditMode && (
-          <div className="space-y-2 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">
-              Reminder frequency
-            </h3>
+        <div className="space-y-2 mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+            Reminder frequency
+          </h3>
+          {!isEditMode && (
+            <div className="text-sm text-gray-500 !mt-0 -translate-y-1">
+              *Changes will apply for future requests
+            </div>
+          )}
 
-            <div className="grid grid-cols-2 gap-2">
-              {reminderOptions.map((opt) => {
-                const selected = reminderFrequency === opt.key;
+          <div className="grid grid-cols-2 gap-2">
+            {reminderOptions.map((opt) => {
+              const selected = reminderFrequency === opt.key;
 
-                return (
-                  <button
-                    key={opt.key}
-                    onClick={() => setReminderFrequency(opt.key)}
-                    className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
-                      selected
-                        ? "border-blue-600 bg-blue-50"
-                        : "border-gray-200 bg-white hover:border-gray-300"
-                    }`}
-                  >
-                    {/* <div
+              return (
+                <button
+                  key={opt.key}
+                  onClick={() => setReminderFrequency(opt.key)}
+                  className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
+                    selected
+                      ? "border-blue-600 bg-blue-50"
+                      : "border-gray-200 bg-white hover:border-gray-300"
+                  }`}
+                >
+                  {/* <div
                       className={`${
                         selected ? "text-blue-600" : "text-gray-500"
                       }`}
@@ -1551,24 +1556,24 @@ const SplitStep = ({
                       {opt.icon}
                     </div> */}
 
-                    <div className="text-left">
-                      <div className="text-sm font-medium text-gray-900">
-                        {opt.label}
-                      </div>
-
-                      {/* optional tiny helper line to keep clarity consistent */}
-                      <div className="text-xs text-gray-600">
-                        {opt.key === "none"
-                          ? "No text reminders"
-                          : "Texts this often"}
-                      </div>
+                  <div className="text-left">
+                    <div className="text-sm font-medium text-gray-900">
+                      {opt.label}
                     </div>
-                  </button>
-                );
-              })}
-            </div>
+
+                    {/* optional tiny helper line to keep clarity consistent */}
+                    <div className="text-xs text-gray-600">
+                      {opt.key === "none"
+                        ? "No text reminders"
+                        : "Texts this often"}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
-        )}
+        </div>
+
         {/* Advanced Options Toggle */}
         <div className="mb-6">
           <button

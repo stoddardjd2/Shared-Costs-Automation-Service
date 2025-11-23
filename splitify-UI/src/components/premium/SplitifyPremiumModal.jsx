@@ -105,6 +105,7 @@ export default function SplitifyPremiumModal({
   showPlaidOnly = true,
   showPremium = true,
   navbarPadding = false,
+  specialCaseScroll = true,
 }) {
   const { userData, setUserData } = useData();
   const userEmail = userData?.email || "";
@@ -438,7 +439,9 @@ export default function SplitifyPremiumModal({
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] ${navbarPadding && "mt-[65px]"}`}
+      className={`fixed inset-0 ${
+        specialCaseScroll && "overflow-scroll"
+      } z-[9999] ${navbarPadding && "mt-[65px]"}`}
       role="dialog"
       d
       aria-modal="true"
