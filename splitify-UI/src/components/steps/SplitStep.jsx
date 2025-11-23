@@ -24,6 +24,7 @@ import {
   UserMinus,
   UserCheck,
   Split,
+  CalendarDays,
 } from "lucide-react";
 import StepIndicator from "./StepIndicator";
 import ChargeDisplay from "../costs/ChargeDisplay";
@@ -40,6 +41,35 @@ import RequestSentScreen from "../dashboard/RequestSentScreen";
 import SplitifyPremiumModal from "../premium/SplitifyPremiumModal";
 import { gaEvent } from "../../googleAnalytics/googleAnalyticsHelpers";
 import SelectedPeopleDisplay from "./SelectedPeopleDisplay";
+
+const reminderOptions = [
+  {
+    key: "daily",
+    label: "Once a day",
+    // icon: <CalendarClock className="w-5 h-5" />,
+  },
+  {
+    key: "3days",
+    label: "Every 3 days",
+    // icon: <Repeat className="w-5 h-5" />,
+  },
+  {
+    key: "weekly",
+    label: "Once a week",
+    // icon: <CalendarClock className="w-5 h-5" />,
+  },
+  {
+    key: "once",
+    label: "One time",
+    // icon: <Bell className="w-5 h-5" />,
+  },
+  {
+    key: "none",
+    label: "No reminders",
+    // icon: <X className="w-5 h-5" />,
+  },
+];
+
 const SplitStep = ({
   setSelectedPeople,
   onBack,
@@ -117,6 +147,8 @@ const SplitStep = ({
 
   const [submittedRequest, setSubmittedRequest] = useState({});
 
+  const [dueInDays, setDueInDays] = useState(1);
+
   const [isPlaidCharge, setIsPlaidCharge] = useState(
     selectedCharge?.isPlaidCharge || false
   );
@@ -160,6 +192,10 @@ const SplitStep = ({
   // const [isDynamic, setIsDynamic] = useState(false);
   const [showDynamicInfo, setShowDynamicInfo] = useState(false);
   const [isHoveringDynamicInfo, setIsHoveringDynamicInfo] = useState(false);
+
+  const [reminderFrequency, setReminderFrequency] = useState(
+    userData.reminderPreference
+  );
 
   const [showPaymentNotificationsInfo, setShowPaymentNotificationsInfo] =
     useState(false);
@@ -368,7 +404,12 @@ const SplitStep = ({
     costEntry.startTiming = startTiming;
     costEntry.isDynamic = isDynamic;
 
+    costEntry.reminderFrequency = reminderFrequency;
+
     costEntry.allowPaymentNotificationsInfo = allowPaymentNotificationsInfo;
+
+    costEntry.dueInDays = dueInDays;
+
     costEntry.name = chargeName;
     costEntry.selectedTransaction = selectedTransaction;
 
@@ -831,6 +872,7 @@ const SplitStep = ({
             <input
               type="number"
               step="0.01"
+              onWheel={(e) => e.target.blur()} // 👈 disables scroll-to-change
               value={editableTotalAmount == 0 ? "" : editableTotalAmount}
               onChange={(e) => {
                 const newAmount = e.target.value;
@@ -1347,8 +1389,8 @@ const SplitStep = ({
           </div>
         )}
 
-        {/* Start Timing Options - Only show for recurring payments and when making initial request */}
-        {recurringType !== "none" && !isEditMode && (
+        {/* Start Timing Options - Only when making initial request */}
+        {!isEditMode && (
           <div className="space-y-2 mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Start Time
@@ -1378,7 +1420,7 @@ const SplitStep = ({
                       isEditMode ? "text-gray-400" : "text-gray-600"
                     }`}
                   >
-                    {isEditMode ? "Not Available" : "Send first request"}
+                    {isEditMode ? "Not Available" : "Send it now"}
                   </div>
                 </div>
               </button>
@@ -1390,7 +1432,143 @@ const SplitStep = ({
             </div>
           </div>
         )}
+        {/* Only show when making initial request */}
+        {recurringType !== "none" && !isEditMode && (
+          <div className="space-y-2 mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">
+              Due date
+            </h3>
 
+            {/* <p className="text-sm text-gray-600 mb-4">
+              Reminders only start if someone hasn’t paid after the due date.
+            </p> */}
+
+            <div className="grid grid-cols-2 gap-2">
+              {/* Immediately */}
+              <button
+                onClick={() => setDueInDays(1)}
+                className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
+                  dueInDays === 1
+                    ? "border-blue-600 bg-blue-50"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                }`}
+              >
+                <div className="text-left">
+                  <div className="text-sm font-medium text-gray-900">
+                    Tomorrow
+                  </div>
+                  <div className="text-xs text-gray-600 text-nowrap">
+                    Reminders start then{" "}
+                  </div>
+                </div>
+              </button>
+
+              {/* 3 Days */}
+              <button
+                onClick={() => setDueInDays(3)}
+                className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
+                  dueInDays === 3
+                    ? "border-blue-600 bg-blue-50"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                }`}
+              >
+                <div className="text-left">
+                  <div className="text-sm font-medium text-gray-900">
+                    In 3 days
+                  </div>
+                  <div className="text-xs text-gray-600 text-nowrap">
+                    Reminders start then
+                  </div>
+                </div>
+              </button>
+
+              {/* 1 Week */}
+              <button
+                onClick={() => setDueInDays(7)}
+                className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
+                  dueInDays === 7
+                    ? "border-blue-600 bg-blue-50"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                }`}
+              >
+                <div className="text-left">
+                  <div className="text-sm font-medium text-gray-900">
+                    In 1 week
+                  </div>
+                  <div className="text-xs text-gray-600 text-nowrap">
+                    Reminders start then
+                  </div>
+                </div>
+              </button>
+
+              {/* 1 Month */}
+              <button
+                onClick={() => setDueInDays(30)}
+                className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
+                  dueInDays === 30
+                    ? "border-blue-600 bg-blue-50"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                }`}
+              >
+                <div className="text-left">
+                  <div className="text-sm font-medium text-gray-900">
+                    In 1 month
+                  </div>
+                  <div className="text-xs text-gray-600 text-nowrap">
+                    Reminders start then
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!isEditMode && (
+          <div className="space-y-2 mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">
+              Reminder frequency
+            </h3>
+
+            <div className="grid grid-cols-2 gap-2">
+              {reminderOptions.map((opt) => {
+                const selected = reminderFrequency === opt.key;
+
+                return (
+                  <button
+                    key={opt.key}
+                    onClick={() => setReminderFrequency(opt.key)}
+                    className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
+                      selected
+                        ? "border-blue-600 bg-blue-50"
+                        : "border-gray-200 bg-white hover:border-gray-300"
+                    }`}
+                  >
+                    {/* <div
+                      className={`${
+                        selected ? "text-blue-600" : "text-gray-500"
+                      }`}
+                    >
+                      {opt.icon}
+                    </div> */}
+
+                    <div className="text-left">
+                      <div className="text-sm font-medium text-gray-900">
+                        {opt.label}
+                      </div>
+
+                      {/* optional tiny helper line to keep clarity consistent */}
+                      <div className="text-xs text-gray-600">
+                        {opt.key === "none"
+                          ? "No text reminders"
+                          : "Texts this often"}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
         {/* Advanced Options Toggle */}
         <div className="mb-6">
           <button
@@ -1426,7 +1604,7 @@ const SplitStep = ({
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <label className="text-lg font-semibold text-gray-900">
-                 Variable Cost Tracking
+                  Variable Cost Tracking
                 </label>
                 <div className="relative dynamic-info-tooltip">
                   <button
@@ -1662,7 +1840,7 @@ const SplitStep = ({
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <label className="text-lg font-semibold text-gray-900">
-                 Allow others to mark as paid
+                  Allow others to mark as paid
                 </label>
                 <div className="relative dynamic-info-tooltip">
                   <button

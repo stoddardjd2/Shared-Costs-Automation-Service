@@ -193,12 +193,14 @@ export const handlePayment = async (
 export const handleToggleMarkAsPaid = async (
   requestId,
   paymentHistoryId,
-  userId
+  userId,
+  method
 ) => {
   return await apiRequest(
     `/requests/toggleMarkedAsPaid/${requestId}/${paymentHistoryId}/${userId}`,
     {
       method: "PATCH",
+      body: { method: method },
     }
   );
 };

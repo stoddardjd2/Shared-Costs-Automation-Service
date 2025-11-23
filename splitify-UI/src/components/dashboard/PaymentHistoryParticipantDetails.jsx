@@ -67,14 +67,25 @@ export default function PaymentHistoryParticipantDetails({
     return "Pending";
   }, [participant, paymentHistoryRequest]);
 
+  // Month + Day (LOCAL TIME)
   const monthDay = (input, daysToAdd = 0) => {
     try {
       const raw = input && input.$date ? input.$date : input;
       const base = new Date(raw);
       if (Number.isNaN(base)) return "";
 
-      const d = new Date(base);
-      if (daysToAdd) d.setUTCDate(d.getUTCDate() + daysToAdd);
+      // Work entirely in LOCAL time
+      const d = new Date(
+        base.getFullYear(),
+        base.getMonth(),
+        base.getDate(),
+        base.getHours(),
+        base.getMinutes(),
+        base.getSeconds(),
+        base.getMilliseconds()
+      );
+
+      if (daysToAdd) d.setDate(d.getDate() + daysToAdd);
 
       return new Intl.DateTimeFormat("en-US", {
         month: "short",
@@ -86,21 +97,32 @@ export default function PaymentHistoryParticipantDetails({
       return null;
     }
   };
-
+  // Month + Day + Hour + Minute (LOCAL TIME)
   const monthDayHourLocal = (input, daysToAdd = 0) => {
     try {
       const raw = input && input.$date ? input.$date : input;
       const base = new Date(raw);
       if (Number.isNaN(base)) return "";
 
-      const d = new Date(base);
-      if (daysToAdd) d.setUTCDate(d.getUTCDate() + daysToAdd);
+      // Work entirely in LOCAL time
+      const d = new Date(
+        base.getFullYear(),
+        base.getMonth(),
+        base.getDate(),
+        base.getHours(),
+        base.getMinutes(),
+        base.getSeconds(),
+        base.getMilliseconds()
+      );
+
+      if (daysToAdd) d.setDate(d.getDate() + daysToAdd);
 
       return new Intl.DateTimeFormat("en-US", {
         month: "short",
         day: "numeric",
         hour: "numeric",
         minute: "2-digit",
+        timeZone: "America/Los_Angeles",
       }).format(d);
     } catch (err) {
       console.log("invalid time value @ monthDayHourLocal");
@@ -108,6 +130,87 @@ export default function PaymentHistoryParticipantDetails({
     }
   };
 
+  // Convert a "wall time" in some IANA time zone to a real UTC Date
+  function zonedTimeToUtc({ y, m, d, h = 0, mi = 0, s = 0 }, timeZone) {
+    // 1) start with a UTC guess for that wall time
+    const utcGuess = new Date(Date.UTC(y, m - 1, d, h, mi, s));
+
+    // 2) see what that instant looks like in the target zone
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      hourCycle: "h23",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }).formatToParts(utcGuess);
+
+    const get = (type) => Number(parts.find((p) => p.type === type).value);
+
+    const tzY = get("year");
+    const tzM = get("month");
+    const tzD = get("day");
+    const tzH = get("hour");
+    const tzMi = get("minute");
+    const tzS = get("second");
+
+    // 3) compute the zone offset at the guess
+    const tzMillis = Date.UTC(tzY, tzM - 1, tzD, tzH, tzMi, tzS);
+    const offsetMillis = tzMillis - utcGuess.getTime();
+
+    // 4) subtract offset -> correct UTC instant
+    return new Date(utcGuess.getTime() - offsetMillis);
+  }
+
+  // Main formatter:
+  // - keeps the user's local DATE from input
+  // - appends the user's local TIME corresponding to 2pm Los Angeles
+ function formatReminderLocalDatePlus2pmPST(input) {
+  try {
+    const raw = input && input.$date ? input.$date : input;
+    const base = new Date(raw);
+    if (Number.isNaN(base)) return "";
+
+    // --- A) Date part in USER'S LOCAL TIMEZONE (NO YEAR) ---
+    const datePart = new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+    }).format(base);
+
+    // --- B) Get the LA calendar day for this reminder ---
+    const laParts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Los_Angeles",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(base);
+
+    const laGet = (type) => Number(laParts.find((p) => p.type === type).value);
+
+    const laY = laGet("year");
+    const laM = laGet("month");
+    const laD = laGet("day");
+
+    // --- C) Convert “2 PM Los Angeles” on that LA date -> UTC instant ---
+    const twoPmLAUtcInstant = zonedTimeToUtc(
+      { y: laY, m: laM, d: laD, h: 14, mi: 0, s: 0 },
+      "America/Los_Angeles"
+    );
+
+    // --- D) Format as USER LOCAL TIME ---
+    const timePart = new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(twoPmLAUtcInstant);
+
+    return `${datePart}, ${timePart}`;
+  } catch (err) {
+    console.log("invalid time value @ formatReminderLocalDatePlus2pmPST");
+    return "";
+  }
+}
   return (
     <div className="flex flex-col gap-3 border border-gray-100 bg-white p-3 sm:p-4 rounded-2xl shadow-sm">
       {/* Top row */}
@@ -176,12 +279,14 @@ export default function PaymentHistoryParticipantDetails({
             <DetailRow
               icon={<Send className="w-4 h-4" />}
               label="Sent"
-              value={monthDay(participant?.requestSentDate)}
+              value={monthDayHourLocal(participant?.requestSentDate)}
             />
             <DetailRow
               icon={<RefreshCw className="w-4 h-4" />}
               label="Reminder scheduled"
-              value={monthDay(paymentHistoryRequest?.nextReminderDate)}
+              value={formatReminderLocalDatePlus2pmPST(
+                paymentHistoryRequest?.nextReminderDate
+              )}
             />
             <DetailRow
               icon={<EyeIcon className="w-4 h-4" />}

@@ -85,7 +85,8 @@ export default function MarkAsPaidConfirmPage() {
           const toggleRes = await handleToggleMarkAsPaid(
             requestId,
             paymentHistoryId,
-            userId
+            userId,
+            "textLink"
           );
 
           if (!mounted) return;
@@ -160,6 +161,7 @@ export default function MarkAsPaidConfirmPage() {
     );
   }
 
+  console.log("paymentDetails.owedTo", paymentDetails)
   // ------------------------
   // SUCCESS / ALREADY PAID
   // ------------------------
@@ -168,7 +170,7 @@ export default function MarkAsPaidConfirmPage() {
     : "Payment confirmed!";
   const headerSubtitle = isAlreadyPaid
     ? "This payment was already completed."
-    : "You're all set — no more reminders.";
+    : `You're all set — no more reminders will be sent to ${paymentDetails.participantName} for this request.`;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-6">
@@ -206,9 +208,9 @@ export default function MarkAsPaidConfirmPage() {
 
               {paymentDetails.owedTo && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Owed to</span>
+                  <span className="text-gray-600">From</span>
                   <span className="font-semibold text-gray-900">
-                    {paymentDetails.owedTo}
+                    {paymentDetails.participantName}
                   </span>
                 </div>
               )}

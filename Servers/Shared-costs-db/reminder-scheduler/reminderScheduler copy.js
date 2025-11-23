@@ -86,71 +86,10 @@ function getParticipantsNeedingReminders(
 async function processRequestReminders(request) {
   const now = new Date();
   let updatedRequest = false;
-
-  // Helpers
-  function addDaysUTC(date, days) {
-    const d = new Date(date);
-    d.setUTCDate(d.getUTCDate() + days);
-    return d;
-  }
-
-  function addMonthsUTC(date, months) {
-    const d = new Date(date);
-    const day = d.getUTCDate();
-    d.setUTCMonth(d.getUTCMonth() + months);
-
-    // handle month rollover (e.g., Jan 31 -> Feb)
-    if (d.getUTCDate() < day) {
-      d.setUTCDate(0); // last day of previous month
-    }
-    return d;
-  }
-
-  function calculateNextReminderDate(fromDate, freq) {
-    switch (freq) {
-      case "daily":
-        return addDaysUTC(fromDate, 1);
-      case "3days":
-        return addDaysUTC(fromDate, 3);
-      case "weekly":
-        return addDaysUTC(fromDate, 7);
-      case "monthly":
-        return addMonthsUTC(fromDate, 1);
-      default:
-        return null; // "none" or unknown
-    }
-  }
-
-  const freq = request.reminderFrequency || "3days"; // default if missing
-
   for (let i = 0; i < request.paymentHistory.length; i++) {
     const paymentEntry = request.paymentHistory[i];
 
-    // Ensure counter exists on history entries
-    if (typeof paymentEntry.reminderCycleCount !== "number") {
-      paymentEntry.reminderCycleCount = 0;
-      updatedRequest = true;
-    }
-
-    // Frequency = none -> disable reminders for this entry
-    if (freq === "none") {
-      if (paymentEntry.nextReminderDate) {
-        paymentEntry.nextReminderDate = null;
-        updatedRequest = true;
-      }
-      continue;
-    }
-
-    // Frequency = once -> if already reminded once, stop
-    if (freq === "once" && paymentEntry.reminderCycleCount >= 1) {
-      if (paymentEntry.nextReminderDate) {
-        paymentEntry.nextReminderDate = null;
-        updatedRequest = true;
-      }
-      continue;
-    }
-
-    // Skip if no reminder date set or not yet due
+    // // Skip if no reminder date set or not yet due
     if (!paymentEntry.nextReminderDate || paymentEntry.nextReminderDate > now) {
       continue;
     }
@@ -164,19 +103,29 @@ async function processRequestReminders(request) {
     console.log("TO REMIND:", participantsToRemind);
 
     if (participantsToRemind.length === 0) {
-      // no one eligible -> disable reminders for this payment entry
+      // disable reminders for payment entry if no one eligible
       paymentEntry.nextReminderDate = null;
       updatedRequest = true;
+
+      // No one needs reminders, but still update next reminder date for recurring requests
+      // if (request.isRecurring) {
+      //   paymentEntry.nextReminderDate = calculateNextReminderDate(
+      //     now,
+      //     request.reminderFrequency
+      //   );
+      //   updatedRequest = true;
+      // }
       continue;
     }
-
-    let sentAnyThisCycle = false;
 
     // Send reminders to participants who need them
     for (const participant of participantsToRemind) {
       try {
+        // Get request's owner info
         const owner = await User.findById(new ObjectId(request.owner));
-        const participantInfo = await User.findById(
+
+        // Get participant name from User collection
+        const partcipantInfo = await User.findById(
           new ObjectId(participant.participantId)
         );
 
@@ -187,8 +136,10 @@ async function processRequestReminders(request) {
             requestOwner: owner.name,
             requestOwnerPaymentMethods: owner?.paymentMethods || {},
             participantId: participant.participantId,
-            participantName: participantInfo.name,
+            participantName: partcipantInfo.name,
             paymentHistoryId: paymentEntry._id,
+            // expectedAmount: participant.expectedAmount,
+            // paidAmount: participant.paidAmount,
             stillOwes: participant.stillOwes,
             dueDate: paymentEntry.dueDate,
             requestData: request,
@@ -208,8 +159,6 @@ async function processRequestReminders(request) {
           updatedRequest = true;
         }
 
-        sentAnyThisCycle = true;
-
         console.log(
           `✅ Reminder sent for request "${request.name}" to participant ${participant.participantId}`
         );
@@ -221,44 +170,32 @@ async function processRequestReminders(request) {
       }
     }
 
-    // If we sent at least one reminder, increment the cycle count once
-    if (sentAnyThisCycle) {
-      paymentEntry.reminderCycleCount += 1;
-      updatedRequest = true;
-    }
-
-    // Update next reminder date or disable based on payment status/frequency
-    const isPaid =
-      paymentEntry.markedAsPaid &&
-      paymentEntry.paymentAmount >= paymentEntry.amount;
-
-    if (!isPaid) {
-      if (freq === "once") {
-        // we already sent this once-cycle, so stop further reminders
-        paymentEntry.nextReminderDate = null;
-      } else {
-        paymentEntry.nextReminderDate = calculateNextReminderDate(now, freq);
+    // Update next reminder date or mark as complete
+    if (
+      !paymentEntry.markedAsPaid ||
+      !(paymentEntry.paymentAmount >= paymentEntry.amount)
+    ) {
+      function calculateDaysFromNow(daysFromNow, startDate = new Date()) {
+        const dueDate = new Date(startDate);
+        dueDate.setUTCDate(dueDate.getUTCDate() + daysFromNow);
+        return dueDate;
       }
 
-      // Reset reminderSent so next cycle can send again if still owes
-      // if (paymentEntry.participants?.length) {
-      //   for (const p of paymentEntry.participants) {
-      //     if (p.stillOwes) {
-      //       p.reminderSent = false;
-      //     }
-      //   }
-      // }
-
+      paymentEntry.nextReminderDate = calculateDaysFromNow(3);
+      // calculateNextReminderDate(
+      //   now,
+      //   request.reminderFrequency
+      // );
       updatedRequest = true;
     } else {
-      // Paid -> stop reminders for this entry
-      if (paymentEntry.nextReminderDate) {
-        paymentEntry.nextReminderDate = null;
-        updatedRequest = true;
-      }
+      // request.isCompleted = true;
+      // paymentEntry.nextReminderDate = null;
+      // updatedRequest = true;
+      // console.log(`📝 One-time request "${request.name}" marked as completed`);
     }
   }
 
+  // Save changes if needed
   if (updatedRequest) {
     await request.save();
   }

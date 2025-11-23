@@ -9,6 +9,8 @@ const {
   calculateDaysFromNow,
   checkTextMessagePermissions,
   emailNonApprovedParticipants,
+  calculateStartingDate,
+  createPaymentHistoryEntry,
 } = require("../utils/requestHelpers");
 const sendReminder = require("../send-request-helpers/sendTextMessage");
 // const createRequest = () => {};
@@ -41,63 +43,21 @@ const createRequest = async (req, res) => {
   console.log("Creating request with data:", req.body);
   try {
     const userId = req.user._id; // From auth middleware
-    const {
-      // assume due in week
-      dueInDays = 7,
-      reminderFrequency = "weekly",
-      ...requestData
-    } = req.body;
-    // reminder frequency can be daily, weekly, monthly, or none
-    function calculateStartingDate(startTiming) {
-      // request date represents when first request should be sent
-      if (startTiming == "now") {
-        return new Date();
-      } else {
-        return new Date(startTiming);
-      }
-    }
-    // Calculate due date - accepts starting date param
-    const dueDate = calculateDaysFromNow(dueInDays);
+    const { ...requestData } = req.body;
 
-    // Calculate next reminder date based on frequency
-    // send reminder on day its due
-    const remindInDays = 3;
-    const nextReminderDate = calculateDaysFromNow(remindInDays);
-    // calculateNextReminderDate(
-    //   dueDate,
-    //   reminderFrequency
-    // );
     let request;
+    const now = new Date();
 
     // Create initial payment history entry if startTiming is now
     if (requestData.startTiming == "now") {
-      const initialHistory = {
-        requestDate: calculateStartingDate(requestData.startTiming),
-        dueDate: dueDate,
-        amount: requestData.amount,
-        totalAmount: requestData.totalAmount,
-        totalAmountOwed: requestData.totalAmountOwed,
-        nextReminderDate: nextReminderDate,
-        // status: "pending",
-        participants: (requestData.participants || []).map((participant) => ({
-          reminderSent: false,
-          reminderSentDate: null,
-          paymentAmount: null,
-          paidDate: null,
-          requestSentDate: new Date(),
-          amount: participant.amount,
-          _id: new ObjectId(participant._id),
-        })),
-      };
+      const initialHistory = createPaymentHistoryEntry(requestData);
 
       // Create request in DB with initial history entry
-      const now = new Date();
       console.log("init data", requestData);
       request = await Request.create({
         ...requestData,
         createdAt: now,
         owner: userId,
-        reminderFrequency: reminderFrequency,
         paymentHistory: [initialHistory], // Add initial history as subdocument
         lastSent: new Date(
           Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
@@ -109,6 +69,7 @@ const createRequest = async (req, res) => {
         ...requestData,
         owner: userId,
         reminderFrequency: reminderFrequency,
+        createdAt: now,
       });
     }
 
@@ -157,6 +118,7 @@ const createRequest = async (req, res) => {
     // send initial payment request to those approved for text messages or send after user opts in
     // Using send reminder function as intial request even though it is not a reminder
     //only send now if startTiming = "now"
+
     if (request.startTiming == "now") {
       const owner = await User.findById(new ObjectId(req.user._id));
       requestData.participants.forEach((participant) => {
@@ -584,23 +546,19 @@ const handlePayment = async (req, res) => {
         // owner.reminderPreference.payments === true && // your opt-in flag
         ["professional", "premium", "free"].includes(owner.plan) // allowed plans (INCLUDES FREE FOR NOW)
       ) {
-        console.log("sending text");
-
         const participantUser = await User.findById(userId).select("name");
 
         const safeAmount =
           paymentAmount ?? participant?.paymentAmount ?? originalAmount ?? 0;
-requestId, paymentHistoryId, userId 
+        requestId, paymentHistoryId, userId;
 
-
-    const urlBase = `${process.env.CLIENT_URL}/markAsPaid`;
-   const url = new URL(urlBase);
-    url.searchParams.set("userId", userId);
-    url.searchParams.set("paymentHistoryId", paymentHistoryId);
-    url.searchParams.set("requestId", requestId);
-    // url.searchParams.set("name", name);
-    const finalUrl = url.toString();
-
+        const urlBase = `${process.env.CLIENT_URL}/markAsPaid`;
+        const url = new URL(urlBase);
+        url.searchParams.set("userId", userId);
+        url.searchParams.set("paymentHistoryId", paymentHistoryId);
+        url.searchParams.set("requestId", requestId);
+        // url.searchParams.set("name", name);
+        const finalUrl = url.toString();
 
         const body = `Hi ${owner.name},
 ${participantUser?.name || "a participant"} marked their request as paid.
@@ -647,9 +605,10 @@ Sent via Splitify
 };
 
 const handleToggleMarkAsPaid = async (req, res) => {
-  console.log("Toggling mark as paid with data:", req.params);
+  console.log("Toggling mark as paid with data:", req.params, req.body);
   try {
     const { requestId, paymentHistoryId, userId } = req.params;
+    const { method = "UI" } = req.params;
 
     // First, fetch the current document to check payment status
     const currentRequest = await Request.findOne({
@@ -696,6 +655,8 @@ const handleToggleMarkAsPaid = async (req, res) => {
             newMarkedAsPaid,
           "paymentHistory.$[payment].participants.$[participant].markedAsPaidDate":
             newMarkedAsPaid ? new Date() : null,
+          "paymentHistory.$[payment].participants.$[participant].markedAsPaidMethod":
+            method,
         },
       },
       {
@@ -891,6 +852,15 @@ const handlePaymentDetails = async (req, res) => {
     const OwnerName = owner.name;
     const ownerPaymentMethods = owner.paymentMethods;
 
+    // get participant name
+    const participantId = participantObjectId.toString();
+
+    const matchedContact = owner.contacts.find(
+      (c) => c._id.toString() === participantId
+    );
+
+    const participantName = matchedContact?.name || null;
+
     const convertToNumber = (value) =>
       typeof value === "number" ? value : Number(value ?? 0);
 
@@ -924,6 +894,7 @@ const handlePaymentDetails = async (req, res) => {
       isPaidInFull: paidInFull,
       amountOwed: amountLeft,
       owedTo: OwnerName,
+      participantName: participantName,
       allowMarkAsPaidForEveryone:
         requestDocument?.allowMarkAsPaidForEveryone || false,
       paymentMethods: ownerPaymentMethods,

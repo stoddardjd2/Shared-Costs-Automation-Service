@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const nodemailer = require("nodemailer");
 const smsOptInEmailTemplate = require("./smsEmailTemplate");
+const { ObjectId } = require("mongodb");
 
 // Create transporter (configure with your SMTP settings)
 const transporter = nodemailer.createTransport({
@@ -104,6 +105,43 @@ async function checkTextMessagePermissions(participants) {
     ...p,
     canText: map.get(String(p._id)) || false,
   }));
+}
+
+function calculateStartingDate(startTiming) {
+  // request date represents when first request should be sent
+  if (startTiming == "now") {
+    return new Date();
+  } else {
+    return new Date(startTiming);
+  }
+}
+
+function createPaymentHistoryEntry(
+  requestData,
+  paymentHistoryObjId = new ObjectId()
+) {
+  const dueDate = calculateDaysFromNow(requestData.dueInDays);
+
+  const initialHistory = {
+    requestDate: new Date(),
+    dueDate: calculateDaysFromNow(requestData.dueInDays),
+    amount: requestData.amount,
+    totalAmount: requestData.totalAmount,
+    totalAmountOwed: requestData.totalAmountOwed,
+    nextReminderDate: dueDate, // Reminders start on due date
+    _id: paymentHistoryObjId,
+    // status: "pending",
+    participants: (requestData.participants || []).map((participant) => ({
+      reminderSent: false,
+      reminderSentDate: null,
+      paymentAmount: null,
+      paidDate: null,
+      requestSentDate: new Date(),
+      amount: participant.amount,
+      _id: new ObjectId(participant._id),
+    })),
+  };
+  return initialHistory;
 }
 
 /**
@@ -292,4 +330,6 @@ module.exports = {
   calculateDaysFromNow,
   checkTextMessagePermissions,
   emailNonApprovedParticipants,
+  calculateStartingDate,
+  createPaymentHistoryEntry,
 };

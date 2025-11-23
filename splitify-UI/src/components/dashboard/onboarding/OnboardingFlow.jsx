@@ -30,6 +30,7 @@ import {
   Zap,
   Heart,
   User,
+  X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { saveOnboarding } from "../../../queries/user";
@@ -779,6 +780,11 @@ export default function OnboardingWizard({
             key: "once",
             label: "Only one reminder",
             icon: <Bell className="w-5 h-5" />,
+          },
+                {
+            key: "none",
+            label: "no reminders",
+            icon: <X className="w-5 h-5" />,
           },
           //   { key: "custom", label: "Custom", icon: <Settings2 className="w-5 h-5" /> },
         ].map((opt) => (

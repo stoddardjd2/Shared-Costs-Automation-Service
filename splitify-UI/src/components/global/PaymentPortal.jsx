@@ -687,6 +687,7 @@ export default function PaymentPage() {
           requestName,
           paymentMethods,
           participantMarkedAsPaid,
+          participantName,
         } = res.data;
 
         const paymentDetailsFiller = {
@@ -697,6 +698,7 @@ export default function PaymentPage() {
           requestName,
           paymentMethods,
           participantMarkedAsPaid,
+          participantName,
         };
 
         setPaymentDetails({ ...paymentDetailsFiller });
@@ -867,9 +869,15 @@ export default function PaymentPage() {
   return (
     <PageLayout
       header={
-        <h1 className="text-3xl  font-bold text-center mb-8 text-gray-800">
-          Payment Details
-        </h1>
+        <div className="mb-8 text-center space-y-2">
+          <h1 className="text-3xl font-bold text-gray-900">
+            Hi, {paymentDetails.participantName}
+          </h1>
+
+          <h2 className="text-xl font-semibold text-gray-700">
+            Payment Details
+          </h2>
+        </div>
       }
     >
       {/* <HeroSection

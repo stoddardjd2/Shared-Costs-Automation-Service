@@ -6,6 +6,11 @@ const User = require("../models/User");
 const sendRequestsRouter = require("../send-request-helpers/sendRequestsRouter");
 const { resolveDynamicAmountIfEnabled } = require("./plaidHelper");
 const { request } = require("../server");
+const {
+  calculateDaysFromNow,
+  calculateStartingDate,
+  createPaymentHistoryEntry,
+} = require("../utils/requestHelpers");
 
 const TIMEZONE = process.env.REMINDER_TIMEZONE || "America/Los_Angeles";
 const CRON_EXPRESSION = "0 12 * * *"; // 12:00 PM Pacific daily
@@ -41,11 +46,13 @@ async function handleDynamicCost(requestDocument) {
         "DYNAMIC UPDATE: UPDATED PARCITIPANTS WITH NEW COSTS:",
         requestDocument.participants
       );
+      return requestDocument;
     } catch (e) {
       console.error("Dynamic amount (recurring) failed:", e?.message || e);
       throw e;
     }
   }
+  return requestDocument;
 }
 
 function normalizeStartTiming(startTimingValue) {
@@ -74,14 +81,6 @@ function sameOrAfterDayInTimezone(
       month: "2-digit",
       day: "2-digit",
     }).format(date);
-
-  console.log(
-    "COMPARING TIMES TO CHECK IF SEND",
-    formatDateKey(dateA),
-    formatDateKey(dateB),
-    formatDateKey(dateA) >= formatDateKey(dateB),
-    requestDocument.name
-  );
 
   return formatDateKey(dateA) >= formatDateKey(dateB);
 }
@@ -225,66 +224,52 @@ function calculateDueDate(
   return addIntervalToDate(requestDate, interval.count, interval.unit);
 }
 
-function calculateNextReminderDate(dueDate, reminderFrequency) {
-  const interval = getIntervalFromFrequency(reminderFrequency, 1, null);
-  return addIntervalToDate(dueDate, interval.count, interval.unit);
+// helper: send requests to every participant
+async function sendToAllParticipants({
+  requestDocument,
+  paymentHistoryEntry,
+  paymentHistoryId,
+  kind = "request", // "initial" | "recurring" (optional, just for log text)
+}) {
+  for (const participant of requestDocument.participants || []) {
+    try {
+      await sendPaymentRequestToParticipant({
+        request: requestDocument,
+        participant,
+        paymentHistoryId,
+        dueDate: paymentHistoryEntry.dueDate,
+      });
+    } catch (error) {
+      schedulerMetrics.lastRunErrors++;
+      console.error(
+        `Error sending ${kind} request to participant:`,
+        participant?._id,
+        error?.message || error
+      );
+    }
+  }
 }
 
-function calculateDaysFromNow(daysFromNow, startDate = new Date()) {
-  const dueDate = new Date(startDate);
-  dueDate.setUTCDate(dueDate.getUTCDate() + daysFromNow);
-  return dueDate;
+// helper: persist history + lastSent/nextDue after a send
+async function persistSend({
+  requestDocument,
+  paymentHistoryEntry,
+  currentDate,
+  requestNextDueDate,
+}) {
+  await Request.updateOne(
+    { _id: requestDocument._id },
+    {
+      $push: { paymentHistory: paymentHistoryEntry },
+      $set: { lastSent: currentDate, nextDue: requestNextDueDate },
+    }
+  );
 }
 
 /**
  * Create a paymentHistory entry. Accepts an optional presetId so the caller
  * can generate the _id up front and pass it through to notifications.
  */
-function createPaymentHistoryEntry(requestDocument, requestSentDate, presetId) {
-  const dueInDays = 7;
-  const dueDate = calculateDaysFromNow(dueInDays);
-  // calculateDueDate(
-  //   requestSentDate,
-  //   requestDocument.reminderFrequency,
-  //   requestDocument?.customInterval,
-  //   requestDocument?.customUnit
-  // );
-
-  // send reminders 3 days after due date
-  const remindInDays = 3;
-  const nextReminderDate = calculateDaysFromNow(remindInDays);
-  // calculateNextReminderDate(
-  //   dueDate,
-  //   requestDocument.reminderFrequency
-  // );
-
-  const participantsData = (requestDocument.participants || []).map(
-    (participant) => ({
-      _id:
-        participant._id instanceof ObjectId
-          ? participant._id
-          : new ObjectId(participant._id),
-      paymentAmount: null,
-      paidDate: null,
-      amount: participant.amount ?? null,
-      reminderSent: false,
-      reminderSentDate: null,
-      requestSentDate: new Date(),
-    })
-  );
-
-  return {
-    _id: presetId || new ObjectId(), // <— key change: use caller-provided id when present
-    requestDate: requestSentDate,
-    dueDate,
-    amount: requestDocument.amount,
-    totalAmount: requestDocument.totalAmount,
-    totalAmountOwed: requestDocument.totalAmountOwed,
-    nextReminderDate,
-    amount: requestDocument.amount,
-    participants: participantsData,
-  };
-}
 
 // ------------------------ Sender ------------------------
 
@@ -368,17 +353,18 @@ async function processRecurringRequestIfDue(
   const startTimingValue = normalizeStartTiming(requestDocument.startTiming);
   const hasInitialRequestBeenSent = !!requestDocument.lastSent;
 
-  // if (requestDocument?.isPaused) {
-  //   return { sent: false, reason: "request_paused" };
-  // }
-  // if (requestDocument?.isDeleted) {
-  //   return { sent: false, reason: "request_deleted" };
-  // }
+  const requestNextDueDate = calculateDueDate(
+    currentDate,
+    requestDocument.frequency,
+    requestDocument?.customInterval,
+    requestDocument?.customUnit
+  );
 
   console.log("processing requests for scheduler:", requestDocument.name);
-  // Initial request
+
   if (!hasInitialRequestBeenSent) {
     if (startTimingValue && startTimingValue !== "now") {
+      // FOR SCHEDULED REQUEST (START TIMING NOT NOW)
       if (
         sameOrAfterDayInTimezone(
           currentDate,
@@ -388,118 +374,78 @@ async function processRecurringRequestIfDue(
         )
       ) {
         // handle dynamic cost
-        handleDynamicCost(requestDocument)
+        const updatedRequestDocument = await handleDynamicCost(requestDocument);
+        requestDocument = updatedRequestDocument;
 
-        const requestSentDate = currentDate;
-        // Generate history id up front and pass it through
         const paymentHistoryId = new ObjectId();
         const paymentHistoryEntry = createPaymentHistoryEntry(
           requestDocument,
-          requestSentDate,
           paymentHistoryId
         );
 
-      
+        await sendToAllParticipants({
+          requestDocument,
+          paymentHistoryEntry,
+          paymentHistoryId,
+          kind: "initial",
+        });
 
-        for (const participant of requestDocument.participants || []) {
-          try {
-            await sendPaymentRequestToParticipant({
-              request: requestDocument,
-              participant,
-              paymentHistoryId,
-              dueDate: paymentHistoryEntry.dueDate,
-            });
-          } catch (error) {
-            schedulerMetrics.lastRunErrors++;
-            console.error(
-              "Error sending initial request to participant:",
-              participant?._id,
-              error?.message || error
-            );
-          }
-        }
-
-        await Request.updateOne(
-          {
-            _id: requestDocument._id,
-            $or: [{ lastSent: { $exists: false } }, { lastSent: null }],
-          },
-          {
-            $push: { paymentHistory: paymentHistoryEntry },
-            $set: { lastSent: requestSentDate },
-          }
-        );
+        await persistSend({
+          requestDocument,
+          paymentHistoryEntry,
+          currentDate,
+          requestNextDueDate,
+        });
 
         schedulerMetrics.lastRunSentCount++;
         return { sent: true, reason: "initial" };
       }
     }
     return { sent: false, reason: "initial_not_due" };
-  }
+  } else {
+    // Recurring request
+    if (
+      isRequestDueByFrequency(
+        requestDocument.lastSent,
+        requestDocument.frequency,
+        requestDocument.customInterval,
+        requestDocument.customUnit,
+        currentDate
+      )
+    ) {
+      console.log("RECURRING REQUEST DUE", requestDocument.name);
 
-  // Recurring request
-  if (
-    isRequestDueByFrequency(
-      requestDocument.lastSent,
-      requestDocument.frequency,
-      requestDocument.customInterval,
-      requestDocument.customUnit,
-      currentDate
-    )
-  ) {
-    console.log("RECURRING REQUEST DUE", requestDocument.name);
-    const requestSentDate = currentDate;
+      // handle dynamic cost
+      const updatedRequestDocument = await handleDynamicCost(requestDocument);
+      requestDocument = updatedRequestDocument;
 
-    // DYNAMIC COST
-    handleDynamicCost(requestDocument);
+      const paymentHistoryId = new ObjectId();
+      const paymentHistoryEntry = createPaymentHistoryEntry(
+        requestDocument,
+        paymentHistoryId
+      );
 
-    const paymentHistoryId = new ObjectId();
-    const paymentHistoryEntry = createPaymentHistoryEntry(
-      requestDocument,
-      requestSentDate,
-      paymentHistoryId
-    );
+      await sendToAllParticipants({
+        requestDocument,
+        paymentHistoryEntry,
+        paymentHistoryId,
+        kind: "recurring",
+      });
 
-    for (const participant of requestDocument.participants || []) {
-      try {
-        await sendPaymentRequestToParticipant({
-          request: requestDocument,
-          participant,
-          paymentHistoryId,
-          dueDate: paymentHistoryEntry.dueDate,
-        });
-      } catch (error) {
-        schedulerMetrics.lastRunErrors++;
-        console.error(
-          "Error sending recurring request to participant:",
-          participant?._id,
-          error?.message || error
-        );
-      }
+      await persistSend({
+        requestDocument,
+        paymentHistoryEntry,
+        currentDate,
+        requestNextDueDate,
+      });
+
+      schedulerMetrics.lastRunSentCount++;
+      return { sent: true, reason: "recurrence" };
     }
-
-    const requestNextDueDate = calculateDueDate(
-      currentDate,
-      requestDocument.frequency,
-      requestDocument?.customInterval,
-      requestDocument?.customUnit
-    );
-
-
-    await Request.updateOne(
-      { _id: requestDocument._id, lastSent: requestDocument.lastSent },
-      {
-        $push: { paymentHistory: paymentHistoryEntry },
-        $set: { lastSent: requestSentDate, nextDue: requestNextDueDate },
-      }
-    );
-
-    schedulerMetrics.lastRunSentCount++;
-    return { sent: true, reason: "recurrence" };
   }
+
   return { sent: false, reason: "not_due" };
 }
-
 // ------------------------ Cron Scheduler + Status ------------------------
 
 function _updateNextRun() {

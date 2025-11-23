@@ -140,9 +140,9 @@ const RecurringCostsSection = ({
   function FormatDueDate(isoString) {
     const date = new Date(isoString);
 
-    const month = date.getUTCMonth() + 1; // months are 0-based
-    const day = date.getUTCDate();
-    const year = date.getUTCFullYear();
+    const month = date.getMonth() + 1; // local month
+    const day = date.getDate(); // local day
+    const year = date.getFullYear(); // local year
 
     return `${month}/${day}/${year}`;
   }
