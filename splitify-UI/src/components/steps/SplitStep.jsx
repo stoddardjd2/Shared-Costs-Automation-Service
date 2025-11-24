@@ -897,7 +897,7 @@ const SplitStep = ({
               {
                 key: "one-time",
                 label: "One-time",
-                subLabel: "Send once and stop",
+                subLabel: "Send only once",
               },
               {
                 key: "daily",

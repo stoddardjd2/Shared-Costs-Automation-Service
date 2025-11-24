@@ -79,9 +79,9 @@ export default function HowItWorks() {
       imgSrc: demo2Img,
     },
     {
-      title: "Get paid fast",
+      title: "Get paid back",
       description:
-        "Splitify sends texts until you get paid, provides a link to pay and tracks everything.",
+        "Splitify sends texts messages until everyone pays you back and it tracks everything.",
       imgSrc: demo1Img,
     },
   ];
