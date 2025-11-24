@@ -109,7 +109,7 @@ const SplitStep = ({
   // Local state for recurring options - use existing values in edit mode
   const [showRecurringOptions, setShowRecurringOptions] = useState(false);
   const [recurringType, setRecurringType] = useState(
-    selectedCharge?.frequency?.toLowerCase() || null
+    selectedCharge?.frequency?.toLowerCase() || "one-time"
   );
   const [originalFrequency, setOriginalFrequency] = useState(
     selectedCharge?.frequency?.toLowerCase()
@@ -359,6 +359,8 @@ const SplitStep = ({
     function roundToTwo(num) {
       const n = Number(num);
       if (Number.isNaN(n));
+      console.log("ROUNDING",n.toFixed(2) )
+
       return Number(n.toFixed(2));
     }
     const costEntry = generateCostEntry({
@@ -374,13 +376,24 @@ const SplitStep = ({
       totalSplit,
       editableTotalAmount,
     });
-
+    console.log("LENGTH", selectedPeople.length)
+    console.log("AMOUNTS:", splitType === "percentage" || splitType === "custom"
+        ? null
+        : splitType === "equalWithMe"
+        ? Number(roundToTwo(editableTotalAmount / (selectedPeople.length + 1)))
+        : splitType === "equal"
+        ? Number(roundToTwo(editableTotalAmount / selectedPeople.length))
+        : undefined )
     // Override cost entry properties with current state values to ensure accuracy
     costEntry.splitType = splitType;
     costEntry.amount =
-      splitType == "percentage"
+      splitType === "percentage" || splitType === "custom"
         ? null
-        : Number(roundToTwo(editableTotalAmount / (participants.length + 1)));
+        : splitType === "equalWithMe"
+        ? Number(roundToTwo(editableTotalAmount / (selectedPeople.length + 1)))
+        : splitType === "equal"
+        ? Number(roundToTwo(editableTotalAmount / selectedPeople.length))
+        : undefined;
     costEntry.totalAmount = roundToTwo(Number(editableTotalAmount));
     costEntry.frequency = recurringType === "none" ? null : recurringType;
     costEntry.customInterval =

@@ -201,17 +201,12 @@ export default function generateCostEntry({
     newChargeDetails?.name ||
     "Untitled Charge";
 
-  const chargeAmount =
-    splitType === "customTotal"
-      ? Number(customAmounts["total"] || 0)
-      : selectedCharge?.lastAmount || totalSplit || 0;
 
   const currentDate = new Date().toISOString().split("T")[0];
 
   console.log("recurringType", recurringType);
   return {
     name: chargeName,
-    amount: chargeAmount,
     isRecurring: recurringType == "one-time" ? false : true,
     plaidMatch: selectedCharge?.plaidMatch || null,
     participants: participants,

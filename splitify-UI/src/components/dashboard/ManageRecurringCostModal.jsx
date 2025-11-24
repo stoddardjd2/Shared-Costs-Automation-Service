@@ -15,6 +15,8 @@ import {
   Settings,
   Users,
   ParkingCircle,
+  EditIcon,
+  Edit3,
 } from "lucide-react";
 import { useData } from "../../contexts/DataContext";
 import { getPaymentStatusColor } from "../../utils/helpers";
@@ -330,15 +332,26 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                 <ArrowLeft className="w-6 h-6 text-gray-700" />
               </button>
               <div className="flex-1">
-                <h1 className="text-3xl font-bold whitespace-nowrap text-gray-900">
-                  Manage Request
+                <h1 className="text-3xl capitalize font-bold whitespace-nowrap text-gray-900">
+                  {cost.name}
                 </h1>
                 <p className="text-gray-600">
-                  View payment history or update future requests
+                  View payment history or edit
                 </p>
               </div>
               <div className="flex flex-wrap items-end justify-end">
                 <div className="flex justify-between gap-10 ml-2">
+                  <button
+                    onClick={()=>setShowSplitStep(true)}
+                    // className={`text-white px-4 py-3 rounded-lg transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                    //   isPaused ? "bg-green-500 hover:bg-green-600" : "bg-yellow-500 hover:bg-yellow-600"
+                    // }`}
+                    className="w-fit mr-auto text-gray-600 hover:text-black py-1 rounded-lg transition-all flex items-center justify-start gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <EditIcon className="w-5 h-5 flex-shrink-0 " />
+                    Edit
+                  </button>
+
                   <PauseRequestBtn
                     requestId={cost._id}
                     isPausedPassed={cost?.isPaused}
@@ -352,7 +365,7 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
             </div>
 
             {/* Update Future Requests Button - only show for recurring costs */}
-            <div className="mb-6">
+            {/* <div className="mb-6">
               <button
                 onClick={() => setShowSplitStep(true)}
                 className="w-full p-4 bg-white hover:bg-gray-100 rounded-xl border border-gray-200 transition-all flex items-center justify-between"
@@ -370,7 +383,7 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                 </div>
                 <ArrowLeft className="w-5 h-5 text-gray-500 rotate-180" />
               </button>
-            </div>
+            </div> */}
 
             {/* Payment History Section */}
             <div className="mb-6">

@@ -284,7 +284,7 @@ export default function PaymentHistoryParticipantDetails({
             />
             <DetailRow
               icon={<RefreshCw className="w-4 h-4" />}
-              label="Reminder on"
+              label="Next Reminder"
               value={
                 paymentHistoryRequest?.nextReminderDate
                   ? formatReminderLocalDatePlus2pmPST(

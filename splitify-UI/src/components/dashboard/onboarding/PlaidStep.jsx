@@ -32,7 +32,7 @@ export default function PlaidStep({
       <SectionTitle
         icon={<PiggyBank className="w-6 h-6" />} // unique vs options
         title="Automate real bills from your bank?"
-        subtitle="We’ll import transactions and update splits automatically."
+        subtitle="We’ll import transactions and update requests automatically."
       />
 
       <OptionsGrid>

@@ -847,6 +847,7 @@ const handlePaymentDetails = async (req, res) => {
       },
     });
 
+    console.log("REQUEST DOC OWNER", "691d3c38614eeb3bce23fb0a")
     const owner = await User.findById(new ObjectId(requestDocument.owner));
     const OwnerName = owner.name;
     const ownerPaymentMethods = owner.paymentMethods;
