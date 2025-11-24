@@ -6,7 +6,7 @@ export default function DropdownOptionSection({
   title,
   hideTitle,
   isEditMode = false,
-  editNote = "*Changes will apply for future requests",
+  editNote = "*Change will apply for future requests",
   options = [],
   selectedKey = null,
   onSelect,

@@ -1428,6 +1428,7 @@ const SplitStep = ({
           icon={<TrendingUp className="w-4 h-4 text-gray-500 shrink-0" />}
           infoContent={`Cost tracking is useful when you have recurring expenses that increase or decrease. 
      Requests will be updated with the new amount each cycle.`}
+          isEditMode={isEditMode}
           options={[
             {
               key: "fixed",
