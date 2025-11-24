@@ -307,6 +307,7 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
               isEditMode={true}
               percentageAmounts={splitState.percentageAmounts}
               setPercentageAmounts={splitState.setPercentageAmounts}
+              isEditingOneTimeRequest={!isRecurringCost}
             />
           </div>
         </div>
@@ -351,29 +352,25 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
             </div>
 
             {/* Update Future Requests Button - only show for recurring costs */}
-            {isRecurringCost && (
-              <div className="mb-6">
-                <button
-                  onClick={() => setShowSplitStep(true)}
-                  className="w-full p-4 bg-white hover:bg-gray-100 rounded-xl border border-gray-200 transition-all flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
-                      <Settings className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="text-left">
-                      <h4 className="font-semibold text-gray-900">
-                        {cost.name}
-                      </h4>
-                      <p className="text-gray-600 text-sm">
-                        Edit request details
-                      </p>
-                    </div>
+            <div className="mb-6">
+              <button
+                onClick={() => !isRecurringCost && setShowSplitStep(true)}
+                className="w-full p-4 bg-white hover:bg-gray-100 rounded-xl border border-gray-200 transition-all flex items-center justify-between"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
+                    <Settings className="w-4 h-4 text-white" />
                   </div>
-                  <ArrowLeft className="w-5 h-5 text-gray-500 rotate-180" />
-                </button>
-              </div>
-            )}
+                  <div className="text-left">
+                    <h4 className="font-semibold text-gray-900">{cost.name}</h4>
+                    <p className="text-gray-600 text-sm">
+                      Edit request details
+                    </p>
+                  </div>
+                </div>
+                <ArrowLeft className="w-5 h-5 text-gray-500 rotate-180" />
+              </button>
+            </div>
 
             {/* Payment History Section */}
             <div className="mb-6">
@@ -429,7 +426,10 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                                   {/* <Clock className="w-5 h-5" /> */}
                                   <span className="text-lg  flex justify-center items-baseline row-x-3 flex-col-reverse xxs:flex-row">
                                     <span className="mr-2 text-sm text-gray-500 false">
-                                      Due{" "} <span className="inline xxs:hidden">date</span>
+                                      Due{" "}
+                                      <span className="inline xxs:hidden">
+                                        date
+                                      </span>
                                     </span>
                                     <span className="text-lg text-gray-900">
                                       {new Date(

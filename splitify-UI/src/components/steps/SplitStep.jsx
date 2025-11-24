@@ -78,6 +78,7 @@ const SplitStep = ({
   disableDynamicCosts = false,
   setSelectedCost,
   setNewChargeDetails,
+  isEditingOneTimeRequest = false,
 }) => {
   const navigate = useNavigate();
   if (!selectedPeople || selectedPeople.length == 0) {
@@ -398,7 +399,7 @@ const SplitStep = ({
     costEntry.selectedTransaction = selectedTransaction;
 
     // NOT CONFIGURABLE FOR USER YET!
-    costEntry.requestFrequency = "daily";
+    // costEntry.requestFrequency = "daily";
 
     costEntry.allowMarkAsPaidForEveryone = allowMarkAsPaidForEveryone;
     costEntry.isPlaidCharge = isPlaidCharge;
@@ -851,28 +852,29 @@ const SplitStep = ({
               }`}
           />
         </div>
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Total Amount to Split
-          </h3>
-          <div className="relative">
-            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="number"
-              step="0.01"
-              onWheel={(e) => e.target.blur()} // 👈 disables scroll-to-change
-              value={editableTotalAmount == 0 ? "" : editableTotalAmount}
-              onChange={(e) => {
-                const newAmount = e.target.value;
-                setEditableTotalAmount(newAmount);
-                if (newAmount >= 0) {
-                  setLastKnownGoodAmount(newAmount);
-                }
-                setEditableTotalAmount(newAmount);
-              }}
-              placeholder="Enter total amount"
-              disabled={splitType === "custom" || isPlaidCharge}
-              className={`pl-10 pr-4 py-3 outline-none text-base 
+        {!isEditingOneTimeRequest && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Total Amount to Split
+            </h3>
+            <div className="relative">
+              <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="number"
+                step="0.01"
+                onWheel={(e) => e.target.blur()} // 👈 disables scroll-to-change
+                value={editableTotalAmount == 0 ? "" : editableTotalAmount}
+                onChange={(e) => {
+                  const newAmount = e.target.value;
+                  setEditableTotalAmount(newAmount);
+                  if (newAmount >= 0) {
+                    setLastKnownGoodAmount(newAmount);
+                  }
+                  setEditableTotalAmount(newAmount);
+                }}
+                placeholder="Enter total amount"
+                disabled={splitType === "custom" || isPlaidCharge}
+                className={`pl-10 pr-4 py-3 outline-none text-base 
 
                 w-full flex items-center justify-between text-left p-3 rounded-xl border bg-white 
             transition-all hover:border-gray-300
@@ -882,265 +884,270 @@ const SplitStep = ({
             ? "bg-gray-100 text-gray-500 "
             : "bg-white focus:ring-2  border-gray-200 focus:ring-blue-600 focus:border-transparent"
         }`}
-            />
+              />
+            </div>
           </div>
-        </div>
-
+        )}
         {/* Payment Schedule */}
-        <div>
-          {/* Frequency (new) */}
-          <DropdownOptionSection
-            title="Frequency"
-            isEditMode={isEditMode}
-            selectedKey={recurringType || null}
-            options={[
-              {
-                key: "one-time",
-                label: "One-time",
-                subLabel: "Send only once",
-              },
-              {
-                key: "daily",
-                label: "Daily",
-                subLabel: "Sends every day",
-              },
-              {
-                key: "weekly",
-                label: "Weekly",
-                subLabel: "Sends every week",
-              },
-              {
-                key: "biweekly",
-                label: "Biweekly",
-                subLabel: "Sends every 2 weeks",
-              },
-              {
-                key: "monthly",
-                label: "Monthly",
-                subLabel: "Sends every month",
-              },
-              {
-                key: "yearly",
-                label: "Yearly",
-                subLabel: "Sends once per year",
-              },
-              {
-                key: "custom",
-                label: "Custom",
-                subLabel: "Set your own interval",
-              },
-            ]}
-            columns={2}
-            icon={<Clock className="w-4 h-4 text-gray-500" />}
-            onSelect={(key) => {
-              setRecurringType(key);
+        {!isEditingOneTimeRequest && (
+          <div>
+            {/* Frequency (new) */}
+            <DropdownOptionSection
+              title="Frequency"
+              isEditMode={isEditMode}
+              selectedKey={recurringType || null}
+              options={[
+                {
+                  key: "one-time",
+                  label: "One-time",
+                  subLabel: "Send only once",
+                },
+                {
+                  key: "daily",
+                  label: "Daily",
+                  subLabel: "Sends every day",
+                },
+                {
+                  key: "weekly",
+                  label: "Weekly",
+                  subLabel: "Sends every week",
+                },
+                {
+                  key: "biweekly",
+                  label: "Biweekly",
+                  subLabel: "Sends every 2 weeks",
+                },
+                {
+                  key: "monthly",
+                  label: "Monthly",
+                  subLabel: "Sends every month",
+                },
+                {
+                  key: "yearly",
+                  label: "Yearly",
+                  subLabel: "Sends once per year",
+                },
+                {
+                  key: "custom",
+                  label: "Custom",
+                  subLabel: "Set your own interval",
+                },
+              ]}
+              columns={2}
+              icon={<Clock className="w-4 h-4 text-gray-500" />}
+              onSelect={(key) => {
+                setRecurringType(key);
 
-              // If they switch away from custom, clear custom inputs
-              if (key !== "custom") {
-                setCustomInterval("");
-                setCustomUnit("days");
-              }
+                // If they switch away from custom, clear custom inputs
+                if (key !== "custom") {
+                  setCustomInterval("");
+                  setCustomUnit("days");
+                }
 
-              // Your old logic: one-time disables dynamic
-              if (key === "one-time") {
-                setIsDynamic(false);
-              }
-            }}
-          />
+                // Your old logic: one-time disables dynamic
+                if (key === "one-time") {
+                  setIsDynamic(false);
+                }
+              }}
+            />
 
-          {/* Custom Interval Input (same as before, but unit uses component) */}
-          {recurringType === "custom" && (
-            <div className="mb-4 mt-3">
-              <div className="flex gap-2">
-                {/* Every (Number) Input */}
-                <div className="flex-1">
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
-                    Every
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={customInterval}
-                    onChange={(e) =>
-                      setCustomInterval(parseInt(e.target.value, 10) || "")
-                    }
-                    className={` text-sm outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent
+            {/* Custom Interval Input (same as before, but unit uses component) */}
+            {recurringType === "custom" && (
+              <div className="mb-4 mt-3">
+                <div className="flex gap-2">
+                  {/* Every (Number) Input */}
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Every
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={customInterval}
+                      onChange={(e) =>
+                        setCustomInterval(parseInt(e.target.value, 10) || "")
+                      }
+                      className={` text-sm outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent
                     
                     w-full flex items-center justify-between text-left p-3 rounded-xl border bg-white 
             transition-all hover:border-gray-300
             border-gray-200
                     `}
-                  />
-                </div>
+                    />
+                  </div>
 
-                {/* Unit (new) */}
-                <div className="flex-1">
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
-                    Unit
-                  </label>
-                  <DropdownOptionSection
-                    title="Unit"
-                    hideTitle={true}
-                    selectedKey={customUnit}
-                    options={[
-                      {
-                        key: "days",
-                        label: "Days",
-                      },
-                      {
-                        key: "weeks",
-                        label: "Weeks",
-                      },
-                      {
-                        key: "months",
-                        label: "Months",
-                      },
-                      {
-                        key: "years",
-                        label: "Years",
-                      },
-                    ]}
-                    columns={2}
-                    dropdownMaxHeight={220}
-                    dropdownMargin={8}
-                    onSelect={(key) => setCustomUnit(key)}
-                  />
+                  {/* Unit (new) */}
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Unit
+                    </label>
+                    <DropdownOptionSection
+                      title="Unit"
+                      hideTitle={true}
+                      selectedKey={customUnit}
+                      options={[
+                        {
+                          key: "days",
+                          label: "Days",
+                        },
+                        {
+                          key: "weeks",
+                          label: "Weeks",
+                        },
+                        {
+                          key: "months",
+                          label: "Months",
+                        },
+                        {
+                          key: "years",
+                          label: "Years",
+                        },
+                      ]}
+                      columns={2}
+                      dropdownMaxHeight={220}
+                      dropdownMargin={8}
+                      onSelect={(key) => setCustomUnit(key)}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* Split Method Selection - Always visible */}
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Split Method
-          </h3>
-          <div className="grid grid-cols-2 gap-3">
-            <div
-              onClick={() => setSplitType("equalWithMe")}
-              className={`p-4 col-span-1 rounded-xl border-2 cursor-pointer transition-all ${
-                splitType === "equalWithMe"
-                  ? "border-blue-600 bg-blue-50"
-                  : "border-gray-200 bg-white hover:border-gray-300"
-              }`}
-            >
-              <div className="flex flex-col items-center text-center gap-2">
-                {/* <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
+        {!isEditingOneTimeRequest && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Split Method
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div
+                onClick={() => setSplitType("equalWithMe")}
+                className={`p-4 col-span-1 rounded-xl border-2 cursor-pointer transition-all ${
+                  splitType === "equalWithMe"
+                    ? "border-blue-600 bg-blue-50"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                }`}
+              >
+                <div className="flex flex-col items-center text-center gap-2">
+                  {/* <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
                   <User className="w-4 h-4 text-white" />
                 </div> */}
-                <div className="flex gap-2 items-center justify-center">
-                  <div
-                    className={`w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-semibold text-sm`}
-                  >
-                    {avatar}
+                  <div className="flex gap-2 items-center justify-center">
+                    <div
+                      className={`w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-semibold text-sm`}
+                    >
+                      {avatar}
+                    </div>
+                    <strong className="text-lg font-semibold">+</strong>
+                    <SelectedPeopleDisplay
+                      size={8}
+                      hideCount={true}
+                      selectedPeople={selectedPeople}
+                      rounded="lg"
+                    />
                   </div>
-                  <strong className="text-lg font-semibold">+</strong>
+
+                  <div>
+                    <h4 className="font-semibold text-gray-900 text-sm">
+                      Equal Split (including you)
+                    </h4>
+                    <p className="text-gray-600 text-xs">
+                      Divide equally between everyone
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                onClick={() => setSplitType("equal")}
+                className={`p-4 rounded-xl col-span-1 border-2 cursor-pointer transition-all ${
+                  splitType === "equal"
+                    ? "border-blue-600 bg-blue-50"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                }`}
+              >
+                <div className="flex flex-col items-center text-center gap-2">
                   <SelectedPeopleDisplay
                     size={8}
                     hideCount={true}
                     selectedPeople={selectedPeople}
                     rounded="lg"
                   />
-                </div>
-
-                <div>
-                  <h4 className="font-semibold text-gray-900 text-sm">
-                    Equal Split (including you)
-                  </h4>
-                  <p className="text-gray-600 text-xs">
-                    Divide equally between everyone
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div
-              onClick={() => setSplitType("equal")}
-              className={`p-4 rounded-xl col-span-1 border-2 cursor-pointer transition-all ${
-                splitType === "equal"
-                  ? "border-blue-600 bg-blue-50"
-                  : "border-gray-200 bg-white hover:border-gray-300"
-              }`}
-            >
-              <div className="flex flex-col items-center text-center gap-2">
-                <SelectedPeopleDisplay
-                  size={8}
-                  hideCount={true}
-                  selectedPeople={selectedPeople}
-                  rounded="lg"
-                />
-                <div>
-                  <h4 className="font-semibold text-gray-900 text-sm">
-                    Equal Split (participants)
-                  </h4>
-                  <p className="text-gray-600 text-xs">
-                    Divide equally between participants
-                  </p>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 text-sm">
+                      Equal Split (participants)
+                    </h4>
+                    <p className="text-gray-600 text-xs">
+                      Divide equally between participants
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div
-              onClick={() => setSplitType("percentage")}
-              className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                splitType === "percentage"
-                  ? "border-blue-600 bg-blue-50"
-                  : "border-gray-200 bg-white hover:border-gray-300"
-              }`}
-            >
-              <div className="flex flex-col items-center text-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center">
-                  <Percent className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900 text-sm">
-                    Percentage
-                  </h4>
-                  <p className="text-gray-600 text-xs">By percentage</p>
+              <div
+                onClick={() => setSplitType("percentage")}
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  splitType === "percentage"
+                    ? "border-blue-600 bg-blue-50"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                }`}
+              >
+                <div className="flex flex-col items-center text-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center">
+                    <Percent className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 text-sm">
+                      Percentage
+                    </h4>
+                    <p className="text-gray-600 text-xs">By percentage</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <button
-              disabled={isDynamic}
-              onClick={() => setSplitType("custom")}
-              className={`p-4 rounded-xl border-2 transition-all ${
-                isDynamic
-                  ? "border-gray-200 bg-gray-100 cursor-not-allowed opacity-60"
-                  : splitType === "custom"
-                  ? "border-blue-600 bg-blue-50 cursor-pointer"
-                  : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
-              }`}
-            >
-              <div className="flex flex-col items-center text-center gap-2">
-                <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                    isDynamic ? "bg-blue-600" : "bg-blue-600"
-                  }`}
-                >
-                  <DollarSign className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <h4
-                    className={`font-semibold text-sm ${
-                      isDynamic ? "text-gray-400" : "text-gray-900"
+              <button
+                disabled={isDynamic}
+                onClick={() => setSplitType("custom")}
+                className={`p-4 rounded-xl border-2 transition-all ${
+                  isDynamic
+                    ? "border-gray-200 bg-gray-100 cursor-not-allowed opacity-60"
+                    : splitType === "custom"
+                    ? "border-blue-600 bg-blue-50 cursor-pointer"
+                    : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
+                }`}
+              >
+                <div className="flex flex-col items-center text-center gap-2">
+                  <div
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                      isDynamic ? "bg-blue-600" : "bg-blue-600"
                     }`}
                   >
-                    Custom
-                  </h4>
-                  <p
-                    className={`text-xs ${
-                      isDynamic ? "text-gray-400" : "text-gray-600"
-                    }`}
-                  >
-                    Set amounts
-                  </p>
+                    <DollarSign className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h4
+                      className={`font-semibold text-sm ${
+                        isDynamic ? "text-gray-400" : "text-gray-900"
+                      }`}
+                    >
+                      Custom
+                    </h4>
+                    <p
+                      className={`text-xs ${
+                        isDynamic ? "text-gray-400" : "text-gray-600"
+                      }`}
+                    >
+                      Set amounts
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </button>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
+
         {/* Percentage Split Input - Visible when percentage selected */}
         {splitType === "percentage" && (
           <div className="mb-6">
@@ -1308,6 +1315,7 @@ const SplitStep = ({
         </h3>
         {/* Only show when making initial request */}
         <DropdownOptionSection
+          isHidden={isEditingOneTimeRequest}
           title="Due date"
           hideTitle={true}
           isEditMode={isEditMode}
@@ -1348,6 +1356,7 @@ const SplitStep = ({
         <DropdownOptionSection
           title="Reminder frequency"
           hideTitle={true}
+          isHidden={isEditingOneTimeRequest}
           isEditMode={isEditMode}
           selectedKey={reminderFrequency}
           icon={<Bell className="w-4 h-4 text-gray-500 shrink-0" />}
@@ -1429,6 +1438,7 @@ const SplitStep = ({
           infoContent={`Cost tracking is useful when you have recurring expenses that increase or decrease. 
      Requests will be updated with the new amount each cycle.`}
           isEditMode={isEditMode}
+          isHidden={isEditingOneTimeRequest}
           options={[
             {
               key: "fixed",
@@ -1515,7 +1525,7 @@ const SplitStep = ({
             isEditMode ? (
               <>
                 <Edit3 className="w-5 h-5" />
-                Update Future Requests
+                Update Request
               </>
             ) : startTiming === "now" ? (
               <>

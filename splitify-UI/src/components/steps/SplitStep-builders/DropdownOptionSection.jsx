@@ -16,8 +16,8 @@ export default function DropdownOptionSection({
   dropdownMargin = 8,
   icon,
   infoContent,
-  bottomOffset = 177 //for tray
-
+  bottomOffset = 177, //for tray
+  isHidden,
 }) {
   const [open, setOpen] = useState(false);
   const [direction, setDirection] = useState("down");
@@ -124,6 +124,8 @@ export default function DropdownOptionSection({
     setOpen(false);
   };
 
+  if (isHidden) return null;
+  
   return (
     <div className="space-y-2 mb-6">
       {!hideTitle && (
@@ -251,7 +253,7 @@ export default function DropdownOptionSection({
                             ? "bg-gray-50 border-gray-200 text-gray-400"
                             : active
                             ? "bg-blue-50 border-blue-600 shadow-sm"
-                            : "bg-white border-gray-200 hover:border-gray-300"
+                            : "bg-white border-gray-200 hover:border-gray-400"
                         }`}
                     >
                       {opt.premium && (

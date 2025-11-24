@@ -167,50 +167,51 @@ export default function PaymentHistoryParticipantDetails({
   // Main formatter:
   // - keeps the user's local DATE from input
   // - appends the user's local TIME corresponding to 2pm Los Angeles
- function formatReminderLocalDatePlus2pmPST(input) {
-  try {
-    const raw = input && input.$date ? input.$date : input;
-    const base = new Date(raw);
-    if (Number.isNaN(base)) return "";
+  function formatReminderLocalDatePlus2pmPST(input) {
+    try {
+      const raw = input && input.$date ? input.$date : input;
+      const base = new Date(raw);
+      if (Number.isNaN(base)) return "";
 
-    // --- A) Date part in USER'S LOCAL TIMEZONE (NO YEAR) ---
-    const datePart = new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      day: "numeric",
-    }).format(base);
+      // --- A) Date part in USER'S LOCAL TIMEZONE (NO YEAR) ---
+      const datePart = new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+      }).format(base);
 
-    // --- B) Get the LA calendar day for this reminder ---
-    const laParts = new Intl.DateTimeFormat("en-US", {
-      timeZone: "America/Los_Angeles",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).formatToParts(base);
+      // --- B) Get the LA calendar day for this reminder ---
+      const laParts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Los_Angeles",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).formatToParts(base);
 
-    const laGet = (type) => Number(laParts.find((p) => p.type === type).value);
+      const laGet = (type) =>
+        Number(laParts.find((p) => p.type === type).value);
 
-    const laY = laGet("year");
-    const laM = laGet("month");
-    const laD = laGet("day");
+      const laY = laGet("year");
+      const laM = laGet("month");
+      const laD = laGet("day");
 
-    // --- C) Convert “2 PM Los Angeles” on that LA date -> UTC instant ---
-    const twoPmLAUtcInstant = zonedTimeToUtc(
-      { y: laY, m: laM, d: laD, h: 14, mi: 0, s: 0 },
-      "America/Los_Angeles"
-    );
+      // --- C) Convert “2 PM Los Angeles” on that LA date -> UTC instant ---
+      const twoPmLAUtcInstant = zonedTimeToUtc(
+        { y: laY, m: laM, d: laD, h: 14, mi: 0, s: 0 },
+        "America/Los_Angeles"
+      );
 
-    // --- D) Format as USER LOCAL TIME ---
-    const timePart = new Intl.DateTimeFormat("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-    }).format(twoPmLAUtcInstant);
+      // --- D) Format as USER LOCAL TIME ---
+      const timePart = new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+      }).format(twoPmLAUtcInstant);
 
-    return `${datePart}, ${timePart}`;
-  } catch (err) {
-    console.log("invalid time value @ formatReminderLocalDatePlus2pmPST");
-    return "";
+      return `${datePart}, ${timePart}`;
+    } catch (err) {
+      console.log("invalid time value @ formatReminderLocalDatePlus2pmPST");
+      return "";
+    }
   }
-}
   return (
     <div className="flex flex-col gap-3 border border-gray-100 bg-white p-3 sm:p-4 rounded-2xl shadow-sm">
       {/* Top row */}
@@ -284,9 +285,13 @@ export default function PaymentHistoryParticipantDetails({
             <DetailRow
               icon={<RefreshCw className="w-4 h-4" />}
               label="Reminder on"
-              value={formatReminderLocalDatePlus2pmPST(
+              value={
                 paymentHistoryRequest?.nextReminderDate
-              )}
+                  ? formatReminderLocalDatePlus2pmPST(
+                      paymentHistoryRequest?.nextReminderDate
+                    )
+                  : "Disabled"
+              }
             />
             <DetailRow
               icon={<EyeIcon className="w-4 h-4" />}

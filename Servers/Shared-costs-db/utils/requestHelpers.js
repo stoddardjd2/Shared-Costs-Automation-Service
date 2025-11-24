@@ -128,7 +128,7 @@ function createPaymentHistoryEntry(
     amount: requestData.amount,
     totalAmount: requestData.totalAmount,
     totalAmountOwed: requestData.totalAmountOwed,
-    nextReminderDate: dueDate, // Reminders start on due date
+    nextReminderDate: requestData.reminderFrequency == "none" ? null : dueDate, // Reminders start on due date
     _id: paymentHistoryObjId,
     // status: "pending",
     participants: (requestData.participants || []).map((participant) => ({
