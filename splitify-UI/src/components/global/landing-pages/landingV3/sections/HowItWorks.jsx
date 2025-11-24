@@ -6,7 +6,7 @@ import demo2Img from "../assets/demo-2.png?format=webp&quality=80";
 import demo3Img from "../assets/demo-3.png?format=webp&quality=80";
 import { motion } from "framer-motion";
 import FadeInWrapper from "../builders/FadeInWrapper";
-import { useState, useRef, useEffect } from "react";f
+import { useState, useRef, useEffect } from "react";
 function StepCard({ number, title, description, imgSrc, delaySec = 0.1 }) {
   const [isVisible, setIsVisible] = useState(false);
   const cardRef = useRef(null);

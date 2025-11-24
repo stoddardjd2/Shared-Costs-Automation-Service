@@ -162,11 +162,11 @@ export default function ConfirmButtonTray({
                           {showCostTooltip && (
                             <div className="absolute bottom-full left-0 mb-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50">
                               <p className="mb-2">
-                                <strong>Dynamic Costs:</strong> Track when
+                                <strong>Cost Tracking:</strong> Track when
                                 amounts change between payment cycles
                               </p>
                               <p>
-                                Dynamic costs are useful for utilities,
+                                Variable cost tracking is useful for utilities,
                                 subscriptions, or any recurring cost that varies
                                 each period.
                               </p>
@@ -180,7 +180,7 @@ export default function ConfirmButtonTray({
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <RotateCcw className="w-3 h-3 text-blue-500" />
                       <span>{formatBillingFrequency()}</span>
-                      {isEditMode && (
+                      {/* {isEditMode && (
                         <div className="relative group">
                           <Info className="w-3 h-3 text-gray-400" />
                           <div className="absolute bottom-full right-full w-[250px] z-50 left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
@@ -194,7 +194,7 @@ export default function ConfirmButtonTray({
                             from last sent request
                           </div>
                         </div>
-                      )}
+                      )} */}
                     </div>
                   </div>
                 )}
