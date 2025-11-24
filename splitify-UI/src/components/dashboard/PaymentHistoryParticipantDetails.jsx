@@ -283,7 +283,7 @@ export default function PaymentHistoryParticipantDetails({
             />
             <DetailRow
               icon={<RefreshCw className="w-4 h-4" />}
-              label="Reminder scheduled"
+              label="Reminder on"
               value={formatReminderLocalDatePlus2pmPST(
                 paymentHistoryRequest?.nextReminderDate
               )}
@@ -299,7 +299,7 @@ export default function PaymentHistoryParticipantDetails({
             />
             <DetailRow
               icon={<UserCheck className="w-4 h-4" />}
-              label="They said its paid"
+              label="Said it’s paid"
               value={
                 participant?.participantMarkedAsPaid
                   ? monthDayHourLocal(participant?.participantMarkedAsPaidDate)
@@ -308,7 +308,7 @@ export default function PaymentHistoryParticipantDetails({
             />
             <DetailRow
               icon={<CreditCard className="w-4 h-4" />}
-              label="Likely payment method"
+              label="Payment method"
               value={
                 participant?.lastClickedPaymentMethod
                   ? participant.lastClickedPaymentMethod
@@ -335,7 +335,7 @@ function DetailRow({ icon, label, value }) {
   return (
     <div className="flex items-start gap-2">
       <div className="mt-0.5 text-gray-500">{icon}</div>
-      <div className="flex gap-1 text-nowrap flex-col xxs:flex-row">
+      <div className="flex gap-1 text-nowrap">
         <span className="font-semibold text-gray-800">{label}:</span>
         <span className="text-gray-700">{value || "—"}</span>
       </div>

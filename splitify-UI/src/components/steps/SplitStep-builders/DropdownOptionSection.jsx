@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, Crown, Info } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, useId } from "react";
+import { ChevronDown, Info, Crown } from "lucide-react";
 
 export default function DropdownOptionSection({
   title,
@@ -12,10 +12,12 @@ export default function DropdownOptionSection({
   onSelect,
   onBeforeSelect,
   columns = 2,
-  dropdownMaxHeight =400,
+  dropdownMaxHeight = 400,
   dropdownMargin = 8,
   icon,
   infoContent,
+  bottomOffset = 177 //for tray
+
 }) {
   const [open, setOpen] = useState(false);
   const [direction, setDirection] = useState("down");
@@ -25,7 +27,9 @@ export default function DropdownOptionSection({
   const infoRef = useRef(null);
   const triggerRef = useRef(null);
   const menuRef = useRef(null);
-  const backdropRef = useRef(null);
+
+  // Unique per dropdown instance
+  const instanceId = useId();
 
   const selectedOption = options.find((o) => o.key === selectedKey);
 
@@ -36,68 +40,92 @@ export default function DropdownOptionSection({
     return "grid-cols-2";
   }, [columns]);
 
-  // Close dropdown + info on outside click
+  // -----------------------------------------------------
+  // ✅ GLOBAL EVENT: close if another dropdown was opened
+  // -----------------------------------------------------
   useEffect(() => {
-    function onDocClick(e) {
-      if (
-        wrapRef.current &&
-        !wrapRef.current.contains(e.target) &&
-        infoRef.current &&
-        !infoRef.current.contains(e.target)
-      ) {
+    const handler = (e) => {
+      if (e.detail !== instanceId) {
         setOpen(false);
         setShowInfo(false);
       }
-    }
-
-    function onEsc(e) {
-      if (e.key === "Escape") {
-        setOpen(false);
-        setShowInfo(false);
-      }
-    }
-
-    document.addEventListener("mousedown", onDocClick);
-    document.addEventListener("keydown", onEsc);
-    return () => {
-      document.removeEventListener("mousedown", onDocClick);
-      document.removeEventListener("keydown", onEsc);
     };
+    window.addEventListener("dropdown-opened", handler);
+    return () => window.removeEventListener("dropdown-opened", handler);
+  }, [instanceId]);
+
+  // ---------------------------------------------
+  // ✅ OUTSIDE CLICK (without blocking scroll!)
+  // ---------------------------------------------
+  useEffect(() => {
+    function onPointerDownCapture(e) {
+      const path = e.composedPath?.() || [];
+
+      const inside =
+        (wrapRef.current && path.includes(wrapRef.current)) ||
+        (triggerRef.current && path.includes(triggerRef.current)) ||
+        (menuRef.current && path.includes(menuRef.current)) ||
+        (infoRef.current && path.includes(infoRef.current));
+
+      if (!inside) {
+        setOpen(false);
+        setShowInfo(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", onPointerDownCapture, true);
+    return () =>
+      document.removeEventListener("pointerdown", onPointerDownCapture, true);
   }, []);
 
-  // Decide up/down
+  // -----------------------------------------------------
+  // Determine if menu should open UP or DOWN
+  // -----------------------------------------------------
   useEffect(() => {
     if (!open) return;
-    const triggerEl = triggerRef.current;
-    const menuEl = menuRef.current;
-    if (!triggerEl || !menuEl) return;
 
-    const tRect = triggerEl.getBoundingClientRect();
-    const mHeight = Math.min(menuEl.scrollHeight, dropdownMaxHeight);
+    const trigger = triggerRef.current;
+    const menu = menuRef.current;
+    if (!trigger || !menu) return;
 
-    const spaceBelow = window.innerHeight - tRect.bottom;
+    const tRect = trigger.getBoundingClientRect();
+    const menuHeight = Math.min(menu.scrollHeight, dropdownMaxHeight);
+
+    // NEW: space below = viewport - bottom of trigger - bottomOffset
+    const spaceBelow = window.innerHeight - tRect.bottom - bottomOffset;
+
     const spaceAbove = tRect.top;
 
-    setDirection(
-      spaceBelow < mHeight + dropdownMargin && spaceAbove > spaceBelow
-        ? "up"
-        : "down"
-    );
-  }, [open, dropdownMaxHeight, dropdownMargin, options.length]);
+    const shouldOpenUp =
+      spaceBelow < menuHeight + dropdownMargin && spaceAbove > spaceBelow;
+
+    setDirection(shouldOpenUp ? "up" : "down");
+  }, [open, dropdownMaxHeight, dropdownMargin, bottomOffset]);
+
+  // -----------------------------------------------------
+  // Toggle dropdown
+  // -----------------------------------------------------
+  const toggleOpen = () => {
+    const next = !open;
+
+    if (next) {
+      // Notify all dropdowns this one is opening
+      window.dispatchEvent(
+        new CustomEvent("dropdown-opened", { detail: instanceId })
+      );
+    }
+
+    setOpen(next);
+  };
 
   const handleSelect = (opt) => {
-    // if (opt.disabled) return;
-
-    const allow = onBeforeSelect?.(opt);
-    if (allow === false) return;
-
+    if (onBeforeSelect?.(opt) === false) return;
     onSelect?.(opt.key);
     setOpen(false);
   };
 
   return (
     <div className="space-y-2 mb-6">
-      {/* Title + new modern tooltip */}
       {!hideTitle && (
         <div className="flex items-center gap-2 mb-3">
           <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
@@ -120,28 +148,18 @@ export default function DropdownOptionSection({
                     exit={{ opacity: 0, y: 6, x: "-50%" }}
                     transition={{ duration: 0.18 }}
                     className="
-            absolute bottom-full left-1/2 mb-2
-            w-[240px]
-            bg-white text-gray-600 text-sm rounded-2xl p-3
-            shadow-[0_4px_16px_rgba(0,0,0,0.25)]
-            border-2 border-blue-600 
-          "
+                      absolute bottom-full left-1/2 mb-2
+                      w-[240px]
+                      bg-white text-gray-600 text-sm rounded-2xl p-3
+                      shadow-[0_4px_16px_rgba(0,0,0,0.25)]
+                      border-2 border-blue-600
+                    "
                   >
                     {typeof infoContent === "string" ? (
                       <p>{infoContent}</p>
                     ) : (
                       infoContent
                     )}
-
-                    {/* Arrow */}
-                    <div
-                      className="
-              absolute top-full left-1/2 -translate-x-1/2
-              w-0 h-0 
-              border-l-6 border-r-6 border-t-6
-              border-l-transparent border-r-transparent border-t-gray-900
-            "
-                    />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -150,14 +168,14 @@ export default function DropdownOptionSection({
         </div>
       )}
 
-      {/* WRAPPER for dropdown */}
+      {/* Wrapper */}
       <div ref={wrapRef} className="relative">
         {/* Trigger */}
         <button
           ref={triggerRef}
           type="button"
-          onClick={() => setOpen((v) => !v)}
-          className={`w-full flex items-center justify-between text-left p-3 rounded-xl border bg-white 
+          onClick={toggleOpen}
+          className={`relative z-[50] w-full flex items-center justify-between text-left p-3 rounded-xl border bg-white 
             transition-all hover:border-gray-300
             ${
               open
@@ -171,11 +189,6 @@ export default function DropdownOptionSection({
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium text-gray-900 truncate flex items-center gap-2">
                 {selectedOption?.label ?? "Choose an option"}
-                {selectedOption?.badge && (
-                  <span className="text-[11px] bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full">
-                    {selectedOption.badge}
-                  </span>
-                )}
               </div>
 
               {selectedOption?.subLabel && (
@@ -195,38 +208,6 @@ export default function DropdownOptionSection({
         </button>
 
         {/* Dropdown */}
-        {/* Backdrop OUTSIDE AnimatePresence */}
-        {open && (
-          <button
-            ref={backdropRef}
-            type="button"
-            aria-hidden="true"
-            className="fixed inset-0 z-[50] cursor-default bg-transparent"
-            onPointerDown={(e) => {
-              e.preventDefault();
-              const { clientX, clientY } = e;
-
-              setOpen(false);
-              setShowInfo(false);
-
-              requestAnimationFrame(() => {
-                if (backdropRef.current) {
-                  backdropRef.current.style.pointerEvents = "none";
-                }
-                const el = document.elementFromPoint(clientX, clientY);
-                if (
-                  el &&
-                  !wrapRef.current?.contains(el) &&
-                  !triggerRef.current?.contains(el)
-                ) {
-                  el.click?.();
-                }
-              });
-            }}
-          />
-        )}
-
-        {/* Animate ONLY the menu */}
         <AnimatePresence>
           {open && (
             <motion.div
@@ -245,7 +226,7 @@ export default function DropdownOptionSection({
               }}
               transition={{ duration: 0.18, ease: "easeOut" }}
               className={`absolute z-[60] w-full rounded-2xl border border-gray-200 bg-white shadow-xl p-2 overflow-auto 
-        ${direction === "down" ? "top-full" : "bottom-full"}`}
+                ${direction === "down" ? "top-full" : "bottom-full"}`}
               style={{
                 marginTop: direction === "down" ? dropdownMargin : 0,
                 marginBottom: direction === "up" ? dropdownMargin : 0,
@@ -265,58 +246,54 @@ export default function DropdownOptionSection({
                       whileTap={!disabled ? { scale: 0.95 } : {}}
                       onClick={() => handleSelect(opt)}
                       className={`relative p-3 rounded-xl border-2 flex items-center gap-3 text-left transition-all
-    ${
-      disabled
-        ? "bg-gray-50 border-gray-200 text-gray-400"
-        : active
-        ? "bg-blue-50 border-blue-600 shadow-sm"
-        : "bg-white border-gray-200 hover:border-blue-600"
-    }`}
+                        ${
+                          disabled
+                            ? "bg-gray-50 border-gray-200 text-gray-400"
+                            : active
+                            ? "bg-blue-50 border-blue-600 shadow-sm"
+                            : "bg-white border-gray-200 hover:border-gray-300"
+                        }`}
                     >
-                      {/* ⭐ PREMIUM BADGE (per-option) */}
                       {opt.premium && (
                         <div className="absolute -top-2 -right-2 z-20">
                           <div
                             className="
-          flex items-center gap-1.5
-          px-2 py-[3px] rounded-full text-[10px] font-semibold
-          text-white shadow-sm border border-white/30
-bg-gradient-to-r from-orange-400 via-orange-600 to-orange-600
-
-        "
+                              flex items-center gap-1.5
+                              px-2 py-[3px] rounded-full text-[10px] font-semibold
+                              text-white shadow-sm border border-white/30
+                              bg-gradient-to-r from-orange-400 via-orange-600 to-orange-600
+                            "
                           >
-                            {/* Pulse dot */}
-                            <Crown className="w-4 h-4 mr-3" />
+                            <Crown className="w-4 h-4" />
                             Premium
                           </div>
                         </div>
                       )}
 
-                      {/* Icon block */}
                       {opt.icon && (
                         <div
                           className={`w-10 h-10 rounded-lg flex items-center justify-center
-        ${active ? "bg-blue-600" : disabled ? "bg-gray-400" : "bg-gray-500"}`}
+                            ${
+                              active
+                                ? "bg-blue-600"
+                                : disabled
+                                ? "bg-gray-400"
+                                : "bg-gray-500"
+                            }`}
                         >
                           {opt.icon}
                         </div>
                       )}
 
-                      {/* Text block */}
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-gray-900 flex items-center gap-2">
-                          <span>{opt.label}</span>
+                        <div className="text-sm font-medium text-gray-900">
+                          {opt.label}
                         </div>
 
                         {opt.subLabel && (
                           <div className="text-xs text-gray-600 mt-0.5">
                             {opt.subLabel}
                           </div>
-                        )}
-                        {opt.badge && (
-                          <span className="mt-3 inline-block text-[11px] bg-gray-200 text-gray-700 px-3 py-0.5 rounded-full">
-                            {opt.badge}
-                          </span>
                         )}
                       </div>
                     </motion.button>

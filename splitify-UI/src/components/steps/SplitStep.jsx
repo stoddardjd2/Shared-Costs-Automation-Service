@@ -52,7 +52,7 @@ import RequestSentScreen from "../dashboard/RequestSentScreen";
 import SplitifyPremiumModal from "../premium/SplitifyPremiumModal";
 import { gaEvent } from "../../googleAnalytics/googleAnalyticsHelpers";
 import SelectedPeopleDisplay from "./SelectedPeopleDisplay";
-import DropdownOptionSection from "./SplitStep-builders/CollapsibleOptionsSection";
+import DropdownOptionSection from "./SplitStep-builders/DropdownOptionSection";
 
 const SplitStep = ({
   setSelectedPeople,
@@ -1561,7 +1561,6 @@ const SplitStep = ({
           navbarPadding={true}
           isOpen={showPremiumPrompt}
           onClose={() => {
-            // navigate("/dashboard");
             setShowPremiumPrompt(false);
           }}
         />

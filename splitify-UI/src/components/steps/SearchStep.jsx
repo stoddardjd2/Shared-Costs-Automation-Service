@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Search, Plus, ArrowLeft, Users, ArrowRight } from "lucide-react";
-import StepIndicator from "./StepIndicator";
-import ChargeDisplay from "../costs/ChargeDisplay";
+import { motion } from "framer-motion";
 import ContactCard from "../costs/ContactCard";
 import ConfirmButtonTray from "./ConfirmButtonTray";
 import { useData } from "../../contexts/DataContext";
@@ -26,22 +25,38 @@ const SearchStep = ({
   handleUpdatePersonName,
 }) => {
   const { participants } = useData();
-  console.log("participants", participants);
-
   const navigate = useNavigate();
+
   useEffect(() => {
     if (participants.length == 0) {
       navigate("/dashboard/add/newperson");
     }
   }, []);
 
+  // ✅ Framer Motion variants for staggered card load
+  const containerVariants = {
+    hidden: {},
+    show: {
+      transition: {
+        staggerChildren: 0.06,
+      },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 12 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.28, ease: "easeOut" },
+    },
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 mt-10">
       {/* Main content with padding bottom to prevent button tray overlap */}
       <div className="pb-[180px]">
         <div className="max-w-lg mx-auto px-6 py-0">
-          {/* <StepIndicator current="search" /> */}
-
           <div className="flex items-center gap-4 mb-6">
             <button
               onClick={onBack}
@@ -56,16 +71,6 @@ const SearchStep = ({
               <p className="text-gray-600">Choose who to split charges with</p>
             </div>
           </div>
-
-          {/* <ChargeDisplay
-            selectedCharge={selectedCharge}
-            newChargeDetails={newChargeDetails}
-            recurringType={
-              newChargeDetails
-                ? newChargeDetails.frequency
-                : selectedCharge.frequency
-            }
-          /> */}
 
           <div className="relative mb-8">
             <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -88,18 +93,26 @@ const SearchStep = ({
 
           <div className="space-y-3 mb-8">
             {filteredPeople.length > 0 ? (
-              filteredPeople.map((person, index) => (
-                <ContactCard
-                  key={person._id}
-                  person={person}
-                  isSelected={
-                    !!selectedPeople.find((p) => p._id === person._id)
-                  }
-                  onToggle={togglePersonSelection}
-                  onDeletePerson={onDeletePerson}
-                  handleUpdatePersonName={handleUpdatePersonName}
-                />
-              ))
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                className="space-y-3"
+              >
+                {filteredPeople.map((person) => (
+                  <motion.div key={person._id} variants={cardVariants}>
+                    <ContactCard
+                      person={person}
+                      isSelected={
+                        !!selectedPeople.find((p) => p._id === person._id)
+                      }
+                      onToggle={togglePersonSelection}
+                      onDeletePerson={onDeletePerson}
+                      handleUpdatePersonName={handleUpdatePersonName}
+                    />
+                  </motion.div>
+                ))}
+              </motion.div>
             ) : (
               <div className="text-center py-12">
                 <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4">

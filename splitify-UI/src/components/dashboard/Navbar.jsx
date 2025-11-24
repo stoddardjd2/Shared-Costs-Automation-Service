@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import SmartSplitLogo from "../../assets/SmartSplitLogo.svg?react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
   User,
@@ -185,6 +186,22 @@ const Navbar = () => {
     setShowPremiumPrompt(path.startsWith("/dashboard/premium"));
   }, [location.pathname]);
 
+  const dropdownVariants = {
+    hidden: { opacity: 0, y: -6, scale: 0.98 },
+    show: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: { duration: 0.18, ease: "easeOut" },
+    },
+    exit: {
+      opacity: 0,
+      y: -6,
+      scale: 0.98,
+      transition: { duration: 0.14, ease: "easeIn" },
+    },
+  };
+
   return (
     <nav className="bg-white border-b border-slate-200/60 shadow-sm fixed top-0 w-full z-[1000]">
       <div className="max-w-7xl mx-auto">
@@ -192,7 +209,7 @@ const Navbar = () => {
           {/* Logo/Brand */}
           <div
             onClick={() => {
-              navigate('/dashboard');
+              navigate("/dashboard");
             }}
             className="flex-shrink-0 flex items-center space-x-3 cursor-pointer"
           >
@@ -261,132 +278,104 @@ const Navbar = () => {
               </button>
 
               {/* Dropdown Menu */}
-              {showUserMenu && (
-                <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                  {/* User Info Header */}
-                  <div className="px-4 py-3 border-b border-gray-100">
-                    <div className="flex items-center space-x-3">
-                      <div
-                        className={`w-10 h-10 self-centerm rounded-lg bg-blue-600 flex items-center justify-center text-white font-semibold`}
-                      >
-                        {avatar}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-gray-900 truncate">
-                          {userData.name}
+              <AnimatePresence>
+                {showUserMenu && (
+                  <motion.div
+                    key="user-menu"
+                    variants={dropdownVariants}
+                    initial="hidden"
+                    animate="show"
+                    exit="exit"
+                    className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 origin-top-right"
+                  >
+                    {/* User Info Header */}
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <div className="flex items-center space-x-3">
+                        <div
+                          className={`w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white font-semibold`}
+                        >
+                          {avatar}
                         </div>
-                        <div className="text-xs text-gray-600 truncate">
-                          {userData.email}
-                        </div>
-                        <div className="flex items-center gap-1 mt-1">
-                          <div
-                            className={`px-2 py-0.5 capitalize rounded text-white text-xs font-medium flex items-center gap-1 ${getPlanColor(
-                              userData.plan
-                            )}`}
-                          >
-                            {getPlanIcon(userData.plan)}
-                            {userData.plan} Plan
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-gray-900 truncate">
+                            {userData.name}
+                          </div>
+                          <div className="text-xs text-gray-600 truncate">
+                            {userData.email}
+                          </div>
+                          <div className="flex items-center gap-1 mt-1">
+                            <div
+                              className={`px-2 py-0.5 capitalize rounded text-white text-xs font-medium flex items-center gap-1 ${getPlanColor(
+                                userData.plan
+                              )}`}
+                            >
+                              {getPlanIcon(userData.plan)}
+                              {userData.plan} Plan
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Menu Items */}
-                  <div className="py-2">
-                    {/* <button
-                      onClick={() => {
-                        alert("Profile settings would open here");
-                        setShowUserMenu(false);
-                      }}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                    >
-                      <User className="w-4 h-4 mr-3" />
-                      Profile Settings
-                    </button> */}
+                    {/* Menu Items */}
+                    <div className="py-2">
+                      {/* Payment Methods */}
+                      <button
+                        onClick={() => {
+                          setShowPaymentMethodPrompt(true);
+                          setShowUserMenu(false);
+                        }}
+                        className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      >
+                        <CreditCard className="w-4 h-4 mr-3" />
+                        Edit Payment Methods
+                      </button>
 
-                    {/* <button
-                      onClick={() => {
-                        alert("App settings would open here");
-                        setShowUserMenu(false);
-                      }}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                    >
-                      <Settings className="w-4 h-4 mr-3" />
-                      App Settings
-                    </button> */}
-                  </div>
+                      {/* Install PWA */}
+                      <button
+                        onClick={() => {
+                          setShowPwaGuide(true);
+                          setShowUserMenu(false);
+                        }}
+                        className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      >
+                        <Smartphone className="w-4 h-4 mr-3" />
+                        Install Web App
+                      </button>
 
-                  {/* premium */}
-                  <button
-                    onClick={async () => {
-                      if (userData.plan == "free") {
-                        setShowPremiumPrompt(!showPremiumPrompt);
-                        navigate("/dashboard/premium");
-                      } else {
-                        // get url from stripe to manage subscription
-                        const res = await handleCreatePortalSession();
-                        window.location = res.url;
-                      }
-                      setShowUserMenu(false);
-                    }}
-                    className="flex items-center w-full px-4 py-4 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                  >
-                    <Crown className="w-4 h-4 mr-3" />{" "}
-                    {userData.plan == "free"
-                      ? "Get Premium"
-                      : "Manage Subscription"}
-                  </button>
+                      {/* Premium */}
+                      <button
+                        onClick={async () => {
+                          if (userData.plan === "free") {
+                            setShowPremiumPrompt(true);
+                          } else {
+                            const res = await handleCreatePortalSession();
+                            window.location = res.url;
+                          }
+                          setShowUserMenu(false);
+                        }}
+                        className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      >
+                        <Crown className="w-4 h-4 mr-3" />
+                        {userData.plan === "free"
+                          ? "Get Premium"
+                          : "Manage Subscription"}
+                      </button>
+                    </div>
 
-                  {userData.plan === "Free" && (
-                    <button
-                      onClick={() => {
-                        // alert("Upgrade plan modal would open here");
-                        setShowUserMenu(false);
-                      }}
-                      className="flex items-center w-full px-4 py-4 text-sm text-purple-600 hover:bg-purple-50 transition-colors"
-                    >
-                      <Crown className="w-4 h-4 mr-3" />
-                      Upgrade Plan
-                    </button>
-                  )}
-
-                  {/* PWA */}
-                  <button
-                    onClick={() => {
-                      setShowPwaGuide(!showPwaGuide);
-                      setShowUserMenu(false);
-                    }}
-                    className="flex items-center w-full px-4 py-4 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                  >
-                    <Smartphone className="w-4 h-4 mr-3" />
-                    Install Web App
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      // alert("App settings would open here");
-                      setShowPaymentMethodPrompt(true);
-                      setShowUserMenu(false);
-                    }}
-                    className="flex items-center w-full px-4 py-4 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                  >
-                    <CreditCard className="w-4 h-4 mr-3" />
-                    Edit Payment Methods
-                  </button>
-
-                  {/* Logout */}
-                  <div className="border-t border-gray-100 py-2">
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center w-full px-4 py-4 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                    >
-                      <LogOut className="w-4 h-4 mr-3" />
-                      Sign Out
-                    </button>
-                  </div>
-                </div>
-              )}
+                    {/* Sign Out */}
+                    <div className="border-t border-gray-100 py-2">
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        <LogOut className="w-4 h-4 mr-3" />
+                        Sign Out
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
@@ -439,8 +428,8 @@ const Navbar = () => {
       <SplitifyPremiumModal
         isOpen={showPremiumPrompt}
         onClose={() => {
-          navigate("/dashboard");
-          // setShowPremiumPrompt(false);
+          // navigate("/dashboard");
+          setShowPremiumPrompt(false);
         }}
       />
     </nav>

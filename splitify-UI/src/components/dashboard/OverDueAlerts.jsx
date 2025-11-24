@@ -164,7 +164,7 @@ const OverdueAlerts = ({ setView, setSelectedCost }) => {
           </button>
         </div>
 
-        <button
+        {/* <button
           onClick={() => setIsDismissed(true)}
           className="absolute top-4 right-4 bg-white/20 border-none text-white w-8 h-8 rounded-lg cursor-pointer text-base transition-all duration-200 z-[3]"
           title="Dismiss alert"
@@ -176,7 +176,7 @@ const OverdueAlerts = ({ setView, setSelectedCost }) => {
           }
         >
           ×
-        </button>
+        </button> */}
       </div>
 
       {/* Detailed View */}
