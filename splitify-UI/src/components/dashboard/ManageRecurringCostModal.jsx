@@ -354,7 +354,7 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
             {/* Update Future Requests Button - only show for recurring costs */}
             <div className="mb-6">
               <button
-                onClick={() => !isRecurringCost && setShowSplitStep(true)}
+                onClick={() => setShowSplitStep(true)}
                 className="w-full p-4 bg-white hover:bg-gray-100 rounded-xl border border-gray-200 transition-all flex items-center justify-between"
               >
                 <div className="flex items-center gap-3">
