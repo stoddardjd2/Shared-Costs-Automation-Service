@@ -63,7 +63,7 @@ const Navbar = () => {
   const getPlanColor = (plan) => {
     switch (plan.toLowerCase()) {
       case "premium":
-        return "bg-gradient-to-r from-purple-500 to-purple-600";
+        return "bg-gradient-to-r from-orange-400 via-orange-600 to-orange-600";
       case "professional":
         return "bg-gradient-to-r from-orange-400 via-orange-600 to-orange-600";
       default:
@@ -464,13 +464,13 @@ function FullscreenModal({ isOpen, onClose, children }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center pt-10 justify-center bg-white p-2">
       <div
-        className="relative  items-center h-full"
+        className="relative h-full w-full flex justify-center"
         onClick={(e) => e.stopPropagation()} // Prevent closing on inside click
       >
         {/* Exit button */}
         <button
           onClick={onClose}
-          className="absolute -top-3 -right-3 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-full p-1 shadow-sm transition"
+          className="absolute -top-3 right-3 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-full p-1 shadow-sm transition"
         >
           <X className="w-5 h-5" />
         </button>

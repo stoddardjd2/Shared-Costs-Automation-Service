@@ -37,7 +37,7 @@ export default function SelectedPeopleDisplay({
           return (
             <div
               key={user._id}
-              className={`w-${size} h-${size} rounded-${rounded} ${user.color} flex items-center justify-center text-white font-semibold text-sm border-3  shadow-md relative group/avatar hover:translate-x-2 transition-transform duration-200`}
+              className={`w-${size} h-${size} rounded-${rounded} ${user.color} flex items-center justify-center text-white font-semibold text-sm border-3  shadow-md relative group/avatar hover:-translate-y-1 transition-transform duration-200`}
               style={{ zIndex: selectedPeople.length - index }}
             >
               {user.avatar}

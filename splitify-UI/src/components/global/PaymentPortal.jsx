@@ -852,7 +852,7 @@ export default function PaymentPage() {
           </div>
           <PaymentSummary
             initial={initial}
-            paidDate={paidDate}
+            paidDate={paidDate || `${new Date().toLocaleDateString()}`}
             paymentDetails={paymentDetails}
             amountPaid={amountPaid || paymentDetails.amountOwed}
           />

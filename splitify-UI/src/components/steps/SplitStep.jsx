@@ -25,6 +25,17 @@ import {
   UserCheck,
   Split,
   CalendarDays,
+  CalendarClock,
+  BellPlus,
+  BellDot,
+  Bell,
+  TextIcon,
+  Text,
+  SendIcon,
+  BadgeCheck,
+  BadgeCheckIcon,
+  CalendarRange,
+  Repeat,
 } from "lucide-react";
 import StepIndicator from "./StepIndicator";
 import ChargeDisplay from "../costs/ChargeDisplay";
@@ -33,7 +44,7 @@ import generateCostEntry from "../../utils/generateCostEntry";
 import ConfirmButtonTray from "./ConfirmButtonTray";
 import { createRequest, updateRequest } from "../../queries/requests";
 import EditPeople from "../dashboard/EditPeople";
-import DatePicker from "./DatePicker";
+import DatePicker from "./SplitStep-builders/DatePicker";
 import PlaidConnect from "../plaid/PlaidConnect";
 import { Navigate } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -41,34 +52,7 @@ import RequestSentScreen from "../dashboard/RequestSentScreen";
 import SplitifyPremiumModal from "../premium/SplitifyPremiumModal";
 import { gaEvent } from "../../googleAnalytics/googleAnalyticsHelpers";
 import SelectedPeopleDisplay from "./SelectedPeopleDisplay";
-
-const reminderOptions = [
-  {
-    key: "daily",
-    label: "Once a day",
-    // icon: <CalendarClock className="w-5 h-5" />,
-  },
-  {
-    key: "3days",
-    label: "Every 3 days",
-    // icon: <Repeat className="w-5 h-5" />,
-  },
-  {
-    key: "weekly",
-    label: "Once a week",
-    // icon: <CalendarClock className="w-5 h-5" />,
-  },
-  {
-    key: "once",
-    label: "One time",
-    // icon: <Bell className="w-5 h-5" />,
-  },
-  {
-    key: "none",
-    label: "No reminders",
-    // icon: <X className="w-5 h-5" />,
-  },
-];
+import DropdownOptionSection from "./SplitStep-builders/CollapsibleOptionsSection";
 
 const SplitStep = ({
   setSelectedPeople,
@@ -818,7 +802,6 @@ const SplitStep = ({
             </div>
           </div>
         }
-
         {/* Charge Display - Always visible and prominent */}
         {/* <ChargeDisplay
           selectedCharge={selectedCharge}
@@ -856,14 +839,18 @@ const SplitStep = ({
             value={chargeName}
             onChange={(e) => setChargeName(e.target.value)}
             placeholder="e.g., Netflix, Spotify Premium"
-            className={`w-full p-3 border hover:border-gray-300 border-gray-200 rounded-lg outline-none text-base bg-white transition-colors focus:ring-2 focus:ring-blue-600 focus:border-transparent ${
-              isPlaidCharge
-                ? "!bg-gray-100 text-gray-500 "
-                : "bg-white focus:ring-2  border-gray-200 focus:ring-blue-600 focus:border-transparent"
-            }`}
+            className={` outline-none text-base  focus:ring-2 focus:ring-blue-600 focus:border-transparent 
+              
+                w-full flex items-center justify-between text-left p-3 rounded-xl border bg-white 
+            transition-all hover:border-gray-300
+            border-gray-200
+              ${
+                isPlaidCharge
+                  ? "!bg-gray-100 text-gray-500 "
+                  : "bg-white focus:ring-2  border-gray-200 focus:ring-blue-600 focus:border-transparent"
+              }`}
           />
         </div>
-
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Total Amount to Split
@@ -885,7 +872,11 @@ const SplitStep = ({
               }}
               placeholder="Enter total amount"
               disabled={splitType === "custom" || isPlaidCharge}
-              className={`hover:border-gray-300 transition-colors w-full pl-10 pr-4 py-3 border rounded-lg outline-none text-base 
+              className={`pl-10 pr-4 py-3 outline-none text-base 
+
+                w-full flex items-center justify-between text-left p-3 rounded-xl border bg-white 
+            transition-all hover:border-gray-300
+            border-gray-200
         ${
           splitType === "custom" || isPlaidCharge
             ? "bg-gray-100 text-gray-500 "
@@ -896,138 +887,68 @@ const SplitStep = ({
         </div>
 
         {/* Payment Schedule */}
-        <div className=" mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Frequency
-          </h3>
-          {/* Recurring Options Dropdown */}
-          <div className="relative recurring-dropdown">
-            <button
-              disabled={isEditMode}
-              onClick={() => setShowRecurringOptions(!showRecurringOptions)}
-              className={`w-full p-3 border border-gray-200 rounded-lg  transition-colors flex items-center justify-between   
-           ${
-             isEditMode
-               ? "bg-gray-100 text-gray-500 "
-               : "bg-white focus:ring-2 hover:bg-gray-50 border-gray-200 focus:ring-blue-600 focus:border-transparent"
-           }
-              `}
-            >
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700 capitalize">
-                  {/* {getRecurringLabel()} */}
-                  {recurringType || "Select Frequency"}
-                </span>
-              </div>
-              <ChevronDown
-                className={`w-4 h-4 text-gray-500 transition-transform ${
-                  showRecurringOptions ? "rotate-180" : ""
-                }`}
-              />
-            </button>
+        <div>
+          {/* Frequency (new) */}
+          <DropdownOptionSection
+            title="Frequency"
+            isEditMode={isEditMode}
+            selectedKey={recurringType || null}
+            options={[
+              {
+                key: "one-time",
+                label: "One-time",
+                subLabel: "Send once and stop",
+              },
+              {
+                key: "daily",
+                label: "Daily",
+                subLabel: "Sends every day",
+              },
+              {
+                key: "weekly",
+                label: "Weekly",
+                subLabel: "Sends every week",
+              },
+              {
+                key: "biweekly",
+                label: "Biweekly",
+                subLabel: "Sends every 2 weeks",
+              },
+              {
+                key: "monthly",
+                label: "Monthly",
+                subLabel: "Sends every month",
+              },
+              {
+                key: "yearly",
+                label: "Yearly",
+                subLabel: "Sends once per year",
+              },
+              {
+                key: "custom",
+                label: "Custom",
+                subLabel: "Set your own interval",
+              },
+            ]}
+            columns={2}
+            icon={<Clock className="w-4 h-4 text-gray-500" />}
+            onSelect={(key) => {
+              setRecurringType(key);
 
-            {showRecurringOptions && (
-              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[20]">
-                <div className="p-2 space-y-1">
-                  <button
-                    onClick={() => {
-                      setRecurringType("one-time");
-                      setShowRecurringOptions(false);
-                      setIsDynamic(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                      recurringType === "one-time"
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    One-time
-                  </button>
-                  <button
-                    onClick={() => {
-                      setRecurringType("daily");
-                      setShowRecurringOptions(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                      recurringType === "daily"
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    Daily
-                  </button>
-                  <button
-                    onClick={() => {
-                      setRecurringType("weekly");
-                      setShowRecurringOptions(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                      recurringType === "weekly"
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    Weekly
-                  </button>
-                  <button
-                    onClick={() => {
-                      setRecurringType("biweekly");
-                      setShowRecurringOptions(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                      recurringType === "biweekly"
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    Biweekly
-                  </button>
-                  <button
-                    onClick={() => {
-                      setRecurringType("monthly");
-                      setShowRecurringOptions(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                      recurringType === "monthly"
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    Monthly
-                  </button>
-                  <button
-                    onClick={() => {
-                      setRecurringType("yearly");
-                      setShowRecurringOptions(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                      recurringType === "yearly"
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    Yearly
-                  </button>
-                  <button
-                    onClick={() => {
-                      setRecurringType("custom");
-                      setShowRecurringOptions(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                      recurringType === "custom"
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    Custom
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+              // If they switch away from custom, clear custom inputs
+              if (key !== "custom") {
+                setCustomInterval("");
+                setCustomUnit("days");
+              }
 
-          {/* Custom Interval Input */}
+              // Your old logic: one-time disables dynamic
+              if (key === "one-time") {
+                setIsDynamic(false);
+              }
+            }}
+          />
+
+          {/* Custom Interval Input (same as before, but unit uses component) */}
           {recurringType === "custom" && (
             <div className="mb-4 mt-3">
               <div className="flex gap-2">
@@ -1041,108 +962,54 @@ const SplitStep = ({
                     min="0"
                     value={customInterval}
                     onChange={(e) =>
-                      setCustomInterval(parseInt(e.target.value) || "")
+                      setCustomInterval(parseInt(e.target.value, 10) || "")
                     }
-                    className="w-full p-2 border border-gray-200 rounded text-sm outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                    className={` text-sm outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent
+                    
+                    w-full flex items-center justify-between text-left p-3 rounded-xl border bg-white 
+            transition-all hover:border-gray-300
+            border-gray-200
+                    `}
                   />
                 </div>
 
-                {/* Unit Dropdown */}
-                <div className="flex-1 relative">
+                {/* Unit (new) */}
+                <div className="flex-1">
                   <label className="block text-xs font-medium text-gray-600 mb-1">
                     Unit
                   </label>
-                  <button
-                    onClick={() => setShowUnitOptions(!showUnitOptions)}
-                    className="w-full p-2 border border-gray-200 rounded text-sm outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent bg-white text-left flex justify-between items-center hover:bg-gray-50"
-                  >
-                    <span className="capitalize">{customUnit}</span>
-                    <svg
-                      className="w-4 h-4 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </button>
-
-                  {showUnitOptions && (
-                    <div
-                      ref={customUnitPopupRef}
-                      className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[20]"
-                    >
-                      <div className="p-2 space-y-1">
-                        {[
-                          { value: "days", label: "Days" },
-                          { value: "weeks", label: "Weeks" },
-                          { value: "months", label: "Months" },
-                          { value: "years", label: "Years" },
-                        ].map((unit) => (
-                          <button
-                            key={unit.value}
-                            onClick={() => {
-                              setCustomUnit(unit.value);
-                              setShowUnitOptions(false);
-                            }}
-                            className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                              customUnit === unit.value
-                                ? "bg-blue-50 text-blue-700"
-                                : "text-gray-700"
-                            }`}
-                          >
-                            {unit.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  <DropdownOptionSection
+                    title="Unit"
+                    hideTitle={true}
+                    selectedKey={customUnit}
+                    options={[
+                      {
+                        key: "days",
+                        label: "Days",
+                      },
+                      {
+                        key: "weeks",
+                        label: "Weeks",
+                      },
+                      {
+                        key: "months",
+                        label: "Months",
+                      },
+                      {
+                        key: "years",
+                        label: "Years",
+                      },
+                    ]}
+                    columns={2}
+                    dropdownMaxHeight={220}
+                    dropdownMargin={8}
+                    onSelect={(key) => setCustomUnit(key)}
+                  />
                 </div>
               </div>
             </div>
           )}
         </div>
-
-        {/* {isEditMode && (
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Edit People
-            </h3>
-            <button
-              onClick={() => {
-                setIsEditingPeople((prev) => !prev);
-              }}
-              className="p-4 rounded-xl w-full border-2 cursor-pointer transition-all border-gray-200 bg-white hover:border-gray-300"
-            >
-              <div className="flex flex-col items-center text-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-orange-400 flex items-center justify-center">
-                  <UserPlus size={16} color={"white"} />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900 text-sm">
-                    Edit People
-                  </h4>
-                  <p className="text-gray-600 text-xs">Add or Remove People</p>
-                </div>
-              </div>
-            </button>
-          </div>
-        )} */}
-        {/* for editing people in edit mode: */}
-        {/* {isEditMode && isEditingPeople && (
-          <EditPeople
-            setIsEditingPeople={setIsEditingPeople}
-            setSelectedCharge={setSelectedCharge}
-            selectedCharge={selectedCharge}
-            setSelectedPeople={setSelectedPeople}
-            selectedPeople={selectedPeople}
-          />
-        )} */}
 
         {/* Split Method Selection - Always visible */}
         <div className="mb-6">
@@ -1150,30 +1017,9 @@ const SplitStep = ({
             Split Method
           </h3>
           <div className="grid grid-cols-2 gap-3">
-            {/* <div
-              onClick={() => setSplitType("equal")}
-              className={`p-4 rounded-xl col-span-2 border-2 cursor-pointer transition-all ${
-                splitType === "equal"
-                  ? "border-blue-600 bg-blue-50"
-                  : "border-gray-200 bg-white hover:border-gray-300"
-              }`}
-            >
-              <div className="flex flex-col items-center text-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-green-500 flex items-center justify-center">
-                  <Calculator className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900 text-sm">
-                    Equal Split
-                  </h4>
-                  <p className="text-gray-600 text-xs">Divide equally</p>
-                </div>
-              </div>
-            </div> */}
-
             <div
               onClick={() => setSplitType("equalWithMe")}
-              className={`p-4 col-span-2 rounded-xl border-2 cursor-pointer transition-all ${
+              className={`p-4 col-span-1 rounded-xl border-2 cursor-pointer transition-all ${
                 splitType === "equalWithMe"
                   ? "border-blue-600 bg-blue-50"
                   : "border-gray-200 bg-white hover:border-gray-300"
@@ -1200,10 +1046,36 @@ const SplitStep = ({
 
                 <div>
                   <h4 className="font-semibold text-gray-900 text-sm">
-                    Equal Split
+                    Equal Split (including you)
                   </h4>
                   <p className="text-gray-600 text-xs">
-                    Everyone pays their share <strong>(including you)</strong>
+                    Divide equally between everyone
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div
+              onClick={() => setSplitType("equal")}
+              className={`p-4 rounded-xl col-span-1 border-2 cursor-pointer transition-all ${
+                splitType === "equal"
+                  ? "border-blue-600 bg-blue-50"
+                  : "border-gray-200 bg-white hover:border-gray-300"
+              }`}
+            >
+              <div className="flex flex-col items-center text-center gap-2">
+                <SelectedPeopleDisplay
+                  size={8}
+                  hideCount={true}
+                  selectedPeople={selectedPeople}
+                  rounded="lg"
+                />
+                <div>
+                  <h4 className="font-semibold text-gray-900 text-sm">
+                    Equal Split (participants)
+                  </h4>
+                  <p className="text-gray-600 text-xs">
+                    Divide equally between participants
                   </p>
                 </div>
               </div>
@@ -1269,7 +1141,6 @@ const SplitStep = ({
             </button>
           </div>
         </div>
-
         {/* Percentage Split Input - Visible when percentage selected */}
         {splitType === "percentage" && (
           <div className="mb-6">
@@ -1346,7 +1217,6 @@ const SplitStep = ({
             </div>
           </div>
         )}
-
         {/* Custom Amount Input - Visible when custom selected */}
         {splitType === "custom" && (
           <div className="mb-6">
@@ -1375,6 +1245,7 @@ const SplitStep = ({
                       <input
                         type="number"
                         step="0.01"
+                        onWheel={(e) => e.target.blur()} // 👈 disables scroll-to-change
                         value={customAmounts[user._id] || ""}
                         onChange={(e) =>
                           updateCustomAmount(user._id, e.target.value)
@@ -1389,9 +1260,8 @@ const SplitStep = ({
             </div>
           </div>
         )}
-
         {/* Start Timing Options - Only when making initial request */}
-        {isEditMode && (
+        {!isEditMode && (
           <div className="space-y-2 mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Start Time
@@ -1433,530 +1303,207 @@ const SplitStep = ({
             </div>
           </div>
         )}
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Additional Settings
+        </h3>
         {/* Only show when making initial request */}
-        <div className="space-y-2 mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">Due Date</h3>
-          {isEditMode && (
-            <div className="text-sm text-gray-500 !mt-0 -translate-y-1">
-              *Changes will apply for future requests
-            </div>
-          )}
+        <DropdownOptionSection
+          title="Due date"
+          hideTitle={true}
+          isEditMode={isEditMode}
+          selectedKey={dueInDays}
+          onSelect={(v) => setDueInDays(v)}
+          icon={<CalendarClock className="w-4 h-4 text-gray-500 shrink-0" />}
+          options={[
+            {
+              key: 1,
+              label:
+                startTiming === "now" ? "Due tomorrow" : "Due day after sent",
+              subLabel: "Reminders start then",
+            },
+            {
+              key: 3,
+              label:
+                startTiming === "now"
+                  ? "Due in 3 days"
+                  : "Due 3 days after sent",
+              subLabel: "Reminders start then",
+            },
+            {
+              key: 7,
+              label:
+                startTiming === "now" ? "Due in a week" : "Due week after sent",
+              subLabel: "Reminders start then",
+            },
+            {
+              key: 30,
+              label:
+                startTiming === "now"
+                  ? "Due in a month"
+                  : "Due month after sent",
+              subLabel: "Reminders start then",
+            },
+          ]}
+        />
+        <DropdownOptionSection
+          title="Reminder frequency"
+          hideTitle={true}
+          isEditMode={isEditMode}
+          selectedKey={reminderFrequency}
+          icon={<Bell className="w-4 h-4 text-gray-500 shrink-0" />}
+          onSelect={setReminderFrequency}
+          options={[
+            {
+              key: "daily",
+              label: "Reminders once a day",
+              // icon: <CalendarClock className="w-5 h-5" />,
+            },
+            {
+              key: "3days",
+              label: "Reminders every 3 days",
+              // icon: <Repeat className="w-5 h-5" />,
+            },
+            {
+              key: "weekly",
+              label: "Reminders once a week",
+              // icon: <CalendarClock className="w-5 h-5" />,
+            },
+            {
+              key: "once",
+              label: "One reminder",
+              // icon: <Bell className="w-5 h-5" />,
+            },
+            {
+              key: "none",
+              label: "No reminders",
+              // icon: <X className="w-5 h-5" />,
+            },
+          ].map((o) => ({
+            key: o.key,
+            label: o.label,
+            subLabel:
+              o.key === "none" ? "No text reminders" : "Texts this often",
+          }))}
+        />
 
-          {/* <p className="text-sm text-gray-600 mb-4">
-              Reminders only start if someone hasn’t paid after the due date.
-            </p> */}
+        <DropdownOptionSection
+          title="Text Notifications"
+          hideTitle={true}
+          infoContent={`When someone pays you, Splitify sends you a text. 
+     Tap the link to instantly mark the request as paid.`}
+          icon={<SendIcon className="w-4 h-4 text-gray-500 shrink-0" />}
+          options={[
+            {
+              key: "enabled",
+              label: "Get texts notifications",
+              subLabel:
+                "When a payment is made, you will be sent a text with a link to instantly mark it as paid",
+              disabled: isPaymentNotificationsInfoDisabled,
+              badge: isPaymentNotificationsInfoDisabled
+                ? "Premium required"
+                : null,
+            },
+            {
+              key: "disabled",
+              label: "Don't get text notifications",
+              subLabel: "You will not receive texts when payments are made",
+            },
+          ]}
+          selectedKey={allowPaymentNotificationsInfo ? "enabled" : "disabled"}
+          columns={1}
+          onBeforeSelect={(opt) => {
+            if (opt.key === "enabled" && isPaymentNotificationsInfoDisabled) {
+              setShowPremiumPrompt(true);
+              return false; // block select like your old code
+            }
+          }}
+          onSelect={(key) =>
+            setAllowPaymentNotificationsInfo(key === "enabled")
+          }
+        />
 
-          <div className="grid grid-cols-2 gap-2">
-            {/* Immediately */}
-            <button
-              onClick={() => setDueInDays(1)}
-              className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
-                dueInDays === 1
-                  ? "border-blue-600 bg-blue-50"
-                  : "border-gray-200 bg-white hover:border-gray-300"
-              }`}
-            >
-              <div className="text-left">
-                <div className="text-sm font-medium text-gray-900">
-                  {startTiming == "now" ? "Tomorrow" : "Day after sent"}
-                </div>
-                <div className="text-xs text-gray-600 text-nowrap">
-                  Reminders start then
-                </div>
-              </div>
-            </button>
+        <DropdownOptionSection
+          title="Variable Cost Tracking"
+          hideTitle={true}
+          icon={<TrendingUp className="w-4 h-4 text-gray-500 shrink-0" />}
+          infoContent={`Cost tracking is useful when you have recurring expenses that increase or decrease. 
+     Requests will be updated with the new amount each cycle.`}
+          options={[
+            {
+              key: "fixed",
+              label: "Same amount each time",
+              subLabel: "Requests will send with same amount each cycle",
+              // icon: <BarChart3 className="w-5 h-5 text-white" />,
+            },
+            {
+              key: "variable",
+              label: "Amounts update with latest bill",
+              premium: true,
+              subLabel:
+                "Future requests will update with latest amount using your bank transactions and calculate new amount for each person",
+              // icon: <TrendingUp className="w-5 h-5 text-white" />,
+              disabled: isDynamicCostsDisabled,
+              badge: isDynamicCostsDisabled
+                ? splitType === "custom"
+                  ? "Not available for custom split"
+                  : recurringType === "none"
+                  ? "Recurring only"
+                  : !isPlaidCharge
+                  ? "Must add charge with bank"
+                  : "Plaid required"
+                : null,
+            },
+          ]}
+          selectedKey={isDynamic ? "variable" : "fixed"}
+          columns={1}
+          onBeforeSelect={(opt) => {
+            if (opt.key === "variable") {
+              if (isDynamicCostsDisabled) {
+                // block select (same behavior as before)
+                if (userData.plan === "free") setShowPremiumPrompt(true);
+                return false;
+              }
+              // allow select, but still nudge free users
+              if (userData.plan === "free") setShowPremiumPrompt(true);
+            }
+          }}
+          onSelect={(key) => setIsDynamic(key === "variable")}
+        />
 
-            {/* 3 Days */}
-            <button
-              onClick={() => setDueInDays(3)}
-              className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
-                dueInDays === 3
-                  ? "border-blue-600 bg-blue-50"
-                  : "border-gray-200 bg-white hover:border-gray-300"
-              }`}
-            >
-              <div className="text-left">
-                <div className="text-sm font-medium text-gray-900">
-                  {startTiming == "now" ? "In 3 days" : "3 days after sent"}
-                </div>
-                <div className="text-xs text-gray-600 text-nowrap">
-                  Reminders start then
-                </div>
-              </div>
-            </button>
-
-            {/* 1 Week */}
-            <button
-              onClick={() => setDueInDays(7)}
-              className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
-                dueInDays === 7
-                  ? "border-blue-600 bg-blue-50"
-                  : "border-gray-200 bg-white hover:border-gray-300"
-              }`}
-            >
-              <div className="text-left">
-                <div className="text-sm font-medium text-gray-900">
-                  {startTiming == "now" ? "In a week" : "Week after sent"}
-                </div>
-                <div className="text-xs text-gray-600 text-nowrap">
-                  Reminders start then
-                </div>
-              </div>
-            </button>
-
-            {/* 1 Month */}
-            <button
-              onClick={() => setDueInDays(30)}
-              className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
-                dueInDays === 30
-                  ? "border-blue-600 bg-blue-50"
-                  : "border-gray-200 bg-white hover:border-gray-300"
-              }`}
-            >
-              <div className="text-left">
-                <div className="text-sm font-medium text-gray-900 text-nowrap">
-                  {startTiming == "now" ? "In a month" : "Month after sent"}
-                </div>
-                <div className="text-xs text-gray-600 text-nowrap">
-                  Reminders start then
-                </div>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        <div className="space-y-2 mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">
-            Reminder frequency
-          </h3>
-          {!isEditMode && (
-            <div className="text-sm text-gray-500 !mt-0 -translate-y-1">
-              *Changes will apply for future requests
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-2">
-            {reminderOptions.map((opt) => {
-              const selected = reminderFrequency === opt.key;
-
-              return (
-                <button
-                  key={opt.key}
-                  onClick={() => setReminderFrequency(opt.key)}
-                  className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
-                    selected
-                      ? "border-blue-600 bg-blue-50"
-                      : "border-gray-200 bg-white hover:border-gray-300"
-                  }`}
-                >
-                  {/* <div
-                      className={`${
-                        selected ? "text-blue-600" : "text-gray-500"
-                      }`}
-                    >
-                      {opt.icon}
-                    </div> */}
-
-                  <div className="text-left">
-                    <div className="text-sm font-medium text-gray-900">
-                      {opt.label}
-                    </div>
-
-                    {/* optional tiny helper line to keep clarity consistent */}
-                    <div className="text-xs text-gray-600">
-                      {opt.key === "none"
-                        ? "No text reminders"
-                        : "Texts this often"}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Advanced Options Toggle */}
-        <div className="mb-6">
-          <button
-            onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-            className="w-full p-4 bg-white hover:bg-gray-100 rounded-xl border border-gray-200 transition-all flex items-center justify-between"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gray-600 flex items-center justify-center">
-                <Settings className="w-4 h-4 text-white" />
-              </div>
-              <div className="text-left">
-                <h4 className="font-semibold text-gray-900 text-sm">
-                  Advanced Options
-                </h4>
-                <p className="text-gray-600 text-xs">
-                  Text notifications, cost tracking & more
-                </p>
-              </div>
-            </div>
-            {showAdvancedOptions ? (
-              <ChevronUp className="w-5 h-5 text-gray-500" />
-            ) : (
-              <ChevronDown className="w-5 h-5 text-gray-500" />
-            )}
-          </button>
-        </div>
-
-        {/* Advanced Options Content */}
-        {showAdvancedOptions && (
-          <div className="space-y-6 mb-6">
-            {/* Total Amount Input - Always visible */}
-            {/* Cost Tracking Section */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <label className="text-lg font-semibold text-gray-900">
-                  Variable Cost Tracking
-                </label>
-                <div className="relative dynamic-info-tooltip">
-                  <button
-                    onClick={() => setShowDynamicInfo(!showDynamicInfo)}
-                    onMouseEnter={() => {
-                      setIsHoveringDynamicInfo(true);
-                    }}
-                    onMouseLeave={() => {
-                      setIsHoveringDynamicInfo(false);
-                      setTimeout(() => {
-                        if (!isHoveringDynamicInfo) {
-                          setShowDynamicInfo(false);
-                        }
-                      }, 150);
-                    }}
-                    className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
-                  >
-                    <Info className="w-4 h-4" />
-                  </button>
-                  {(showDynamicInfo || isHoveringDynamicInfo) && (
-                    <div
-                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-[200px] bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50 break-words"
-                      onMouseEnter={() => setIsHoveringDynamicInfo(true)}
-                      onMouseLeave={() => {
-                        setIsHoveringDynamicInfo(false);
-                        setShowDynamicInfo(false);
-                      }}
-                    >
-                      <p>
-                        Cost tracking is useful when you have recurring expenses
-                        that increase or decreases. Requests will be updated
-                        with the new amount each cycle.
-                      </p>
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>{" "}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div
-                  onClick={() => setIsDynamic(false)}
-                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                    !isDynamic
-                      ? "border-blue-600 bg-blue-50"
-                      : "border-gray-200 bg-white hover:border-gray-300"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-gray-500 flex items-center justify-center">
-                      <BarChart3 className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 text-sm">
-                        Fixed Amount
-                      </h4>
-                      <p className="text-gray-600 text-xs">
-                        Same amount each payment cycle
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  onClick={() => {
-                    if (!isDynamicCostsDisabled) {
-                      setIsDynamic(true);
-                    }
-                    if (userData.plan == "free") {
-                      setShowPremiumPrompt(true);
-                    }
-                  }}
-                  className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${
-                    isDynamicCostsDisabled
-                      ? "border-gray-200 bg-gray-50 cursor-pointer"
-                      : isDynamic
-                      ? "border-blue-600 bg-blue-50 cursor-pointer"
-                      : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
-                  }`}
-                >
-                  <div
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      isDynamicCostsDisabled ? "bg-blue-600" : "bg-blue-600"
-                    }`}
-                  >
-                    <TrendingUp className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-sm text-gray-900">
-                      Variable Cost
-                      {isDynamicCostsDisabled && (
-                        <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
-                          {splitType === "custom"
-                            ? "Not Available For Custom Split Method"
-                            : recurringType === "none"
-                            ? "Recurring Only"
-                            : !isPlaidCharge
-                            ? "Must add charge with Bank"
-                            : "Plaid Required"}
-                        </span>
-                      )}
-                    </h4>
-                    <p className="text-xs text-gray-600">
-                      Track cost changes for next payment cycle
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Text messages for request */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <label className="text-lg font-semibold text-gray-900">
-                  Text Notifications
-                </label>
-                <div className="relative dynamic-info-tooltip">
-                  <button
-                    onClick={() =>
-                      setShowPaymentNotificationsInfo(
-                        !showPaymentNotificationsInfo
-                      )
-                    }
-                    onMouseEnter={() => {
-                      setIsHoveringPaymentNotificationsInfo(true);
-                    }}
-                    onMouseLeave={() => {
-                      setIsHoveringPaymentNotificationsInfo(false);
-                      setTimeout(() => {
-                        if (!isHoveringPaymentNotificationsInfo) {
-                          setShowPaymentNotificationsInfo(false);
-                        }
-                      }, 150);
-                    }}
-                    className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
-                  >
-                    <Info className="w-4 h-4" />
-                  </button>
-                  {(showPaymentNotificationsInfo ||
-                    isHoveringPaymentNotificationsInfo) && (
-                    <div
-                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-[200px] bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50 break-words"
-                      onMouseEnter={() =>
-                        setIsHoveringPaymentNotificationsInfo(true)
-                      }
-                      onMouseLeave={() => {
-                        setIsHoveringPaymentNotificationsInfo(false);
-                        setShowPaymentNotificationsInfo(false);
-                      }}
-                    >
-                      <p>
-                        When someone pays you, Splitify sends you a text. Tap
-                        the link in that text to instantly mark the request as
-                        paid.
-                      </p>
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div
-                  onClick={() => {
-                    setAllowPaymentNotificationsInfo(false);
-                  }}
-                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                    !allowPaymentNotificationsInfo
-                      ? "border-blue-600 bg-blue-50"
-                      : "border-gray-200 bg-white hover:border-gray-300"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-gray-500 flex items-center justify-center">
-                      <User className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 text-sm">
-                        Disabled
-                      </h4>
-                      <p className="text-gray-600 text-xs">
-                        You will not recieve text messages when payments are
-                        made
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  onClick={() => {
-                    if (!isPaymentNotificationsInfoDisabled) {
-                      setAllowPaymentNotificationsInfo(true);
-                    } else {
-                      setShowPremiumPrompt(true);
-                    }
-                  }}
-                  className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${
-                    isPaymentNotificationsInfoDisabled
-                      ? "border-gray-200 bg-gray-50 cursor-pointer"
-                      : allowPaymentNotificationsInfo
-                      ? "border-blue-600 bg-blue-50 cursor-pointer"
-                      : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
-                  }`}
-                >
-                  <div
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      isPaymentNotificationsInfoDisabled
-                        ? "bg-blue-600"
-                        : "bg-blue-600"
-                    }`}
-                  >
-                    <Users className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-sm text-gray-900">
-                      Enabled
-                      {isPaymentNotificationsInfoDisabled && (
-                        <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
-                          Premium Required
-                        </span>
-                      )}
-                    </h4>
-                    <p className="text-xs text-gray-600">
-                      When a payment is made, you will recieve a text with a
-                      link to instantly mark the request as paid
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* mark as paid */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <label className="text-lg font-semibold text-gray-900">
-                  Allow others to mark as paid
-                </label>
-                <div className="relative dynamic-info-tooltip">
-                  <button
-                    onClick={() => setShowMarkAsPaidInfo(!showMarkAsPaidInfo)}
-                    onMouseEnter={() => {
-                      setIsHoveringMarkAsPaidInfo(true);
-                    }}
-                    onMouseLeave={() => {
-                      setIsHoveringMarkAsPaidInfo(false);
-                      setTimeout(() => {
-                        if (!isHoveringMarkAsPaidInfo) {
-                          setShowMarkAsPaidInfo(false);
-                        }
-                      }, 150);
-                    }}
-                    className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
-                  >
-                    <Info className="w-4 h-4" />
-                  </button>
-                  {(showMarkAsPaidInfo || isHoveringMarkAsPaidInfo) && (
-                    <div
-                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-[200px] bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50 break-words"
-                      onMouseEnter={() => setIsHoveringMarkAsPaidInfo(true)}
-                      onMouseLeave={() => {
-                        setIsHoveringMarkAsPaidInfo(false);
-                        setShowMarkAsPaidInfo(false);
-                      }}
-                    >
-                      <p>
-                        Setting this to "Everyone" is useful when you trust
-                        users to honestly mark requests as paid.
-                      </p>
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div
-                  onClick={() => {
-                    setAllowMarkAsPaidForEveryone(false);
-                  }}
-                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                    !allowMarkAsPaidForEveryone
-                      ? "border-blue-600 bg-blue-50"
-                      : "border-gray-200 bg-white hover:border-gray-300"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-gray-500 flex items-center justify-center">
-                      <User className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 text-sm">
-                        Only you
-                      </h4>
-                      <p className="text-gray-600 text-xs">
-                        Only you can mark requests as paid
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  onClick={() => {
-                    if (!isMarkAsPaidEveryoneDisabled) {
-                      setAllowMarkAsPaidForEveryone(true);
-                    } else {
-                      setShowPremiumPrompt(true);
-                    }
-                  }}
-                  className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${
-                    isMarkAsPaidEveryoneDisabled
-                      ? "border-gray-200 bg-gray-50 cursor-pointer"
-                      : allowMarkAsPaidForEveryone
-                      ? "border-blue-600 bg-blue-50 cursor-pointer"
-                      : "border-gray-200 bg-white hover:border-gray-300 cursor-pointer"
-                  }`}
-                >
-                  <div
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      isMarkAsPaidEveryoneDisabled
-                        ? "bg-blue-600"
-                        : "bg-blue-600"
-                    }`}
-                  >
-                    <Users className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-sm text-gray-900">
-                      Everyone
-                      {isMarkAsPaidEveryoneDisabled && (
-                        <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
-                          Premium Required
-                        </span>
-                      )}
-                    </h4>
-                    <p className="text-xs text-gray-600">
-                      Others can mark their requests as paid
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <DropdownOptionSection
+          title="Allow others to mark as paid"
+          hideTitle={true}
+          icon={<BadgeCheckIcon className="w-4 h-4 text-gray-500 shrink-0" />}
+          infoContent={`Setting this to "Everyone" is useful when you trust users to honestly mark requests as paid.`}
+          options={[
+            {
+              key: "only_you",
+              label: "Only you can mark as paid",
+              subLabel: "You must record when a payment is recieved",
+              // icon: <User className="w-5 h-5 text-white" />,
+            },
+            {
+              key: "everyone",
+              premium: true,
+              label: "Others can mark as paid",
+              subLabel: "Others can record when a payment has been made",
+              // icon: <Users className="w-5 h-5 text-white" />,
+              disabled: isMarkAsPaidEveryoneDisabled,
+              // badge: isMarkAsPaidEveryoneDisabled ? "Premium required" : null,
+            },
+          ]}
+          selectedKey={allowMarkAsPaidForEveryone ? "everyone" : "only_you"}
+          columns={1}
+          onBeforeSelect={(opt) => {
+            if (opt.key === "everyone" && isMarkAsPaidEveryoneDisabled) {
+              setShowPremiumPrompt(true);
+              return false;
+            }
+          }}
+          onSelect={(key) => setAllowMarkAsPaidForEveryone(key === "everyone")}
+        />
 
         {/* Live Total Display - Always visible and sticky above send button */}
-
         {/* Send Button - Always visible and sticky */}
         <ConfirmButtonTray
           isSendingRequest={isSendingRequest}
@@ -2009,7 +1556,6 @@ const SplitStep = ({
           frequency={recurringType}
           splitType={splitType}
         />
-
         <SplitifyPremiumModal
           navbarPadding={true}
           isOpen={showPremiumPrompt}

@@ -30,7 +30,7 @@ import { useNavigate } from "react-router-dom";
 import { Navigate } from "react-router-dom";
 const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
   if (!cost || !onClose || !setSelectedCost) {
-    return <Navigate to="/dashboard" replace/>;
+    return <Navigate to="/dashboard" replace />;
   }
 
   const { participants, updateCost, sendPaymentRequest, resendPaymentRequest } =
@@ -412,10 +412,10 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                               </span>
                             </span>
                           ) : (
-                            <span className="text-gray-900 ml-2 font-semibold text-lg">
-                              ${payment.totalAmountOwed.toFixed(2)}{" "}
+                            <span className="text-gray-900 ml-2 font-semibold text-lg flex justify-center items-baseline gap-x-2 flex-col xxs:flex-row">
+                              <div>${payment.totalAmountOwed.toFixed(2)} </div>
                               <span className="text-sm font-medium  text-gray-500 false">
-                                Total Owed
+                                Total owed
                               </span>
                             </span>
                           )}
@@ -427,9 +427,9 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                               {payment.dueDate && (
                                 <div className="flex items-center font-semibold  gap-2">
                                   {/* <Clock className="w-5 h-5" /> */}
-                                  <span className="text-lg">
-                                    <span className="mr-1 text-sm text-gray-500 false">
-                                      Due{" "}
+                                  <span className="text-lg  flex justify-center items-baseline row-x-3 flex-col-reverse xxs:flex-row">
+                                    <span className="mr-2 text-sm text-gray-500 false">
+                                      Due{" "} <span className="inline xxs:hidden">date</span>
                                     </span>
                                     <span className="text-lg text-gray-900">
                                       {new Date(
@@ -439,7 +439,6 @@ const ManageRecurringCostModal = ({ cost, onClose, setSelectedCost }) => {
                                   </span>
                                 </div>
                               )}
-                 
                             </div>
                           </div>
                         </div>

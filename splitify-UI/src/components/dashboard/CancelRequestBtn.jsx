@@ -86,7 +86,7 @@ const CancelRequestBtn = ({ requestId, onDeleteSuccess }) => {
       {showConfirmation && (
         <div
           onClick={handleCancelDelete}
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
         >
           <div
             onClick={handleModalClick}
