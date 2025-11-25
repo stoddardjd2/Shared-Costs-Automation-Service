@@ -94,8 +94,8 @@ export default function Hero() {
       <div className="relative z-10">
         <div className="!pb-0">
           {/* copy */}
-          <div className=" animate-smooth-up pb-0 sm:pb-[clamp(1rem,5vw,2.5rem)] p-[clamp(2rem,5vw,2.5rem)] pt-0 sticky top-[90px]  mb-12 sm:top-[clamp(120px,7vw,190px)]  ">
-            <h1 className="text-center mb-2 sm:mb-4 md:mb-6 max-w-[1000px] mx-auto">
+          <div className=" animate-smooth-up pb-0 sm:pb-[clamp(1rem,5vw,2.5rem)] p-[clamp(.85rem,3vw,2.5rem)] pt-0 sticky top-[90px]  mb-12 sm:top-[clamp(120px,7vw,190px)]  ">
+            <h1 className="text-center mb-4 sm:mb-4 md:mb-6 max-w-[1000px] mx-auto">
               Tired of chasing <br className="inline sm:hidden" /> roommates for
               money?
               <br className="inline sm:hidden" /> Splitify gets them to pay you
@@ -107,9 +107,10 @@ export default function Hero() {
               {/* Splitify is your AI bill manager that splits bills, sends
               reminders, and tracks everything—so you never miss a payment. */}
               Splitify is your AI bill manager that auto-splits bills, sends
-              smart text reminders, and delivers pay-by-link texts so your roommates
-              actually pay.
+              smart text reminders, and delivers pay-by-link texts so your
+              roommates actually pay.
             </p>
+
             <p className="text-center font-semibold text-gray-700">
               No chasing. No awkward follows-ups.{" "}
               <br className="inline sm:hidden" /> No arguments.
@@ -152,7 +153,7 @@ export default function Hero() {
               <img
                 src={dashboardPhoneImg}
                 alt="Dashboard demo"
-                className="w-full mx-auto rounded-[clamp(0rem,2vw,1.5rem)]"
+                className="w-full scale-110 mb-8 mt-8 mx-auto rounded-[clamp(0rem,2vw,1.5rem)]"
               />
             </div>
           </div>
