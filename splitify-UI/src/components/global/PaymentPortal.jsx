@@ -875,7 +875,6 @@ export default function PaymentPage() {
       </PageLayout>
     );
   }
-
   if (invalidUrl) {
     return (
       <PageLayout>
