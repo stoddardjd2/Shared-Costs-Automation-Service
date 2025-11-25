@@ -279,10 +279,10 @@ const Navbar = ({ variationActive = false }) => {
                 </Link>
 
                 <Link
-                  className={`px-3 sm:px-7 py-2 transition-all  sm:py-3 rounded-lg text-white font-semibold duration-300 hover:-translate-y-0.5 text-sm sm:text-base shadow-md ${
+                  className={`px-3 sm:px-7 py-2 transition-all  sm:py-3 rounded-lg text-white font-semibold duration-300 hover:-translate-y-0.5 text-sm sm:text-base  ${
                     isScrolled || variationActive
                       ? "bg-blue-600 hover:bg-blue-700 transition-all"
-                      : "bg-white"
+                      : ""
                   }`}
                   to={"/signup"}
                   onClick={() => {
@@ -290,18 +290,18 @@ const Navbar = ({ variationActive = false }) => {
                   }}
                 >
                   <span
-                    className={`hidden transition-all  sm:inline text-gray-800 ${
+                    className={`hidden transition-all  sm:inline text-gray-500 ${
                       isScrolled || variationActive ? "text-white " : ""
                     }`}
                   >
                     Create Your Free Account
                   </span>
                   <span
-                    className={`text-gray-800 transition-all sm:hidden  ${
+                    className={`text-gray-500 transition-all sm:hidden  ${
                       isScrolled ? "text-white " : ""
                     }`}
                   >
-                    Sign up free
+                    Sign up
                   </span>
                 </Link>
               </div>

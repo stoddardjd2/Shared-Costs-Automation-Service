@@ -19,19 +19,19 @@ import { Clock, MailCheck } from "lucide-react";
 
 const features = [
   {
-    icon: <Dynamic className="w-5 h-5 [&>path]:stroke-[40px] " />,
-    title: <div>Automatic request updates</div>,
-    description:
-      "If a bill changes, Splitify updates everyone’s amount automatically—perfect for utilities.",
-    btmElements: <img className="w-full h-auto" src={feature1} alt="" />,
-  },
-  {
     icon: <Message className="w-5 h-5 p-[.6px] [&>path]:stroke-[40px] " />,
 
     title: <div>Automatic text reminders</div>,
     description:
       "Missing payments? Splitify follows up with friendly text messages until you get paid.",
     btmElements: <img className="w-full h-auto" src={feature3} alt="" />,
+  },
+  {
+    icon: <Dynamic className="w-5 h-5 [&>path]:stroke-[40px] " />,
+    title: <div>Automatic request updates</div>,
+    description:
+      "If a bill changes, Splitify updates everyone’s amount automatically—perfect for utilities.",
+    btmElements: <img className="w-full h-auto" src={feature1} alt="" />,
   },
 
   {
@@ -173,7 +173,6 @@ export default function Features() {
                 btmElements={feature.btmElements}
                 icon={feature.icon}
                 badge={feature.badge}
-
               />
             </AnimatedInView>
           ))}
@@ -210,14 +209,14 @@ function FeatureCard({
       >
         <div className="p-4">
           <div className="flex items-center mb-2">
-            <h4 className="text-2xl">{title}</h4>
+            <h4 className="">{title}</h4>
           </div>
           <div className="text-gray-600 text-[16px]">{description}</div>
         </div>
 
         <div
           className="w-full rounded-tl-[10px] shadow-lg bg-blue-50 
-          opacity-60 transition-all hover:opacity-100 rounded-bl-[10px] 
+          opacity-60 transition-all rounded-bl-[10px] 
           mt-auto pt-4 pl-4 overflow-hidden h-fit flex items-end"
         >
           <div className="rounded-tl-xl overflow-hidden w-full">

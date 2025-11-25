@@ -153,9 +153,9 @@ export default function Proof() {
         <div className="flex gap-y-[1rem] gap-x-20 flex-wrap justify-between mb-12">
           <FadeInWrapper>
             <h2 className="m-0">
-              <span className="whitespace-nowrap">Backed by science,</span>
+              <span className="whitespace-nowrap">Proven to work,</span>
               <br />
-              <span>built for results</span>
+              <span>built to get you paid</span>
             </h2>
           </FadeInWrapper>
 

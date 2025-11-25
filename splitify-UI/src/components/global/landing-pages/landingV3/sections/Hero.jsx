@@ -94,20 +94,24 @@ export default function Hero() {
       <div className="relative z-10">
         <div className="!pb-0">
           {/* copy */}
-          <div className=" animate-smooth-up pb-0 sm:pb-[clamp(1rem,5vw,2.5rem)] p-[clamp(2rem,5vw,2.5rem)] pt-0 sticky top-[90px] sm:top-[clamp(95px,9vw,190px)] mb-0 sm:mb-[clamp(0.4rem,0.5rem+4vw,5rem)] ">
+          <div className=" animate-smooth-up pb-0 sm:pb-[clamp(1rem,5vw,2.5rem)] p-[clamp(2rem,5vw,2.5rem)] pt-0 sticky top-[90px]  mb-12 sm:top-[clamp(120px,7vw,190px)]  ">
             <h1 className="text-center mb-2 sm:mb-4 md:mb-6 max-w-[1000px] mx-auto">
-              Get your roommates to actually <br className="inline sm:hidden" />{" "}
-              pay you back
+              Tired of chasing <br className="inline sm:hidden" /> roommates for
+              money?
+              <br className="inline sm:hidden" /> Splitify gets them to pay you
+              on time.
             </h1>
             <p className="text-center text-gray-700 mb-2 max-w-[800px] mx-auto">
               {/* Splitify uses proven techniques to get you paid back more often and faster. */}
               {/* Experience less stress, fewer arguments, and more confidence that you won’t be stuck covering other people's bills. */}
-              Splitify is your AI bill manager that splits your bills, sends
-              text messages for requests & reminders and tracks everything so
-              you never miss a payment.
+              {/* Splitify is your AI bill manager that splits bills, sends
+              reminders, and tracks everything—so you never miss a payment. */}
+              Splitify is your AI bill manager that auto-splits bills, sends
+              smart text reminders, and delivers pay-by-link texts so your roommates
+              actually pay.
             </p>
             <p className="text-center font-semibold text-gray-700">
-              No chasing. No awkward conversations.{" "}
+              No chasing. No awkward follows-ups.{" "}
               <br className="inline sm:hidden" /> No arguments.
             </p>
 
@@ -139,7 +143,12 @@ export default function Hero() {
             </div>
 
             {/* MOBILE */}
-            <div className="relative overflow-hidden flex flex-wrap justify-between sm:hidden h-[clamp(590px,200px+7vw,590px)]">
+            {/* h-[clamp(590px,200px+7vw,590px)] */}
+
+            <div
+              className="relative overflow-hidden flex flex-wrap justify-between sm:hidden
+             "
+            >
               <img
                 src={dashboardPhoneImg}
                 alt="Dashboard demo"
