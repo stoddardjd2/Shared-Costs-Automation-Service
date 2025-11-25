@@ -96,7 +96,10 @@ export default function Hero() {
           {/* copy */}
           <div className=" animate-smooth-up pb-0 sm:pb-[clamp(1rem,5vw,2.5rem)] p-[clamp(.85rem,3vw,2.5rem)] pt-0 sticky top-[90px]  mb-12 sm:top-[clamp(120px,7vw,190px)]  ">
             <h1 className="text-center mb-4 sm:mb-4 md:mb-6 max-w-[1000px] mx-auto">
-             Splitify gets your roommates to pay you back
+             {/* Splitify gets your roommates to pay you back */}
+             Tired of chasing roommates for money?
+             <br></br>
+             Splitify gets them to pay you on time.
             </h1>
             <p className="text-center text-gray-800  mb-2 max-w-[800px] mx-auto">
               {/* Splitify uses proven techniques to get you paid back more often and faster. */}
