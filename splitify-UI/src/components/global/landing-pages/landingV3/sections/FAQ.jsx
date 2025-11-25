@@ -56,7 +56,7 @@ const faqItems = [
 ];
 
 export default function FAQSection() {
-  const [openIndex, setOpenIndex] = useState(0);
+  const [openIndex, setOpenIndex] = useState(null);
 
   const handleToggle = (index) => {
     setOpenIndex((prev) => (prev === index ? null : index));
