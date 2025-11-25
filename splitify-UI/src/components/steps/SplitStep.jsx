@@ -509,8 +509,10 @@ const SplitStep = ({
       const handleUpdateRequest = async () => {
         const UpdatedCostFromDB = await updateRequest(costEntry._id, costEntry);
         if (UpdatedCostFromDB) {
+          console.log("updateing with", UpdatedCostFromDB)
           updateCost(UpdatedCostFromDB);
           setSelectedCost(UpdatedCostFromDB);
+          setSelectedCharge(UpdatedCostFromDB)
           onBack();
           setIsSendingRequest(false);
           root.scrollTo({ top: 0, behavior: "instant" });

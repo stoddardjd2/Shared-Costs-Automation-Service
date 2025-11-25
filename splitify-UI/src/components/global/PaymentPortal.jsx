@@ -606,7 +606,6 @@ function PaidToggle({
     try {
       if (onConfirm) {
         const res = await onConfirm(); // expected: { success: true }
-        console.log("TOGGLE", res);
         if (!res || res.success !== true) {
           throw new Error("Backend did not confirm success");
         }
@@ -628,6 +627,12 @@ function PaidToggle({
     // Now update UI
     if (success) {
       setPaid(true);
+      const root = document.querySelector(".root");
+      root.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: "instant",
+      });
     } else if (errorMessage) {
       setError(errorMessage);
     }
@@ -636,38 +641,54 @@ function PaidToggle({
   };
 
   return (
-    <div className="w-full">
-      <button
-        onClick={handleClick}
-        disabled={loading || paid}
-        className={`
-          w-full rounded-lg px-4 py-3 text-center font-semibold transition-all
-          disabled:opacity-70 disabled:cursor-not-allowed mt-20
-          ${
-            paid
-              ? "bg-green-100 border border-green-400 text-green-700"
-              : "bg-gray-100 border border-gray-300 text-gray-700 hover:bg-gray-200"
-          }
-        `}
-      >
-        {paid ? (
-          <span className="flex justify-center items-center gap-2">
-            Payment Confirmed <CheckIcon className="w-5 h-5" />
-          </span>
-        ) : loading ? (
-          <div className="flex items-center justify-center gap-2">
-            <span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full splitify-spinner" />
-            <span>Processing...</span>
-          </div>
-        ) : (
-          "Mark as Paid"
-        )}
-      </button>
+    <>
+      <div className="fixed bottom-0 left-0 right-0 z-[60]">
+        {/* Backdrop blur / fade */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-black/5 to-transparent backdrop-blur-sm" />
 
-      {error && (
-        <p className="mt-1 text-xs text-red-500 text-center">{error}</p>
-      )}
-    </div>
+        {/* Main tray */}
+        <div className="relative bg-white/95 backdrop-blur-xl border-t border-gray-200/50 shadow-2xl">
+          <div className="max-w-lg mx-auto px-6 py-5">
+            <button
+              onClick={handleClick}
+              disabled={loading || paid}
+              className={`
+              w-full text-white font-semibold py-4 rounded-xl shadow-lg transition-all
+              hover:shadow-xl flex items-center justify-center gap-3
+              disabled:opacity-70 disabled:cursor-not-allowed
+              ${
+                paid
+                  ? "bg-green-600/90 hover:bg-green-700"
+                  : loading
+                  ? "bg-blue-600/70"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }
+            `}
+            >
+              {paid ? (
+                <span className="flex justify-center items-center gap-2">
+                  Payment Confirmed <CheckIcon className="w-5 h-5" />
+                </span>
+              ) : loading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <span className="w-5 h-5 border-2 border-white/80 border-t-transparent rounded-full animate-spin" />
+                  <span>Processing...</span>
+                </div>
+              ) : (
+                "Mark as Paid"
+              )}
+            </button>
+
+            {error && (
+              <p className="mt-2 text-xs text-red-500 text-center">{error}</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Spacer so content above isn't hidden behind fixed tray */}
+      {/* <div className="h-[96px]" /> */}
+    </>
   );
 }
 // Main Component

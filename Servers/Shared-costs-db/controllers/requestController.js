@@ -165,6 +165,8 @@ const updateRequest = async (req, res) => {
     // Find the request and check if user owns it
     const existingRequest = await Request.findById(id);
 
+    console.log("updateing with", req.body)
+
     if (!existingRequest) {
       return res.status(404).json({ error: "Request not found" });
     }

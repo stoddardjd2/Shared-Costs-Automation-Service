@@ -190,6 +190,8 @@ const App = () => {
               <GlobalNavbar />
               <PaymentPortal />
               <GlobalFooter />
+              {/* Spacer so content above isn't hidden behind fixed tray */}
+              <div className="h-[96px]" />
             </>
           }
         />
