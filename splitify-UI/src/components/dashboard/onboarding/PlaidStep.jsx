@@ -32,7 +32,7 @@ export default function PlaidStep({
       <SectionTitle
         icon={<PiggyBank className="w-6 h-6" />} // unique vs options
         title="Automate real bills from your bank?"
-        subtitle="We’ll import transactions and update requests automatically."
+        subtitle="We’ll import selected transactions and update requests automatically."
       />
 
       <OptionsGrid>
@@ -56,8 +56,7 @@ export default function PlaidStep({
         onPrimary={() => {
           if (plaidIntent) {
             if (userData.plan == "free") {
-              setShowPremiumModal(true);
-              console.log("Show premiumModal", showPremiumModal);
+              setShowPremiumModal({ show: true, isForPlaidStep: true });
             } else {
               setShowPlaidConnect(true);
               console.log("setShowPlaidConnect ON!", showPlaidConnect);
@@ -72,17 +71,8 @@ export default function PlaidStep({
         onSkip={skipStep}
       />
 
-      <SplitifyPremiumModal
-        isOpen={showPremiumModal}
-        onClose={() => {
-          setShowPremiumModal(false);
-        }}
-        specialCaseScroll={false}
-      />
-
       {showPlaidConnect && (
         <>
-          {console.log("CONNECTING TO PLAID")}
           <PlaidConnect
             isOnboardingStep={true}
             onPlaidLinkSuccess={() => {

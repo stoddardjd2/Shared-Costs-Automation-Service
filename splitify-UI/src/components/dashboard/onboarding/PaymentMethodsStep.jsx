@@ -480,14 +480,14 @@ export default function PaymentMethodsStep({
         </div>
       )}
 
-      {/* <div className="mt-3 border border-gray-100 rounded-lg p-3 text-left text-sm text-gray-600">
+       <div className="mt-3 border border-gray-100 rounded-lg p-3 text-left text-sm text-gray-600">
         Your payment links will appear in every text message request.
-      </div> */}
-      {!hasAtLeastOnePaymentMethod && (
+      </div> 
+      {/* {!hasAtLeastOnePaymentMethod && (
         <div className="mt-3 border border-gray-100 rounded-lg p-3 text-left text-sm text-red-600">
           Please add at least one payment method so people can pay you.
         </div>
-      )}
+      )} */}
 
       <FooterNav
         primaryLabel={submitting ? "Saving..." : "Save payment methods"}

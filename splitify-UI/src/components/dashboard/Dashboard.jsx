@@ -96,7 +96,11 @@ const Dashboard = () => {
 
   if (!isOnboardingCompleted) {
     return (
-      <OnboardingFlow setIsOnboardingCompleted={setIsOnboardingCompleted} />
+      <OnboardingFlow
+        onComplete={() => {
+          setIsOnboardingCompleted(true);
+        }}
+      />
     );
     // <WelcomeScreen setShowFirstTimePrompt={setShowFirstTimePrompt} />;
   }

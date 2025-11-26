@@ -47,11 +47,16 @@ const DEFAULT_COPY = {
 // DISPLAY ONLY
 const plans = [
   {
-    name: "Free (no card needed)",
+    name: "Free",
     id: "free",
     price: "0",
     annualPrice: "0",
-    description: "Includes everything you need to automate your bill splits",
+    description: (
+      <>
+        Includes everything you need to automate your bill splits. <br></br>
+        <strong className="font-[500]">No card needed.</strong>
+      </>
+    ),
     features: [
       "*LIMITED TIME* Unlimited text messages and requests",
       "Recurring splits",
@@ -102,10 +107,13 @@ export default function SplitifyPremiumModal({
   onClose,
   pricing = DEFAULT_PRICING,
   featureCopy = DEFAULT_COPY,
-  showPlaidOnly = true,
+  showPlaid = true,
   showPremium = true,
+  showFree = false,
   navbarPadding = false,
   specialCaseScroll = true,
+  isModal = true,
+  onComplete,
 }) {
   const { userData, setUserData } = useData();
   const userEmail = userData?.email || "";
@@ -143,6 +151,7 @@ export default function SplitifyPremiumModal({
     } finally {
       setIsFetchingCS(false);
     }
+    // after finish call onComplete for onboarding step
   };
 
   useEffect(() => {
@@ -232,9 +241,60 @@ export default function SplitifyPremiumModal({
     );
   };
 
+  const FreeCard = ({ plan }) => (
+    <div
+      className={` relative bg-white rounded-lg border border-gray-300/70 p-8 shadow-lg transition-shadow hover:shadow-xl ${
+        plan.popular ? "ring-2 ring-blue-600" : ""
+      }`}
+    >
+      {plan.popular && (
+        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
+          Most Popular
+        </div>
+      )}
+
+      <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name} </h3>
+
+      <p className="text-gray-600 mb-6 min-h-[54px]">{plan.description}</p>
+
+      <div className="mb-6">
+        <span className="text-5xl font-bold text-gray-900">
+          ${billing == "annual" ? plan.annualPrice : plan.price}
+        </span>
+        <span className="text-gray-600">/month</span>
+      </div>
+
+      <button
+        onClick={() => {
+          onComplete?.();
+        }}
+        disabled={isFetchingCS}
+        className="inline-flex w-full mb-4 items-center justify-center gap-2 rounded-xl bg-blue-600 text-white px-4 py-2.5 font-medium shadow-sm hover:shadow-md hover:brightness-105 transition disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        {isFetchingCS ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" /> Preparing…
+          </>
+        ) : (
+          "Start Free"
+        )}
+      </button>
+      <p className="mb-3 text-gray-400">{plan.includes}</p>
+
+      <ul className="space-y-3">
+        {plan.features.map((feature, featureIndex) => (
+          <li key={featureIndex} className="flex items-start gap-3">
+            <Check className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-600" />
+            <span className="text-gray-700 text-start">{feature}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
   const PlaidCard = ({ plan }) => (
     <div
-      className={` relative bg-white rounded-lg p-8 shadow-lg transition-shadow hover:shadow-xl ${
+      className={` relative bg-white rounded-lg border border-gray-300/70 p-8 shadow-lg transition-shadow hover:shadow-xl ${
         plan.popular ? "ring-2 ring-blue-600" : ""
       }`}
     >
@@ -340,7 +400,7 @@ export default function SplitifyPremiumModal({
     };
 
     return (
-      <div className="flex flex-col h-full min-h-0">
+      <div className="flex flex-col  h-full min-h-0">
         {/* Header */}
         <div className="relative flex items-center gap-4 border-b border-gray-100 pl-2 p-6 sm:p-8 flex-none">
           <button
@@ -418,6 +478,9 @@ export default function SplitifyPremiumModal({
 
                   setSuccessInfo(info);
                   setStep("success");
+                  setTimeout(() => {
+                    onComplete?.(); //for onboarding next step
+                  }, 1000);
                 }}
               />
             </Elements>
@@ -439,7 +502,7 @@ export default function SplitifyPremiumModal({
 
   return (
     <div
-      className={`fixed inset-0 ${
+      className={`${isModal && "fixed inset-0"} w-full ${
         specialCaseScroll && "overflow-scroll"
       } z-[9999] ${navbarPadding && "mt-[65px]"}`}
       role="dialog"
@@ -461,12 +524,20 @@ export default function SplitifyPremiumModal({
           className="flex min-h-screen w-full items-start sm:items-center justify-center"
         >
           {/* Panel */}
-          <div className="w-full min-h-screen bg-white shadow-2xl ring-1 ring-black/5 flex flex-col overflow-hidden">
+          <div
+            className={`w-full min-h-screen bg-white ${
+              isModal && "shadow-2xl ring-1 ring-black/5"
+            }  flex flex-col overflow-hidden`}
+          >
             {/* CHOOSE STEP */}
             {step === "choose" && (
               <div className="flex-1 overflow-y-auto">
                 {/* Header */}
-                <div className="relative flex-col items-start gap-4 border-b border-gray-100 p-6 sm:p-8 flex-none">
+                <div
+                  className={`relative flex-col items-start gap-4 ${
+                    isModal && "border-b border-gray-100"
+                  } p-6 sm:p-8 flex-none`}
+                >
                   <div className=" mb-3 mx-auto h-10 w-10 flex items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
                     <Sparkles className="h-5 w-5 " />
                   </div>
@@ -481,14 +552,16 @@ export default function SplitifyPremiumModal({
                       {featureCopy.subheadline}
                     </p>
                   </div>
-                  <button
-                    ref={closeBtnRef}
-                    onClick={onClose}
-                    aria-label="Close upgrade modal"
-                    className="absolute right-4 top-4 inline-flex items-center justify-center rounded-full p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 "
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
+                  {isModal && (
+                    <button
+                      ref={closeBtnRef}
+                      onClick={onClose}
+                      aria-label="Close upgrade modal"
+                      className="absolute right-4 top-4 inline-flex items-center justify-center rounded-full p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 "
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  )}
                 </div>
 
                 {/* Billing toggle */}
@@ -498,8 +571,21 @@ export default function SplitifyPremiumModal({
                 />
 
                 {/* Cards */}
-                <div className="grid max-w-[1000px] mx-auto grid-cols-1 gap-y-8 gap-4 p-6 sm:grid-cols-2 sm:gap-6 sm:p-8">
-                  {showPlaidOnly && <PlaidCard plan={plans[1]} />}
+                <div
+                  className="
+    grid max-w-[1200px] mx-auto 
+    gap-8 p-6 
+   sm:p-8
+
+    /* 1 column on mobile */
+    grid-cols-1
+
+    /* auto-fit columns on md+ */
+    lg:[grid-template-columns:repeat(auto-fit,minmax(290px,1fr))]
+"
+                >
+                  {showFree && <FreeCard plan={plans[0]} />}
+                  {showPlaid && <PlaidCard plan={plans[1]} />}
                   {showPremium && <PremiumCard plan={plans[2]} />}
                 </div>
 

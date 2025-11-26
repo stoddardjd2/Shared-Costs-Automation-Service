@@ -73,7 +73,7 @@ const AddStep = ({
           <div>
             <label className="ml-2 block text-sm font-semibold text-gray-700 mb-3">
               <User className="w-4 h-4 inline mr-2" />
-              Full Name
+              Name
             </label>
             <input
               type="text"
@@ -81,7 +81,7 @@ const AddStep = ({
               onChange={(e) =>
                 setNewPerson((prev) => ({ ...prev, name: e.target.value }))
               }
-              placeholder="Enter full name"
+              placeholder="Enter name"
               className="w-full p-4 border border-gray-200 rounded-xl outline-none text-base bg-white shadow-sm transition-all hover:shadow-md focus:ring-2 focus:ring-blue-600 focus:border-transparent"
             />
           </div>

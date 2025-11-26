@@ -37,6 +37,7 @@ import { saveOnboarding } from "../../../queries/user";
 import PaymentMethodsStep from "./PaymentMethodsStep.jsx";
 import PlaidStep from "./PlaidStep.jsx";
 import { useData } from "../../../contexts/DataContext.jsx";
+import SplitifyPremiumModal from "../../premium/SplitifyPremiumModal.jsx";
 /**
  * Splitify Onboarding Wizard
  *
@@ -81,7 +82,11 @@ export default function OnboardingWizard({
   const [splitWith, setSplitWith] = useState({ selected: [], other: "" });
   const [challenge, setChallenge] = useState({ selected: [], other: "" });
 
-  const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [showPremiumModal, setShowPremiumModal] = useState({
+    show: false,
+    isForPlaidStep: false,
+  });
+  const [showPremiumModalStep, setShowPremiumModalStep] = useState(true);
 
   // Simple / single-select
   const [reminders, setReminders] = useState({
@@ -142,6 +147,11 @@ export default function OnboardingWizard({
         skippable: false,
         countsTowardProgress: true,
       },
+      premium: {
+        enabled: true,
+        skippable: false,
+        // countsTowardProgress: true,
+      },
       done: { enabled: true, skippable: false, countsTowardProgress: false },
     }),
     []
@@ -165,6 +175,7 @@ export default function OnboardingWizard({
       "payments",
       "plaid",
       "challenge",
+      "premium",
       "done",
     ];
 
@@ -279,10 +290,9 @@ export default function OnboardingWizard({
       challenge: challengeArray,
       plaidIntent,
     };
-
-    onComplete?.();
     setShowFirstTimePrompt?.(false);
     navigate("/dashboard/add");
+    onComplete?.();
   };
 
   const skipAll = () => {
@@ -370,9 +380,10 @@ export default function OnboardingWizard({
     showBack = true,
     skipLabel = "Skip for now",
     onSkip,
+    showPrimary = true,
   }) => (
     <div className="mt-6 sm:mt-8 flex flex-col gap-2 px-2">
-      <button
+      {showPrimary && <button
         type="button"
         onClick={onPrimary}
         disabled={primaryDisabled}
@@ -384,7 +395,7 @@ export default function OnboardingWizard({
       >
         <span>{primaryLabel}</span>
         <ArrowRight className="w-4 h-4" />
-      </button>
+      </button>}
 
       <div className="flex items-center justify-between">
         {showBack && (
@@ -423,20 +434,32 @@ export default function OnboardingWizard({
       <div className="grid gap-3 sm:gap-4">
         <label className="text-left">
           <div className="text-sm font-medium text-gray-900 mb-1">
-            First name
+            Your name
           </div>
           <input
             autoFocus
-            value={profile.firstName}
-            onChange={(e) =>
-              setProfile((p) => ({ ...p, firstName: e.target.value }))
-            }
+            value={profile.fullName}
+            onChange={(e) => {
+              const full = e.target.value;
+
+              // Split but preserve exact user-typed string in fullName
+              const parts = full.trim().split(/\s+/);
+              const first = parts[0] || "";
+              const last = parts.slice(1).join(" ");
+
+              setProfile((p) => ({
+                ...p,
+                fullName: full, // ← preserve raw input (allows trailing spaces)
+                firstName: first,
+                lastName: last,
+              }));
+            }}
             className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600"
-            placeholder="First Name"
+            placeholder="Your name"
           />
         </label>
 
-        <label className="text-left">
+        {/* <label className="text-left">
           <div className="text-sm font-medium text-gray-900 mb-1">
             Last name
           </div>
@@ -448,7 +471,7 @@ export default function OnboardingWizard({
             className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600"
             placeholder="Last name"
           />
-        </label>
+        </label> */}
 
         <div className="text-left">
           <div className="text-sm font-medium text-gray-900 mb-2">
@@ -554,7 +577,6 @@ export default function OnboardingWizard({
         onPrimary={next}
         primaryDisabled={
           !profile.firstName.trim() ||
-          !profile.lastName.trim() ||
           !profile.heardFrom ||
           (profile.heardFrom === "other" && !profile.heardFromOther.trim())
         }
@@ -781,7 +803,7 @@ export default function OnboardingWizard({
             label: "Only one reminder",
             icon: <Bell className="w-5 h-5" />,
           },
-                {
+          {
             key: "none",
             label: "no reminders",
             icon: <X className="w-5 h-5" />,
@@ -1021,7 +1043,6 @@ export default function OnboardingWizard({
   };
 
   const renderChallenge = () => {
-    console.log("render challenge");
     const toggle = (key) => {
       setChallenge((p) => {
         const selected = p.selected.includes(key)
@@ -1151,12 +1172,9 @@ export default function OnboardingWizard({
               const res = await saveOnboarding(payload);
               // update userData locally
               setUserData(res.user);
-              console.log("userData", userData);
-              console.log("res", res);
             };
 
             callSaveOnboarding();
-            setIsOnboardingCompleted(true);
             next();
           }}
           primaryDisabled={
@@ -1175,7 +1193,7 @@ export default function OnboardingWizard({
     <div className="px-2">
       <SectionTitle
         icon={<CheckCircle className="w-6 h-6" />}
-        title="You’re ready 🎉"
+        title="You’re ready to go!"
         subtitle="Let’s send your first request."
       />
 
@@ -1191,7 +1209,10 @@ export default function OnboardingWizard({
 
         <button
           type="button"
-          onClick={() => navigate("/dashboard")}
+          onClick={() => {
+            navigate("/dashboard");
+            onComplete?.();
+          }}
           className="w-full inline-flex items-center justify-center gap-2 border border-black hover:bg-gray-100 text-black px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors duration-200"
         >
           <span>Explore your dashboard</span>
@@ -1217,15 +1238,14 @@ export default function OnboardingWizard({
     <div
       className={`fixed inset-0 z-[6000] min-h-dvh bg-white flex items-start justify-center overflow-auto 
     ${
-      (stepKey !== "plaid" || !showPremiumModal) &&
+      (stepKey !== "plaid" || !showPremiumModal.show) &&
       "sm:pt-10 p-2 sm:!p-2 lg:!p-2"
     }
   `}
     >
-      {console.log("SHOW PREMIUM MODAL", showPremiumModal)}
       <div
         className={`w-full ${
-          (stepKey !== "plaid" || !showPremiumModal) && "max-w-2xl"
+          !showPremiumModal.show && stepKey !== "premium" && "max-w-2xl"
         } mx-auto transition-all duration-700 ${
           isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
         }`}
@@ -1267,6 +1287,33 @@ export default function OnboardingWizard({
             />
           )}
           {stepKey === "challenge" && renderChallenge()}
+          {stepKey === "premium" && (
+            <div>
+              {/* <SectionTitle
+                icon={<Repeat className="w-6 h-6" />}
+                title="Automate recurring bills?"
+                subtitle="Set them once and Splitify will reuse them every month."
+              /> */}
+
+              <SplitifyPremiumModal
+                isOpen={true}
+                specialCaseScroll={false}
+                isModal={false}
+                showFree={true}
+                onComplete={() => next()}
+              />
+
+              <FooterNav
+                primaryLabel="Start Free"
+                onPrimary={next}
+                onSecondary={back}
+                showSkip={canSkipThisStep}
+                skipLabel="Skip"
+                onSkip={skipStep}
+                showPrimary={false}
+              />
+            </div>
+          )}
           {stepKey === "done" && renderDone()}
         </div>
 
@@ -1281,6 +1328,15 @@ export default function OnboardingWizard({
           </button>
         )} */}
       </div>
+
+      <SplitifyPremiumModal
+        isOpen={showPremiumModal.show}
+        onClose={() => {
+          setShowPremiumModal((prev) => ({ ...prev, show: false }));
+        }}
+        specialCaseScroll={true}
+        showFree={showPremiumModal.isForPlaidStep ? false : true}
+      />
     </div>
   );
 }
