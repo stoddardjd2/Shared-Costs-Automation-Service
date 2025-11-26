@@ -73,11 +73,6 @@ const Dashboard = () => {
 
     if (params?.get("plan")) {
       navigate(`/dashboard/premium${location.search}`);
-
-      // show first time welcome screen and navigate user to make first request
-    } else if (!costs || costs.length == 0) {
-      navigate("/dashboard/welcome");
-      setShowFirstTimePrompt(true);
     }
   }, []);
 

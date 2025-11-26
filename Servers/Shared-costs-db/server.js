@@ -29,7 +29,7 @@ const supportRoutes = require("./routes/supportRoutes");
 const plaidRoutes = require("./routes/plaidRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const stripeRoutes = require("./routes/stripeRoutes");
-
+const tiktokRoutes = require("./routes/tiktokRoutes")
 // Import error handler
 const { errorHandler, notFound } = require("./utils/errorHandler");
 
@@ -83,7 +83,7 @@ async function startServer() {
       max: 400, // limit each IP to 100 requests per windowMs
       message: "Too many requests from this IP, please try again later.",
     });
-    
+
     app.use(limiter);
 
     // app.use("/api/stripe", stripeRoutes);
@@ -125,6 +125,7 @@ async function startServer() {
     app.use("/api/plaid", plaidRoutes);
     app.use("/api/admin", adminRoutes);
     app.use("/api/stripe", stripeRoutes);
+    app.use("/api/tiktok", tiktokRoutes);
     // Error handling middleware
     app.use(notFound);
     app.use(errorHandler);

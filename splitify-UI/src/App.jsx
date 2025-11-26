@@ -12,8 +12,17 @@ import {
 } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { DataProvider } from "./contexts/DataContext";
+const Unauthorized = lazy(() => import("./components/auth/Unauthorized.jsx"));
 const AdminUsersOverview = lazy(() =>
   import("./components/admin/AdminUsersOverview.jsx")
+);
+
+const AdminProtectedRoute = lazy(() =>
+  import("./components/auth/AdminProtectedRoute.jsx")
+);
+
+const TikTokUploader = lazy(() =>
+  import("./components/admin/social-media-tools/TikTokUploader.jsx")
 );
 
 // 🔹 Lazily load everything that isn't needed for the first paint.
@@ -238,13 +247,22 @@ const App = () => {
         </Route>
 
         {/* admin */}
-        <Route path="/admin">
-          {/* DEFAULT DASHBOARD INDEX */}
-          <Route index element={<Navigate to="/" />} />
+        <Route
+          path="/admin"
+          element={
+            <AuthProvider>
+              <DataProvider>
+                <AdminProtectedRoute />
+              </DataProvider>
+            </AuthProvider>
+          }
+        >
+          <Route path="tiktok" element={<TikTokUploader />} />
 
-          {/* USERS SUBPAGE */}
           <Route path="users" element={<AdminUsersOverview />} />
         </Route>
+
+        <Route path="/unauthorized" element={<Unauthorized />} />
 
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

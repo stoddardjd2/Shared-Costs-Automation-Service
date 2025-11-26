@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Request = require("../models/Request");
+const { protect, authorize } = require("../middleware/auth");
 
 const sendTextMessage = require("../send-request-helpers/sendTextMessage");
 
@@ -18,6 +19,12 @@ const {
   runRecurringRequestsNow,
 } = require("../payment-request-scheduler/paymentRequestScheduler");
 // FOR REMINDER SCHEDULER
+
+
+router.use(protect); // All routes after this require user to logged in
+router.use(authorize("admin"));
+
+
 // Admin endpoint to check scheduler status
 router.get("/scheduler-status", async (req, res) => {
   try {

@@ -131,7 +131,7 @@ const verifyToken = async (token) => {
       return false;
     }
 
-    return data.data.valid;
+    return data.data;
   } catch (error) {
     console.error("Error logging in:", error);
     throw error;

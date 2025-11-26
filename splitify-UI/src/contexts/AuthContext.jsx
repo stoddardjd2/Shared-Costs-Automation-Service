@@ -5,6 +5,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isValidToken, setIsValidToken] = useState(null);
+  const [role, setRole] = useState(null);
   // const [userData, setUserData] = useState(null);
   // const [requests, setRequests] = useState(null);
 
@@ -15,10 +16,10 @@ export const AuthProvider = ({ children }) => {
 
       if (token && token !== "undefined") {
         try {
-          const isValidToken = await verifyToken(token);
-
-          if (isValidToken) {
+          const res = await verifyToken(token);
+          if (res.valid) {
             setIsValidToken(true);
+            res?.role && setRole(res.role);
             // setUserData(userData);
           } else {
             console.log("token expired!");
@@ -43,6 +44,7 @@ export const AuthProvider = ({ children }) => {
       value={{
         isValidToken,
         loading,
+        role,
         // , userData, setUserData
       }}
     >

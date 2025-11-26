@@ -269,6 +269,13 @@ const userSchema = new Schema(
       },
     },
     partcipantForRequests: [{ Type: Schema.Types.ObjectId }],
+    tiktok: {
+      accessToken: { type: String },
+      refreshToken: { type: String },
+      openId: { type: String },
+      scope: { type: [String], default: [] },
+      expiresAt: { type: Date },
+    },
   },
   {
     timestamps: true,

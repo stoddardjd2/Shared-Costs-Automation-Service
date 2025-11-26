@@ -268,6 +268,7 @@ const checkIfValidToken = async (req, res) => {
           data: {
             valid: true,
             userId: decoded.id,
+            role: user.role,
             // user: user,
             issuedAt: new Date(decoded.iat * 1000),
             expiresAt: new Date(decoded.exp * 1000),
