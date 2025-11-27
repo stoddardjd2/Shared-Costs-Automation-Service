@@ -62,7 +62,6 @@ router.get("/login/:userId", (req, res) => {
     "video.publish", // direct post (if you use Direct Post)
   ].join(",");
 
-  console.log("REDIRECT_URI", REDIRECT_URI);
 
   const params = new URLSearchParams({
     client_key: CLIENT_KEY,
@@ -81,7 +80,6 @@ router.get("/login/:userId", (req, res) => {
 
 // 2) TikTok redirects here with ?code=&state=
 router.get("/callback", async (req, res) => {
-  console.log("CALLBACK", req.query);
   const { code, state } = req.query;
 
   if (!code || !state) {
@@ -128,7 +126,6 @@ router.get("/callback", async (req, res) => {
       tokenJson;
 
     //  store in your DB associated with splitifyUserId
-    console.log("access_token", access_token);
     await User.updateOne(
       { _id: splitifyUserId },
       {
@@ -161,10 +158,6 @@ router.use(authorize("admin"));
 
 // POST /api/tiktok/post
 router.post("/post", upload.single("video"), async (req, res) => {
-  console.log("post", req.body, req.file);
-  console.log("req.file:", req.file);
-  console.log("req.file.path:", req.file?.path);
-  console.log("req.file.buffer:", req.file?.buffer);
   try {
     const userId = req.user._id;
 

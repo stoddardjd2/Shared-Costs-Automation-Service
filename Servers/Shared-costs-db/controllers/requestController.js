@@ -567,7 +567,7 @@ ${participantUser?.name || "a participant"} marked their request as paid.
 AMOUNT: $${safeAmount}
 FOR: ${currentRequest.name}
 
-Confirm you recieved the payment then click URL to mark as paid: ${finalUrl}
+Confirm you received the payment then click URL to mark as paid: ${finalUrl}
 
 Sent via Splitify
 `;

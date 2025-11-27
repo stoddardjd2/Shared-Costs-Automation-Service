@@ -166,7 +166,7 @@ export default function Features() {
         {/* features grid */}
         <div className="mt-14 grid gap-4 grid-cols-[repeat(auto-fit,minmax(300px,1fr))] items-start">
           {features.map((feature, index) => (
-            <AnimatedInView key={index} delay={index * 0.14} className="w-full">
+            <AnimatedInView key={index} delay={index * 0.14} className="w-full h-full">
               <FeatureCard
                 title={feature.title}
                 description={feature.description}
@@ -189,7 +189,7 @@ function FeatureCard({
   badge = null, // <-- now an object like { label: "Beta" }
 }) {
   return (
-    <div className="h-fit relative">
+    <div className="h-full relative">
       {/* ⭐ Badge */}
       {badge?.label && (
         <div className="absolute -top-2 -right-3 z-10">

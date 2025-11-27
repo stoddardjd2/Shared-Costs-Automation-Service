@@ -114,6 +114,8 @@ export default function SplitifyPremiumModal({
   specialCaseScroll = true,
   isModal = true,
   onComplete,
+  isCheckoutPhaseForOnboard,
+  setIsCheckoutPhaseForOnboard,
 }) {
   const { userData, setUserData } = useData();
   const userEmail = userData?.email || "";
@@ -131,11 +133,23 @@ export default function SplitifyPremiumModal({
   // success info for confirmation screen
   const [successInfo, setSuccessInfo] = useState(null); // { planKey, billing, amount, currency }
 
+  //for onboarding
+  useEffect(() => {
+    if (setIsCheckoutPhaseForOnboard) {
+      if (step == "pay" || step == "success") {
+        setIsCheckoutPhaseForOnboard(true);
+      } else {
+        setIsCheckoutPhaseForOnboard(false);
+      }
+    }
+  }, [step]);
+
   // ⬇️ start checkout – fetch a clientSecret for Payment Element
   const startCheckout = async (planKey) => {
     setFetchError(null);
     setStep("pay");
     setIsFetchingCS(true);
+
     try {
       setSelection({ planKey, billing });
       // Hit your backend to create a Subscription and return a clientSecret

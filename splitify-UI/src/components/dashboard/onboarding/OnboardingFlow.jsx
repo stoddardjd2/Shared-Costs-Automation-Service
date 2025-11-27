@@ -82,6 +82,8 @@ export default function OnboardingWizard({
   const [splitWith, setSplitWith] = useState({ selected: [], other: "" });
   const [challenge, setChallenge] = useState({ selected: [], other: "" });
 
+  const [isCheckoutPhaseForOnboard, setIsCheckoutPhaseForOnboard] =
+    useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState({
     show: false,
     isForPlaidStep: false,
@@ -382,20 +384,22 @@ export default function OnboardingWizard({
     onSkip,
     showPrimary = true,
   }) => (
-    <div className="mt-6 sm:mt-8 flex flex-col gap-2 px-2">
-      {showPrimary && <button
-        type="button"
-        onClick={onPrimary}
-        disabled={primaryDisabled}
-        className={`w-full inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
-          primaryDisabled
-            ? "bg-blue-300 text-white cursor-not-allowed"
-            : "bg-blue-600 hover:bg-blue-700 text-white"
-        }`}
-      >
-        <span>{primaryLabel}</span>
-        <ArrowRight className="w-4 h-4" />
-      </button>}
+    <div className="mt-6 sm:mt-8 flex flex-col gap-2 px-2 max-w-2xl mx-auto">
+      {showPrimary && (
+        <button
+          type="button"
+          onClick={onPrimary}
+          disabled={primaryDisabled}
+          className={`w-full inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
+            primaryDisabled
+              ? "bg-blue-300 text-white cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700 text-white"
+          }`}
+        >
+          <span>{primaryLabel}</span>
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      )}
 
       <div className="flex items-center justify-between">
         {showBack && (
@@ -1252,7 +1256,9 @@ export default function OnboardingWizard({
       >
         {progressStepKeys.includes(stepKey) && <Progress />}
 
-        <div className="mt-6 sm:mt-8 text-center">
+        <div
+          className={`${stepKey !== "premium" && "mt-6 sm:mt-8"}  text-center`}
+        >
           {stepKey === "profile" && renderProfile()}
           {stepKey === "usecase" && renderUseCase()}
           {stepKey === "splitwith" && renderSplitWith()}
@@ -1299,19 +1305,23 @@ export default function OnboardingWizard({
                 isOpen={true}
                 specialCaseScroll={false}
                 isModal={false}
-                showFree={true}
+                // showFree={true}
                 onComplete={() => next()}
+                isCheckoutPhaseForOnboard={isCheckoutPhaseForOnboard}
+                setIsCheckoutPhaseForOnboard={setIsCheckoutPhaseForOnboard}
               />
 
-              <FooterNav
-                primaryLabel="Start Free"
-                onPrimary={next}
-                onSecondary={back}
-                showSkip={canSkipThisStep}
-                skipLabel="Skip"
-                onSkip={skipStep}
-                showPrimary={false}
-              />
+              {!isCheckoutPhaseForOnboard && (
+                <FooterNav
+                  primaryLabel="Start Free"
+                  onPrimary={next}
+                  onSecondary={back}
+                  showSkip={canSkipThisStep}
+                  skipLabel="Skip"
+                  onSkip={skipStep}
+                  // showPrimary={false}
+                />
+              )}
             </div>
           )}
           {stepKey === "done" && renderDone()}
