@@ -20,12 +20,12 @@ async function sendReminder(to, from = "+18333702013", body, requestDoc) {
   });
 
   try {
-    // const res = await telnyx.messages.create({
-    //   from,
-    //   to,
-    //   text: String(body),
-    //   // messaging_profile_id: process.env.TELNYX_MESSAGING_PROFILE_ID,
-    // });
+    const res = await telnyx.messages.create({
+      from,
+      to,
+      text: String(body),
+      // messaging_profile_id: process.env.TELNYX_MESSAGING_PROFILE_ID,
+    });
 
     console.log("[Telnyx] SMS sent successfully", {
       to,
