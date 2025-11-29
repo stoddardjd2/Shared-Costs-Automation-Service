@@ -242,7 +242,7 @@ export default function VideoPromptGenerator() {
   const [sceneDurations, setSceneDurations] = useState(() =>
     getSetting("sceneDurations", {})
   ); // {sceneIndex: seconds}
-  const [scenes, setScenes] = useState([]); // [{index, durationSeconds, script, sceneDescription}]
+  const [scenes, setScenes] = useState([]); // [{index, durationSeconds, script, framing}]
 
   // ---- UI / status ----
   const [isGeneratingHook, setIsGeneratingHook] = useState(false);
@@ -740,7 +740,11 @@ export default function VideoPromptGenerator() {
       if (data?.clothes) {
         setClothes(data.clothes);
       }
-      setScenes(data.scenes || []);
+      const mappedScenes = (data.scenes || []).map((scene) => ({
+        ...scene,
+        sceneDescription: sceneBaseDescription || "",
+      }));
+      setScenes(mappedScenes);
       if (concreteHook?.trim()) {
         persistHookLibrary((prev) => {
           const normalizedPrev = normalizeHookList(prev);
@@ -920,7 +924,7 @@ export default function VideoPromptGenerator() {
   const buildScenePromptPayload = (scene) => ({
     clothes: clothes || "",
     character: character || "",
-    sceneDescription: scene.sceneDescription || sceneBaseDescription || "",
+    sceneDescription: sceneBaseDescription || "",
     rules: rules || "",
     framing: scene.framing || framing || "",
     script: scene.script || "",
@@ -931,14 +935,10 @@ export default function VideoPromptGenerator() {
       cameo ? `CAMEO: ${cameo}` : null,
       clothes ? `• CLOTHES: ${clothes}` : null,
       `• CHARACTER: ${character || "[CHARACTER]"}`,
-      `• SCENE: ${
-        scene.sceneDescription || sceneBaseDescription || "[SCENE DESCRIPTION]"
-      }`,
+      `• SCENE: ${sceneBaseDescription || "[SCENE DESCRIPTION]"}`,
       `• HARD RULES: ${rules || "[RULES]"}`,
       `• FRAMING: ${scene.framing || framing || "[FRAMING]"}`,
-      `• SCENE DESCRIPTION: ${
-        scene.sceneDescription || sceneBaseDescription || "[SCENE DESCRIPTION]"
-      }`,
+      `• SCENE DESCRIPTION: ${sceneBaseDescription || "[SCENE DESCRIPTION]"}`,
       `• SCRIPT FOR SCENE: ${scene.script || "[SCRIPT FOR SCENE]"}`,
     ]
       .filter(Boolean)
@@ -2272,9 +2272,9 @@ export default function VideoPromptGenerator() {
                       Scene {idx + 1} —{" "}
                       {scene.durationSeconds ?? getSceneDuration(idx)}s
                     </span>
-                    {scene.sceneDescription && (
+                    {sceneBaseDescription && (
                       <span className="text-xs text-gray-500">
-                        {scene.sceneDescription}
+                        {sceneBaseDescription}
                       </span>
                     )}
                   </div>

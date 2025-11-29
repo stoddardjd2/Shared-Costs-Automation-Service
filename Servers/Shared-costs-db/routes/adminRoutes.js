@@ -214,7 +214,7 @@ Sent via Splitify
 
 // Helper to enforce safety + shaping
 const SYSTEM_PROMPT_HOOK = `
-You are helping a SaaS founder create TikTok hooks.
+You are an expert at creating hooks that instantly get the users attention no matter what.
 Inputs:
 - productDescription: description of product benefits, target audience, and features.
 - hookTemplate: a generic hook template with placeholders like [desire], [pain point], etc. (used only when generationMode is "template").
@@ -239,13 +239,19 @@ Return JSON with:
 `;
 
 const SYSTEM_PROMPT_SCRIPT = `
-You are writing short TikTok-style scenes for an AI-generated video.
+You are writing short TikTok-style scenes.
 Follow these rules:
 
+- Tell a story, don't be repetitive
+- Must mention product as solution in last scene
 - Natural TikTok language, casual and conversational.
 - No text overlays, graphics, or extra people. One main character.
 - Respect the durationSeconds, write only as much dialogue as can be spoken in that time.
 - Each scene should focus on the chosen HOOK and PAIN POINT applied to Splitify.
+- Each scene must stand on its own: include any needed context inside that script, never reference earlier scenes for context.
+- Treat scenes as standalone takes: restate who is speaking, where they are, and the hook/pain point tension inside each script. Do not say "as I said before", "continued", or reference previous/next scenes.
+- Write every scene as if the viewer never saw another scene: avoid callbacks ("earlier", "again", "back to"), avoid pronouns that rely on prior context, and re-establish the core situation + pain point in that script.
+- Do NOT generate sceneDescription; the backend will attach the provided baseSceneDescription to every scene.
 - The character is talking directly to camera (POV selfie).
 - Keep it realistic and emotionally resonant (especially around awkwardness about money).
 - No sentences than end with !? or ?!
@@ -255,7 +261,6 @@ Return JSON:
     {
       "index": number,
       "durationSeconds": number,
-      "sceneDescription": string,
       "framing": string,
       "script": string
     }
@@ -314,13 +319,13 @@ router.post("/video-prompts/hook", async (req, res) => {
         },
         {
           role: "user",
-      content: JSON.stringify(userPrompt),
+          content: JSON.stringify(userPrompt),
         },
       ],
       text: {
         format: {
           type: "json_schema",
-          name: "hook_result",        // 🔴 REQUIRED
+          name: "hook_result", // 🔴 REQUIRED
           strict: true,
           schema: {
             type: "object",
@@ -686,7 +691,7 @@ router.post("/video-prompts/script", async (req, res) => {
       text: {
         format: {
           type: "json_schema",
-          name: "script_result",      
+          name: "script_result",
           strict: true,
           schema: {
             type: "object",
@@ -699,17 +704,10 @@ router.post("/video-prompts/script", async (req, res) => {
                   properties: {
                     index: { type: "number" },
                     durationSeconds: { type: "number" },
-                    sceneDescription: { type: "string" },
                     framing: { type: "string" },
                     script: { type: "string" },
                   },
-                  required: [
-                    "index",
-                    "durationSeconds",
-                    "script",
-                    "sceneDescription",
-                    "framing",
-                  ],
+                  required: ["index", "durationSeconds", "script", "framing"],
                   additionalProperties: false,
                 },
               },
@@ -735,9 +733,14 @@ router.post("/video-prompts/script", async (req, res) => {
         .json({ message: "Failed to parse script response." });
     }
 
+    const normalizedScenes = (data.scenes || []).map((scene) => ({
+      ...scene,
+      sceneDescription: baseSceneDescription || "",
+    }));
+
     return res.json({
       clothes: data.clothes || clothes || "",
-      scenes: data.scenes || [],
+      scenes: normalizedScenes,
     });
   } catch (err) {
     console.error("Error generating script:", err);
@@ -746,7 +749,6 @@ router.post("/video-prompts/script", async (req, res) => {
     });
   }
 });
-
 
 module.exports = router;
 const SYSTEM_PROMPT_PAIN_POINT = `
