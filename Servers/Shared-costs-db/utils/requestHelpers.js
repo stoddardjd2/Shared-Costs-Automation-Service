@@ -19,76 +19,49 @@ const transporter = nodemailer.createTransport({
   debug: false,
 });
 
-// const calculateNextReminderDate = (nextDueDate, reminderFrequency) => {
-//   if (!reminderFrequency || reminderFrequency === "none" || !nextDueDate) {
-//     return null;
-//   }
-
-//   const dueDate = new Date(nextDueDate);
-
-//   switch (reminderFrequency) {
-//     case "daily":
-//       return new Date(dueDate.getTime() + 24 * 60 * 60 * 1000);
-//     case "weekly":
-//       return new Date(dueDate.getTime() + 7 * 24 * 60 * 60 * 1000);
-//     case "monthly":
-//       const monthlyDate = new Date(dueDate);
-//       monthlyDate.setMonth(monthlyDate.getMonth() + 1);
-//       return monthlyDate;
-//     default:
-//       return null;
-//   }
-// };
-
-const calculateNextReminderDate = (nextDueDate, reminderFrequency) => {
-  console.log("REMINDER FREQUENCY", reminderFrequency);
-  if (!reminderFrequency || reminderFrequency === "none" || !nextDueDate)
-    return null;
-
-  const dueDate = new Date(nextDueDate);
-  if (isNaN(dueDate)) return null; // invalid date
-
-  const DAY = 24 * 60 * 60 * 1000;
-
-  switch (reminderFrequency) {
-    case "daily":
-      return new Date(dueDate.getTime() + 1 * DAY);
-
-    case "weekly":
-      return new Date(dueDate.getTime() + 7 * DAY);
-
-    case "biweekly":
-      return new Date(dueDate.getTime() + 14 * DAY);
-
-    case "monthly": {
-      // calendar-based add in UTC
-      const d = new Date(dueDate);
-      d.setUTCMonth(d.getUTCMonth() + 1);
-      return d;
-    }
-
-    case "yearly": {
-      // calendar-based add in UTC
-      const d = new Date(dueDate);
-      d.setUTCFullYear(d.getUTCFullYear() + 1);
-      return d;
-    }
-
-    default:
-      return null;
-  }
-};
-
 // function calculateDueDate(daysFromNow, startDate = new Date()) {
 //   const dueDate = new Date(startDate);
 //   dueDate.setDate(dueDate.getDate() + daysFromNow);
 //   return dueDate;
 // }
 
-function calculateDaysFromNow(daysFromNow, startDate = new Date()) {
-  const dueDate = new Date(startDate);
-  dueDate.setUTCDate(dueDate.getUTCDate() + daysFromNow);
-  return dueDate;
+function calculateDaysFromNow(
+  daysFromNow,
+  startDate = new Date(),
+  targetHourPST = 10
+) {
+  if (!(startDate instanceof Date) || isNaN(startDate)) return null;
+
+  const days = Number(daysFromNow || 0);
+  if (!Number.isFinite(days)) return null;
+
+  // 1. Interpret startDate in America/Los_Angeles local time
+  const pacificNow = new Date(
+    startDate.toLocaleString("en-US", { timeZone: "America/Los_Angeles" })
+  );
+
+  // 2. Use the Pacific *calendar day* (midnight)
+  const pacificDate = new Date(
+    pacificNow.getFullYear(),
+    pacificNow.getMonth(),
+    pacificNow.getDate(),
+    0,
+    0,
+    0,
+    0
+  );
+
+  // 3. Add days in Pacific calendar terms
+  pacificDate.setDate(pacificDate.getDate() + days);
+
+  // 4. Snap to 10:00 AM PST (or targetHourPST)
+  pacificDate.setHours(targetHourPST, 0, 0, 0);
+
+  // 5. Convert that Pacific wall-clock time → UTC Date
+  const utcString = pacificDate.toLocaleString("en-US", { timeZone: "UTC" });
+  const utcDate = new Date(utcString);
+
+  return utcDate;
 }
 
 async function checkTextMessagePermissions(participants) {
@@ -120,15 +93,16 @@ function createPaymentHistoryEntry(
   requestData,
   paymentHistoryObjId = new ObjectId()
 ) {
-  const dueDate = calculateDaysFromNow(requestData.dueInDays);
-
   const initialHistory = {
     requestDate: new Date(),
     dueDate: calculateDaysFromNow(requestData.dueInDays),
     amount: requestData.amount,
     totalAmount: requestData.totalAmount,
     totalAmountOwed: requestData.totalAmountOwed,
-    nextReminderDate: requestData.reminderFrequency == "none" ? null : dueDate, // Reminders start on due date
+    nextReminderDate: calculateNextReminderDate(
+      calculateStartingDate(requestData.startTiming),
+      requestData.reminderFrequency
+    ), // Reminders start on due date
     _id: paymentHistoryObjId,
     // status: "pending",
     participants: (requestData.participants || []).map((participant) => ({
@@ -323,6 +297,52 @@ async function emailNonApprovedParticipants(
   }
 
   return { sent, throttled, skipped, failed, updateFailed };
+}
+
+// freq: "daily" | "3days" | "weekly" | "monthly" | "none"
+// fromDate: Date in UTC
+// targetHourPST: wall-clock time in PST you want (default 12:00)
+function calculateNextReminderDate(fromDate, freq, targetHourPST = 12) {
+  if (!(fromDate instanceof Date) || isNaN(fromDate)) return null;
+
+  // 1. Interpret `fromDate` in America/Los_Angeles local time
+  const pacificNow = new Date(
+    fromDate.toLocaleString("en-US", { timeZone: "America/Los_Angeles" })
+  );
+
+  // 2. Decide how many *Pacific* days to add
+  let daysToAdd;
+  switch (freq) {
+    case "daily":
+      daysToAdd = 1;
+      break;
+    case "3days":
+      daysToAdd = 3;
+      break;
+    case "weekly":
+      daysToAdd = 7;
+      break;
+    case "monthly":
+      // For monthly, add 1 month in Pacific terms:
+      pacificNow.setMonth(pacificNow.getMonth() + 1);
+      daysToAdd = 0;
+      break;
+    default:
+      return null; // "none" or unknown
+  }
+
+  if (daysToAdd) {
+    pacificNow.setDate(pacificNow.getDate() + daysToAdd);
+  }
+
+  // 3. Snap to targetHourPST on that Pacific date
+  pacificNow.setHours(targetHourPST, 0, 0, 0);
+
+  // 4. Convert that exact Pacific time → UTC
+  const utcString = pacificNow.toLocaleString("en-US", { timeZone: "UTC" });
+  const utcDate = new Date(utcString);
+
+  return utcDate;
 }
 
 module.exports = {

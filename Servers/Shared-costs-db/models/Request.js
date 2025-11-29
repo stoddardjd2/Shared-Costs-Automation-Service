@@ -81,6 +81,7 @@ const requestSchema = new Schema({
   allowMarkAsPaidForEveryone: { type: Boolean, default: false },
   isPlaidCharge: Boolean,
   totalAmount: Number,
+  dueInDays: Number,
   totalAmountOwed: Number,
   reminderFrequency: {
     type: String,

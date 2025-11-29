@@ -41,6 +41,7 @@ const getRequests = async (req, res) => {
 };
 const createRequest = async (req, res) => {
   console.log("Creating request with data:", req.body);
+
   try {
     const userId = req.user._id; // From auth middleware
     const { ...requestData } = req.body;
@@ -59,9 +60,7 @@ const createRequest = async (req, res) => {
         createdAt: now,
         owner: userId,
         paymentHistory: [initialHistory], // Add initial history as subdocument
-        lastSent: new Date(
-          Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-        ), //set to start of current day so timing works with scheduler
+        lastSent: new Date(),
       });
     } else {
       // for future payment, do not add history yet as has not sent request
@@ -165,7 +164,7 @@ const updateRequest = async (req, res) => {
     // Find the request and check if user owns it
     const existingRequest = await Request.findById(id);
 
-    console.log("updateing with", req.body)
+    console.log("updateing with", req.body);
 
     if (!existingRequest) {
       return res.status(404).json({ error: "Request not found" });
@@ -849,7 +848,7 @@ const handlePaymentDetails = async (req, res) => {
       },
     });
 
-    console.log("REQUEST DOC OWNER", "691d3c38614eeb3bce23fb0a")
+    console.log("REQUEST DOC OWNER", "691d3c38614eeb3bce23fb0a");
     const owner = await User.findById(new ObjectId(requestDocument.owner));
     const OwnerName = owner.name;
     const ownerPaymentMethods = owner.paymentMethods;

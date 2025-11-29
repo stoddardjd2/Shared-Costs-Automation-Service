@@ -263,14 +263,14 @@ const Navbar = ({ variationActive = false }) => {
                 {/* Hide Login on very small screens to keep it clean */}
                 <Link
                   to={"/login"}
-                  className={`px-4 py-2 rounded-lg font-semibold transition-transform duration-300 hover:-translate-y-0.5 text-sm border-2 ${
+                  className={`px-4 py-2 rounded-lg font-semibold transition-transform duration-300 hover:-translate-y-0.5 text-sm  ${
                     isScrolled
                       ? `${
                           transitionComplete
                             ? "border-white/0 hover:border-white/80"
                             : "border-transparent"
-                        } text-gray-800 hover:bg-white/10`
-                      : "border-white/0 text-white hover:bg-black/5"
+                        } texwhitet-gray-800 hover:bg-white/10`
+                      : "border-/0 text-white hover:bg-black/5"
                   }`}
                 >
                   <span className="inline sm:text-[1rem] text-gray-500">

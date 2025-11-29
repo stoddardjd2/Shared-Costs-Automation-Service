@@ -132,7 +132,7 @@ const SplitStep = ({
 
   const [submittedRequest, setSubmittedRequest] = useState({});
 
-  const [dueInDays, setDueInDays] = useState(1);
+  const [dueInDays, setDueInDays] = useState(selectedCharge?.dueInDays || 1);
 
   const [isPlaidCharge, setIsPlaidCharge] = useState(
     selectedCharge?.isPlaidCharge || false
@@ -179,7 +179,7 @@ const SplitStep = ({
   const [isHoveringDynamicInfo, setIsHoveringDynamicInfo] = useState(false);
 
   const [reminderFrequency, setReminderFrequency] = useState(
-    userData.reminderPreference
+    selectedCharge?.reminderFrequency || userData?.reminderPreference || "3days"
   );
 
   const [showPaymentNotificationsInfo, setShowPaymentNotificationsInfo] =
@@ -189,7 +189,7 @@ const SplitStep = ({
     setIsHoveringPaymentNotificationsInfo,
   ] = useState(false);
   const [allowPaymentNotificationsInfo, setAllowPaymentNotificationsInfo] =
-    useState(true);
+    useState(selectedCharge?.allowPaymentNotificationsInfo || true);
 
   const [showRequestSentScreen, setShowRequestSentScreen] = useState(false);
   // Track previous split type to detect changes from custom
@@ -359,7 +359,7 @@ const SplitStep = ({
     function roundToTwo(num) {
       const n = Number(num);
       if (Number.isNaN(n));
-      console.log("ROUNDING",n.toFixed(2) )
+      console.log("ROUNDING", n.toFixed(2));
 
       return Number(n.toFixed(2));
     }
@@ -376,14 +376,17 @@ const SplitStep = ({
       totalSplit,
       editableTotalAmount,
     });
-    console.log("LENGTH", selectedPeople.length)
-    console.log("AMOUNTS:", splitType === "percentage" || splitType === "custom"
+    console.log("LENGTH", selectedPeople.length);
+    console.log(
+      "AMOUNTS:",
+      splitType === "percentage" || splitType === "custom"
         ? null
         : splitType === "equalWithMe"
         ? Number(roundToTwo(editableTotalAmount / (selectedPeople.length + 1)))
         : splitType === "equal"
         ? Number(roundToTwo(editableTotalAmount / selectedPeople.length))
-        : undefined )
+        : undefined
+    );
     // Override cost entry properties with current state values to ensure accuracy
     costEntry.splitType = splitType;
     costEntry.amount =
@@ -509,10 +512,10 @@ const SplitStep = ({
       const handleUpdateRequest = async () => {
         const UpdatedCostFromDB = await updateRequest(costEntry._id, costEntry);
         if (UpdatedCostFromDB) {
-          console.log("updateing with", UpdatedCostFromDB)
+          console.log("updateing with", UpdatedCostFromDB);
           updateCost(UpdatedCostFromDB);
           setSelectedCost(UpdatedCostFromDB);
-          setSelectedCharge(UpdatedCostFromDB)
+          setSelectedCharge(UpdatedCostFromDB);
           onBack();
           setIsSendingRequest(false);
           root.scrollTo({ top: 0, behavior: "instant" });
@@ -1341,8 +1344,8 @@ const SplitStep = ({
             {
               key: 1,
               label:
-                startTiming === "now" ? "Due tomorrow" : "Due day after sent",
-              subLabel: "Reminders start then",
+                startTiming === "now" ? "Due tomorrow" : "Due 1 day after sent",
+              subLabel: "Request due then",
             },
             {
               key: 3,
@@ -1350,21 +1353,23 @@ const SplitStep = ({
                 startTiming === "now"
                   ? "Due in 3 days"
                   : "Due 3 days after sent",
-              subLabel: "Reminders start then",
+              subLabel: "Request due then",
             },
             {
               key: 7,
               label:
-                startTiming === "now" ? "Due in a week" : "Due week after sent",
-              subLabel: "Reminders start then",
+                startTiming === "now"
+                  ? "Due in a week"
+                  : "Due 1 week after sent",
+              subLabel: "Request due then",
             },
             {
               key: 30,
               label:
                 startTiming === "now"
                   ? "Due in a month"
-                  : "Due month after sent",
-              subLabel: "Reminders start then",
+                  : "Due 1 month after sent",
+              subLabel: "Request due then",
             },
           ]}
         />
@@ -1374,6 +1379,7 @@ const SplitStep = ({
           isHidden={isEditingOneTimeRequest}
           isEditMode={isEditMode}
           selectedKey={reminderFrequency}
+          editNote={"Changes will apply for future reminders"}
           icon={<Bell className="w-4 h-4 text-gray-500 shrink-0" />}
           onSelect={setReminderFrequency}
           options={[
@@ -1406,7 +1412,11 @@ const SplitStep = ({
             key: o.key,
             label: o.label,
             subLabel:
-              o.key === "none" ? "No text reminders" : "Texts this often",
+              o.key === "none"
+                ? "Disable reminders"
+                : o.key === "once"
+                ? "1 reminder after 3 days"
+                : "Reminders this often",
           }))}
         />
 

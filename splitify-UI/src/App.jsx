@@ -12,6 +12,9 @@ import {
 } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { DataProvider } from "./contexts/DataContext";
+const VideoPromptGenerator = lazy(() =>
+  import("./components/admin/social-media-tools/VideoPromptGenerator.jsx")
+);
 const Unauthorized = lazy(() => import("./components/auth/Unauthorized.jsx"));
 const AdminUsersOverview = lazy(() =>
   import("./components/admin/AdminUsersOverview.jsx")
@@ -258,6 +261,10 @@ const App = () => {
           }
         >
           <Route path="tiktok" element={<TikTokUploader />} />
+          <Route
+            path="videopromptgenerator"
+            element={<VideoPromptGenerator />}
+          />
 
           <Route path="users" element={<AdminUsersOverview />} />
         </Route>

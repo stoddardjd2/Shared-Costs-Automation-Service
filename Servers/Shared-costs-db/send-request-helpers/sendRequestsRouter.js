@@ -102,7 +102,12 @@ Sent via Splitify
     }
 
     if (routes.includes("text")) {
-      sendTextMessage(user.phone, undefined, message);
+      sendTextMessage(
+        user.phone,
+        undefined,
+        message,
+        reminderData?.requestData
+      );
 
       // Update owner metrics: count texts sent and log details (timestamp, userId, participantName)
       try {

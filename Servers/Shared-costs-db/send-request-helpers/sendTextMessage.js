@@ -12,22 +12,27 @@ const telnyx = new Telnyx(process.env.TELNYX_API_KEY);
  *  { success: true, data } on success
  *  { success: false, error } on failure
  */
-async function sendReminder(to, from = "+18333702013", body) {
-  console.log("[Telnyx] sendReminder payload:", { to, from, body: String(body) });
+async function sendReminder(to, from = "+18333702013", body, requestDoc) {
+  console.log("[Telnyx] sendReminder payload:", {
+    to,
+    from,
+    body: String(body),
+  });
 
   try {
-    const res = await telnyx.messages.create({
-      from,
-      to,
-      text: String(body),
-      // messaging_profile_id: process.env.TELNYX_MESSAGING_PROFILE_ID,
-    });
+    // const res = await telnyx.messages.create({
+    //   from,
+    //   to,
+    //   text: String(body),
+    //   // messaging_profile_id: process.env.TELNYX_MESSAGING_PROFILE_ID,
+    // });
 
     console.log("[Telnyx] SMS sent successfully", {
       to,
       from,
       messageId: res?.data?.id,
       status: res?.data?.status,
+      for: `${requestDoc.name || "unknown"}, ${requestDoc._id || "unknown"}`,
     });
 
     return {
@@ -39,7 +44,8 @@ async function sendReminder(to, from = "+18333702013", body) {
     const telnyxError = err?.raw?.errors?.[0];
 
     const normalizedError = {
-      message: err.message || telnyxError?.detail || "Failed to send SMS via Telnyx",
+      message:
+        err.message || telnyxError?.detail || "Failed to send SMS via Telnyx",
       type: err.type || "TelnyxError",
       statusCode: err.statusCode || err.raw?.statusCode || null,
       code: telnyxError?.code || null,
@@ -52,6 +58,7 @@ async function sendReminder(to, from = "+18333702013", body) {
       to,
       from,
       error: normalizedError,
+      for: `${requestDoc.name || "unknown"}, ${requestDoc._id || "unknown"}`,
     });
 
     // You can either throw here or just return the error object.

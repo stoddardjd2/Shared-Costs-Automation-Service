@@ -172,48 +172,31 @@ function addIntervalToDate(baseDate, intervalCount, intervalUnit) {
   }
 }
 
-function isRequestDueByFrequency(
-  lastSentDate,
-  frequency,
-  customInterval,
-  customUnit,
-  currentDate = new Date()
-) {
-  console.log(
-    "isRequestDueByFrequency params",
-    lastSentDate,
-    frequency,
-    customInterval,
-    customUnit,
-    currentDate
-  );
+function isRequestDue(nextDue, currentDate = new Date()) {
+  // If we don't have a next due date, it's not due
+  if (!nextDue) return false;
 
-  if (!lastSentDate) return false;
-  if (String(frequency || "").toLowerCase() === "one-time") return false;
+  // Support both Date instances and ISO strings
+  const nextDueDate = nextDue instanceof Date ? nextDue : new Date(nextDue);
 
-  const interval = getIntervalFromFrequency(
-    frequency,
-    customInterval,
-    customUnit
-  );
-  if (!interval) return false;
-
-  const nextEligibleDate = addIntervalToDate(
-    lastSentDate,
-    interval.count,
-    interval.unit
-  );
+  if (isNaN(nextDueDate.getTime())) {
+    console.error("isRequestDue: invalid nextDue value", nextDue);
+    return false;
+  }
 
   const LENIENCY_HOURS = 2;
-  const LENIENCY_MS = 60 * 60 * 1000 * LENIENCY_HOURS;
-  return currentDate.getTime() >= nextEligibleDate.getTime() - LENIENCY_MS;
+  const LENIENCY_MS = LENIENCY_HOURS * 60 * 60 * 1000;
+
+  // Allow it to send up to 2 hours *before* the stored nextDue
+  return currentDate.getTime() >= nextDueDate.getTime() - LENIENCY_MS;
 }
 
 function calculateDueDate(
   requestDate,
   reminderFrequency,
   customInterval,
-  customUnit
+  customUnit,
+  targetHourPST = 14 // default: 2pm PST
 ) {
   const interval = getIntervalFromFrequency(
     reminderFrequency,
@@ -221,7 +204,25 @@ function calculateDueDate(
     customUnit
   );
   if (!interval) return null;
-  return addIntervalToDate(requestDate, interval.count, interval.unit);
+
+  // 1. Add interval normally (assume requestDate is a valid Date)
+  const rawDate = addIntervalToDate(requestDate, interval.count, interval.unit);
+
+  // 2. Get the target calendar day (using UTC parts to keep things consistent)
+  const year = rawDate.getUTCFullYear();
+  const month = String(rawDate.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(rawDate.getUTCDate()).padStart(2, "0");
+  const hour = String(targetHourPST).padStart(2, "0");
+
+  // 3. Build an ISO string representing *that date at targetHour in PST*
+  // PST = UTC-08:00 (no DST adjustment here on purpose)
+  const pstIso = `${year}-${month}-${day}T${hour}:00:00-08:00`;
+
+  // 4. Let JS convert that fixed PST time into a UTC moment
+  const dueDateUTC = new Date(pstIso);
+
+  // Return a Date whose internal time is UTC; use .toISOString() when needed.
+  return dueDateUTC;
 }
 
 // helper: send requests to every participant
@@ -383,6 +384,7 @@ async function processRecurringRequestIfDue(
           paymentHistoryId
         );
 
+        console.log("send all 1");
         await sendToAllParticipants({
           requestDocument,
           paymentHistoryEntry,
@@ -390,6 +392,13 @@ async function processRecurringRequestIfDue(
           kind: "initial",
         });
 
+        console.log(
+          "persist in request scheduler: ",
+          requestDocument,
+          paymentHistoryEntry,
+          currentDate,
+          requestNextDueDate
+        );
         await persistSend({
           requestDocument,
           paymentHistoryEntry,
@@ -405,11 +414,12 @@ async function processRecurringRequestIfDue(
   } else {
     // Recurring request
     if (
-      isRequestDueByFrequency(
-        requestDocument.lastSent,
-        requestDocument.frequency,
-        requestDocument.customInterval,
-        requestDocument.customUnit,
+      isRequestDue(
+        requestDocument.nextDue,
+        // requestDocument.lastSent,
+        // requestDocument.frequency,
+        // requestDocument.customInterval,
+        // requestDocument.customUnit,
         currentDate
       )
     ) {
@@ -425,6 +435,7 @@ async function processRecurringRequestIfDue(
         paymentHistoryId
       );
 
+      console.log("send all 2");
       await sendToAllParticipants({
         requestDocument,
         paymentHistoryEntry,

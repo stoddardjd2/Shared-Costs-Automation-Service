@@ -2,6 +2,7 @@
 const cron = require("node-cron");
 const mongoose = require("mongoose");
 const { ObjectId } = require("mongodb");
+const { calculateNextReminderDate } = require("../utils/requestHelpers");
 const sendRequestsRouter = require("../send-request-helpers/sendRequestsRouter");
 // Import your Request model - adjust path as needed
 const Request = require("../models/Request");
@@ -9,42 +10,6 @@ const User = require("../models/User");
 // Global state
 let isJobRunning = false;
 let cronJob = null;
-
-/**
- * Calculate next reminder date based on frequency
- */
-function calculateNextReminderDate(currentDate, frequency) {
-  const next = new Date(currentDate);
-
-  switch (frequency.toLowerCase()) {
-    case "daily":
-      next.setUTCDate(next.getUTCDate() + 1);
-      break;
-    case "weekly":
-      next.setUTCDate(next.getUTCDate() + 7);
-      break;
-    case "biweekly":
-      next.setUTCDate(next.getUTCDate() + 14);
-      break;
-    case "monthly":
-      next.setUTCMonth(next.getUTCMonth() + 1);
-      break;
-    case "yearly":
-      next.setUTCFullYear(next.getUTCFullYear() + 1);
-      break;
-    default:
-      // If frequency is a number, treat as days
-      const days = parseInt(frequency, 10);
-      if (!isNaN(days)) {
-        next.setUTCDate(next.getUTCDate() + days);
-      } else {
-        // Default to weekly if frequency is unknown
-        next.setUTCDate(next.getUTCDate() + 7);
-      }
-  }
-
-  return next;
-}
 
 /**
  * Check if participants need reminders (paymentAmount < expected amount)
@@ -106,20 +71,7 @@ async function processRequestReminders(request) {
     return d;
   }
 
-  function calculateNextReminderDate(fromDate, freq) {
-    switch (freq) {
-      case "daily":
-        return addDaysUTC(fromDate, 1);
-      case "3days":
-        return addDaysUTC(fromDate, 3);
-      case "weekly":
-        return addDaysUTC(fromDate, 7);
-      case "monthly":
-        return addMonthsUTC(fromDate, 1);
-      default:
-        return null; // "none" or unknown
-    }
-  }
+ 
 
   const freq = request.reminderFrequency || "3days"; // default if missing
 
@@ -415,7 +367,6 @@ module.exports = {
   processReminders,
   //   sendSMS,
   //   sendEmail,
-  calculateNextReminderDate,
   getParticipantsNeedingReminders,
   processRequestReminders,
   getSchedulerStatus,

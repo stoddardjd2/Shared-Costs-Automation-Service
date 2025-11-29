@@ -27,6 +27,7 @@
     "multer": "^2.0.2",
     "node-cron": "^4.2.1",
     "nodemailer": "^7.0.5",
+    "openai": "^6.9.1",
     "p-retry": "^7.0.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",

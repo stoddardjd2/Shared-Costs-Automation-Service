@@ -138,8 +138,9 @@ const RecurringCostsSection = ({
   };
 
   function FormatDueDate(isoString) {
+    console.log("next due", isoString)
     const date = new Date(isoString);
-
+    console.log("DATA",date)
     const month = date.getMonth() + 1; // local month
     const day = date.getDate(); // local day
     const year = date.getFullYear(); // local year

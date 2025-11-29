@@ -273,7 +273,7 @@ const userSchema = new Schema(
       accessToken: { type: String },
       refreshToken: { type: String },
       openId: { type: String },
-      scope: { type: [String], default: [] },
+      scope: { type: [String] },
       expiresAt: { type: Date },
     },
   },

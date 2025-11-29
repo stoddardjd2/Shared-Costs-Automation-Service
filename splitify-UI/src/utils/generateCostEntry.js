@@ -44,41 +44,35 @@ export default function generateCostEntry({
   };
 
   // Helper function to calculate next due date
-  const getNextDueDate = () => {
+  const getNextDueDate = (targetHourPST = 14) => {
     if (recurringType === "none") return null;
 
-    // Parse 'YYYY-MM-DD' into a UTC-midnight Date
-    function dateFromYMD(ymd, mode = "utc") {
+    // Treat PST as fixed UTC-8
+    const PST_OFFSET_HOURS = 8;
+    const PST_OFFSET_MS = PST_OFFSET_HOURS * 60 * 60 * 1000;
+
+    // Convert real UTC -> "pseudo PST" (for calendar math)
+    function utcToPseudoPST(dateUtc) {
+      return new Date(dateUtc.getTime() - PST_OFFSET_MS);
+    }
+
+    // Convert "pseudo PST" -> real UTC
+    function pseudoPSTToUtc(datePseudo) {
+      return new Date(datePseudo.getTime() + PST_OFFSET_MS);
+    }
+
+    // Parse 'YYYY-MM-DD' as a PST calendar date at midnight (pseudo PST)
+    function pstFromYMD(ymd) {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd)) {
         throw new Error("Date must be 'YYYY-MM-DD'");
       }
       const [y, m, d] = ymd.split("-").map(Number);
-      const dt =
-        mode === "utc"
-          ? new Date(Date.UTC(y, m - 1, d))
-          : new Date(y, m - 1, d);
-      const ok =
-        mode === "utc"
-          ? dt.getUTCFullYear() === y &&
-            dt.getUTCMonth() === m - 1 &&
-            dt.getUTCDate() === d
-          : dt.getFullYear() === y &&
-            dt.getMonth() === m - 1 &&
-            dt.getDate() === d;
-      if (!ok) throw new Error("Invalid calendar date");
-      return dt;
+      // In pseudo PST world, we can just use Date.UTC for Y/M/D
+      return new Date(Date.UTC(y, m - 1, d, 0, 0, 0, 0));
     }
 
-    // Format a Date (assumed UTC) as 'YYYY-MM-DD'
-    function toYMDUTC(d) {
-      const y = d.getUTCFullYear();
-      const m = String(d.getUTCMonth() + 1).padStart(2, "0");
-      const day = String(d.getUTCDate()).padStart(2, "0");
-      return `${y}-${m}-${day}`;
-    }
-
-    // Add interval in UTC
-    function addUTC(base, count, unit) {
+    // Add in PST calendar units (days/weeks/months/years) using UTC setters
+    function addPseudoPST(base, count, unit) {
       const dt = new Date(base.getTime());
       switch (unit) {
         case "days":
@@ -99,24 +93,43 @@ export default function generateCostEntry({
       return dt;
     }
 
-    // Today at UTC midnight
-    const now = new Date();
-    const todayUTC = new Date(
-      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+    // --- Now / Today in PST world (pseudo) ---
+
+    const nowUtc = new Date();
+    const nowPstPseudo = utcToPseudoPST(nowUtc);
+
+    const todayPstMidnight = new Date(
+      Date.UTC(
+        nowPstPseudo.getUTCFullYear(),
+        nowPstPseudo.getUTCMonth(),
+        nowPstPseudo.getUTCDate(),
+        0,
+        0,
+        0,
+        0
+      )
     );
 
-    // Anchor date
-    const base =
-      startTiming === "now" ? todayUTC : dateFromYMD(startTiming, "utc");
+    // --- Anchor base date (in pseudo PST) ---
 
-    // If start is in the future, the next due date is the start
-    if (startTiming !== "now" && base.getTime() > now.getTime()) {
-      return toYMDUTC(base);
+    const basePst =
+      startTiming === "now"
+        ? new Date(todayPstMidnight.getTime()) // copy
+        : pstFromYMD(startTiming);
+
+    // If explicit start date is in the future (PST), just use that date at targetHourPST
+    if (startTiming !== "now" && basePst.getTime() > nowPstPseudo.getTime()) {
+      const future = new Date(basePst.getTime());
+      // Set wall-clock time in PST world
+      future.setUTCHours(targetHourPST, 0, 0, 0);
+      return pseudoPSTToUtc(future);
     }
 
-    // Determine step (count, unit) from recurringType/custom
+    // --- Determine step ---
+
     let count = 1;
     let unit;
+
     switch (recurringType) {
       case "daily":
         unit = "days";
@@ -147,16 +160,27 @@ export default function generateCostEntry({
         return null;
     }
 
-    // Advance to the first due date on/after todayUTC
-    // Start with first period after (or equal to) base
-    let next = addUTC(base, count, unit);
-    // If base itself is today and you want "tomorrow/next period", this is already correct.
-    // If base was in the past, catch up by stepping until next >= todayUTC
-    while (next < todayUTC) {
-      next = addUTC(next, count, unit);
+    // --- Find the next PST date ≥ today (by calendar) ---
+
+    let nextPst = addPseudoPST(basePst, count, unit);
+    while (nextPst < todayPstMidnight) {
+      nextPst = addPseudoPST(nextPst, count, unit);
     }
 
-    return toYMDUTC(next);
+    // Set time to targetHourPST (2pm by default) in PST world
+    nextPst.setUTCHours(targetHourPST, 0, 0, 0);
+
+    // Convert from pseudo PST back to real UTC
+    const nextUtc = pseudoPSTToUtc(nextPst);
+
+    // For debugging:
+    // console.log("nextUtc ISO:", nextUtc.toISOString());
+    // console.log(
+    //   "as PST (manual):",
+    //   new Date(nextUtc.getTime() - PST_OFFSET_MS).toISOString()
+    // );
+
+    return nextUtc;
   };
 
   // Generate custom splits object based on split type
@@ -201,10 +225,9 @@ export default function generateCostEntry({
     newChargeDetails?.name ||
     "Untitled Charge";
 
-
   const currentDate = new Date().toISOString().split("T")[0];
 
-  console.log("recurringType", recurringType);
+  console.log("getNextDueDate()", getNextDueDate());
   return {
     name: chargeName,
     isRecurring: recurringType == "one-time" ? false : true,
