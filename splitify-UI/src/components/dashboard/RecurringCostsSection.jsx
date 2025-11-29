@@ -542,7 +542,7 @@ const RecurringCostsSection = ({
                         </div>
                       </div>
                       {/* Next due date */}
-                      {cost.nextDue && cost.isRecurring && (
+                      {cost.nextDue && (
                         <div
                           title="Next request date"
                           className="items-center ml-auto flex gap-2 text-gray-600 px-3 py-1.5 rounded-lg w-fit"

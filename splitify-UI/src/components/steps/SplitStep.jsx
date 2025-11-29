@@ -376,17 +376,6 @@ const SplitStep = ({
       totalSplit,
       editableTotalAmount,
     });
-    console.log("LENGTH", selectedPeople.length);
-    console.log(
-      "AMOUNTS:",
-      splitType === "percentage" || splitType === "custom"
-        ? null
-        : splitType === "equalWithMe"
-        ? Number(roundToTwo(editableTotalAmount / (selectedPeople.length + 1)))
-        : splitType === "equal"
-        ? Number(roundToTwo(editableTotalAmount / selectedPeople.length))
-        : undefined
-    );
     // Override cost entry properties with current state values to ensure accuracy
     costEntry.splitType = splitType;
     costEntry.amount =
