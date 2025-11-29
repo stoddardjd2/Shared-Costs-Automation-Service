@@ -28,40 +28,35 @@ const transporter = nodemailer.createTransport({
 function calculateDaysFromNow(
   daysFromNow,
   startDate = new Date(),
-  targetHourPST = 10
+  fromTimeZone = "America/Los_Angeles"
 ) {
+  console.log("calc days from now", daysFromNow, startDate, fromTimeZone);
   if (!(startDate instanceof Date) || isNaN(startDate)) return null;
 
+  // How many days to add
   const days = Number(daysFromNow || 0);
   if (!Number.isFinite(days)) return null;
 
-  // 1. Interpret startDate in America/Los_Angeles local time
-  const pacificNow = new Date(
-    startDate.toLocaleString("en-US", { timeZone: "America/Los_Angeles" })
+  // 1. Convert startDate → that timezone's wall-clock
+  const zoned = new Date(
+    startDate.toLocaleString("en-US", { timeZone: fromTimeZone })
   );
 
-  // 2. Use the Pacific *calendar day* (midnight)
-  const pacificDate = new Date(
-    pacificNow.getFullYear(),
-    pacificNow.getMonth(),
-    pacificNow.getDate(),
+  // 2. Strip time → local midnight in that timezone
+  const zonedMidnight = new Date(
+    zoned.getFullYear(),
+    zoned.getMonth(),
+    zoned.getDate(),
     0,
     0,
     0,
     0
   );
 
-  // 3. Add days in Pacific calendar terms
-  pacificDate.setDate(pacificDate.getDate() + days);
+  // 3. Add days using calendar rules of that timezone
+  zonedMidnight.setDate(zonedMidnight.getDate() + days);
 
-  // 4. Snap to 10:00 AM PST (or targetHourPST)
-  pacificDate.setHours(targetHourPST, 0, 0, 0);
-
-  // 5. Convert that Pacific wall-clock time → UTC Date
-  const utcString = pacificDate.toLocaleString("en-US", { timeZone: "UTC" });
-  const utcDate = new Date(utcString);
-
-  return utcDate;
+  return zonedMidnight;
 }
 
 async function checkTextMessagePermissions(participants) {
@@ -80,13 +75,39 @@ async function checkTextMessagePermissions(participants) {
   }));
 }
 
-function calculateStartingDate(startTiming) {
-  // request date represents when first request should be sent
-  if (startTiming == "now") {
-    return new Date();
+function calculateStartingDate(
+  startTiming,
+  fromTimeZone = "America/Los_Angeles"
+) {
+  let baseDate;
+
+  // 1. Determine the base date
+  if (startTiming === "now") {
+    baseDate = new Date();
   } else {
-    return new Date(startTiming);
+    baseDate = new Date(startTiming);
+    if (isNaN(baseDate)) return null;
   }
+
+  // 2. Convert baseDate → that timezone's wall clock
+  const zoned = new Date(
+    baseDate.toLocaleString("en-US", { timeZone: fromTimeZone })
+  );
+
+  // 3. Strip time → midnight in that timezone's calendar day
+  // (again, constructed as a local Date here using that Y/M/D)
+  const localMidnight = new Date(
+    zoned.getFullYear(),
+    zoned.getMonth(),
+    zoned.getDate(),
+    0,
+    0,
+    0,
+    0
+  );
+
+  // 4. Return local midnight
+  return localMidnight;
 }
 
 function createPaymentHistoryEntry(
@@ -95,13 +116,22 @@ function createPaymentHistoryEntry(
 ) {
   const initialHistory = {
     requestDate: new Date(),
-    dueDate: calculateDaysFromNow(requestData.dueInDays),
+
+    dueDate: calculateDaysFromNow(
+      requestData.dueInDays,
+      undefined,
+      requestData?.createdInTimeZone
+    ),
     amount: requestData.amount,
     totalAmount: requestData.totalAmount,
     totalAmountOwed: requestData.totalAmountOwed,
     nextReminderDate: calculateNextReminderDate(
-      calculateStartingDate(requestData.startTiming),
-      requestData.reminderFrequency
+      calculateStartingDate(
+        requestData.startTiming,
+        requestData?.createdInTimeZone
+      ),
+      requestData.reminderFrequency,
+      requestData?.createdInTimeZone
     ), // Reminders start on due date
     _id: paymentHistoryObjId,
     // status: "pending",
@@ -302,49 +332,56 @@ async function emailNonApprovedParticipants(
 // freq: "daily" | "3days" | "weekly" | "monthly" | "none"
 // fromDate: Date in UTC
 // targetHourPST: wall-clock time in PST you want (default 12:00)
-function calculateNextReminderDate(fromDate, freq, targetHourPST = 12) {
+function calculateNextReminderDate(
+  fromDate,
+  freq,
+  fromTimeZone = "America/Los_Angeles"
+) {
   if (!(fromDate instanceof Date) || isNaN(fromDate)) return null;
 
-  // 1. Interpret `fromDate` in America/Los_Angeles local time
-  const pacificNow = new Date(
-    fromDate.toLocaleString("en-US", { timeZone: "America/Los_Angeles" })
+  // 1. Convert fromDate → wall-clock in passed timezone
+  const zoned = new Date(
+    fromDate.toLocaleString("en-US", { timeZone: fromTimeZone })
   );
 
-  // 2. Decide how many *Pacific* days to add
-  let daysToAdd;
+  // 2. Local midnight (00:00) of that timezone's calendar day
+  // (constructed as a local Date on this machine, using that Y/M/D)
+  const localBase = new Date(
+    zoned.getFullYear(),
+    zoned.getMonth(),
+    zoned.getDate(),
+    0,
+    0,
+    0,
+    0
+  );
+
+  // 3. Add next interval based on frequency (still in local time)
   switch (freq) {
     case "daily":
-      daysToAdd = 1;
+      localBase.setDate(localBase.getDate() + 1);
       break;
+
     case "3days":
-      daysToAdd = 3;
+      localBase.setDate(localBase.getDate() + 3);
       break;
+
     case "weekly":
-      daysToAdd = 7;
+      localBase.setDate(localBase.getDate() + 7);
       break;
+
     case "monthly":
-      // For monthly, add 1 month in Pacific terms:
-      pacificNow.setMonth(pacificNow.getMonth() + 1);
-      daysToAdd = 0;
+      localBase.setMonth(localBase.getMonth() + 1);
       break;
+
     default:
-      return null; // "none" or unknown
+      return null; // unknown frequency
   }
 
-  if (daysToAdd) {
-    pacificNow.setDate(pacificNow.getDate() + daysToAdd);
-  }
-
-  // 3. Snap to targetHourPST on that Pacific date
-  pacificNow.setHours(targetHourPST, 0, 0, 0);
-
-  // 4. Convert that exact Pacific time → UTC
-  const utcString = pacificNow.toLocaleString("en-US", { timeZone: "UTC" });
-  const utcDate = new Date(utcString);
-
-  return utcDate;
+  // 4. Return local midnight of that next day
+  // When you log this in the same timezone, you'll see 12:00 AM.
+  return localBase;
 }
-
 module.exports = {
   calculateNextReminderDate,
   calculateDaysFromNow,

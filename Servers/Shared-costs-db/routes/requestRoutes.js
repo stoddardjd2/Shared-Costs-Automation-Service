@@ -42,10 +42,13 @@ router.use(protect);
 router.post("/", createRequest);
 router.get("/", getRequests);
 router.put("/:id", updateRequest);
+
+// OUTDATED: DOES NOT TAKE LOCAL USERTIMEZONE INTO ACCOUNT FOR CALCULATING NEXT DUE
 router.patch(
   "/reminder/:requestId/:paymentHistoryId/:userId",
   handleSendReminder
 );
+
 router.post("/delete/:requestId", handleDeleteRequest);
 router.post("/pause/:requestId", handleTogglePauseRequest);
 

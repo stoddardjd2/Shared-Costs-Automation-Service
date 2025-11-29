@@ -83,6 +83,7 @@ const requestSchema = new Schema({
   totalAmount: Number,
   dueInDays: Number,
   totalAmountOwed: Number,
+  createdInTimeZone: String,
   reminderFrequency: {
     type: String,
     enum: ["daily", "weekly", "monthly", "none", "once", "3days"],

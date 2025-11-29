@@ -196,8 +196,10 @@ function calculateDueDate(
   reminderFrequency,
   customInterval,
   customUnit,
-  targetHourPST = 14 // default: 2pm PST
+  fromTimeZone = "America/Los_Angeles"
 ) {
+  if (!(requestDate instanceof Date) || isNaN(requestDate)) return null;
+
   const interval = getIntervalFromFrequency(
     reminderFrequency,
     customInterval,
@@ -205,26 +207,47 @@ function calculateDueDate(
   );
   if (!interval) return null;
 
-  // 1. Add interval normally (assume requestDate is a valid Date)
-  const rawDate = addIntervalToDate(requestDate, interval.count, interval.unit);
+  // 1. Interpret requestDate in the given timezone
+  const zoned = new Date(
+    requestDate.toLocaleString("en-US", { timeZone: fromTimeZone })
+  );
 
-  // 2. Get the target calendar day (using UTC parts to keep things consistent)
-  const year = rawDate.getUTCFullYear();
-  const month = String(rawDate.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(rawDate.getUTCDate()).padStart(2, "0");
-  const hour = String(targetHourPST).padStart(2, "0");
+  // 2. Strip time -> local midnight for that timezone
+  const localBase = new Date(
+    zoned.getFullYear(),
+    zoned.getMonth(),
+    zoned.getDate(),
+    0,
+    0,
+    0,
+    0
+  );
 
-  // 3. Build an ISO string representing *that date at targetHour in PST*
-  // PST = UTC-08:00 (no DST adjustment here on purpose)
-  const pstIso = `${year}-${month}-${day}T${hour}:00:00-08:00`;
+  // 3. Add the interval in local calendar terms
+  const { count, unit } = interval;
+  if (!(count > 0)) return null;
 
-  // 4. Let JS convert that fixed PST time into a UTC moment
-  const dueDateUTC = new Date(pstIso);
+  switch (unit) {
+    case "days":
+      localBase.setDate(localBase.getDate() + count);
+      break;
+    case "weeks":
+      localBase.setDate(localBase.getDate() + count * 7);
+      break;
+    case "months":
+      localBase.setMonth(localBase.getMonth() + count);
+      break;
+    case "years":
+      localBase.setFullYear(localBase.getFullYear() + count);
+      break;
+    default:
+      // If your getIntervalFromFrequency can produce other units,
+      // handle them here or return null.
+      return null;
+  }
 
-  // Return a Date whose internal time is UTC; use .toISOString() when needed.
-  return dueDateUTC;
+  return localBase;
 }
-
 // helper: send requests to every participant
 async function sendToAllParticipants({
   requestDocument,
@@ -313,15 +336,6 @@ async function sendPaymentRequestToParticipant({
         ? Math.max(0, participantAmount - paidAmount)
         : null);
 
-    // 4) Ensure dueDate present (fallback only if missing)
-    let effectiveDueDate = dueDate;
-    if (!effectiveDueDate) {
-      const { count, unit } = getIntervalFromFrequency(
-        request.reminderFrequency || "weekly"
-      );
-      effectiveDueDate = addIntervalToDate(new Date(), count, unit);
-    }
-
     // 5) Call your existing sender with populated history id
     const success = await sendRequestsRouter({
       requestId: request._id,
@@ -333,7 +347,7 @@ async function sendPaymentRequestToParticipant({
       paymentHistoryId,
       stillOwes,
       dueDate: effectiveDueDate,
-      requestData: request,
+      requestData: dueDate,
     });
     return !!success;
   } catch (err) {
@@ -358,7 +372,8 @@ async function processRecurringRequestIfDue(
     currentDate,
     requestDocument.frequency,
     requestDocument?.customInterval,
-    requestDocument?.customUnit
+    requestDocument?.customUnit,
+    requestDocument?.createdInTimeZone
   );
 
   console.log("processing requests for scheduler:", requestDocument.name);
@@ -384,7 +399,6 @@ async function processRecurringRequestIfDue(
           paymentHistoryId
         );
 
-        console.log("send all 1");
         await sendToAllParticipants({
           requestDocument,
           paymentHistoryEntry,
@@ -392,13 +406,6 @@ async function processRecurringRequestIfDue(
           kind: "initial",
         });
 
-        console.log(
-          "persist in request scheduler: ",
-          requestDocument,
-          paymentHistoryEntry,
-          currentDate,
-          requestNextDueDate
-        );
         await persistSend({
           requestDocument,
           paymentHistoryEntry,
@@ -435,7 +442,6 @@ async function processRecurringRequestIfDue(
         paymentHistoryId
       );
 
-      console.log("send all 2");
       await sendToAllParticipants({
         requestDocument,
         paymentHistoryEntry,

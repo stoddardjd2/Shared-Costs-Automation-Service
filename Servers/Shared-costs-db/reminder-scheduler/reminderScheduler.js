@@ -71,8 +71,6 @@ async function processRequestReminders(request) {
     return d;
   }
 
- 
-
   const freq = request.reminderFrequency || "3days"; // default if missing
 
   for (let i = 0; i < request.paymentHistory.length; i++) {
@@ -189,7 +187,11 @@ async function processRequestReminders(request) {
         // we already sent this once-cycle, so stop further reminders
         paymentEntry.nextReminderDate = null;
       } else {
-        paymentEntry.nextReminderDate = calculateNextReminderDate(now, freq);
+        paymentEntry.nextReminderDate = calculateNextReminderDate(
+          now,
+          freq,
+          request?.createdInTimeZone
+        );
       }
 
       // Reset reminderSent so next cycle can send again if still owes

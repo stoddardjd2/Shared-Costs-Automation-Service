@@ -192,6 +192,7 @@ const updateRequest = async (req, res) => {
 };
 
 const handleSendReminder = async (req, res) => {
+  console.log("USING OUTDATED BROKEN CONTROLLER")
   // restrict to only 1 reminder per day per participant
   // const REMINDER_INTERVAL_DAYS = 1;
   const REMINDER_INTERVAL_DAYS = 1;

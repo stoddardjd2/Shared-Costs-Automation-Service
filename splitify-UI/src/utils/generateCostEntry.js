@@ -44,48 +44,48 @@ export default function generateCostEntry({
   };
 
   // Helper function to calculate next due date
-  const getNextDueDate = (targetHourPST = 14) => {
+  const getNextDueDate = () => {
     if (recurringType === "none") return null;
 
-    // Treat PST as fixed UTC-8
-    const PST_OFFSET_HOURS = 8;
-    const PST_OFFSET_MS = PST_OFFSET_HOURS * 60 * 60 * 1000;
-
-    // Convert real UTC -> "pseudo PST" (for calendar math)
-    function utcToPseudoPST(dateUtc) {
-      return new Date(dateUtc.getTime() - PST_OFFSET_MS);
+    // Strip time from a Date in local timezone
+    function toLocalMidnight(date) {
+      return new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        0,
+        0,
+        0,
+        0
+      );
     }
 
-    // Convert "pseudo PST" -> real UTC
-    function pseudoPSTToUtc(datePseudo) {
-      return new Date(datePseudo.getTime() + PST_OFFSET_MS);
-    }
-
-    // Parse 'YYYY-MM-DD' as a PST calendar date at midnight (pseudo PST)
-    function pstFromYMD(ymd) {
+    // Parse 'YYYY-MM-DD' as a local calendar date at midnight
+    function localFromYMD(ymd) {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd)) {
         throw new Error("Date must be 'YYYY-MM-DD'");
       }
       const [y, m, d] = ymd.split("-").map(Number);
-      // In pseudo PST world, we can just use Date.UTC for Y/M/D
-      return new Date(Date.UTC(y, m - 1, d, 0, 0, 0, 0));
+      return new Date(y, m - 1, d, 0, 0, 0, 0); // local midnight
     }
 
-    // Add in PST calendar units (days/weeks/months/years) using UTC setters
-    function addPseudoPST(base, count, unit) {
-      const dt = new Date(base.getTime());
+    // Add whole calendar units (days/weeks/months/years) in local time
+    function addLocalUnits(base, count, unit) {
+      // Work from a clean local-midnight copy
+      const dt = toLocalMidnight(base);
+
       switch (unit) {
         case "days":
-          dt.setUTCDate(dt.getUTCDate() + count);
+          dt.setDate(dt.getDate() + count);
           break;
         case "weeks":
-          dt.setUTCDate(dt.getUTCDate() + count * 7);
+          dt.setDate(dt.getDate() + count * 7);
           break;
         case "months":
-          dt.setUTCMonth(dt.getUTCMonth() + count);
+          dt.setMonth(dt.getMonth() + count);
           break;
         case "years":
-          dt.setUTCFullYear(dt.getUTCFullYear() + count);
+          dt.setFullYear(dt.getFullYear() + count);
           break;
         default:
           throw new Error("Unsupported unit");
@@ -93,40 +93,23 @@ export default function generateCostEntry({
       return dt;
     }
 
-    // --- Now / Today in PST world (pseudo) ---
+    // --- Today in local time (date-only) ---
+    const now = new Date();
+    const todayLocalMidnight = toLocalMidnight(now); // e.g. 11/30/2025 00:00 local
 
-    const nowUtc = new Date();
-    const nowPstPseudo = utcToPseudoPST(nowUtc);
+    // --- Anchor base date (in local time) ---
+    const baseLocal =
+      startTiming === "now" || !startTiming
+        ? todayLocalMidnight
+        : localFromYMD(startTiming);
 
-    const todayPstMidnight = new Date(
-      Date.UTC(
-        nowPstPseudo.getUTCFullYear(),
-        nowPstPseudo.getUTCMonth(),
-        nowPstPseudo.getUTCDate(),
-        0,
-        0,
-        0,
-        0
-      )
-    );
-
-    // --- Anchor base date (in pseudo PST) ---
-
-    const basePst =
-      startTiming === "now"
-        ? new Date(todayPstMidnight.getTime()) // copy
-        : pstFromYMD(startTiming);
-
-    // If explicit start date is in the future (PST), just use that date at targetHourPST
-    if (startTiming !== "now" && basePst.getTime() > nowPstPseudo.getTime()) {
-      const future = new Date(basePst.getTime());
-      // Set wall-clock time in PST world
-      future.setUTCHours(targetHourPST, 0, 0, 0);
-      return pseudoPSTToUtc(future);
+    // If explicit start date is in the future (local), first due is that date
+    if (startTiming !== "now" && baseLocal > todayLocalMidnight) {
+      // Return local midnight of that start date
+      return baseLocal;
     }
 
     // --- Determine step ---
-
     let count = 1;
     let unit;
 
@@ -160,27 +143,15 @@ export default function generateCostEntry({
         return null;
     }
 
-    // --- Find the next PST date ≥ today (by calendar) ---
+    // --- Find the next local date ≥ today (by calendar) ---
+    let nextLocal = addLocalUnits(baseLocal, count, unit);
 
-    let nextPst = addPseudoPST(basePst, count, unit);
-    while (nextPst < todayPstMidnight) {
-      nextPst = addPseudoPST(nextPst, count, unit);
+    while (nextLocal < todayLocalMidnight) {
+      nextLocal = addLocalUnits(nextLocal, count, unit);
     }
 
-    // Set time to targetHourPST (2pm by default) in PST world
-    nextPst.setUTCHours(targetHourPST, 0, 0, 0);
-
-    // Convert from pseudo PST back to real UTC
-    const nextUtc = pseudoPSTToUtc(nextPst);
-
-    // For debugging:
-    // console.log("nextUtc ISO:", nextUtc.toISOString());
-    // console.log(
-    //   "as PST (manual):",
-    //   new Date(nextUtc.getTime() - PST_OFFSET_MS).toISOString()
-    // );
-
-    return nextUtc;
+    // Final: Date at **local midnight** of the next due day
+    return nextLocal;
   };
 
   // Generate custom splits object based on split type
@@ -227,7 +198,6 @@ export default function generateCostEntry({
 
   const currentDate = new Date().toISOString().split("T")[0];
 
-  console.log("getNextDueDate()", getNextDueDate());
   return {
     name: chargeName,
     isRecurring: recurringType == "one-time" ? false : true,
@@ -239,7 +209,7 @@ export default function generateCostEntry({
     lastMatched: selectedCharge?.lastMatched || currentDate,
     frequency: getFrequency(),
     nextDue: getNextDueDate(),
-
+    createdInTimeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     // paymentHistory: [
     //   {
     //     id: "payment_101",
